@@ -54,9 +54,11 @@ final class BluetoothGlucoseMeterSource: GlucoseSource {
 /// state and the non-Sendable CoreBluetooth objects are single-queue-confined —
 /// which is what `@unchecked Sendable` asserts here.
 final class BluetoothGlucoseScanner: NSObject, @unchecked Sendable {
-    private static let glucoseService = CBUUID(string: "1808")
-    private static let measurementCharacteristic = CBUUID(string: "2A18")
-    private static let racpCharacteristic = CBUUID(string: "2A52")
+    // Immutable CBUUID constants. CBUUID isn't Sendable, but these are created
+    // once and never mutated, so `nonisolated(unsafe)` is the correct annotation.
+    private nonisolated(unsafe) static let glucoseService = CBUUID(string: "1808")
+    private nonisolated(unsafe) static let measurementCharacteristic = CBUUID(string: "2A18")
+    private nonisolated(unsafe) static let racpCharacteristic = CBUUID(string: "2A52")
 
     private let queue = DispatchQueue(label: "app.prvital.bluetooth.glucose")
     private var central: CBCentralManager?
