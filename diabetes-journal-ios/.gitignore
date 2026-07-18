@@ -1,0 +1,9 @@
+# Generated Xcode project (regenerate with `xcodegen generate`)
+*.xcodeproj
+*.xcworkspace
+
+# Xcode / SwiftPM build artifacts
+.build/
+DerivedData/
+xcuserdata/
+*.xcuserstate

@@ -1,0 +1,120 @@
+# Diabetes Journal — Apple client (XcodeGen spec)
+#
+# Generate the Xcode project on a Mac with:
+#   brew install xcodegen
+#   cd diabetes-journal-ios && xcodegen generate && open DiabetesJournal.xcodeproj
+#
+# A premium diabetes-monitoring app for iPhone (iOS 26 / Swift 6), with a
+# WidgetKit extension and an Apple Watch app. All three share the code under
+# Shared/ and the Theme, and the app + watch also share Connectivity/.
+#   - DiabetesJournal         — iPhone app (SwiftData, HealthKit, CloudKit, Charts)
+#   - DiabetesJournalWidgets  — Home Screen + Lock Screen widgets
+#   - DiabetesJournalWatch    — Apple Watch companion
+name: DiabetesJournal
+options:
+  bundleIdPrefix: com.diabetesjournal
+  deploymentTarget:
+    iOS: "26.0"
+  createIntermediateGroups: true
+  groupSortPosition: top
+
+settings:
+  base:
+    SWIFT_VERSION: "6.0"
+    MARKETING_VERSION: "1.0.0"
+    CURRENT_PROJECT_VERSION: "1"
+    DEVELOPMENT_TEAM: "" # set your Apple Developer Team ID
+    ENABLE_USER_SCRIPT_SANDBOXING: YES
+
+targets:
+  DiabetesJournal:
+    type: application
+    platform: iOS
+    sources:
+      - path: DiabetesJournal
+      - path: Shared
+      - path: Connectivity # WatchConnectivity bridge (app + watch only)
+    dependencies:
+      - target: DiabetesJournalWidgets
+    info:
+      path: DiabetesJournal/Resources/Info.plist
+      properties:
+        CFBundleDisplayName: Diabetes Journal
+        UILaunchScreen: {}
+        ITSAppUsesNonExemptEncryption: false
+        UISupportedInterfaceOrientations:
+          - UIInterfaceOrientationPortrait
+        NSHealthShareUsageDescription: >-
+          Diabetes Journal reads your glucose, insulin, carbohydrate and workout
+          data from Apple Health so your journal stays complete automatically.
+        NSHealthUpdateUsageDescription: >-
+          Diabetes Journal saves the glucose, insulin and carbohydrate entries you
+          log back to Apple Health so the rest of your Health apps stay in sync.
+    entitlements:
+      path: DiabetesJournal/Resources/DiabetesJournal.entitlements
+      properties:
+        com.apple.developer.healthkit: true
+        com.apple.developer.healthkit.access: []
+        com.apple.developer.default-data-protection: NSFileProtectionComplete
+        com.apple.security.application-groups:
+          - group.com.diabetesjournal
+        com.apple.developer.icloud-services:
+          - CloudKit
+        com.apple.developer.icloud-container-identifiers:
+          - iCloud.com.diabetesjournal
+    settings:
+      base:
+        PRODUCT_BUNDLE_IDENTIFIER: com.diabetesjournal.app
+        GENERATE_INFOPLIST_FILE: NO
+        TARGETED_DEVICE_FAMILY: "1,2" # iPhone + iPad
+        ASSETCATALOG_COMPILER_APPICON_NAME: AppIcon
+        ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME: AccentColor
+        ENABLE_PREVIEWS: YES
+
+  DiabetesJournalWidgets:
+    type: app-extension
+    platform: iOS
+    sources:
+      - path: DiabetesJournalWidgets
+      - path: Shared
+      - path: DiabetesJournal/DesignSystem/Theme.swift # reuse the palette
+    info:
+      path: DiabetesJournalWidgets/Info.plist
+      properties:
+        CFBundleDisplayName: Glucose
+        NSExtension:
+          NSExtensionPointIdentifier: com.apple.widgetkit-extension
+    entitlements:
+      path: DiabetesJournalWidgets/DiabetesJournalWidgets.entitlements
+      properties:
+        com.apple.security.application-groups:
+          - group.com.diabetesjournal
+    settings:
+      base:
+        PRODUCT_BUNDLE_IDENTIFIER: com.diabetesjournal.app.widgets
+        GENERATE_INFOPLIST_FILE: NO
+        TARGETED_DEVICE_FAMILY: "1,2"
+
+  DiabetesJournalWatch:
+    type: application
+    platform: watchOS
+    deploymentTarget: "26.0"
+    sources:
+      - path: DiabetesJournalWatch
+      - path: Shared
+      - path: Connectivity # WatchConnectivity bridge
+      - path: DiabetesJournal/DesignSystem/Theme.swift # reuse the palette
+    info:
+      path: DiabetesJournalWatch/Info.plist
+      properties:
+        CFBundleDisplayName: Journal
+        WKApplication: true
+    entitlements:
+      path: DiabetesJournalWatch/DiabetesJournalWatch.entitlements
+      properties:
+        com.apple.security.application-groups:
+          - group.com.diabetesjournal
+    settings:
+      base:
+        PRODUCT_BUNDLE_IDENTIFIER: com.diabetesjournal.app.watchkitapp
+        GENERATE_INFOPLIST_FILE: NO
