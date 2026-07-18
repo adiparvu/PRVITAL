@@ -46,6 +46,17 @@ struct SettingsView: View {
                             tint: Theme.zoneHigh
                         )
                     }
+
+                    NavigationLink {
+                        TherapySettingsView()
+                    } label: {
+                        SettingsRow(
+                            title: "Therapy & bolus",
+                            subtitle: env.preferences.bolusParameters.isEnabled ? "Calculator on" : "Calculator off",
+                            systemImage: "syringe",
+                            tint: Theme.zoneWarning
+                        )
+                    }
                 }
                 .listRowBackground(Theme.surface)
 

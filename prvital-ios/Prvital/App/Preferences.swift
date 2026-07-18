@@ -14,6 +14,7 @@ final class Preferences {
         self.thresholds = Self.readThresholds(self.defaults)
         self.reminders = Self.readReminders(self.defaults)
         self.nightscout = Self.readNightscout(self.defaults)
+        self.bolusParameters = Self.readBolus(self.defaults)
     }
 
     var glucoseUnit: GlucoseUnit {
@@ -34,6 +35,11 @@ final class Preferences {
         didSet { if let data = try? JSONEncoder().encode(nightscout) { defaults.set(data, forKey: Keys.nightscout) } }
     }
 
+    /// Personal therapy settings for the (opt-in) bolus calculator.
+    var bolusParameters: BolusParameters {
+        didSet { if let data = try? JSONEncoder().encode(bolusParameters) { defaults.set(data, forKey: Keys.bolus) } }
+    }
+
     /// Quick-add presets (the +1U … +10U row and 20g … 100g row).
     let insulinPresets: [Double] = [1, 2, 4, 6, 8, 10]
     let carbPresets: [Double] = [20, 40, 60, 80, 100]
@@ -46,6 +52,7 @@ final class Preferences {
         static let thresholds = "pref.thresholds"
         static let reminders = "pref.reminders"
         static let nightscout = "pref.nightscout"
+        static let bolus = "pref.bolusParameters"
     }
 
     private static func readUnit(_ d: UserDefaults) -> GlucoseUnit {
@@ -67,6 +74,12 @@ final class Preferences {
         guard let data = d.data(forKey: Keys.nightscout),
               let value = try? JSONDecoder().decode(NightscoutConfig.self, from: data)
         else { return .empty }
+        return value
+    }
+    private static func readBolus(_ d: UserDefaults) -> BolusParameters {
+        guard let data = d.data(forKey: Keys.bolus),
+              let value = try? JSONDecoder().decode(BolusParameters.self, from: data)
+        else { return .default }
         return value
     }
 }
