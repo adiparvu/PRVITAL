@@ -6,7 +6,7 @@ import Foundation
 // export layers can treat them uniformly. Concrete types are SwiftData
 // `@Model` classes; this protocol only exposes identity, provenance and time.
 
-protocol MedicalRecord: Identifiable {
+protocol MedicalRecord: AnyObject, Identifiable {
     var id: UUID { get }
     var recordType: RecordType { get }
     var source: DataSource { get set }
