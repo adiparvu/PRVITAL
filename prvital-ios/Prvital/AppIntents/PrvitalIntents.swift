@@ -9,8 +9,8 @@ import SwiftData
 
 /// "What's my glucose?" — reads the shared snapshot, no data store needed.
 struct CurrentGlucoseIntent: AppIntent {
-    static var title: LocalizedStringResource = "Current glucose"
-    static var description = IntentDescription("Check your latest glucose reading.")
+    static let title: LocalizedStringResource = "Current glucose"
+    static let description = IntentDescription("Check your latest glucose reading.")
 
     @MainActor
     func perform() async throws -> some IntentResult & ProvidesDialog & ReturnsValue<String> {
@@ -30,8 +30,8 @@ struct CurrentGlucoseIntent: AppIntent {
 
 /// "Log 4 units of insulin".
 struct LogInsulinIntent: AppIntent {
-    static var title: LocalizedStringResource = "Log insulin"
-    static var description = IntentDescription("Record a rapid-acting insulin dose.")
+    static let title: LocalizedStringResource = "Log insulin"
+    static let description = IntentDescription("Record a rapid-acting insulin dose.")
 
     @Parameter(title: "Units")
     var units: Double
@@ -48,8 +48,8 @@ struct LogInsulinIntent: AppIntent {
 
 /// "Log 30 grams of carbs".
 struct LogCarbsIntent: AppIntent {
-    static var title: LocalizedStringResource = "Log carbs"
-    static var description = IntentDescription("Record a carbohydrate amount.")
+    static let title: LocalizedStringResource = "Log carbs"
+    static let description = IntentDescription("Record a carbohydrate amount.")
 
     @Parameter(title: "Grams")
     var grams: Double
@@ -66,8 +66,8 @@ struct LogCarbsIntent: AppIntent {
 
 /// "Log glucose 120" — value is entered in the user's display unit.
 struct LogGlucoseIntent: AppIntent {
-    static var title: LocalizedStringResource = "Log glucose"
-    static var description = IntentDescription("Record a glucose reading in your preferred unit.")
+    static let title: LocalizedStringResource = "Log glucose"
+    static let description = IntentDescription("Record a glucose reading in your preferred unit.")
 
     @Parameter(title: "Value")
     var value: Double
