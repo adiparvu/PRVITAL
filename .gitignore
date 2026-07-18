@@ -1,5 +1,5 @@
 # macOS
 .DS_Store
 
-# Xcode / build artifacts are ignored inside diabetes-journal-ios/.gitignore
+# Xcode / build artifacts are ignored inside prvital-ios/.gitignore
 # (generated project, DerivedData, build output).
