@@ -132,3 +132,57 @@ and keeps the user in control.
 `.github/workflows/diabetes-ios.yml` builds the app + widgets and the watch app
 on a macOS runner (XcodeGen + `xcodebuild`, no signing) whenever
 `diabetes-journal-ios/**` changes.
+
+## TestFlight
+
+The same workflow has a **manual** `testflight` job that archives the app (with
+its widget and watch targets) and uploads the build to **TestFlight** via the
+App Store Connect API. It runs only when you trigger it by hand — never on push.
+
+### One-time setup
+
+1. **Apple Developer Program** membership, and in App Store Connect create the
+   app record for bundle id `com.diabetesjournal.app`.
+2. **Register the App IDs** and enable their capabilities (so automatic signing
+   can provision them):
+   - `com.diabetesjournal.app` — HealthKit, App Groups (`group.com.diabetesjournal`),
+     iCloud → CloudKit (`iCloud.com.diabetesjournal`), Data Protection.
+   - `com.diabetesjournal.app.widgets` — App Groups.
+   - `com.diabetesjournal.app.watchkitapp` — App Groups.
+3. **Set your team id** in [`project.yml`](project.yml) → `settings.base.DEVELOPMENT_TEAM`
+   (10-character Apple Team ID). Commit that change.
+4. **Create an App Store Connect API key** (App Store Connect → Users and Access →
+   Integrations → App Store Connect API → *App Manager* role) and note the
+   **Key ID** and **Issuer ID**; download the `.p8` once.
+5. **Add repository secrets** (Settings → Secrets and variables → Actions):
+
+   | Secret | Value |
+   | --- | --- |
+   | `ASC_KEY_ID` | the API **Key ID** |
+   | `ASC_ISSUER_ID` | the API **Issuer ID** |
+   | `ASC_API_KEY_P8` | the **full contents** of the downloaded `AuthKey_*.p8` |
+
+### Run it
+
+GitHub → **Actions** → **Diabetes Journal (Apple)** → **Run workflow** → set
+**testflight** to `true` → **Run**. The job:
+
+1. generates the Xcode project with XcodeGen,
+2. writes the API key to `~/private_keys/AuthKey_<KEY_ID>.p8`,
+3. `xcodebuild archive` with `-allowProvisioningUpdates` (automatic signing),
+4. `xcodebuild -exportArchive` with `method: app-store-connect`,
+   `destination: upload` — pushing the build straight to TestFlight.
+
+Bump the build number for each upload via `CURRENT_PROJECT_VERSION` (and
+`MARKETING_VERSION` for a new version) in `project.yml`. After processing
+finishes in App Store Connect, add it to a TestFlight group to invite testers.
+
+### Doing it from Xcode instead
+
+On a Mac you can skip CI: set your team, `xcodegen generate`, open the project,
+select **Any iOS Device**, **Product → Archive**, then **Distribute App →
+TestFlight & App Store** in the Organizer.
+
+> Because the app uses **HealthKit**, App Review requires a filled-in
+> **health-data usage** section and a privacy policy URL before external testing
+> is approved; internal testing works as soon as the build finishes processing.
