@@ -62,6 +62,15 @@ enum DataSource: String, Codable, CaseIterable, Sendable, Identifiable {
         default: return false
         }
     }
+
+    /// True for sources configured through a dedicated screen (a site URL/token
+    /// or an account login) rather than the generic Connect button.
+    var isCredentialed: Bool {
+        switch self {
+        case .nightscout, .dexcom, .freeStyleLibre: return true
+        default: return false
+        }
+    }
 }
 
 /// Glucose direction of change, as reported by CGM sensors.

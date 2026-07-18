@@ -63,8 +63,12 @@ protocol GlucoseSource: AnyObject {
     func fetchLatest() async throws -> NormalizedGlucoseSample?
     /// All samples at or after `date`, for backfill and periodic sync.
     func fetchSamples(since date: Date) async throws -> [NormalizedGlucoseSample]
+    /// Re-derive `connectionState` from stored configuration (called after the
+    /// user edits or clears a credentialed source in Settings).
+    func refreshConnectionState()
 }
 
 extension GlucoseSource {
     var displayName: String { source.displayName }
+    func refreshConnectionState() {}
 }

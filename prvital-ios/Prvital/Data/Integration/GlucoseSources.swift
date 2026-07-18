@@ -45,68 +45,105 @@ final class HealthKitGlucoseSource: GlucoseSource {
     }
 }
 
-/// Dexcom (Dexcom One+, G6, G7, …).
-///
-/// **Extension point.** A production build links this to Dexcom data through an
-/// official channel — Apple Health (Dexcom writes there), the Dexcom Share /
-/// partner API with the user's credentials, or a bundled vendor SDK. Until a
-/// build is configured with those, the source reports itself as not-configured
-/// rather than inventing values, and never fabricates readings.
+/// Dexcom (Dexcom One+, G6, G7, …) via the unofficial **Dexcom Share** service —
+/// the same endpoint the Dexcom Follow app uses. The user signs in with their
+/// Dexcom account (stored in the Keychain); readings then arrive automatically.
 @MainActor
 final class DexcomGlucoseSource: GlucoseSource {
     let source: DataSource = .dexcom
-    private(set) var connectionState: SourceConnectionState = .notConnected
+    private let store = SourceCredentialStore.shared
+    private(set) var connectionState: SourceConnectionState
 
-    /// Flip to `true` in a build wired to a real Dexcom integration.
-    var isConfigured = false
-    var isAvailable: Bool { isConfigured }
+    init() {
+        connectionState = SourceCredentialStore.shared.hasCredentials(for: .dexcom) ? .connected : .notConnected
+    }
+
+    /// A network source is always "available"; syncing depends on credentials.
+    var isAvailable: Bool { true }
+
+    private var client: DexcomShareClient? {
+        guard let credentials = store.read(for: .dexcom), credentials.isComplete else { return nil }
+        return DexcomShareClient(credentials: credentials)
+    }
 
     func requestAccess() async throws {
-        guard isConfigured else {
+        guard let client else {
             connectionState = .notConnected
             throw SourceError.integrationNotConfigured(source.displayName)
         }
-        connectionState = .connected
+        connectionState = .connecting
+        do {
+            _ = try await client.authenticate()
+            connectionState = .connected
+        } catch {
+            connectionState = .failed(error.localizedDescription)
+            throw error
+        }
     }
 
     func fetchLatest() async throws -> NormalizedGlucoseSample? {
-        guard isConfigured else { throw SourceError.integrationNotConfigured(source.displayName) }
-        return nil // Wire to the Dexcom API / SDK here.
+        guard let client else { throw SourceError.integrationNotConfigured(source.displayName) }
+        return try await client.fetchSamples(minutes: 60, maxCount: 1).max { $0.timestamp < $1.timestamp }
     }
 
     func fetchSamples(since date: Date) async throws -> [NormalizedGlucoseSample] {
-        guard isConfigured else { throw SourceError.integrationNotConfigured(source.displayName) }
-        return []
+        guard let client else { throw SourceError.integrationNotConfigured(source.displayName) }
+        let minutes = max(1, min(1440, Int(Date().timeIntervalSince(date) / 60)))
+        let samples = try await client.fetchSamples(minutes: minutes, maxCount: 288)
+        return samples.filter { $0.timestamp >= date }
+    }
+
+    func refreshConnectionState() {
+        connectionState = store.hasCredentials(for: .dexcom) ? .connected : .notConnected
     }
 }
 
-/// FreeStyle Libre (Libre 2, Libre 3, …).
-///
-/// **Extension point**, same contract as Dexcom: link through Apple Health,
-/// LibreLinkUp, or a vendor SDK in a configured build.
+/// FreeStyle Libre (Libre 2, Libre 3, …) via the unofficial **LibreLinkUp**
+/// follower API. The user signs in with their LibreLinkUp account (stored in the
+/// Keychain) and shares a sensor; the latest reading and recent graph sync in.
 @MainActor
 final class LibreGlucoseSource: GlucoseSource {
     let source: DataSource = .freeStyleLibre
-    private(set) var connectionState: SourceConnectionState = .notConnected
+    private let store = SourceCredentialStore.shared
+    private(set) var connectionState: SourceConnectionState
 
-    var isConfigured = false
-    var isAvailable: Bool { isConfigured }
+    init() {
+        connectionState = SourceCredentialStore.shared.hasCredentials(for: .freeStyleLibre) ? .connected : .notConnected
+    }
+
+    var isAvailable: Bool { true }
+
+    private var client: LibreLinkUpClient? {
+        guard let credentials = store.read(for: .freeStyleLibre), credentials.isComplete else { return nil }
+        return LibreLinkUpClient(credentials: credentials)
+    }
 
     func requestAccess() async throws {
-        guard isConfigured else {
+        guard let client else {
             connectionState = .notConnected
             throw SourceError.integrationNotConfigured(source.displayName)
         }
-        connectionState = .connected
+        connectionState = .connecting
+        do {
+            _ = try await client.validate()
+            connectionState = .connected
+        } catch {
+            connectionState = .failed(error.localizedDescription)
+            throw error
+        }
     }
 
     func fetchLatest() async throws -> NormalizedGlucoseSample? {
-        guard isConfigured else { throw SourceError.integrationNotConfigured(source.displayName) }
-        return nil
+        guard let client else { throw SourceError.integrationNotConfigured(source.displayName) }
+        return try await client.fetchSamples().max { $0.timestamp < $1.timestamp }
     }
 
     func fetchSamples(since date: Date) async throws -> [NormalizedGlucoseSample] {
-        guard isConfigured else { throw SourceError.integrationNotConfigured(source.displayName) }
-        return []
+        guard let client else { throw SourceError.integrationNotConfigured(source.displayName) }
+        return try await client.fetchSamples().filter { $0.timestamp >= date }
+    }
+
+    func refreshConnectionState() {
+        connectionState = store.hasCredentials(for: .freeStyleLibre) ? .connected : .notConnected
     }
 }
