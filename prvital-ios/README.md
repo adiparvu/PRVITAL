@@ -43,9 +43,13 @@ Apple Developer account for a signed device build; the simulator runs unsigned.
 - **History** — every record with Today / Yesterday / Week / Month / Custom
   filters, sorting, and edit / delete.
 - **Insights** — glucose / insulin / carb / activity charts over Day / Week /
-  Month / Year, and statistics: average, min, max, **Time in Range**, time above
-  / below, estimated A1c (GMI), variability (CV), hypo / hyper events, insulin and
-  carb totals.
+  Month / Year; statistics (average, min, max, **Time in Range**, time above /
+  below, estimated A1c (GMI), variability (CV), hypo / hyper events, insulin and
+  carb totals); and an **AGP** (Ambulatory Glucose Profile) percentile report.
+- **Bolus calculator** — opt-in, transparent dosing helper: insulin-on-board
+  (exponential curve) plus a suggestion split into carb, correction and IOB
+  parts, with safety guards and a standing "not a prescription" disclaimer. It
+  never doses on its own; logging is always an explicit tap.
 - **Export** — locally-generated **PDF** and **CSV** reports for your care team,
   each carrying a data-sensitivity notice and shared only through the system sheet.
 - **Widgets** — Home Screen (small / medium / large) and Lock Screen
@@ -54,6 +58,8 @@ Apple Developer account for a signed device build; the simulator runs unsigned.
   carb logging that flows back to the phone.
 - **Privacy** — first-run consent onboarding, a per-scope privacy dashboard, a
   full audit trail, and complete data control (view, export, delete, revoke).
+- **Languages** — English and **Romanian**, via a String Catalog
+  (`Localizable.xcstrings`); untranslated strings fall back to English.
 
 ## Architecture
 
@@ -107,6 +113,10 @@ strategy, and the privacy/security design in detail.
   Glucose Service (0x1808) "Report Stored Records" procedure and imports the
   meter's finger-stick history. No vendor SDK is required; iOS handles pairing.
   Connect it under **Settings → Sources**, then pull to refresh.
+- **Nightscout** — a live HTTP integration (no vendor account needed) for users
+  self-hosting Nightscout. It reads the type-filtered `entries/sgv.json` route
+  with a server-side date window. Configure the site URL and access token under
+  **Settings → Sources → Nightscout**.
 - **Dexcom** and **FreeStyle Libre** are documented extension points (link via
   Apple Health, a partner API, or a vendor SDK in a configured build).
 
