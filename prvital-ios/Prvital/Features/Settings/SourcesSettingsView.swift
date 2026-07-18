@@ -53,6 +53,34 @@ struct SourcesSettingsView: View {
                     .foregroundStyle(Theme.textTertiary)
             }
             .listRowBackground(Theme.surface)
+
+            Section {
+                NavigationLink {
+                    NightscoutSettingsView()
+                } label: {
+                    HStack(spacing: 12) {
+                        Image(systemName: "cloud")
+                            .font(.system(size: 16, weight: .semibold))
+                            .foregroundStyle(Theme.accent)
+                            .frame(width: 28)
+                        VStack(alignment: .leading, spacing: 3) {
+                            Text("Nightscout")
+                                .font(.body)
+                                .foregroundStyle(Theme.textPrimary)
+                            Text(env.preferences.nightscout.isConfigured ? "Configured" : "Not set up")
+                                .font(.caption)
+                                .foregroundStyle(Theme.textSecondary)
+                        }
+                    }
+                }
+            } header: {
+                Text("Self-hosted")
+            } footer: {
+                Text("Sync CGM readings from your own Nightscout site over the internet — no vendor account required.")
+                    .font(.footnote)
+                    .foregroundStyle(Theme.textTertiary)
+            }
+            .listRowBackground(Theme.surface)
         }
         .scrollContentBackground(.hidden)
         .background(Theme.background)
@@ -117,7 +145,7 @@ private struct SourcesRow: View {
 
             Spacer()
 
-            if descriptor.canConnect {
+            if descriptor.canConnect && source.source != .nightscout {
                 Button("Connect", action: onConnect)
                     .font(.system(size: 14, weight: .semibold))
                     .buttonStyle(.borderedProminent)

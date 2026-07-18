@@ -83,6 +83,7 @@ enum ConsentScope: String, Codable, CaseIterable, Sendable, Identifiable {
     case healthKit = "health_kit"
     case appleWatch = "apple_watch"
     case externalCGM = "external_cgm"
+    case nightscout = "nightscout"
     case bluetoothMeter = "bluetooth_meter"
     case cloudSync = "cloud_sync"
     case dataExport = "data_export"
@@ -95,6 +96,7 @@ enum ConsentScope: String, Codable, CaseIterable, Sendable, Identifiable {
         case .healthKit: return "Apple Health"
         case .appleWatch: return "Apple Watch"
         case .externalCGM: return "CGM sensors"
+        case .nightscout: return "Nightscout"
         case .bluetoothMeter: return "Glucose meters"
         case .cloudSync: return "iCloud sync"
         case .dataExport: return "Data export"
@@ -111,6 +113,8 @@ enum ConsentScope: String, Codable, CaseIterable, Sendable, Identifiable {
             return "Show your glucose and let you log insulin and carbs from your wrist. Nothing leaves your paired devices."
         case .externalCGM:
             return "Connect a Dexcom or FreeStyle Libre sensor so readings arrive automatically. You choose which sensor is your primary source."
+        case .nightscout:
+            return "Fetch glucose readings from your own Nightscout site over the internet. The site address and access token you enter are stored on your device and sent only to your server — never to us."
         case .bluetoothMeter:
             return "Pair a Bluetooth blood-glucose meter — such as Contour or Accu-Chek — over Bluetooth to import its stored finger-stick readings. Nothing leaves your device."
         case .cloudSync:
@@ -127,6 +131,7 @@ enum ConsentScope: String, Codable, CaseIterable, Sendable, Identifiable {
         case .healthKit: return "heart.text.square"
         case .appleWatch: return "applewatch"
         case .externalCGM: return "sensor.tag.radiowaves.forward"
+        case .nightscout: return "cloud"
         case .bluetoothMeter: return "cross.vial"
         case .cloudSync: return "icloud"
         case .dataExport: return "square.and.arrow.up"
