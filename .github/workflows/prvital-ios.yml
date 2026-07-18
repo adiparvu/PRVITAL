@@ -43,6 +43,36 @@ jobs:
             -scheme Prvital \
             -destination 'generic/platform=iOS' \
             CODE_SIGNING_ALLOWED=NO CODE_SIGNING_REQUIRED=NO
+      - name: Run unit tests (simulator)
+        working-directory: prvital-ios
+        run: |
+          set -o pipefail
+          cat > /tmp/pick_sim.py <<'PY'
+          import json, subprocess
+          data = json.loads(subprocess.check_output(
+              ["xcrun", "simctl", "list", "devices", "available", "--json"]))
+          best, best_ver = "", (-1, -1)
+          for runtime, devices in data["devices"].items():
+              if "iOS" not in runtime:
+                  continue
+              try:
+                  major, minor = (runtime.split("iOS-")[1].split("-") + ["0"])[:2]
+                  ver = (int(major), int(minor))
+              except Exception:
+                  ver = (0, 0)
+              for dev in devices:
+                  if "iPhone" in dev["name"] and ver > best_ver:
+                      best, best_ver = dev["udid"], ver
+          print(best)
+          PY
+          UDID=$(python3 /tmp/pick_sim.py)
+          if [ -z "$UDID" ]; then echo "No iOS simulator available" >&2; exit 1; fi
+          echo "Testing on simulator $UDID"
+          xcodebuild test \
+            -project Prvital.xcodeproj \
+            -scheme Prvital \
+            -destination "id=$UDID" \
+            CODE_SIGNING_ALLOWED=NO CODE_SIGNING_REQUIRED=NO
       - name: Build Apple Watch app (no signing)
         working-directory: prvital-ios
         run: |

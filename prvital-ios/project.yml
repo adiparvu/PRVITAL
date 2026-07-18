@@ -37,6 +37,9 @@ targets:
       - path: Connectivity # WatchConnectivity bridge (app + watch only)
     dependencies:
       - target: PrvitalWidgets
+    scheme:
+      testTargets:
+        - PrvitalTests
     info:
       path: Prvital/Resources/Info.plist
       properties:
@@ -103,6 +106,18 @@ targets:
         PRODUCT_BUNDLE_IDENTIFIER: com.prvital.app.widgets
         GENERATE_INFOPLIST_FILE: NO
         TARGETED_DEVICE_FAMILY: "1,2"
+
+  PrvitalTests:
+    type: bundle.unit-test
+    platform: iOS
+    sources:
+      - path: PrvitalTests
+    dependencies:
+      - target: Prvital
+    settings:
+      base:
+        PRODUCT_BUNDLE_IDENTIFIER: com.prvital.app.tests
+        GENERATE_INFOPLIST_FILE: YES
 
   PrvitalWatch:
     type: application
