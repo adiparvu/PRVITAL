@@ -1166,6 +1166,17 @@
           }
         }
       }
+    },
+    "Insulin on board": {
+      "extractionState": "manual",
+      "localizations": {
+        "ro": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Insulină activă"
+          }
+        }
+      }
     }
   },
   "version": "1.0"
