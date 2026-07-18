@@ -40,7 +40,7 @@ struct ConflictResolver {
     var sourcePriority: [DataSource]
 
     init(
-        sourcePriority: [DataSource] = [.dexcom, .freeStyleLibre, .otherCGM, .appleHealth, .appleWatch, .manual],
+        sourcePriority: [DataSource] = [.dexcom, .freeStyleLibre, .otherCGM, .bloodGlucoseMeter, .appleHealth, .appleWatch, .manual],
         window: TimeInterval = 150
     ) {
         self.sourcePriority = sourcePriority

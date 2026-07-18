@@ -22,7 +22,7 @@ final class SourceRegistry {
 
     /// Canonical fallback order used to complete the priority list.
     private static let canonicalOrder: [DataSource] =
-        [.dexcom, .freeStyleLibre, .otherCGM, .appleHealth, .appleWatch, .manual]
+        [.dexcom, .freeStyleLibre, .otherCGM, .bloodGlucoseMeter, .appleHealth, .appleWatch, .manual]
 
     init(sources: [GlucoseSource], defaultPrimary: DataSource = .appleHealth) {
         self.sourcesByType = Dictionary(uniqueKeysWithValues: sources.map { ($0.source, $0) })

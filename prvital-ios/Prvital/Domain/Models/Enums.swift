@@ -22,6 +22,7 @@ enum DataSource: String, Codable, CaseIterable, Sendable, Identifiable {
     case dexcom
     case freeStyleLibre
     case otherCGM
+    case bloodGlucoseMeter
     case appleHealth
     case appleWatch
     case manual
@@ -33,6 +34,7 @@ enum DataSource: String, Codable, CaseIterable, Sendable, Identifiable {
         case .dexcom: return "Dexcom"
         case .freeStyleLibre: return "FreeStyle Libre"
         case .otherCGM: return "CGM sensor"
+        case .bloodGlucoseMeter: return "Glucose meter"
         case .appleHealth: return "Apple Health"
         case .appleWatch: return "Apple Watch"
         case .manual: return "Manual entry"
@@ -42,6 +44,7 @@ enum DataSource: String, Codable, CaseIterable, Sendable, Identifiable {
     var symbol: String {
         switch self {
         case .dexcom, .freeStyleLibre, .otherCGM: return "sensor.tag.radiowaves.forward"
+        case .bloodGlucoseMeter: return "cross.vial"
         case .appleHealth: return "heart.text.square"
         case .appleWatch: return "applewatch"
         case .manual: return "hand.tap"

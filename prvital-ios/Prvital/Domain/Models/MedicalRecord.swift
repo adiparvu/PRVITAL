@@ -83,6 +83,7 @@ enum ConsentScope: String, Codable, CaseIterable, Sendable, Identifiable {
     case healthKit = "health_kit"
     case appleWatch = "apple_watch"
     case externalCGM = "external_cgm"
+    case bluetoothMeter = "bluetooth_meter"
     case cloudSync = "cloud_sync"
     case dataExport = "data_export"
     case aiFeatures = "ai_features"
@@ -94,6 +95,7 @@ enum ConsentScope: String, Codable, CaseIterable, Sendable, Identifiable {
         case .healthKit: return "Apple Health"
         case .appleWatch: return "Apple Watch"
         case .externalCGM: return "CGM sensors"
+        case .bluetoothMeter: return "Glucose meters"
         case .cloudSync: return "iCloud sync"
         case .dataExport: return "Data export"
         case .aiFeatures: return "Intelligent features"
@@ -109,6 +111,8 @@ enum ConsentScope: String, Codable, CaseIterable, Sendable, Identifiable {
             return "Show your glucose and let you log insulin and carbs from your wrist. Nothing leaves your paired devices."
         case .externalCGM:
             return "Connect a Dexcom or FreeStyle Libre sensor so readings arrive automatically. You choose which sensor is your primary source."
+        case .bluetoothMeter:
+            return "Pair a Bluetooth blood-glucose meter — such as Contour or Accu-Chek — over Bluetooth to import its stored finger-stick readings. Nothing leaves your device."
         case .cloudSync:
             return "Keep your journal in sync across your devices through your private iCloud database. Apple cannot read the contents; only your devices can."
         case .dataExport:
@@ -123,6 +127,7 @@ enum ConsentScope: String, Codable, CaseIterable, Sendable, Identifiable {
         case .healthKit: return "heart.text.square"
         case .appleWatch: return "applewatch"
         case .externalCGM: return "sensor.tag.radiowaves.forward"
+        case .bluetoothMeter: return "cross.vial"
         case .cloudSync: return "icloud"
         case .dataExport: return "square.and.arrow.up"
         case .aiFeatures: return "sparkles"

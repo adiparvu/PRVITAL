@@ -61,7 +61,7 @@ The app is modular with clear boundaries so any new medical data source lands
 through the same pipeline without UI or domain changes:
 
 ```
-External sources (Dexcom / FreeStyle Libre / HealthKit / Apple Watch / Manual)
+External sources (Dexcom / FreeStyle Libre / Bluetooth meters / HealthKit / Apple Watch / Manual)
         │  Integration layer      Data/Integration/*  (GlucoseSource protocol)
         ▼
    Normalization                  Data/Integration/GlucoseNormalizer
@@ -96,7 +96,21 @@ Connectivity/              WatchSessionManager (WatchConnectivity, app + watch)
 See [`ARCHITECTURE.md`](ARCHITECTURE.md) for the data model, the conflict-resolution
 strategy, and the privacy/security design in detail.
 
-### Adding a new CGM source
+### Connected devices
+
+- **Apple Health** and **manual entry** are live.
+- **Bluetooth blood-glucose meters** — Contour (Next One / Plus), Accu-Chek
+  (Guide / Instant / Aviva Connect) and any other meter implementing the
+  Bluetooth SIG **Glucose Profile** — connect directly over Bluetooth LE. One
+  CoreBluetooth implementation (`BluetoothGlucoseMeterSource` +
+  `GlucoseProfileParser`) covers all standards-compliant meters: it runs the
+  Glucose Service (0x1808) "Report Stored Records" procedure and imports the
+  meter's finger-stick history. No vendor SDK is required; iOS handles pairing.
+  Connect it under **Settings → Sources**, then pull to refresh.
+- **Dexcom** and **FreeStyle Libre** are documented extension points (link via
+  Apple Health, a partner API, or a vendor SDK in a configured build).
+
+### Adding a new source
 
 Conform a class to `GlucoseSource` (`source`, `isAvailable`, `connectionState`,
 `requestAccess()`, `fetchLatest()`, `fetchSamples(since:)`), register it in

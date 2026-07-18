@@ -35,6 +35,7 @@ final class AppEnvironment {
             HealthKitGlucoseSource(service: healthKit),
             DexcomGlucoseSource(),
             LibreGlucoseSource(),
+            BluetoothGlucoseMeterSource(),
         ])
         self.registry = registry
 
