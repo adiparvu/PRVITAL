@@ -9,7 +9,12 @@ import HealthKit
 /// CGM apps); writes mirror the user's manual entries back so the rest of the
 /// Health ecosystem sees them. All access is gated by the `healthKit` consent
 /// scope and the system authorization sheet.
-final class HealthKitService {
+///
+/// `@unchecked Sendable`: its only stored state is an `HKHealthStore`, which
+/// Apple documents as thread-safe, so instances can be used from a detached
+/// write task. Write methods take Sendable primitives (never `@Model` objects)
+/// so nothing non-Sendable crosses an isolation boundary.
+final class HealthKitService: @unchecked Sendable {
     #if canImport(HealthKit)
     private let store = HKHealthStore()
 
@@ -81,23 +86,26 @@ final class HealthKitService {
 
     // MARK: Write-back
 
-    func save(_ reading: GlucoseReading) async throws {
-        let quantity = HKQuantity(unit: glucoseUnit, doubleValue: reading.valueMgdL)
-        let sample = HKQuantitySample(type: glucoseType, quantity: quantity, start: reading.timestamp, end: reading.timestamp)
+    // Write methods take Sendable primitives so callers never pass a
+    // non-Sendable `@Model` object across the isolation boundary into the task.
+
+    func saveGlucose(mgdL: Double, at date: Date) async throws {
+        let quantity = HKQuantity(unit: glucoseUnit, doubleValue: mgdL)
+        let sample = HKQuantitySample(type: glucoseType, quantity: quantity, start: date, end: date)
         try await store.save(sample)
     }
 
-    func save(_ dose: InsulinDose) async throws {
-        let quantity = HKQuantity(unit: .internationalUnit(), doubleValue: dose.units)
-        let reason: HKInsulinDeliveryReason = dose.insulinType.isBasal ? .basal : .bolus
+    func saveInsulin(units: Double, isBasal: Bool, at date: Date) async throws {
+        let quantity = HKQuantity(unit: .internationalUnit(), doubleValue: units)
+        let reason: HKInsulinDeliveryReason = isBasal ? .basal : .bolus
         let metadata: [String: Any] = [HKMetadataKeyInsulinDeliveryReason: reason.rawValue]
-        let sample = HKQuantitySample(type: insulinType, quantity: quantity, start: dose.timestamp, end: dose.timestamp, metadata: metadata)
+        let sample = HKQuantitySample(type: insulinType, quantity: quantity, start: date, end: date, metadata: metadata)
         try await store.save(sample)
     }
 
-    func save(_ carb: CarbEntry) async throws {
-        let quantity = HKQuantity(unit: .gram(), doubleValue: carb.grams)
-        let sample = HKQuantitySample(type: carbType, quantity: quantity, start: carb.timestamp, end: carb.timestamp)
+    func saveCarbs(grams: Double, at date: Date) async throws {
+        let quantity = HKQuantity(unit: .gram(), doubleValue: grams)
+        let sample = HKQuantitySample(type: carbType, quantity: quantity, start: date, end: date)
         try await store.save(sample)
     }
     #else
@@ -106,8 +114,8 @@ final class HealthKitService {
     func requestAuthorization() async throws { throw SourceError.unavailable }
     func fetchGlucoseSamples(since date: Date, limit: Int = 0) async throws -> [NormalizedGlucoseSample] { [] }
     func fetchLatestGlucose() async throws -> NormalizedGlucoseSample? { nil }
-    func save(_ reading: GlucoseReading) async throws {}
-    func save(_ dose: InsulinDose) async throws {}
-    func save(_ carb: CarbEntry) async throws {}
+    func saveGlucose(mgdL: Double, at date: Date) async throws {}
+    func saveInsulin(units: Double, isBasal: Bool, at date: Date) async throws {}
+    func saveCarbs(grams: Double, at date: Date) async throws {}
     #endif
 }

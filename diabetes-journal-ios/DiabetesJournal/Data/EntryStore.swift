@@ -52,7 +52,10 @@ final class EntryStore {
         context.insert(reading)
         resolveConflicts(around: timestamp)
         finish(.manualEdit, source: source, detail: "Glucose logged")
-        if healthKitEnabled, source == .manual { Task { try? await healthKit.save(reading) } }
+        if healthKitEnabled, source == .manual {
+            let hk = healthKit
+            Task { try? await hk.saveGlucose(mgdL: mgdL, at: timestamp) }
+        }
         return reading
     }
 
@@ -72,7 +75,10 @@ final class EntryStore {
         )
         context.insert(dose)
         finish(.manualEdit, detail: "Insulin \(units) U logged")
-        if healthKitEnabled { Task { try? await healthKit.save(dose) } }
+        if healthKitEnabled {
+            let hk = healthKit
+            Task { try? await hk.saveInsulin(units: units, isBasal: type.isBasal, at: timestamp) }
+        }
         return dose
     }
 
@@ -90,7 +96,10 @@ final class EntryStore {
         )
         context.insert(entry)
         finish(.manualEdit, detail: "Carbs \(grams) g logged")
-        if healthKitEnabled { Task { try? await healthKit.save(entry) } }
+        if healthKitEnabled {
+            let hk = healthKit
+            Task { try? await hk.saveCarbs(grams: grams, at: timestamp) }
+        }
         return entry
     }
 

@@ -23,9 +23,10 @@ struct DiabetesJournalWatchApp: App {
 /// Observable holder for the latest `GlucoseSnapshot`.
 ///
 /// It seeds itself from the shared store so the very first frame shows real
-/// data, then subscribes to fresh snapshots pushed from the phone. Snapshot
-/// updates are always delivered on the main thread by `WatchSessionManager`, so
-/// this stays free of any actor annotation and simply mutates its stored value.
+/// data, then subscribes to fresh snapshots pushed from the phone. Main-actor
+/// isolated because it wires up the `@MainActor WatchSessionManager`; snapshot
+/// updates are delivered on the main actor.
+@MainActor
 @Observable
 final class WatchModel {
     /// The display-ready snapshot currently shown across every page.
