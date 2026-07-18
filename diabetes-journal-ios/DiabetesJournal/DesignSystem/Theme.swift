@@ -36,19 +36,6 @@ enum Theme {
     )
 }
 
-extension GlucoseZone {
-    /// The dashboard indicator colour for this zone.
-    var color: Color {
-        switch self {
-        case .veryLow: return Theme.zoneCritical
-        case .low: return Theme.zoneWarning
-        case .inRange: return Theme.zoneInRange
-        case .high: return Theme.zoneHigh
-        case .veryHigh: return Theme.zoneWarning
-        }
-    }
-}
-
 extension Color {
     /// A light/dark-adaptive colour from two hex values.
     ///
