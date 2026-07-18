@@ -12,5 +12,8 @@ struct PrvitalWidgetsBundle: WidgetBundle {
     var body: some Widget {
         GlucoseWidget()
         GlucoseAccessoryWidget()
+        #if canImport(ActivityKit)
+        GlucoseLiveActivity()
+        #endif
     }
 }
