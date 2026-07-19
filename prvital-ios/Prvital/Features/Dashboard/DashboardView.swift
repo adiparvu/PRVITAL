@@ -36,7 +36,11 @@ struct DashboardView: View {
                     hero(summary: summary, thresholds: thresholds, unit: unit)
                     trendSection(summary: summary, thresholds: thresholds, unit: unit)
                     if bolus.isEnabled && bolus.isValid {
-                        iobCard(units: InsulinMath.activeInsulin(doses: insulin, at: Date(), parameters: bolus))
+                        let now = Date()
+                        onBoardCard(
+                            iob: InsulinMath.activeInsulin(doses: insulin, at: now, parameters: bolus),
+                            cob: CarbMath.carbsOnBoard(entries: carbs, at: now)
+                        )
                     }
                     recentRow(summary: summary)
                 }
@@ -179,18 +183,14 @@ struct DashboardView: View {
         .accessibilityLabel("\(velocity.trend.label), \(rateText), projected \(GlucoseFormatting.labeled(mgdL: projected, unit: unit)) in 15 minutes")
     }
 
-    // MARK: - Insulin on board
+    // MARK: - On board (insulin + carbs)
 
-    private func iobCard(units: Double) -> some View {
-        SectionCard("Insulin on board", systemImage: "chart.line.downtrend.xyaxis") {
-            HStack(alignment: .firstTextBaseline, spacing: 6) {
-                Text(units.formatted(.number.precision(.fractionLength(1))))
-                    .font(.system(size: 30, weight: .bold, design: .rounded))
-                    .foregroundStyle(Theme.textPrimary)
-                    .contentTransition(.numericText())
-                Text("U")
-                    .font(.subheadline.weight(.semibold))
-                    .foregroundStyle(Theme.textSecondary)
+    private func onBoardCard(iob: Double, cob: Double) -> some View {
+        SectionCard("On board", systemImage: "chart.line.downtrend.xyaxis") {
+            HStack(spacing: 18) {
+                onBoardMetric(value: iob.formatted(.number.precision(.fractionLength(1))), unit: "U", label: "Insulin")
+                Divider().frame(height: 34).overlay(Theme.hairline)
+                onBoardMetric(value: cob.formatted(.number.precision(.fractionLength(0))), unit: "g", label: "Carbs")
                 Spacer()
                 NavigationLink {
                     BolusCalculatorView()
@@ -200,6 +200,23 @@ struct DashboardView: View {
                         .foregroundStyle(Theme.accent)
                 }
             }
+        }
+    }
+
+    private func onBoardMetric(value: String, unit: String, label: String) -> some View {
+        VStack(alignment: .leading, spacing: 2) {
+            HStack(alignment: .firstTextBaseline, spacing: 3) {
+                Text(value)
+                    .font(.system(size: 26, weight: .bold, design: .rounded))
+                    .foregroundStyle(Theme.textPrimary)
+                    .contentTransition(.numericText())
+                Text(unit)
+                    .font(.subheadline.weight(.semibold))
+                    .foregroundStyle(Theme.textSecondary)
+            }
+            Text(label)
+                .font(.caption2)
+                .foregroundStyle(Theme.textSecondary)
         }
     }
 
