@@ -1002,6 +1002,17 @@
         }
       }
     },
+    "Glucose distribution": {
+      "extractionState": "manual",
+      "localizations": {
+        "ro": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Distribuția glicemiei"
+          }
+        }
+      }
+    },
     "Glucose readings": {
       "extractionState": "manual",
       "localizations": {

@@ -89,6 +89,7 @@ struct ChartsView: View {
                 .onChange(of: interval) { _, _ in Haptics.play(.selection) }
 
                 glucoseSection
+                distributionSection
                 insulinSection
                 carbsSection
                 activitySection
@@ -99,6 +100,46 @@ struct ChartsView: View {
     }
 
     // MARK: Sections
+
+    private var distribution: [DistributionBin] {
+        GlucoseDistribution.bins(activeReadings)
+    }
+
+    private var distributionSection: some View {
+        SectionCard("Glucose distribution", systemImage: "chart.bar.xaxis") {
+            if distribution.isEmpty {
+                emptyChart("No glucose readings in this period.")
+            } else {
+                Chart(distribution) { bin in
+                    BarMark(
+                        x: .value("Glucose", bin.midpoint),
+                        y: .value("Readings", bin.count),
+                        width: .fixed(9)
+                    )
+                    .foregroundStyle(barColor(bin))
+                }
+                .chartXAxis {
+                    AxisMarks(values: .stride(by: 40)) { value in
+                        AxisGridLine().foregroundStyle(Theme.hairline)
+                        AxisValueLabel {
+                            if let mgdL = value.as(Double.self) {
+                                Text(GlucoseFormatting.string(mgdL: mgdL, unit: unit))
+                            }
+                        }
+                    }
+                }
+                .frame(height: 180)
+            }
+        }
+    }
+
+    private func barColor(_ bin: DistributionBin) -> Color {
+        switch thresholds.zone(forMgdL: bin.midpoint) {
+        case .veryLow, .low: return Theme.zoneWarning
+        case .inRange: return Theme.zoneInRange
+        case .high, .veryHigh: return Theme.zoneHigh
+        }
+    }
 
     private var glucoseSection: some View {
         SectionCard("Glucose trend", systemImage: "waveform.path.ecg") {
