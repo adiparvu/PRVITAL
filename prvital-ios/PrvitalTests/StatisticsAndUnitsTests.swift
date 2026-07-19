@@ -37,6 +37,29 @@ final class StatisticsAndUnitsTests: XCTestCase {
         XCTAssertEqual(stats.timeInRange, 0.6, accuracy: 1e-9)
     }
 
+    func testTimeInTightRangeIsNarrowerThanTimeInRange() {
+        let now = Date()
+        let values: [Double] = [80, 130, 150, 170, 60]
+        let readings = values.enumerated().map { index, value in
+            GlucoseReading(valueMgdL: value, timestamp: now.addingTimeInterval(Double(-index * 300)), source: .manual)
+        }
+        let stats = StatisticsEngine.glucose(readings, thresholds: .standard)
+        // Standard TIR (70–180): 80,130,150,170 => 4/5
+        XCTAssertEqual(stats.timeInRange, 0.8, accuracy: 1e-9)
+        // Tight range (70–140): only 80,130 => 2/5
+        XCTAssertEqual(stats.timeInTightRange, 0.4, accuracy: 1e-9)
+    }
+
+    func testTightRangeBoundsAreInclusive() {
+        let now = Date()
+        let values: [Double] = [70, 140, 69, 141] // 70 & 140 inside; 69 & 141 outside
+        let readings = values.enumerated().map { index, value in
+            GlucoseReading(valueMgdL: value, timestamp: now.addingTimeInterval(Double(-index * 300)), source: .manual)
+        }
+        let stats = StatisticsEngine.glucose(readings, thresholds: .standard)
+        XCTAssertEqual(stats.timeInTightRange, 0.5, accuracy: 1e-9)
+    }
+
     func testStatisticsEmptyIsSafe() {
         let stats = StatisticsEngine.glucose([], thresholds: .standard)
         XCTAssertFalse(stats.hasGlucose)

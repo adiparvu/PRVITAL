@@ -2223,6 +2223,28 @@
         }
       }
     },
+    "Tight range": {
+      "extractionState": "manual",
+      "localizations": {
+        "ro": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Interval strict"
+          }
+        }
+      }
+    },
+    "Tight range (70–140)": {
+      "extractionState": "manual",
+      "localizations": {
+        "ro": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Interval strict (70–140)"
+          }
+        }
+      }
+    },
     "Time": {
       "extractionState": "manual",
       "localizations": {

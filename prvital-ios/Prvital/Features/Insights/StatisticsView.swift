@@ -148,6 +148,8 @@ struct StatisticsView: View {
 
             StatTile(title: "Time in range", value: percentOrDash(stats.timeInRange, stats.hasGlucose),
                      caption: "Target band", tint: Theme.zoneInRange, systemImage: "target")
+            StatTile(title: "Tight range", value: percentOrDash(stats.timeInTightRange, stats.hasGlucose),
+                     caption: "70–140 mg/dL", tint: Theme.zoneInRange, systemImage: "scope")
             StatTile(title: "Time above", value: percentOrDash(stats.timeAboveRange, stats.hasGlucose),
                      caption: "Above target", tint: Theme.zoneHigh, systemImage: "arrow.up.right")
             StatTile(title: "Time below", value: percentOrDash(stats.timeBelowRange, stats.hasGlucose),

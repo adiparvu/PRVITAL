@@ -18,6 +18,8 @@ struct PeriodStatistics: Equatable, Sendable {
     var timeBelowRange: Double = 0
     var timeVeryLow: Double = 0
     var timeVeryHigh: Double = 0
+    /// Fraction in the tighter 70–140 mg/dL consensus "tight" range (TITR).
+    var timeInTightRange: Double = 0
 
     /// Distinct excursion events (contiguous runs out of range), not raw counts.
     var hypoEvents: Int = 0
@@ -40,6 +42,11 @@ struct PeriodStatistics: Equatable, Sendable {
 /// **events** are counted by walking the time-ordered series and detecting each
 /// contiguous run that leaves the target range, so a two-hour low counts once.
 enum StatisticsEngine {
+
+    /// Lower bound (mg/dL) of the consensus "tight" range for TITR.
+    static let tightRangeLowerMgdL: Double = 70
+    /// Upper bound (mg/dL) of the consensus "tight" range for TITR.
+    static let tightRangeUpperMgdL: Double = 140
 
     static func glucose(
         _ readings: [GlucoseReading],
@@ -78,6 +85,9 @@ enum StatisticsEngine {
         stats.timeAboveRange = Double(above) / n
         stats.timeVeryLow = Double(veryLow) / n
         stats.timeVeryHigh = Double(veryHigh) / n
+
+        let inTight = values.filter { $0 >= tightRangeLowerMgdL && $0 <= tightRangeUpperMgdL }.count
+        stats.timeInTightRange = Double(inTight) / n
 
         // Excursion events over the time-ordered series.
         let ordered = active.sorted { $0.timestamp < $1.timestamp }
