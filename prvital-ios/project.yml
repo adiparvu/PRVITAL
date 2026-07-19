@@ -51,6 +51,10 @@ targets:
         UILaunchScreen: {}
         ITSAppUsesNonExemptEncryption: false
         NSSupportsLiveActivities: true
+        UIBackgroundModes:
+          - fetch
+        BGTaskSchedulerPermittedIdentifiers:
+          - com.prvital.refresh
         UISupportedInterfaceOrientations:
           - UIInterfaceOrientationPortrait
         NSBluetoothAlwaysUsageDescription: >-

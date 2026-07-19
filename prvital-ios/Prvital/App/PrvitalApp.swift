@@ -13,6 +13,9 @@ struct PrvitalApp: App {
                 .tint(Theme.accent)
                 .task { environment.bootstrap() }
         }
+        .backgroundTask(.appRefresh(AppEnvironment.backgroundRefreshIdentifier)) { [environment] in
+            await environment.performBackgroundRefresh()
+        }
     }
 }
 

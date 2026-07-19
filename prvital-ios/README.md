@@ -50,6 +50,12 @@ Apple Developer account for a signed device build; the simulator runs unsigned.
   (exponential curve) plus a suggestion split into carb, correction and IOB
   parts, with safety guards and a standing "not a prescription" disclaimer. It
   never doses on its own; logging is always an explicit tap.
+- **Glucose alerts** — opt-in local notifications when a fresh reading leaves
+  your range (urgent-low / low / high / urgent-high), with per-level toggles and
+  a snooze. A pure, tested evaluator dedups the same reading, ignores stale
+  values, snoozes repeats of the same level, and always alerts on a level change.
+- **Background sync** — a periodic `BGAppRefreshTask` syncs external sources and
+  re-evaluates alerts while the app is closed.
 - **Export** — locally-generated **PDF** and **CSV** reports for your care team,
   each carrying a data-sensitivity notice and shared only through the system sheet.
 - **Widgets** — Home Screen (small / medium / large) and Lock Screen

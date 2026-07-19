@@ -1,6 +1,9 @@
 import Foundation
 import SwiftData
 import Observation
+#if canImport(BackgroundTasks)
+import BackgroundTasks
+#endif
 
 /// The composition root. Owns the model container and wires every service and
 /// store together, then is injected into the SwiftUI environment so features
@@ -80,6 +83,31 @@ final class AppEnvironment {
 
         snapshots.refresh()
         notifications.reschedule(from: preferences.reminders)
+        scheduleBackgroundRefresh()
+    }
+
+    // MARK: Background refresh
+
+    /// Identifier registered via the `.backgroundTask(.appRefresh(_:))` scene
+    /// modifier and listed in `BGTaskSchedulerPermittedIdentifiers`.
+    static let backgroundRefreshIdentifier = "com.prvital.refresh"
+
+    /// Runs a full sync in the background, then queues the next refresh. Because
+    /// sync republishes the snapshot, this also re-evaluates glucose alerts, so
+    /// the app can notify the user while it isn't open.
+    func performBackgroundRefresh() async {
+        _ = await sync.syncAll()
+        scheduleBackgroundRefresh()
+    }
+
+    /// Asks the system to run the app again in ~15 minutes (a request, not a
+    /// guarantee — iOS decides the actual timing).
+    func scheduleBackgroundRefresh() {
+        #if canImport(BackgroundTasks) && os(iOS)
+        let request = BGAppRefreshTaskRequest(identifier: Self.backgroundRefreshIdentifier)
+        request.earliestBeginDate = Date(timeIntervalSinceNow: 15 * 60)
+        try? BGTaskScheduler.shared.submit(request)
+        #endif
     }
 
     // MARK: Factories
