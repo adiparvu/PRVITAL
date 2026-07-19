@@ -49,6 +49,9 @@ struct AGPReportView: View {
     private var dawnPhenomenon: DawnPhenomenonResult? {
         DawnPhenomenonDetector.analyze(windowReadings)
     }
+    private var dayTypeComparison: DayTypeStats? {
+        WeekdayWeekendComparator.compare(windowReadings, thresholds: thresholds)
+    }
 
     var body: some View {
         ScrollView {
@@ -88,6 +91,11 @@ struct AGPReportView: View {
                     if let dawn = dawnPhenomenon, dawn.isPresent {
                         SectionCard("Dawn phenomenon", systemImage: "sunrise.fill") {
                             dawnContent(dawn)
+                        }
+                    }
+                    if let dayType = dayTypeComparison {
+                        SectionCard("Weekday vs weekend", systemImage: "calendar") {
+                            dayTypeContent(dayType)
                         }
                     }
                 } else {
@@ -240,6 +248,34 @@ struct AGPReportView: View {
                 .font(.caption2)
                 .foregroundStyle(Theme.textTertiary)
         }
+    }
+
+    // MARK: Weekday vs weekend
+
+    private func dayTypeContent(_ stats: DayTypeStats) -> some View {
+        HStack(spacing: 16) {
+            dayTypeColumn(title: "Weekdays", tir: stats.weekdayTimeInRange, average: stats.weekdayAverageMgdL)
+            Divider().frame(height: 52).overlay(Theme.hairline)
+            dayTypeColumn(title: "Weekend", tir: stats.weekendTimeInRange, average: stats.weekendAverageMgdL)
+            Spacer()
+        }
+    }
+
+    private func dayTypeColumn(title: LocalizedStringKey, tir: Double, average: Double) -> some View {
+        let pct = (tir * 100).formatted(.number.precision(.fractionLength(0))) + "%"
+        let avg = GlucoseFormatting.labeled(mgdL: average, unit: unit)
+        return VStack(alignment: .leading, spacing: 3) {
+            Text(title)
+                .font(.caption2)
+                .foregroundStyle(Theme.textSecondary)
+            Text(pct)
+                .font(.title3.weight(.bold))
+                .foregroundStyle(Theme.zoneInRange)
+            Text("\(avg) avg")
+                .font(.caption2)
+                .foregroundStyle(Theme.textTertiary)
+        }
+        .accessibilityElement(children: .combine)
     }
 
     private var agpLegend: some View {

@@ -12,6 +12,17 @@
         }
       }
     },
+    "%@ avg": {
+      "extractionState": "manual",
+      "localizations": {
+        "ro": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%@ medie"
+          }
+        }
+      }
+    },
     "%@ below range": {
       "extractionState": "manual",
       "localizations": {
@@ -2516,6 +2527,39 @@
           "stringUnit": {
             "state": "translated",
             "value": "Vizualizare"
+          }
+        }
+      }
+    },
+    "Weekday vs weekend": {
+      "extractionState": "manual",
+      "localizations": {
+        "ro": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Zile lucrătoare vs weekend"
+          }
+        }
+      }
+    },
+    "Weekdays": {
+      "extractionState": "manual",
+      "localizations": {
+        "ro": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Zile lucrătoare"
+          }
+        }
+      }
+    },
+    "Weekend": {
+      "extractionState": "manual",
+      "localizations": {
+        "ro": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Weekend"
           }
         }
       }
