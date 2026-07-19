@@ -135,6 +135,9 @@ struct DashboardView: View {
     @ViewBuilder
     private func trendSection(summary: DashboardSummary, thresholds: GlucoseThresholds, unit: GlucoseUnit) -> some View {
         SectionCard("Last 3 hours", systemImage: "waveform.path.ecg") {
+            if let velocity = summary.velocity, let current = summary.current {
+                velocityLine(velocity, currentMgdL: current.valueMgdL, unit: unit)
+            }
             if summary.recent.isEmpty {
                 EmptyStateView(
                     systemImage: "chart.xyaxis.line",
@@ -150,6 +153,30 @@ struct DashboardView: View {
                 )
             }
         }
+    }
+
+    private func velocityLine(_ velocity: GlucoseVelocity, currentMgdL: Double, unit: GlucoseUnit) -> some View {
+        let projected = velocity.projectedMgdL(from: currentMgdL, minutes: 15)
+        let rateValue = unit.fromMgdL(velocity.mgdLPerMinute)
+        let rate = rateValue.formatted(.number.precision(.fractionLength(unit == .mgdL ? 1 : 2)))
+        let rateText = "\(rateValue > 0 ? "+" : "")\(rate) \(unit.rawValue)/min"
+        return HStack(spacing: 8) {
+            Image(systemName: velocity.trend.symbol)
+                .font(.subheadline.weight(.semibold))
+                .foregroundStyle(Theme.accent)
+            Text(velocity.trend.label)
+                .font(.subheadline.weight(.medium))
+                .foregroundStyle(Theme.textPrimary)
+            Text(rateText)
+                .font(.caption)
+                .foregroundStyle(Theme.textSecondary)
+            Spacer()
+            Text("~\(GlucoseFormatting.string(mgdL: projected, unit: unit)) in 15 min")
+                .font(.caption)
+                .foregroundStyle(Theme.textSecondary)
+        }
+        .accessibilityElement(children: .combine)
+        .accessibilityLabel("\(velocity.trend.label), \(rateText), projected \(GlucoseFormatting.labeled(mgdL: projected, unit: unit)) in 15 minutes")
     }
 
     // MARK: - Insulin on board
