@@ -27,6 +27,16 @@ struct AGPReportView: View {
     private var patterns: [GlucoseInsight] {
         GlucosePatternDetector.insights(windowReadings, thresholds: thresholds)
     }
+    private var previousWindowReadings: [GlucoseReading] {
+        let range = interval.previousDateRange()
+        return readings.filter { $0.isActive && range.contains($0.timestamp) }
+    }
+    private var comparison: StatComparison {
+        let previous = previousWindowReadings.isEmpty
+            ? nil
+            : StatisticsEngine.glucose(previousWindowReadings, thresholds: thresholds)
+        return StatComparator.compare(current: stats, previous: previous)
+    }
 
     var body: some View {
         ScrollView {
@@ -39,6 +49,9 @@ struct AGPReportView: View {
 
                 if stats.hasGlucose {
                     metrics
+                    if comparison.hasPrevious {
+                        comparisonCard(comparison)
+                    }
                     SectionCard("Ambulatory Glucose Profile", systemImage: "waveform.path.ecg") {
                         AGPChart(buckets: buckets, thresholds: thresholds, unit: unit)
                         agpLegend
@@ -92,6 +105,39 @@ struct AGPReportView: View {
                     .frame(maxWidth: .infinity, alignment: .leading)
             }
         }
+    }
+
+    // MARK: Period comparison
+
+    private func comparisonCard(_ comparison: StatComparison) -> some View {
+        let tirDelta = comparison.timeInRangeDelta
+        let tirText = (tirDelta * 100).formatted(.number.precision(.fractionLength(0)).sign(strategy: .always())) + "%"
+        let tirTint = tirDelta > 0 ? Theme.zoneInRange : (tirDelta < 0 ? Theme.zoneCritical : Theme.textSecondary)
+        let tirSymbol = tirDelta > 0 ? "arrow.up.right" : (tirDelta < 0 ? "arrow.down.right" : "arrow.right")
+
+        let avgDelta = unit.fromMgdL(comparison.averageDelta)
+        let avgText = avgDelta.formatted(.number.precision(.fractionLength(unit.fractionDigits)).sign(strategy: .always())) + " " + unit.rawValue
+
+        return SectionCard("Compared with previous period", systemImage: "arrow.left.arrow.right") {
+            HStack(spacing: 20) {
+                deltaMetric(title: "Time in range", value: tirText, symbol: tirSymbol, tint: tirTint)
+                Divider().frame(height: 38).overlay(Theme.hairline)
+                deltaMetric(title: "Average", value: avgText, symbol: "arrow.left.arrow.right", tint: Theme.textSecondary)
+                Spacer()
+            }
+        }
+    }
+
+    private func deltaMetric(title: LocalizedStringKey, value: String, symbol: String, tint: Color) -> some View {
+        VStack(alignment: .leading, spacing: 3) {
+            Label(value, systemImage: symbol)
+                .font(.title3.weight(.bold))
+                .foregroundStyle(tint)
+            Text(title)
+                .font(.caption2)
+                .foregroundStyle(Theme.textSecondary)
+        }
+        .accessibilityElement(children: .combine)
     }
 
     private var agpLegend: some View {

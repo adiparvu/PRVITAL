@@ -397,6 +397,17 @@
         }
       }
     },
+    "Compared with previous period": {
+      "extractionState": "manual",
+      "localizations": {
+        "ro": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Comparativ cu perioada anterioară"
+          }
+        }
+      }
+    },
     "Connect": {
       "extractionState": "manual",
       "localizations": {
