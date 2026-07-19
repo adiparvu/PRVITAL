@@ -61,6 +61,10 @@ struct StatisticsView: View {
         GMITrend.weekly(activeReadings)
     }
 
+    private var dataGaps: GapStats? {
+        DataGapDetector.analyze(activeReadings)
+    }
+
     private let columns = [
         GridItem(.flexible(), spacing: 12),
         GridItem(.flexible(), spacing: 12),
@@ -216,6 +220,11 @@ struct StatisticsView: View {
                      value: hypoRecovery.map { "\(Int($0.averageMinutes.rounded())) min" } ?? "—",
                      caption: "Time back in range", tint: Theme.zoneWarning, systemImage: "arrow.uturn.up")
 
+            StatTile(title: "Longest sensor gap",
+                     value: dataGaps.map { gapText($0.longestGapMinutes) } ?? "—",
+                     caption: dataGaps.map { "\($0.gapCount) gaps over 30 min" } ?? "No gaps",
+                     tint: Theme.zoneWarning, systemImage: "sensor.tag.radiowaves.forward.fill")
+
             StatTile(title: "Total bolus", value: "\(stats.totalBolusUnits.formatted()) U",
                      caption: "Rapid-acting", tint: Theme.accent, systemImage: "syringe.fill")
             StatTile(title: "Total basal", value: "\(stats.totalBasalUnits.formatted()) U",
@@ -251,6 +260,13 @@ struct StatisticsView: View {
 
     private func percentOrDash(_ fraction: Double, _ available: Bool) -> String {
         available ? percent(fraction) : "—"
+    }
+
+    /// Duration in minutes rendered compactly ("45 min" or "2h 5m").
+    private func gapText(_ minutes: Double) -> String {
+        let total = Int(minutes.rounded())
+        if total < 90 { return "\(total) min" }
+        return "\(total / 60)h \(total % 60)m"
     }
 }
 

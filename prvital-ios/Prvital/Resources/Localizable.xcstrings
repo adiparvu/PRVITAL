@@ -1343,6 +1343,17 @@
         }
       }
     },
+    "Longest sensor gap": {
+      "extractionState": "manual",
+      "localizations": {
+        "ro": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Cea mai lungă pauză senzor"
+          }
+        }
+      }
+    },
     "Low glucose": {
       "extractionState": "manual",
       "localizations": {
