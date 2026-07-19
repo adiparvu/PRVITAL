@@ -1,6 +1,28 @@
 {
   "sourceLanguage": "en",
   "strings": {
+    "%@ above range": {
+      "extractionState": "manual",
+      "localizations": {
+        "ro": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%@ peste interval"
+          }
+        }
+      }
+    },
+    "%@ below range": {
+      "extractionState": "manual",
+      "localizations": {
+        "ro": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%@ sub interval"
+          }
+        }
+      }
+    },
     "%@ — above your range.": {
       "extractionState": "manual",
       "localizations": {
@@ -217,6 +239,17 @@
           "stringUnit": {
             "state": "translated",
             "value": "Adaugă tendință"
+          }
+        }
+      }
+    },
+    "Afternoon": {
+      "extractionState": "manual",
+      "localizations": {
+        "ro": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "După-amiaza"
           }
         }
       }
@@ -635,6 +668,17 @@
           "stringUnit": {
             "state": "translated",
             "value": "Doar înregistrări (fără citire de glicemie)"
+          }
+        }
+      }
+    },
+    "Evening": {
+      "extractionState": "manual",
+      "localizations": {
+        "ro": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Seara"
           }
         }
       }
@@ -1178,6 +1222,17 @@
         }
       }
     },
+    "Median": {
+      "extractionState": "manual",
+      "localizations": {
+        "ro": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Mediană"
+          }
+        }
+      }
+    },
     "Minimum": {
       "extractionState": "manual",
       "localizations": {
@@ -1185,6 +1240,17 @@
           "stringUnit": {
             "state": "translated",
             "value": "Minim"
+          }
+        }
+      }
+    },
+    "Morning": {
+      "extractionState": "manual",
+      "localizations": {
+        "ro": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Dimineața"
           }
         }
       }
@@ -1438,6 +1504,28 @@
           "stringUnit": {
             "state": "translated",
             "value": "Deschide calculatorul de bolus"
+          }
+        }
+      }
+    },
+    "Overnight": {
+      "extractionState": "manual",
+      "localizations": {
+        "ro": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Noaptea"
+          }
+        }
+      }
+    },
+    "Patterns": {
+      "extractionState": "manual",
+      "localizations": {
+        "ro": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Tipare"
           }
         }
       }
@@ -2285,6 +2373,28 @@
           "stringUnit": {
             "state": "translated",
             "value": "Zonă"
+          }
+        }
+      }
+    },
+    "frequent highs": {
+      "extractionState": "manual",
+      "localizations": {
+        "ro": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "creșteri frecvente"
+          }
+        }
+      }
+    },
+    "frequent lows": {
+      "extractionState": "manual",
+      "localizations": {
+        "ro": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "scăderi frecvente"
           }
         }
       }

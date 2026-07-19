@@ -24,6 +24,9 @@ struct AGPReportView: View {
     private var buckets: [AGPBucket] {
         AGPAggregator.buckets(windowReadings, binMinutes: 60)
     }
+    private var patterns: [GlucoseInsight] {
+        GlucosePatternDetector.insights(windowReadings, thresholds: thresholds)
+    }
 
     var body: some View {
         ScrollView {
@@ -42,6 +45,15 @@ struct AGPReportView: View {
                     }
                     SectionCard("Time in range", systemImage: "chart.bar.fill") {
                         TimeInRangeBar(stats: stats)
+                    }
+                    if !patterns.isEmpty {
+                        SectionCard("Patterns", systemImage: "sparkles") {
+                            VStack(alignment: .leading, spacing: 12) {
+                                ForEach(patterns) { insight in
+                                    patternRow(insight)
+                                }
+                            }
+                        }
                     }
                 } else {
                     EmptyStateView(systemImage: "waveform.path.ecg",
@@ -75,10 +87,58 @@ struct AGPReportView: View {
         .foregroundStyle(Theme.textSecondary)
     }
 
-    private func legendSwatch(_ color: Color, _ label: String) -> some View {
+    private func legendSwatch(_ color: Color, _ label: LocalizedStringKey) -> some View {
         HStack(spacing: 4) {
             RoundedRectangle(cornerRadius: 2).fill(color).frame(width: 14, height: 8)
             Text(label)
+        }
+    }
+
+    // MARK: Patterns
+
+    private func patternRow(_ insight: GlucoseInsight) -> some View {
+        let pct = insight.fraction.formatted(.percent.precision(.fractionLength(0)))
+        return HStack(alignment: .top, spacing: 10) {
+            Image(systemName: insight.symbol)
+                .foregroundStyle(insight.kind == .frequentLow ? Theme.zoneCritical : Theme.zoneHigh)
+                .accessibilityHidden(true)
+            VStack(alignment: .leading, spacing: 2) {
+                HStack(spacing: 5) {
+                    periodText(insight.period)
+                    Text("·").foregroundStyle(Theme.textTertiary)
+                    kindText(insight.kind)
+                }
+                .font(.subheadline.weight(.semibold))
+                .foregroundStyle(Theme.textPrimary)
+                detailText(insight, pct: pct)
+                    .font(.caption)
+                    .foregroundStyle(Theme.textSecondary)
+            }
+            Spacer()
+        }
+        .accessibilityElement(children: .combine)
+    }
+
+    private func periodText(_ period: DayPeriod) -> Text {
+        switch period {
+        case .overnight: return Text("Overnight")
+        case .morning: return Text("Morning")
+        case .afternoon: return Text("Afternoon")
+        case .evening: return Text("Evening")
+        }
+    }
+
+    private func kindText(_ kind: GlucoseInsight.Kind) -> Text {
+        switch kind {
+        case .frequentLow: return Text("frequent lows")
+        case .frequentHigh: return Text("frequent highs")
+        }
+    }
+
+    private func detailText(_ insight: GlucoseInsight, pct: String) -> Text {
+        switch insight.kind {
+        case .frequentLow: return Text("\(pct) below range")
+        case .frequentHigh: return Text("\(pct) above range")
         }
     }
 }
