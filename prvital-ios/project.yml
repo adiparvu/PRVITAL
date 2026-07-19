@@ -132,6 +132,8 @@ targets:
       - path: Shared
       - path: Connectivity # WatchConnectivity bridge
       - path: Prvital/DesignSystem/Theme.swift # reuse the palette
+    dependencies:
+      - target: PrvitalWatchWidgets
     info:
       path: PrvitalWatch/Info.plist
       properties:
@@ -145,4 +147,30 @@ targets:
     settings:
       base:
         PRODUCT_BUNDLE_IDENTIFIER: com.prvital.app.watchkitapp
+
+  PrvitalWatchWidgets:
+    type: app-extension
+    platform: watchOS
+    deploymentTarget: "26.0"
+    sources:
+      - path: PrvitalWatchWidgets
+      - path: Shared
+      - path: PrvitalWidgets/GlucoseTimelineProvider.swift # reuse the provider
+      - path: PrvitalWidgets/GlucoseAccessoryWidgets.swift  # reuse the accessory views
+      - path: Prvital/DesignSystem/Theme.swift # Color(hex:)
+    info:
+      path: PrvitalWatchWidgets/Info.plist
+      properties:
+        CFBundleDisplayName: Glucose
+        NSExtension:
+          NSExtensionPointIdentifier: com.apple.widgetkit-extension
+    entitlements:
+      path: PrvitalWatchWidgets/PrvitalWatchWidgets.entitlements
+      properties:
+        com.apple.security.application-groups:
+          - group.com.prvital
+    settings:
+      base:
+        PRODUCT_BUNDLE_IDENTIFIER: com.prvital.app.watchkitapp.widgets
+        GENERATE_INFOPLIST_FILE: NO
         GENERATE_INFOPLIST_FILE: NO
