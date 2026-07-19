@@ -9,6 +9,7 @@ struct AGPReportView: View {
     @Environment(AppEnvironment.self) private var env
     @Query(sort: \GlucoseReading.timestamp, order: .reverse) private var readings: [GlucoseReading]
     @Query(sort: \CarbEntry.timestamp, order: .reverse) private var carbs: [CarbEntry]
+    @Query(sort: \ActivityEntry.startTimestamp, order: .reverse) private var activity: [ActivityEntry]
 
     @State private var interval: InsightsInterval = .month
 
@@ -54,6 +55,13 @@ struct AGPReportView: View {
     }
     private var rebounds: [ReboundEvent] {
         ReboundDetector.detect(windowReadings, thresholds: thresholds)
+    }
+    private var activityImpactSummary: ActivityImpactSummary? {
+        let range = interval.dateRange()
+        let windowSessions = activity.filter { range.contains($0.startTimestamp) }
+        return ActivityImpactAnalyzer.summary(
+            ActivityImpactAnalyzer.analyze(sessions: windowSessions, readings: readings)
+        )
     }
 
     var body: some View {
@@ -104,6 +112,11 @@ struct AGPReportView: View {
                     if !rebounds.isEmpty {
                         SectionCard("Rebound highs", systemImage: "arrow.up.and.down") {
                             reboundContent(rebounds)
+                        }
+                    }
+                    if let activitySummary = activityImpactSummary {
+                        SectionCard("Activity impact", systemImage: "figure.run") {
+                            activityImpactContent(activitySummary)
                         }
                     }
                 } else {
@@ -284,6 +297,23 @@ struct AGPReportView: View {
                 .foregroundStyle(Theme.textTertiary)
         }
         .accessibilityElement(children: .combine)
+    }
+
+    // MARK: Activity impact
+
+    private func activityImpactContent(_ summary: ActivityImpactSummary) -> some View {
+        let change = unit.fromMgdL(summary.averageChangeMgdL)
+        let changeText = change.formatted(.number.precision(.fractionLength(unit.fractionDigits)).sign(strategy: .always())) + " " + unit.rawValue
+        let tint = summary.averageChangeMgdL <= 0 ? Theme.zoneInRange : Theme.zoneHigh
+        return VStack(alignment: .leading, spacing: 8) {
+            HStack(spacing: 20) {
+                deltaMetric(title: "Avg change after activity", value: changeText, symbol: "arrow.down.forward", tint: tint)
+                Spacer()
+            }
+            Text("Typical glucose change during and after your activity — glucose often falls, so stay alert for lows. Based on \(summary.count) sessions.")
+                .font(.caption2)
+                .foregroundStyle(Theme.textTertiary)
+        }
     }
 
     // MARK: Rebound highs

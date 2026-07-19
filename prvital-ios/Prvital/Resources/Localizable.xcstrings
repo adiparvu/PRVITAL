@@ -254,6 +254,17 @@
         }
       }
     },
+    "Activity impact": {
+      "extractionState": "manual",
+      "localizations": {
+        "ro": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Impactul activității"
+          }
+        }
+      }
+    },
     "Add a reading or connect a sensor to see your day.": {
       "extractionState": "manual",
       "localizations": {
@@ -360,6 +371,17 @@
           "stringUnit": {
             "state": "translated",
             "value": "Creștere medie"
+          }
+        }
+      }
+    },
+    "Avg change after activity": {
+      "extractionState": "manual",
+      "localizations": {
+        "ro": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Schimbare medie după activitate"
           }
         }
       }
@@ -2516,6 +2538,17 @@
           "stringUnit": {
             "state": "translated",
             "value": "Tip"
+          }
+        }
+      }
+    },
+    "Typical glucose change during and after your activity — glucose often falls, so stay alert for lows. Based on %lld sessions.": {
+      "extractionState": "manual",
+      "localizations": {
+        "ro": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Schimbarea tipică a glicemiei în timpul și după activitate — glicemia scade adesea, deci fii atent la minime. Pe baza a %lld sesiuni."
           }
         }
       }
