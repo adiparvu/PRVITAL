@@ -1,6 +1,50 @@
 {
   "sourceLanguage": "en",
   "strings": {
+    "%@ — above your range.": {
+      "extractionState": "manual",
+      "localizations": {
+        "ro": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%@ — peste intervalul tău."
+          }
+        }
+      }
+    },
+    "%@ — below your range.": {
+      "extractionState": "manual",
+      "localizations": {
+        "ro": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%@ — sub intervalul tău."
+          }
+        }
+      }
+    },
+    "%@ — check for ketones and follow your plan.": {
+      "extractionState": "manual",
+      "localizations": {
+        "ro": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%@ — verifică cetonele și urmează planul tău."
+          }
+        }
+      }
+    },
+    "%@ — treat now.": {
+      "extractionState": "manual",
+      "localizations": {
+        "ro": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%@ — tratează acum."
+          }
+        }
+      }
+    },
     "A calculator to help you think through a dose — never a prescription. It uses only the numbers you enter below and is not a substitute for your clinician's advice. Always double-check before dosing.": {
       "extractionState": "manual",
       "localizations": {
@@ -67,6 +111,17 @@
         }
       }
     },
+    "A good moment to log how you're doing.": {
+      "extractionState": "manual",
+      "localizations": {
+        "ro": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Un moment bun să notezi cum te simți."
+          }
+        }
+      }
+    },
     "A log of every sensitive action": {
       "extractionState": "manual",
       "localizations": {
@@ -74,6 +129,17 @@
           "stringUnit": {
             "state": "translated",
             "value": "Un jurnal al fiecărei acțiuni sensibile"
+          }
+        }
+      }
+    },
+    "A quick reading keeps your trend complete.": {
+      "extractionState": "manual",
+      "localizations": {
+        "ro": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "O citire rapidă îți menține tendința completă."
           }
         }
       }
@@ -261,6 +327,17 @@
           "stringUnit": {
             "state": "translated",
             "value": "Verifică întâi"
+          }
+        }
+      }
+    },
+    "Check your glucose": {
+      "extractionState": "manual",
+      "localizations": {
+        "ro": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Verifică-ți glicemia"
           }
         }
       }
@@ -738,6 +815,28 @@
         }
       }
     },
+    "Have some water.": {
+      "extractionState": "manual",
+      "localizations": {
+        "ro": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Bea niște apă."
+          }
+        }
+      }
+    },
+    "High glucose": {
+      "extractionState": "manual",
+      "localizations": {
+        "ro": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Glicemie ridicată"
+          }
+        }
+      }
+    },
     "Highest": {
       "extractionState": "manual",
       "localizations": {
@@ -969,6 +1068,17 @@
         }
       }
     },
+    "Log carbs and any bolus.": {
+      "extractionState": "manual",
+      "localizations": {
+        "ro": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Notează carbohidrații și orice bolus."
+          }
+        }
+      }
+    },
     "Log glucose, insulin, meals, activity and notes — they'll appear here on your timeline.": {
       "extractionState": "manual",
       "localizations": {
@@ -987,6 +1097,17 @@
           "stringUnit": {
             "state": "translated",
             "value": "Înregistrează sau sincronizează mai multă glicemie pentru a-ți construi profilul."
+          }
+        }
+      }
+    },
+    "Low glucose": {
+      "extractionState": "manual",
+      "localizations": {
+        "ro": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Glicemie scăzută"
           }
         }
       }
@@ -1031,6 +1152,17 @@
           "stringUnit": {
             "state": "translated",
             "value": "Mese"
+          }
+        }
+      }
+    },
+    "Mealtime": {
+      "extractionState": "manual",
+      "localizations": {
+        "ro": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Ora mesei"
           }
         }
       }
@@ -1651,6 +1783,17 @@
         }
       }
     },
+    "Stay hydrated": {
+      "extractionState": "manual",
+      "localizations": {
+        "ro": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Rămâi hidratat"
+          }
+        }
+      }
+    },
     "Stays on your device": {
       "extractionState": "manual",
       "localizations": {
@@ -1849,6 +1992,17 @@
         }
       }
     },
+    "Time for your long-acting dose.": {
+      "extractionState": "manual",
+      "localizations": {
+        "ro": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "E timpul pentru doza cu acțiune lungă."
+          }
+        }
+      }
+    },
     "Time in range": {
       "extractionState": "manual",
       "localizations": {
@@ -1948,6 +2102,28 @@
         }
       }
     },
+    "Update your journal": {
+      "extractionState": "manual",
+      "localizations": {
+        "ro": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Actualizează-ți jurnalul"
+          }
+        }
+      }
+    },
+    "Urgent low glucose": {
+      "extractionState": "manual",
+      "localizations": {
+        "ro": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Glicemie urgent scăzută"
+          }
+        }
+      }
+    },
     "Value": {
       "extractionState": "manual",
       "localizations": {
@@ -1999,6 +2175,17 @@
           "stringUnit": {
             "state": "translated",
             "value": "Foarte ridicat peste"
+          }
+        }
+      }
+    },
+    "Very high glucose": {
+      "extractionState": "manual",
+      "localizations": {
+        "ro": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Glicemie foarte ridicată"
           }
         }
       }

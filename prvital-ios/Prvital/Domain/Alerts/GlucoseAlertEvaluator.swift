@@ -121,19 +121,25 @@ enum GlucoseAlertEvaluator {
 
     static func makeAlert(level: GlucoseAlertLevel, mgdL: Double, unit: GlucoseUnit) -> GlucoseAlert {
         let value = GlucoseFormatting.labeled(mgdL: mgdL, unit: unit)
+        // Notification strings are localized here (String(localized:)); the value
+        // is interpolated as a `%@` argument, so translations keep the placeholder.
         switch level {
         case .urgentLow:
-            return GlucoseAlert(level: level, title: "Urgent low glucose",
-                                body: "\(value) — treat now.")
+            return GlucoseAlert(level: level,
+                                title: String(localized: "Urgent low glucose"),
+                                body: String(localized: "\(value) — treat now."))
         case .low:
-            return GlucoseAlert(level: level, title: "Low glucose",
-                                body: "\(value) — below your range.")
+            return GlucoseAlert(level: level,
+                                title: String(localized: "Low glucose"),
+                                body: String(localized: "\(value) — below your range."))
         case .high:
-            return GlucoseAlert(level: level, title: "High glucose",
-                                body: "\(value) — above your range.")
+            return GlucoseAlert(level: level,
+                                title: String(localized: "High glucose"),
+                                body: String(localized: "\(value) — above your range."))
         case .urgentHigh:
-            return GlucoseAlert(level: level, title: "Very high glucose",
-                                body: "\(value) — check for ketones and follow your plan.")
+            return GlucoseAlert(level: level,
+                                title: String(localized: "Very high glucose"),
+                                body: String(localized: "\(value) — check for ketones and follow your plan."))
         }
     }
 }
