@@ -22,6 +22,8 @@ enum DataSource: String, Codable, CaseIterable, Sendable, Identifiable {
     case dexcom
     case freeStyleLibre
     case otherCGM
+    case nightscout
+    case bloodGlucoseMeter
     case appleHealth
     case appleWatch
     case manual
@@ -33,6 +35,8 @@ enum DataSource: String, Codable, CaseIterable, Sendable, Identifiable {
         case .dexcom: return "Dexcom"
         case .freeStyleLibre: return "FreeStyle Libre"
         case .otherCGM: return "CGM sensor"
+        case .nightscout: return "Nightscout"
+        case .bloodGlucoseMeter: return "Glucose meter"
         case .appleHealth: return "Apple Health"
         case .appleWatch: return "Apple Watch"
         case .manual: return "Manual entry"
@@ -42,16 +46,28 @@ enum DataSource: String, Codable, CaseIterable, Sendable, Identifiable {
     var symbol: String {
         switch self {
         case .dexcom, .freeStyleLibre, .otherCGM: return "sensor.tag.radiowaves.forward"
+        case .nightscout: return "cloud"
+        case .bloodGlucoseMeter: return "cross.vial"
         case .appleHealth: return "heart.text.square"
         case .appleWatch: return "applewatch"
         case .manual: return "hand.tap"
         }
     }
 
-    /// True for continuous-glucose-monitoring hardware sources.
+    /// True for continuous-glucose-monitoring sources (including Nightscout,
+    /// which relays CGM `sgv` data from a self-hosted server).
     var isCGM: Bool {
         switch self {
-        case .dexcom, .freeStyleLibre, .otherCGM: return true
+        case .dexcom, .freeStyleLibre, .otherCGM, .nightscout: return true
+        default: return false
+        }
+    }
+
+    /// True for sources configured through a dedicated screen (a site URL/token
+    /// or an account login) rather than the generic Connect button.
+    var isCredentialed: Bool {
+        switch self {
+        case .nightscout, .dexcom, .freeStyleLibre: return true
         default: return false
         }
     }

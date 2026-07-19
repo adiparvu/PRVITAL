@@ -59,6 +59,7 @@ final class SnapshotPublisher {
 
         SharedStore.save(snapshot)
         WatchSessionManager.shared.updateSnapshot(snapshot)
+        GlucoseLiveActivityManager.shared.sync(with: snapshot)
     }
 
     private func fetch<T: PersistentModel>(_ type: T.Type) -> [T] {

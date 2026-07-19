@@ -1,0 +1,1183 @@
+{
+  "sourceLanguage": "en",
+  "strings": {
+    "A calculator to help you think through a dose — never a prescription. It uses only the numbers you enter below and is not a substitute for your clinician's advice. Always double-check before dosing.": {
+      "extractionState": "manual",
+      "localizations": {
+        "ro": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Un calculator care te ajută să gândești o doză — niciodată o prescripție. Folosește doar valorile introduse mai jos și nu înlocuiește sfatul medicului tău. Verifică întotdeauna de două ori înainte de administrare."
+          }
+        }
+      }
+    },
+    "A calculator, not a prescription. It uses only your saved ratios and is not medical advice. Always confirm with your own judgement and care team before dosing.": {
+      "extractionState": "manual",
+      "localizations": {
+        "ro": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Un calculator, nu o prescripție. Folosește doar rapoartele tale salvate și nu constituie sfat medical. Confirmă întotdeauna cu propria judecată și cu echipa medicală înainte de administrare."
+          }
+        }
+      }
+    },
+    "A calm, private place for your glucose, insulin, meals, activity and notes — all in one timeline.": {
+      "extractionState": "manual",
+      "localizations": {
+        "ro": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Un loc calm și privat pentru glicemia, insulina, mesele, activitatea și notițele tale — toate pe o singură cronologie."
+          }
+        }
+      }
+    },
+    "A connected source imports readings automatically. Manual entry is always available. CGM sensors like Dexcom and FreeStyle Libre appear here once your build is configured for them.": {
+      "extractionState": "manual",
+      "localizations": {
+        "ro": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "O sursă conectată importă citirile automat. Introducerea manuală este mereu disponibilă. Senzorii CGM precum Dexcom și FreeStyle Libre apar aici după ce aplicația este configurată pentru ei."
+          }
+        }
+      }
+    },
+    "A daily reminder for your long-acting dose.": {
+      "extractionState": "manual",
+      "localizations": {
+        "ro": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "O reamintire zilnică pentru doza cu acțiune lungă."
+          }
+        }
+      }
+    },
+    "A gentle nudge to log how you're doing.": {
+      "extractionState": "manual",
+      "localizations": {
+        "ro": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Un mic imbold pentru a nota cum te simți."
+          }
+        }
+      }
+    },
+    "A repeating reminder to drink water through the day.": {
+      "extractionState": "manual",
+      "localizations": {
+        "ro": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "O reamintire repetată să bei apă pe parcursul zilei."
+          }
+        }
+      }
+    },
+    "Activity": {
+      "extractionState": "manual",
+      "localizations": {
+        "ro": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Activitate"
+          }
+        }
+      }
+    },
+    "Add entry": {
+      "extractionState": "manual",
+      "localizations": {
+        "ro": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Adaugă înregistrare"
+          }
+        }
+      }
+    },
+    "Add trend": {
+      "extractionState": "manual",
+      "localizations": {
+        "ro": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Adaugă tendință"
+          }
+        }
+      }
+    },
+    "Allow notifications": {
+      "extractionState": "manual",
+      "localizations": {
+        "ro": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Permite notificările"
+          }
+        }
+      }
+    },
+    "Audit trail": {
+      "extractionState": "manual",
+      "localizations": {
+        "ro": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Jurnal de audit"
+          }
+        }
+      }
+    },
+    "Bolus calculator": {
+      "extractionState": "manual",
+      "localizations": {
+        "ro": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Calculator de bolus"
+          }
+        }
+      }
+    },
+    "Cancel": {
+      "extractionState": "manual",
+      "localizations": {
+        "ro": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Anulează"
+          }
+        }
+      }
+    },
+    "Choose what to enable": {
+      "extractionState": "manual",
+      "localizations": {
+        "ro": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Alege ce să activezi"
+          }
+        }
+      }
+    },
+    "Connect": {
+      "extractionState": "manual",
+      "localizations": {
+        "ro": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Conectează"
+          }
+        }
+      }
+    },
+    "Connection": {
+      "extractionState": "manual",
+      "localizations": {
+        "ro": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Conexiune"
+          }
+        }
+      }
+    },
+    "Custom range": {
+      "extractionState": "manual",
+      "localizations": {
+        "ro": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Interval personalizat"
+          }
+        }
+      }
+    },
+    "Daily active minutes": {
+      "extractionState": "manual",
+      "localizations": {
+        "ro": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Minute active zilnice"
+          }
+        }
+      }
+    },
+    "Daily carbohydrate grams": {
+      "extractionState": "manual",
+      "localizations": {
+        "ro": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Grame de carbohidrați zilnic"
+          }
+        }
+      }
+    },
+    "Daily insulin units, basal and bolus": {
+      "extractionState": "manual",
+      "localizations": {
+        "ro": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Unități de insulină zilnice, bazal și bolus"
+          }
+        }
+      }
+    },
+    "Dashboard": {
+      "extractionState": "manual",
+      "localizations": {
+        "ro": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Panou"
+          }
+        }
+      }
+    },
+    "Defaults follow the international consensus: a 70–180 mg/dL target with 54 and 250 marking severe lows and highs.": {
+      "extractionState": "manual",
+      "localizations": {
+        "ro": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Valorile implicite urmează consensul internațional: o țintă de 70–180 mg/dL, cu 54 și 250 marcând valorile scăzute și crescute severe."
+          }
+        }
+      }
+    },
+    "Delete": {
+      "extractionState": "manual",
+      "localizations": {
+        "ro": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Șterge"
+          }
+        }
+      }
+    },
+    "Delete all local data": {
+      "extractionState": "manual",
+      "localizations": {
+        "ro": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Șterge toate datele locale"
+          }
+        }
+      }
+    },
+    "Delivery": {
+      "extractionState": "manual",
+      "localizations": {
+        "ro": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Administrare"
+          }
+        }
+      }
+    },
+    "Display unit": {
+      "extractionState": "manual",
+      "localizations": {
+        "ro": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Unitate de afișare"
+          }
+        }
+      }
+    },
+    "Done": {
+      "extractionState": "manual",
+      "localizations": {
+        "ro": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Gata"
+          }
+        }
+      }
+    },
+    "Duration": {
+      "extractionState": "manual",
+      "localizations": {
+        "ro": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Durată"
+          }
+        }
+      }
+    },
+    "Duration and time-to-peak shape the insulin-on-board curve. Typical rapid-acting values are 4–6 hours and 60–90 minutes. The max bolus is a safety limit — a suggestion above it is clamped.": {
+      "extractionState": "manual",
+      "localizations": {
+        "ro": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Durata și timpul până la vârf modelează curba insulinei active. Valorile tipice pentru insulina rapidă sunt 4–6 ore și 60–90 de minute. Bolusul maxim este o limită de siguranță — o sugestie peste el este limitată."
+          }
+        }
+      }
+    },
+    "Each permission is optional and independent — grant only what you need, and revoke any of them at any time. Nothing is enabled by default.": {
+      "extractionState": "manual",
+      "localizations": {
+        "ro": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Fiecare permisiune este opțională și independentă — acordă doar ce ai nevoie și revocă oricare oricând. Nimic nu este activat implicit."
+          }
+        }
+      }
+    },
+    "Each permission is optional and independent. Turn on only what you want — you can change any of these later in Settings.": {
+      "extractionState": "manual",
+      "localizations": {
+        "ro": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Fiecare permisiune este opțională și independentă. Activează doar ce dorești — poți schimba oricare dintre ele ulterior în Setări."
+          }
+        }
+      }
+    },
+    "Edit dates": {
+      "extractionState": "manual",
+      "localizations": {
+        "ro": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Editează datele"
+          }
+        }
+      }
+    },
+    "Enable bolus calculator": {
+      "extractionState": "manual",
+      "localizations": {
+        "ro": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Activează calculatorul de bolus"
+          }
+        }
+      }
+    },
+    "Enter positive ratios, and a time-to-peak shorter than half the duration, to use the calculator.": {
+      "extractionState": "manual",
+      "localizations": {
+        "ro": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Introdu rapoarte pozitive și un timp până la vârf mai mic decât jumătate din durată pentru a folosi calculatorul."
+          }
+        }
+      }
+    },
+    "Enter your Nightscout site address and an access token created under Admin Tools → Subjects. Readings are fetched directly from your server to this device — the address and token are never sent anywhere else.": {
+      "extractionState": "manual",
+      "localizations": {
+        "ro": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Introdu adresa site-ului tău Nightscout și un token de acces creat în Admin Tools → Subjects. Citirile sunt preluate direct de pe serverul tău pe acest dispozitiv — adresa și tokenul nu sunt trimise nicăieri altundeva."
+          }
+        }
+      }
+    },
+    "Entries only (no glucose reading)": {
+      "extractionState": "manual",
+      "localizations": {
+        "ro": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Doar înregistrări (fără citire de glicemie)"
+          }
+        }
+      }
+    },
+    "Every": {
+      "extractionState": "manual",
+      "localizations": {
+        "ro": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "La fiecare"
+          }
+        }
+      }
+    },
+    "Every record on this device will be permanently removed. This cannot be undone.": {
+      "extractionState": "manual",
+      "localizations": {
+        "ro": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Fiecare înregistrare de pe acest dispozitiv va fi eliminată definitiv. Această acțiune nu poate fi anulată."
+          }
+        }
+      }
+    },
+    "Export": {
+      "extractionState": "manual",
+      "localizations": {
+        "ro": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Exportă"
+          }
+        }
+      }
+    },
+    "Export CSV": {
+      "extractionState": "manual",
+      "localizations": {
+        "ro": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Exportă CSV"
+          }
+        }
+      }
+    },
+    "Export PDF": {
+      "extractionState": "manual",
+      "localizations": {
+        "ro": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Exportă PDF"
+          }
+        }
+      }
+    },
+    "Export a report": {
+      "extractionState": "manual",
+      "localizations": {
+        "ro": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Exportă un raport"
+          }
+        }
+      }
+    },
+    "From": {
+      "extractionState": "manual",
+      "localizations": {
+        "ro": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "De la"
+          }
+        }
+      }
+    },
+    "Glucose unit": {
+      "extractionState": "manual",
+      "localizations": {
+        "ro": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Unitate glicemie"
+          }
+        }
+      }
+    },
+    "History": {
+      "extractionState": "manual",
+      "localizations": {
+        "ro": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Istoric"
+          }
+        }
+      }
+    },
+    "Insights": {
+      "extractionState": "manual",
+      "localizations": {
+        "ro": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Analize"
+          }
+        }
+      }
+    },
+    "Insulin action": {
+      "extractionState": "manual",
+      "localizations": {
+        "ro": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Acțiunea insulinei"
+          }
+        }
+      }
+    },
+    "Intensity": {
+      "extractionState": "manual",
+      "localizations": {
+        "ro": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Intensitate"
+          }
+        }
+      }
+    },
+    "Journal": {
+      "extractionState": "manual",
+      "localizations": {
+        "ro": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Jurnal"
+          }
+        }
+      }
+    },
+    "Jump to current month": {
+      "extractionState": "manual",
+      "localizations": {
+        "ro": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Sari la luna curentă"
+          }
+        }
+      }
+    },
+    "Keep your trend complete with a quick reading.": {
+      "extractionState": "manual",
+      "localizations": {
+        "ro": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Păstrează-ți tendința completă cu o citire rapidă."
+          }
+        }
+      }
+    },
+    "Meal": {
+      "extractionState": "manual",
+      "localizations": {
+        "ro": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Masă"
+          }
+        }
+      }
+    },
+    "Next month": {
+      "extractionState": "manual",
+      "localizations": {
+        "ro": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Luna următoare"
+          }
+        }
+      }
+    },
+    "Note": {
+      "extractionState": "manual",
+      "localizations": {
+        "ro": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Notiță"
+          }
+        }
+      }
+    },
+    "On this device": {
+      "extractionState": "manual",
+      "localizations": {
+        "ro": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Pe acest dispozitiv"
+          }
+        }
+      }
+    },
+    "Open bolus calculator": {
+      "extractionState": "manual",
+      "localizations": {
+        "ro": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Deschide calculatorul de bolus"
+          }
+        }
+      }
+    },
+    "Permissions": {
+      "extractionState": "manual",
+      "localizations": {
+        "ro": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Permisiuni"
+          }
+        }
+      }
+    },
+    "Previous month": {
+      "extractionState": "manual",
+      "localizations": {
+        "ro": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Luna anterioară"
+          }
+        }
+      }
+    },
+    "Primary": {
+      "extractionState": "manual",
+      "localizations": {
+        "ro": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Principală"
+          }
+        }
+      }
+    },
+    "Primary source": {
+      "extractionState": "manual",
+      "localizations": {
+        "ro": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Sursă principală"
+          }
+        }
+      }
+    },
+    "Privacy": {
+      "extractionState": "manual",
+      "localizations": {
+        "ro": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Confidențialitate"
+          }
+        }
+      }
+    },
+    "Private by design": {
+      "extractionState": "manual",
+      "localizations": {
+        "ro": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Confidențial prin concepție"
+          }
+        }
+      }
+    },
+    "Private by design, private by default": {
+      "extractionState": "manual",
+      "localizations": {
+        "ro": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Confidențial prin concepție, confidențial implicit"
+          }
+        }
+      }
+    },
+    "Prvital is private by design. Your health data lives on this device (and, only if you turn it on, your own private iCloud). It is never sold, never used for advertising, and never used to train models without your consent.": {
+      "extractionState": "manual",
+      "localizations": {
+        "ro": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Prvital este confidențial prin concepție. Datele tale medicale rămân pe acest dispozitiv (și, doar dacă activezi, în propriul tău iCloud privat). Nu sunt niciodată vândute, folosite pentru publicitate sau pentru antrenarea de modele fără consimțământul tău."
+          }
+        }
+      }
+    },
+    "Range": {
+      "extractionState": "manual",
+      "localizations": {
+        "ro": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Interval"
+          }
+        }
+      }
+    },
+    "Ratios": {
+      "extractionState": "manual",
+      "localizations": {
+        "ro": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Rapoarte"
+          }
+        }
+      }
+    },
+    "Refresh": {
+      "extractionState": "manual",
+      "localizations": {
+        "ro": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Reîmprospătează"
+          }
+        }
+      }
+    },
+    "Registered sources": {
+      "extractionState": "manual",
+      "localizations": {
+        "ro": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Surse înregistrate"
+          }
+        }
+      }
+    },
+    "Remember to log carbs and any bolus.": {
+      "extractionState": "manual",
+      "localizations": {
+        "ro": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Nu uita să notezi carbohidrații și orice bolus."
+          }
+        }
+      }
+    },
+    "Reminders": {
+      "extractionState": "manual",
+      "localizations": {
+        "ro": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Reamintiri"
+          }
+        }
+      }
+    },
+    "Reminders are delivered by the system as local notifications. Grant permission once so scheduled reminders can appear.": {
+      "extractionState": "manual",
+      "localizations": {
+        "ro": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Reamintirile sunt livrate de sistem ca notificări locale. Acordă permisiunea o dată pentru ca reamintirile programate să poată apărea."
+          }
+        }
+      }
+    },
+    "Remove Nightscout": {
+      "extractionState": "manual",
+      "localizations": {
+        "ro": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Elimină Nightscout"
+          }
+        }
+      }
+    },
+    "Reset to consensus defaults": {
+      "extractionState": "manual",
+      "localizations": {
+        "ro": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Resetează la valorile implicite de consens"
+          }
+        }
+      }
+    },
+    "Save": {
+      "extractionState": "manual",
+      "localizations": {
+        "ro": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Salvează"
+          }
+        }
+      }
+    },
+    "Self-hosted": {
+      "extractionState": "manual",
+      "localizations": {
+        "ro": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Găzduit de tine"
+          }
+        }
+      }
+    },
+    "Settings": {
+      "extractionState": "manual",
+      "localizations": {
+        "ro": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Setări"
+          }
+        }
+      }
+    },
+    "Share report": {
+      "extractionState": "manual",
+      "localizations": {
+        "ro": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Distribuie raportul"
+          }
+        }
+      }
+    },
+    "Sources": {
+      "extractionState": "manual",
+      "localizations": {
+        "ro": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Surse"
+          }
+        }
+      }
+    },
+    "Stale reading": {
+      "extractionState": "manual",
+      "localizations": {
+        "ro": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Citire învechită"
+          }
+        }
+      }
+    },
+    "Start": {
+      "extractionState": "manual",
+      "localizations": {
+        "ro": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Începe"
+          }
+        }
+      }
+    },
+    "Start logging from the Dashboard or Journal whenever you like. You can revisit every permission, unit and reminder in Settings at any time.": {
+      "extractionState": "manual",
+      "localizations": {
+        "ro": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Începe să înregistrezi din Panou sau Jurnal oricând dorești. Poți revedea oricând fiecare permisiune, unitate și reamintire în Setări."
+          }
+        }
+      }
+    },
+    "Sync": {
+      "extractionState": "manual",
+      "localizations": {
+        "ro": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Sincronizează"
+          }
+        }
+      }
+    },
+    "Sync CGM readings from your own Nightscout site over the internet — no vendor account required.": {
+      "extractionState": "manual",
+      "localizations": {
+        "ro": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Sincronizează citirile CGM de pe propriul site Nightscout prin internet — fără cont de furnizor."
+          }
+        }
+      }
+    },
+    "Tags": {
+      "extractionState": "manual",
+      "localizations": {
+        "ro": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Etichete"
+          }
+        }
+      }
+    },
+    "Target range": {
+      "extractionState": "manual",
+      "localizations": {
+        "ro": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Interval țintă"
+          }
+        }
+      }
+    },
+    "The trail records that an operation happened — when, to which source and with what result — never the medical values themselves.": {
+      "extractionState": "manual",
+      "localizations": {
+        "ro": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Jurnalul înregistrează că o operațiune a avut loc — când, către ce sursă și cu ce rezultat — niciodată valorile medicale în sine."
+          }
+        }
+      }
+    },
+    "Therapy & bolus": {
+      "extractionState": "manual",
+      "localizations": {
+        "ro": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Terapie și bolus"
+          }
+        }
+      }
+    },
+    "This permanently removes every glucose, insulin, meal, activity and observation record from this device. It cannot be undone. To disconnect a source, use Sources; to export a report, use Insights.": {
+      "extractionState": "manual",
+      "localizations": {
+        "ro": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Aceasta elimină definitiv fiecare înregistrare de glicemie, insulină, masă, activitate și observație de pe acest dispozitiv. Nu poate fi anulată. Pentru a deconecta o sursă, folosește Surse; pentru a exporta un raport, folosește Analize."
+          }
+        }
+      }
+    },
+    "This report contains sensitive health data. It is generated on ": {
+      "extractionState": "manual",
+      "localizations": {
+        "ro": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Acest raport conține date medicale sensibile. A fost generat pe "
+          }
+        }
+      }
+    },
+    "Time": {
+      "extractionState": "manual",
+      "localizations": {
+        "ro": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Ora"
+          }
+        }
+      }
+    },
+    "To": {
+      "extractionState": "manual",
+      "localizations": {
+        "ro": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Până la"
+          }
+        }
+      }
+    },
+    "Today": {
+      "extractionState": "manual",
+      "localizations": {
+        "ro": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Astăzi"
+          }
+        }
+      }
+    },
+    "Trend": {
+      "extractionState": "manual",
+      "localizations": {
+        "ro": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Tendință"
+          }
+        }
+      }
+    },
+    "Type": {
+      "extractionState": "manual",
+      "localizations": {
+        "ro": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Tip"
+          }
+        }
+      }
+    },
+    "Units & targets": {
+      "extractionState": "manual",
+      "localizations": {
+        "ro": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Unități și ținte"
+          }
+        }
+      }
+    },
+    "Values are stored in mg/dL and converted for display. Switching units never changes your data.": {
+      "extractionState": "manual",
+      "localizations": {
+        "ro": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Valorile sunt stocate în mg/dL și convertite pentru afișare. Schimbarea unităților nu îți modifică niciodată datele."
+          }
+        }
+      }
+    },
+    "View": {
+      "extractionState": "manual",
+      "localizations": {
+        "ro": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Vizualizare"
+          }
+        }
+      }
+    },
+    "When on, your journal syncs across your devices through your own private iCloud database. Apple cannot read the contents.": {
+      "extractionState": "manual",
+      "localizations": {
+        "ro": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Când este activat, jurnalul tău se sincronizează între dispozitive prin propria bază de date iCloud privată. Apple nu poate citi conținutul."
+          }
+        }
+      }
+    },
+    "You're all set": {
+      "extractionState": "manual",
+      "localizations": {
+        "ro": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Ești gata"
+          }
+        }
+      }
+    },
+    "Your data": {
+      "extractionState": "manual",
+      "localizations": {
+        "ro": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Datele tale"
+          }
+        }
+      }
+    },
+    "Your medical data stays on your device and is never sold or used for advertising. Nothing is shared until you explicitly grant a permission below, and you stay in control of each one.": {
+      "extractionState": "manual",
+      "localizations": {
+        "ro": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Datele tale medicale rămân pe dispozitiv și nu sunt niciodată vândute sau folosite pentru publicitate. Nimic nu este partajat până când nu acorzi explicit o permisiune mai jos, iar controlul asupra fiecăreia rămâne la tine."
+          }
+        }
+      }
+    },
+    "Your primary source labels every reading's provenance and wins when two sources report the same moment. You can change it at any time without losing data.": {
+      "extractionState": "manual",
+      "localizations": {
+        "ro": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Sursa ta principală etichetează proveniența fiecărei citiri și are prioritate când două surse raportează același moment. O poți schimba oricând, fără a pierde date."
+          }
+        }
+      }
+    },
+    "Your records are health data. Handle exports and backups with the same care you'd give any medical information.": {
+      "extractionState": "manual",
+      "localizations": {
+        "ro": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Înregistrările tale sunt date medicale. Tratează exporturile și copiile de rezervă cu aceeași grijă pe care ai acorda-o oricărei informații medicale."
+          }
+        }
+      }
+    },
+    "Zone": {
+      "extractionState": "manual",
+      "localizations": {
+        "ro": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Zonă"
+          }
+        }
+      }
+    },
+    "iCloud sync": {
+      "extractionState": "manual",
+      "localizations": {
+        "ro": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Sincronizare iCloud"
+          }
+        }
+      }
+    },
+    "Insulin on board": {
+      "extractionState": "manual",
+      "localizations": {
+        "ro": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Insulină activă"
+          }
+        }
+      }
+    }
+  },
+  "version": "1.0"
+}

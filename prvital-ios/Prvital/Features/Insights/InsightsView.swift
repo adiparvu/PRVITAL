@@ -26,6 +26,7 @@ struct InsightsView: View {
                 switch section {
                 case .charts: ChartsView()
                 case .statistics: StatisticsView()
+                case .agp: AGPReportView()
                 }
             }
             .background(Theme.background)
@@ -54,7 +55,7 @@ struct InsightsView: View {
 
 /// The two panes of the Insights screen.
 private enum InsightsSection: String, CaseIterable, Identifiable {
-    case charts, statistics
+    case charts, statistics, agp
 
     var id: String { rawValue }
 
@@ -62,6 +63,7 @@ private enum InsightsSection: String, CaseIterable, Identifiable {
         switch self {
         case .charts: return "Charts"
         case .statistics: return "Statistics"
+        case .agp: return "AGP"
         }
     }
 }

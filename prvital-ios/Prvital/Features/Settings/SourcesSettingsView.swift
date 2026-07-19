@@ -18,6 +18,26 @@ struct SourcesSettingsView: View {
         )
     }
 
+    private var dexcomStatus: String {
+        SourceCredentialStore.shared.hasCredentials(for: .dexcom) ? "Signed in" : "Not set up"
+    }
+    private var libreStatus: String {
+        SourceCredentialStore.shared.hasCredentials(for: .freeStyleLibre) ? "Signed in" : "Not set up"
+    }
+
+    private func cloudRow(title: String, subtitle: String, symbol: String) -> some View {
+        HStack(spacing: 12) {
+            Image(systemName: symbol)
+                .font(.system(size: 16, weight: .semibold))
+                .foregroundStyle(Theme.accent)
+                .frame(width: 28)
+            VStack(alignment: .leading, spacing: 3) {
+                Text(title).font(.body).foregroundStyle(Theme.textPrimary)
+                Text(subtitle).font(.caption).foregroundStyle(Theme.textSecondary)
+            }
+        }
+    }
+
     var body: some View {
         Form {
             Section {
@@ -49,6 +69,67 @@ struct SourcesSettingsView: View {
                 Text("Registered sources")
             } footer: {
                 Text("A connected source imports readings automatically. Manual entry is always available. CGM sensors like Dexcom and FreeStyle Libre appear here once your build is configured for them.")
+                    .font(.footnote)
+                    .foregroundStyle(Theme.textTertiary)
+            }
+            .listRowBackground(Theme.surface)
+
+            Section {
+                NavigationLink {
+                    NightscoutSettingsView()
+                } label: {
+                    HStack(spacing: 12) {
+                        Image(systemName: "cloud")
+                            .font(.system(size: 16, weight: .semibold))
+                            .foregroundStyle(Theme.accent)
+                            .frame(width: 28)
+                        VStack(alignment: .leading, spacing: 3) {
+                            Text("Nightscout")
+                                .font(.body)
+                                .foregroundStyle(Theme.textPrimary)
+                            Text(env.preferences.nightscout.isConfigured ? "Configured" : "Not set up")
+                                .font(.caption)
+                                .foregroundStyle(Theme.textSecondary)
+                        }
+                    }
+                }
+            } header: {
+                Text("Self-hosted")
+            } footer: {
+                Text("Sync CGM readings from your own Nightscout site over the internet — no vendor account required.")
+                    .font(.footnote)
+                    .foregroundStyle(Theme.textTertiary)
+            }
+            .listRowBackground(Theme.surface)
+
+            Section {
+                NavigationLink {
+                    CredentialSourceSettingsView(
+                        dataSource: .dexcom,
+                        usernameLabel: "Dexcom username",
+                        usernameIsEmail: false,
+                        needsRegion: true,
+                        footerText: "Sign in with your Dexcom account to import readings through Dexcom Share (the Dexcom Follow service). Choose the region that matches your account."
+                    )
+                } label: {
+                    cloudRow(title: "Dexcom", subtitle: dexcomStatus, symbol: DataSource.dexcom.symbol)
+                }
+
+                NavigationLink {
+                    CredentialSourceSettingsView(
+                        dataSource: .freeStyleLibre,
+                        usernameLabel: "LibreLinkUp email",
+                        usernameIsEmail: true,
+                        needsRegion: false,
+                        footerText: "Sign in with your LibreLinkUp account and share a sensor to import readings. Region is detected automatically."
+                    )
+                } label: {
+                    cloudRow(title: "FreeStyle Libre", subtitle: libreStatus, symbol: DataSource.freeStyleLibre.symbol)
+                }
+            } header: {
+                Text("Cloud accounts")
+            } footer: {
+                Text("Connect Dexcom (via Dexcom Share) or FreeStyle Libre (via LibreLinkUp) with your account. Credentials are kept in this device's Keychain.")
                     .font(.footnote)
                     .foregroundStyle(Theme.textTertiary)
             }
@@ -117,7 +198,7 @@ private struct SourcesRow: View {
 
             Spacer()
 
-            if descriptor.canConnect {
+            if descriptor.canConnect && !source.source.isCredentialed {
                 Button("Connect", action: onConnect)
                     .font(.system(size: 14, weight: .semibold))
                     .buttonStyle(.borderedProminent)

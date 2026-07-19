@@ -28,11 +28,16 @@ struct DashboardView: View {
             thresholds: thresholds
         )
 
+        let bolus = env.preferences.bolusParameters
+
         return NavigationStack {
             ScrollView {
                 VStack(spacing: 20) {
                     hero(summary: summary, thresholds: thresholds, unit: unit)
                     trendSection(summary: summary, thresholds: thresholds, unit: unit)
+                    if bolus.isEnabled && bolus.isValid {
+                        iobCard(units: InsulinMath.activeInsulin(doses: insulin, at: Date(), parameters: bolus))
+                    }
                     recentRow(summary: summary)
                 }
                 .padding()
@@ -143,6 +148,30 @@ struct DashboardView: View {
                     unit: unit,
                     compact: false
                 )
+            }
+        }
+    }
+
+    // MARK: - Insulin on board
+
+    private func iobCard(units: Double) -> some View {
+        SectionCard("Insulin on board", systemImage: "chart.line.downtrend.xyaxis") {
+            HStack(alignment: .firstTextBaseline, spacing: 6) {
+                Text(units.formatted(.number.precision(.fractionLength(1))))
+                    .font(.system(size: 30, weight: .bold, design: .rounded))
+                    .foregroundStyle(Theme.textPrimary)
+                    .contentTransition(.numericText())
+                Text("U")
+                    .font(.subheadline.weight(.semibold))
+                    .foregroundStyle(Theme.textSecondary)
+                Spacer()
+                NavigationLink {
+                    BolusCalculatorView()
+                } label: {
+                    Label("Calculator", systemImage: "syringe")
+                        .font(.subheadline.weight(.semibold))
+                        .foregroundStyle(Theme.accent)
+                }
             }
         }
     }
