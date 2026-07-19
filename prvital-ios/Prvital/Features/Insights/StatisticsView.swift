@@ -1,5 +1,6 @@
 import SwiftUI
 import SwiftData
+import Charts
 
 /// The numeric pane of Insights: a computed `PeriodStatistics` for the selected
 /// interval, rendered as a grid of `StatTile`s plus a Time-in-Range stacked bar.
@@ -56,6 +57,10 @@ struct StatisticsView: View {
         HypoRecoveryAnalyzer.analyze(activeReadings, thresholds: thresholds)
     }
 
+    private var gmiTrend: [GMIPoint] {
+        GMITrend.weekly(activeReadings)
+    }
+
     private let columns = [
         GridItem(.flexible(), spacing: 12),
         GridItem(.flexible(), spacing: 12),
@@ -77,6 +82,7 @@ struct StatisticsView: View {
                 if hasAnyData {
                     if stats.hasGlucose { timeInRangeBar }
                     statsGrid
+                    if gmiTrend.count >= 2 { gmiTrendCard }
                 } else {
                     EmptyStateView(
                         systemImage: "chart.pie",
@@ -89,6 +95,41 @@ struct StatisticsView: View {
             .padding()
         }
         .background(Theme.background)
+    }
+
+    // MARK: Estimated A1c trend
+
+    private var gmiTrendCard: some View {
+        SectionCard("Estimated A1c trend", systemImage: "chart.xyaxis.line") {
+            Chart(gmiTrend) { point in
+                LineMark(x: .value("Week", point.weekStart), y: .value("GMI", point.gmi))
+                    .interpolationMethod(.catmullRom)
+                    .foregroundStyle(Theme.accent)
+                PointMark(x: .value("Week", point.weekStart), y: .value("GMI", point.gmi))
+                    .foregroundStyle(Theme.accent)
+            }
+            .chartYAxis {
+                AxisMarks(values: .automatic(desiredCount: 4)) { value in
+                    AxisGridLine().foregroundStyle(Theme.hairline)
+                    AxisValueLabel {
+                        if let gmi = value.as(Double.self) {
+                            Text(gmi.formatted(.number.precision(.fractionLength(1))) + "%")
+                        }
+                    }
+                }
+            }
+            .chartXAxis {
+                AxisMarks(values: .stride(by: .weekOfYear)) { value in
+                    AxisGridLine().foregroundStyle(Theme.hairline)
+                    AxisValueLabel {
+                        if let date = value.as(Date.self) {
+                            Text(date.formatted(.dateTime.month(.abbreviated).day()))
+                        }
+                    }
+                }
+            }
+            .frame(height: 150)
+        }
     }
 
     // MARK: Time-in-range bar

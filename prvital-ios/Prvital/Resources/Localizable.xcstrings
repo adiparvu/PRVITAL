@@ -826,6 +826,17 @@
         }
       }
     },
+    "Estimated A1c trend": {
+      "extractionState": "manual",
+      "localizations": {
+        "ro": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Tendința A1c estimat"
+          }
+        }
+      }
+    },
     "Evening": {
       "extractionState": "manual",
       "localizations": {
