@@ -45,6 +45,17 @@
         }
       }
     },
+    "%@ in range": {
+      "extractionState": "manual",
+      "localizations": {
+        "ro": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%@ în interval"
+          }
+        }
+      }
+    },
     "%@ — above your range.": {
       "extractionState": "manual",
       "localizations": {
@@ -96,6 +107,17 @@
           "stringUnit": {
             "state": "translated",
             "value": "%@ → %@"
+          }
+        }
+      }
+    },
+    "%lld readings": {
+      "extractionState": "manual",
+      "localizations": {
+        "ro": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%lld valori"
           }
         }
       }
@@ -2384,6 +2406,28 @@
           "stringUnit": {
             "state": "translated",
             "value": "Astăzi"
+          }
+        }
+      }
+    },
+    "Today's time in range": {
+      "extractionState": "manual",
+      "localizations": {
+        "ro": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Timpul în interval azi"
+          }
+        }
+      }
+    },
+    "Today's time in range %@, %lld readings": {
+      "extractionState": "manual",
+      "localizations": {
+        "ro": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Timpul în interval azi %@, %lld valori"
           }
         }
       }

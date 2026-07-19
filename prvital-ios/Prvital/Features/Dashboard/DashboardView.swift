@@ -29,12 +29,16 @@ struct DashboardView: View {
         )
 
         let bolus = env.preferences.bolusParameters
+        let todayStats = DailyGlucose.today(readings, thresholds: thresholds)
 
         return NavigationStack {
             ScrollView {
                 VStack(spacing: 20) {
                     hero(summary: summary, thresholds: thresholds, unit: unit)
                     trendSection(summary: summary, thresholds: thresholds, unit: unit)
+                    if todayStats.hasGlucose {
+                        todayCard(todayStats)
+                    }
                     if bolus.isEnabled && bolus.isValid {
                         let now = Date()
                         onBoardCard(
@@ -226,6 +230,41 @@ struct DashboardView: View {
         }
         .accessibilityElement(children: .combine)
         .accessibilityLabel("\(velocity.trend.label), \(rateText), projected \(GlucoseFormatting.labeled(mgdL: projected, unit: unit)) in 15 minutes")
+    }
+
+    // MARK: - Today's time in range
+
+    private func todayCard(_ stats: PeriodStatistics) -> some View {
+        let pct = (stats.timeInRange * 100).formatted(.number.precision(.fractionLength(0))) + "%"
+        return SectionCard("Today's time in range", systemImage: "target") {
+            VStack(alignment: .leading, spacing: 8) {
+                GeometryReader { geo in
+                    HStack(spacing: 1) {
+                        todayBand(geo, stats.timeBelowRange, Theme.zoneWarning)
+                        todayBand(geo, stats.timeInRange, Theme.zoneInRange)
+                        todayBand(geo, stats.timeAboveRange, Theme.zoneHigh)
+                    }
+                    .clipShape(RoundedRectangle(cornerRadius: 5))
+                }
+                .frame(height: 14)
+
+                HStack {
+                    Text("\(pct) in range")
+                        .font(.subheadline.weight(.semibold))
+                        .foregroundStyle(Theme.zoneInRange)
+                    Spacer()
+                    Text("\(stats.readingCount) readings")
+                        .font(.caption)
+                        .foregroundStyle(Theme.textSecondary)
+                }
+            }
+            .accessibilityElement(children: .combine)
+            .accessibilityLabel("Today's time in range \(pct), \(stats.readingCount) readings")
+        }
+    }
+
+    private func todayBand(_ geo: GeometryProxy, _ fraction: Double, _ color: Color) -> some View {
+        color.frame(width: max(geo.size.width * fraction, fraction > 0 ? 2 : 0))
     }
 
     // MARK: - On board (insulin + carbs)
