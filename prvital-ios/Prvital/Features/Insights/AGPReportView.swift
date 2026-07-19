@@ -66,13 +66,31 @@ struct AGPReportView: View {
         .background(Theme.background)
     }
 
+    private var coverage: Double {
+        let range = interval.dateRange()
+        let window = range.upperBound.timeIntervalSince(range.lowerBound)
+        return GlucoseCoverage.coverage(readingCount: windowReadings.count, window: window)
+    }
+
     private var metrics: some View {
         let pct: (Double) -> String = { ($0 * 100).formatted(.number.precision(.fractionLength(0))) + "%" }
-        return LazyVGrid(columns: [GridItem(.flexible()), GridItem(.flexible())], spacing: 12) {
-            StatTile(title: "Average", value: GlucoseFormatting.labeled(mgdL: stats.average, unit: unit), systemImage: "number")
-            StatTile(title: "Time in range", value: pct(stats.timeInRange), tint: Theme.zoneInRange, systemImage: "target")
-            StatTile(title: "GMI (est. A1c)", value: stats.glucoseManagementIndicator.formatted(.number.precision(.fractionLength(1))) + "%", systemImage: "drop.fill")
-            StatTile(title: "Variability (CV)", value: pct(stats.coefficientOfVariation), tint: Theme.zoneHigh, systemImage: "waveform.path")
+        return VStack(spacing: 10) {
+            LazyVGrid(columns: [GridItem(.flexible()), GridItem(.flexible())], spacing: 12) {
+                StatTile(title: "Average", value: GlucoseFormatting.labeled(mgdL: stats.average, unit: unit), systemImage: "number")
+                StatTile(title: "Time in range", value: pct(stats.timeInRange), tint: Theme.zoneInRange, systemImage: "target")
+                StatTile(title: "GMI (est. A1c)", value: stats.glucoseManagementIndicator.formatted(.number.precision(.fractionLength(1))) + "%", systemImage: "drop.fill")
+                StatTile(title: "Variability (CV)", value: pct(stats.coefficientOfVariation), tint: Theme.zoneHigh, systemImage: "waveform.path")
+                StatTile(title: "Data coverage", value: pct(coverage),
+                         tint: GlucoseCoverage.isReliable(coverage) ? Theme.zoneInRange : Theme.zoneWarning,
+                         systemImage: "sensor.tag.radiowaves.forward")
+            }
+            if !GlucoseCoverage.isReliable(coverage) {
+                Label("Data coverage is below 70%, so the estimated A1c (GMI) is less reliable for this period.",
+                      systemImage: "exclamationmark.circle")
+                    .font(.caption2)
+                    .foregroundStyle(Theme.textTertiary)
+                    .frame(maxWidth: .infinity, alignment: .leading)
+            }
         }
     }
 
