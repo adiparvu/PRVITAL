@@ -46,7 +46,8 @@ struct ProvenanceBadge: View {
 
 /// A compact statistic tile: value, caption, optional tint.
 struct StatTile: View {
-    let title: String
+    /// Localized label (e.g. "Average"). `value`/`caption` are data shown verbatim.
+    let title: LocalizedStringKey
     let value: String
     var caption: String?
     var tint: Color = Theme.accent
@@ -65,8 +66,8 @@ struct StatTile: View {
         }
         .frame(maxWidth: .infinity, alignment: .leading)
         .glassCard(cornerRadius: 18, padding: 14)
+        // Combine the (localized) label and the value/caption texts for VoiceOver.
         .accessibilityElement(children: .combine)
-        .accessibilityLabel("\(title): \(value)\(caption.map { ", \($0)" } ?? "")")
     }
 }
 
@@ -94,8 +95,8 @@ struct QuickChip: View {
 /// Standard empty-state placeholder.
 struct EmptyStateView: View {
     let systemImage: String
-    let title: String
-    var message: String?
+    let title: LocalizedStringKey
+    var message: LocalizedStringKey?
     var body: some View {
         VStack(spacing: 10) {
             Image(systemName: systemImage)
