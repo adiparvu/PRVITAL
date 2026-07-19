@@ -19,6 +19,7 @@ final class AppEnvironment {
     let snapshots: SnapshotPublisher
     let exporter: ExportService
     let notifications: NotificationScheduler
+    let alerts: GlucoseAlertService
 
     init(modelContainer: ModelContainer, preferences: Preferences? = nil) {
         self.modelContainer = modelContainer
@@ -46,14 +47,18 @@ final class AppEnvironment {
         self.exporter = ExportService(audit: audit)
         self.notifications = NotificationScheduler()
 
-        self.snapshots = SnapshotPublisher(context: context, preferences: prefs, registry: registry)
+        let alerts = GlucoseAlertService()
+        self.alerts = alerts
+        self.snapshots = SnapshotPublisher(context: context, preferences: prefs, registry: registry, alerts: alerts)
         self.sync = SyncCoordinator(context: context, registry: registry, audit: audit)
         self.entryStore = EntryStore(context: context, audit: audit, healthKit: healthKit,
                                      consent: consent, registry: registry)
 
-        // Any write republishes the widget/watch snapshot.
+        // Any write — a manual entry or a completed sync — republishes the
+        // widget/watch snapshot and re-evaluates glucose alerts.
         let publisher = snapshots
         entryStore.onChange = { publisher.refresh() }
+        sync.onChange = { publisher.refresh() }
     }
 
     /// One-time launch work: prune the audit trail, seed demo data on a fresh

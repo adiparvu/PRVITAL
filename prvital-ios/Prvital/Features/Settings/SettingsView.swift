@@ -48,6 +48,17 @@ struct SettingsView: View {
                     }
 
                     NavigationLink {
+                        AlertsSettingsView()
+                    } label: {
+                        SettingsRow(
+                            title: "Glucose alerts",
+                            subtitle: env.preferences.alerts.enabled ? "On" : "Off",
+                            systemImage: "exclamationmark.triangle.fill",
+                            tint: Theme.zoneCritical
+                        )
+                    }
+
+                    NavigationLink {
                         TherapySettingsView()
                     } label: {
                         SettingsRow(

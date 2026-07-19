@@ -15,6 +15,7 @@ final class Preferences {
         self.reminders = Self.readReminders(self.defaults)
         self.nightscout = Self.readNightscout(self.defaults)
         self.bolusParameters = Self.readBolus(self.defaults)
+        self.alerts = Self.readAlerts(self.defaults)
     }
 
     var glucoseUnit: GlucoseUnit {
@@ -40,6 +41,11 @@ final class Preferences {
         didSet { if let data = try? JSONEncoder().encode(bolusParameters) { defaults.set(data, forKey: Keys.bolus) } }
     }
 
+    /// Reactive glucose alert settings (opt-in, off by default).
+    var alerts: AlertPreferences {
+        didSet { if let data = try? JSONEncoder().encode(alerts) { defaults.set(data, forKey: Keys.alerts) } }
+    }
+
     /// Quick-add presets (the +1U … +10U row and 20g … 100g row).
     let insulinPresets: [Double] = [1, 2, 4, 6, 8, 10]
     let carbPresets: [Double] = [20, 40, 60, 80, 100]
@@ -53,6 +59,7 @@ final class Preferences {
         static let reminders = "pref.reminders"
         static let nightscout = "pref.nightscout"
         static let bolus = "pref.bolusParameters"
+        static let alerts = "pref.alerts"
     }
 
     private static func readUnit(_ d: UserDefaults) -> GlucoseUnit {
@@ -79,6 +86,12 @@ final class Preferences {
     private static func readBolus(_ d: UserDefaults) -> BolusParameters {
         guard let data = d.data(forKey: Keys.bolus),
               let value = try? JSONDecoder().decode(BolusParameters.self, from: data)
+        else { return .default }
+        return value
+    }
+    private static func readAlerts(_ d: UserDefaults) -> AlertPreferences {
+        guard let data = d.data(forKey: Keys.alerts),
+              let value = try? JSONDecoder().decode(AlertPreferences.self, from: data)
         else { return .default }
         return value
     }
