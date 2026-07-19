@@ -364,6 +364,17 @@
         }
       }
     },
+    "Avg low recovery": {
+      "extractionState": "manual",
+      "localizations": {
+        "ro": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Recuperare medie după minime"
+          }
+        }
+      }
+    },
     "Basal insulin": {
       "extractionState": "manual",
       "localizations": {

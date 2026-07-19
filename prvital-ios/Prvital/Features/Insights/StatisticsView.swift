@@ -52,6 +52,10 @@ struct StatisticsView: View {
             || !filteredActivity.isEmpty
     }
 
+    private var hypoRecovery: HypoRecoveryStats? {
+        HypoRecoveryAnalyzer.analyze(activeReadings, thresholds: thresholds)
+    }
+
     private let columns = [
         GridItem(.flexible(), spacing: 12),
         GridItem(.flexible(), spacing: 12),
@@ -166,6 +170,10 @@ struct StatisticsView: View {
                      caption: "Low excursions", tint: Theme.zoneCritical, systemImage: "exclamationmark.triangle")
             StatTile(title: "Hyper events", value: stats.hasGlucose ? "\(stats.hyperEvents)" : "—",
                      caption: "High excursions", tint: Theme.zoneHigh, systemImage: "exclamationmark.triangle")
+
+            StatTile(title: "Avg low recovery",
+                     value: hypoRecovery.map { "\(Int($0.averageMinutes.rounded())) min" } ?? "—",
+                     caption: "Time back in range", tint: Theme.zoneWarning, systemImage: "arrow.uturn.up")
 
             StatTile(title: "Total bolus", value: "\(stats.totalBolusUnits.formatted()) U",
                      caption: "Rapid-acting", tint: Theme.accent, systemImage: "syringe.fill")
