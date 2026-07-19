@@ -52,6 +52,9 @@ struct AGPReportView: View {
     private var dayTypeComparison: DayTypeStats? {
         WeekdayWeekendComparator.compare(windowReadings, thresholds: thresholds)
     }
+    private var rebounds: [ReboundEvent] {
+        ReboundDetector.detect(windowReadings, thresholds: thresholds)
+    }
 
     var body: some View {
         ScrollView {
@@ -96,6 +99,11 @@ struct AGPReportView: View {
                     if let dayType = dayTypeComparison {
                         SectionCard("Weekday vs weekend", systemImage: "calendar") {
                             dayTypeContent(dayType)
+                        }
+                    }
+                    if !rebounds.isEmpty {
+                        SectionCard("Rebound highs", systemImage: "arrow.up.and.down") {
+                            reboundContent(rebounds)
                         }
                     }
                 } else {
@@ -274,6 +282,42 @@ struct AGPReportView: View {
             Text("\(avg) avg")
                 .font(.caption2)
                 .foregroundStyle(Theme.textTertiary)
+        }
+        .accessibilityElement(children: .combine)
+    }
+
+    // MARK: Rebound highs
+
+    private func reboundContent(_ events: [ReboundEvent]) -> some View {
+        VStack(alignment: .leading, spacing: 10) {
+            HStack(spacing: 20) {
+                deltaMetric(title: "Rebounds after lows", value: "\(events.count)", symbol: "arrow.up.forward", tint: Theme.zoneHigh)
+                Spacer()
+            }
+            Text("Glucose climbed above range within two hours of a low. Treating lows with a measured amount of carbs helps avoid the overshoot.")
+                .font(.caption2)
+                .foregroundStyle(Theme.textTertiary)
+            Divider().overlay(Theme.hairline)
+            ForEach(Array(events.prefix(3))) { event in
+                reboundRow(event)
+            }
+        }
+    }
+
+    private func reboundRow(_ event: ReboundEvent) -> some View {
+        let low = GlucoseFormatting.string(mgdL: event.lowMgdL, unit: unit)
+        let high = GlucoseFormatting.string(mgdL: event.highMgdL, unit: unit)
+        return HStack(spacing: 8) {
+            Image(systemName: "arrow.up.forward")
+                .foregroundStyle(Theme.zoneHigh)
+                .accessibilityHidden(true)
+            Text("\(low) → \(high)")
+                .font(.subheadline.weight(.medium))
+                .foregroundStyle(Theme.textPrimary)
+            Spacer()
+            Text("~\(event.minutesLowToHigh) min")
+                .font(.caption)
+                .foregroundStyle(Theme.textSecondary)
         }
         .accessibilityElement(children: .combine)
     }

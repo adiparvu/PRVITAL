@@ -89,6 +89,17 @@
         }
       }
     },
+    "%@ → %@": {
+      "extractionState": "manual",
+      "localizations": {
+        "ro": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%@ → %@"
+          }
+        }
+      }
+    },
     "A calculator to help you think through a dose — never a prescription. It uses only the numbers you enter below and is not a substitute for your clinician's advice. Always double-check before dosing.": {
       "extractionState": "manual",
       "localizations": {
@@ -932,6 +943,17 @@
           "stringUnit": {
             "state": "translated",
             "value": "Verificări glicemie"
+          }
+        }
+      }
+    },
+    "Glucose climbed above range within two hours of a low. Treating lows with a measured amount of carbs helps avoid the overshoot.": {
+      "extractionState": "manual",
+      "localizations": {
+        "ro": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Glicemia a urcat peste interval în două ore de la o minimă. Tratarea minimelor cu o cantitate măsurată de carbohidrați ajută la evitarea depășirii."
           }
         }
       }
@@ -1871,6 +1893,28 @@
         }
       }
     },
+    "Rebound highs": {
+      "extractionState": "manual",
+      "localizations": {
+        "ro": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Reveniri în urcare"
+          }
+        }
+      }
+    },
+    "Rebounds after lows": {
+      "extractionState": "manual",
+      "localizations": {
+        "ro": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Reveniri după minime"
+          }
+        }
+      }
+    },
     "Refresh": {
       "extractionState": "manual",
       "localizations": {
@@ -2670,6 +2714,17 @@
           "stringUnit": {
             "state": "translated",
             "value": "Sincronizare iCloud"
+          }
+        }
+      }
+    },
+    "~%lld min": {
+      "extractionState": "manual",
+      "localizations": {
+        "ro": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "~%lld min"
           }
         }
       }
