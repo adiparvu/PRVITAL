@@ -46,6 +46,9 @@ struct AGPReportView: View {
     private var mealImpactSummary: MealImpactSummary? {
         MealImpactAnalyzer.summary(mealImpacts)
     }
+    private var dawnPhenomenon: DawnPhenomenonResult? {
+        DawnPhenomenonDetector.analyze(windowReadings)
+    }
 
     var body: some View {
         ScrollView {
@@ -80,6 +83,11 @@ struct AGPReportView: View {
                     if let summary = mealImpactSummary {
                         SectionCard("Meal impact", systemImage: "fork.knife") {
                             mealImpactContent(summary)
+                        }
+                    }
+                    if let dawn = dawnPhenomenon, dawn.isPresent {
+                        SectionCard("Dawn phenomenon", systemImage: "sunrise.fill") {
+                            dawnContent(dawn)
                         }
                     }
                 } else {
@@ -214,6 +222,22 @@ struct AGPReportView: View {
         case .lunch: return Text("Lunch")
         case .dinner: return Text("Dinner")
         case .eveningSnack: return Text("Evening snack")
+        }
+    }
+
+    // MARK: Dawn phenomenon
+
+    private func dawnContent(_ dawn: DawnPhenomenonResult) -> some View {
+        let rise = unit.fromMgdL(dawn.medianRiseMgdL)
+        let riseText = rise.formatted(.number.precision(.fractionLength(unit.fractionDigits)).sign(strategy: .always())) + " " + unit.rawValue
+        return VStack(alignment: .leading, spacing: 8) {
+            HStack(spacing: 20) {
+                deltaMetric(title: "Typical morning rise", value: riseText, symbol: "sunrise", tint: Theme.zoneHigh)
+                Spacer()
+            }
+            Text("On most mornings your glucose climbs from its overnight low into breakfast — the dawn phenomenon. Seen on \(dawn.dayCount) days.")
+                .font(.caption2)
+                .foregroundStyle(Theme.textTertiary)
         }
     }
 

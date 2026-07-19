@@ -573,6 +573,17 @@
         }
       }
     },
+    "Dawn phenomenon": {
+      "extractionState": "manual",
+      "localizations": {
+        "ro": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Fenomenul de zori"
+          }
+        }
+      }
+    },
     "Defaults follow the international consensus: a 70–180 mg/dL target with 54 and 250 marking severe lows and highs.": {
       "extractionState": "manual",
       "localizations": {
@@ -1629,6 +1640,17 @@
         }
       }
     },
+    "On most mornings your glucose climbs from its overnight low into breakfast — the dawn phenomenon. Seen on %lld days.": {
+      "extractionState": "manual",
+      "localizations": {
+        "ro": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "În majoritatea dimineților glicemia urcă de la minimul nocturn spre micul dejun — fenomenul de zori. Observat în %lld zile."
+          }
+        }
+      }
+    },
     "On this device": {
       "extractionState": "manual",
       "localizations": {
@@ -2329,6 +2351,17 @@
           "stringUnit": {
             "state": "translated",
             "value": "Tip"
+          }
+        }
+      }
+    },
+    "Typical morning rise": {
+      "extractionState": "manual",
+      "localizations": {
+        "ro": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Creștere matinală tipică"
           }
         }
       }
