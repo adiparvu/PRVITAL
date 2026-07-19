@@ -8,6 +8,7 @@ import Charts
 struct AGPReportView: View {
     @Environment(AppEnvironment.self) private var env
     @Query(sort: \GlucoseReading.timestamp, order: .reverse) private var readings: [GlucoseReading]
+    @Query(sort: \CarbEntry.timestamp, order: .reverse) private var carbs: [CarbEntry]
 
     @State private var interval: InsightsInterval = .month
 
@@ -36,6 +37,14 @@ struct AGPReportView: View {
             ? nil
             : StatisticsEngine.glucose(previousWindowReadings, thresholds: thresholds)
         return StatComparator.compare(current: stats, previous: previous)
+    }
+    private var mealImpacts: [MealImpact] {
+        let range = interval.dateRange()
+        let windowMeals = carbs.filter { range.contains($0.timestamp) }
+        return MealImpactAnalyzer.analyze(meals: windowMeals, readings: readings)
+    }
+    private var mealImpactSummary: MealImpactSummary? {
+        MealImpactAnalyzer.summary(mealImpacts)
     }
 
     var body: some View {
@@ -66,6 +75,11 @@ struct AGPReportView: View {
                                     patternRow(insight)
                                 }
                             }
+                        }
+                    }
+                    if let summary = mealImpactSummary {
+                        SectionCard("Meal impact", systemImage: "fork.knife") {
+                            mealImpactContent(summary)
                         }
                     }
                 } else {
@@ -138,6 +152,69 @@ struct AGPReportView: View {
                 .foregroundStyle(Theme.textSecondary)
         }
         .accessibilityElement(children: .combine)
+    }
+
+    // MARK: Meal impact
+
+    @ViewBuilder
+    private func mealImpactContent(_ summary: MealImpactSummary) -> some View {
+        let rise = unit.fromMgdL(summary.averageRiseMgdL)
+        let riseText = rise.formatted(.number.precision(.fractionLength(unit.fractionDigits)).sign(strategy: .always())) + " " + unit.rawValue
+        let toPeak = Int(summary.averageMinutesToPeak.rounded())
+        let top = mealImpacts.sorted { $0.deltaMgdL > $1.deltaMgdL }.prefix(3)
+
+        VStack(alignment: .leading, spacing: 12) {
+            HStack(spacing: 20) {
+                deltaMetric(title: "Average rise", value: riseText, symbol: "arrow.up.forward", tint: Theme.zoneHigh)
+                Divider().frame(height: 38).overlay(Theme.hairline)
+                deltaMetric(title: "Time to peak", value: "~\(toPeak) min", symbol: "clock", tint: Theme.textSecondary)
+                Spacer()
+            }
+            Text("Based on \(summary.count) meals with a reading before and after.")
+                .font(.caption2)
+                .foregroundStyle(Theme.textTertiary)
+            if !top.isEmpty {
+                Divider().overlay(Theme.hairline)
+                ForEach(Array(top)) { impact in
+                    mealImpactRow(impact)
+                }
+            }
+        }
+    }
+
+    private func mealImpactRow(_ impact: MealImpact) -> some View {
+        let rise = unit.fromMgdL(impact.deltaMgdL)
+        let riseText = rise.formatted(.number.precision(.fractionLength(unit.fractionDigits)).sign(strategy: .always())) + " " + unit.rawValue
+        let grams = impact.grams.formatted(.number.precision(.fractionLength(0)))
+        return HStack(spacing: 10) {
+            Image(systemName: impact.mealType.symbol)
+                .foregroundStyle(Theme.accent)
+                .frame(width: 22)
+                .accessibilityHidden(true)
+            VStack(alignment: .leading, spacing: 1) {
+                mealTypeText(impact.mealType)
+                    .font(.subheadline.weight(.semibold))
+                    .foregroundStyle(Theme.textPrimary)
+                Text("\(grams) g · peak in ~\(impact.minutesToPeak) min")
+                    .font(.caption2)
+                    .foregroundStyle(Theme.textSecondary)
+            }
+            Spacer()
+            Text(riseText)
+                .font(.subheadline.weight(.bold))
+                .foregroundStyle(impact.deltaMgdL > 0 ? Theme.zoneHigh : Theme.zoneInRange)
+        }
+        .accessibilityElement(children: .combine)
+    }
+
+    private func mealTypeText(_ type: MealType) -> Text {
+        switch type {
+        case .breakfast: return Text("Breakfast")
+        case .morningSnack: return Text("Snack")
+        case .lunch: return Text("Lunch")
+        case .dinner: return Text("Dinner")
+        case .eveningSnack: return Text("Evening snack")
+        }
     }
 
     private var agpLegend: some View {

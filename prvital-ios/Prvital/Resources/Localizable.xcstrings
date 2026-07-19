@@ -23,6 +23,17 @@
         }
       }
     },
+    "%@ g · peak in ~%lld min": {
+      "extractionState": "manual",
+      "localizations": {
+        "ro": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%@ g · vârf în ~%lld min"
+          }
+        }
+      }
+    },
     "%@ — above your range.": {
       "extractionState": "manual",
       "localizations": {
@@ -298,6 +309,17 @@
         }
       }
     },
+    "Average rise": {
+      "extractionState": "manual",
+      "localizations": {
+        "ro": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Creștere medie"
+          }
+        }
+      }
+    },
     "Basal insulin": {
       "extractionState": "manual",
       "localizations": {
@@ -309,6 +331,17 @@
         }
       }
     },
+    "Based on %lld meals with a reading before and after.": {
+      "extractionState": "manual",
+      "localizations": {
+        "ro": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Pe baza a %lld mese cu o valoare înainte și după."
+          }
+        }
+      }
+    },
     "Bolus calculator": {
       "extractionState": "manual",
       "localizations": {
@@ -316,6 +349,17 @@
           "stringUnit": {
             "state": "translated",
             "value": "Calculator de bolus"
+          }
+        }
+      }
+    },
+    "Breakfast": {
+      "extractionState": "manual",
+      "localizations": {
+        "ro": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Mic dejun"
           }
         }
       }
@@ -573,6 +617,17 @@
         }
       }
     },
+    "Dinner": {
+      "extractionState": "manual",
+      "localizations": {
+        "ro": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Cină"
+          }
+        }
+      }
+    },
     "Display unit": {
       "extractionState": "manual",
       "localizations": {
@@ -712,6 +767,17 @@
           "stringUnit": {
             "state": "translated",
             "value": "Seara"
+          }
+        }
+      }
+    },
+    "Evening snack": {
+      "extractionState": "manual",
+      "localizations": {
+        "ro": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Gustare de seară"
           }
         }
       }
@@ -1222,6 +1288,17 @@
         }
       }
     },
+    "Lunch": {
+      "extractionState": "manual",
+      "localizations": {
+        "ro": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Prânz"
+          }
+        }
+      }
+    },
     "Maximum": {
       "extractionState": "manual",
       "localizations": {
@@ -1240,6 +1317,17 @@
           "stringUnit": {
             "state": "translated",
             "value": "Masă"
+          }
+        }
+      }
+    },
+    "Meal impact": {
+      "extractionState": "manual",
+      "localizations": {
+        "ro": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Impactul mesei"
           }
         }
       }
@@ -1882,6 +1970,17 @@
         }
       }
     },
+    "Snack": {
+      "extractionState": "manual",
+      "localizations": {
+        "ro": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Gustare"
+          }
+        }
+      }
+    },
     "Sources": {
       "extractionState": "manual",
       "localizations": {
@@ -2153,6 +2252,17 @@
           "stringUnit": {
             "state": "translated",
             "value": "Timp în interval"
+          }
+        }
+      }
+    },
+    "Time to peak": {
+      "extractionState": "manual",
+      "localizations": {
+        "ro": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Timp până la vârf"
           }
         }
       }
