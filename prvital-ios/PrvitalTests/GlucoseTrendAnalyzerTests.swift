@@ -72,4 +72,31 @@ final class GlucoseTrendAnalyzerTests: XCTestCase {
         let velocity = GlucoseVelocity(mgdLPerMinute: -10, trend: .fallingFast)
         XCTAssertEqual(velocity.projectedMgdL(from: 50, minutes: 30), 0, accuracy: 1e-6)
     }
+
+    // MARK: minutesToReach
+
+    func testMinutesToReachFallingTowardLow() throws {
+        // 120 -> 70 at -2.5 mg/dL/min = 20 min
+        XCTAssertEqual(try XCTUnwrap(GlucoseTrendAnalyzer.minutesToReach(70, from: 120, velocityPerMinute: -2.5)),
+                       20, accuracy: 1e-9)
+    }
+
+    func testMinutesToReachRisingTowardHigh() throws {
+        XCTAssertEqual(try XCTUnwrap(GlucoseTrendAnalyzer.minutesToReach(180, from: 150, velocityPerMinute: 3)),
+                       10, accuracy: 1e-9)
+    }
+
+    func testMinutesToReachFlatIsNil() {
+        XCTAssertNil(GlucoseTrendAnalyzer.minutesToReach(70, from: 120, velocityPerMinute: -0.2))
+    }
+
+    func testMinutesToReachMovingAwayIsNil() {
+        // rising while the target is a low below -> moving away
+        XCTAssertNil(GlucoseTrendAnalyzer.minutesToReach(70, from: 120, velocityPerMinute: 2))
+    }
+
+    func testMinutesToReachAlreadyPastIsNil() {
+        // already below the target and still falling -> negative time
+        XCTAssertNil(GlucoseTrendAnalyzer.minutesToReach(70, from: 60, velocityPerMinute: -2))
+    }
 }

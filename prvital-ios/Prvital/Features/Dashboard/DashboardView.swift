@@ -109,6 +109,10 @@ struct DashboardView: View {
                     }
                 }
                 .accessibilityElement(children: .combine)
+
+                if let warning = projectionWarning(summary: summary, thresholds: thresholds) {
+                    warningChip(warning)
+                }
             } else {
                 Button {
                     Haptics.play(.light)
@@ -132,6 +136,47 @@ struct DashboardView: View {
         guard let minutes = summary.minutesSinceUpdate else { return "Updated recently" }
         if minutes <= 0 { return "Updated just now" }
         return "Updated \(minutes) min ago"
+    }
+
+    // MARK: - Predictive warning
+
+    private enum ProjectionWarning { case low(Int), high(Int) }
+
+    /// Projects the current velocity to the next threshold and warns when a low
+    /// or high is due within ~45 minutes.
+    private func projectionWarning(summary: DashboardSummary, thresholds: GlucoseThresholds) -> ProjectionWarning? {
+        guard !summary.isStale, let velocity = summary.velocity, let current = summary.current else { return nil }
+        let mgdL = current.valueMgdL
+        let slope = velocity.mgdLPerMinute
+        let horizon = 45.0
+
+        if slope < 0, mgdL > thresholds.targetLower,
+           let minutes = GlucoseTrendAnalyzer.minutesToReach(thresholds.targetLower, from: mgdL, velocityPerMinute: slope),
+           minutes <= horizon {
+            return .low(Int(minutes.rounded()))
+        }
+        if slope > 0, mgdL < thresholds.targetUpper,
+           let minutes = GlucoseTrendAnalyzer.minutesToReach(thresholds.targetUpper, from: mgdL, velocityPerMinute: slope),
+           minutes <= horizon {
+            return .high(Int(minutes.rounded()))
+        }
+        return nil
+    }
+
+    private func warningChip(_ warning: ProjectionWarning) -> some View {
+        let text: Text
+        let tint: Color
+        switch warning {
+        case .low(let minutes): text = Text("Low predicted in ~\(minutes) min"); tint = Theme.zoneWarning
+        case .high(let minutes): text = Text("High predicted in ~\(minutes) min"); tint = Theme.zoneHigh
+        }
+        return Label { text } icon: { Image(systemName: "exclamationmark.triangle.fill") }
+            .font(.caption.weight(.semibold))
+            .foregroundStyle(tint)
+            .padding(.horizontal, 10)
+            .padding(.vertical, 5)
+            .background(tint.opacity(0.14), in: .capsule)
+            .accessibilityElement(children: .combine)
     }
 
     // MARK: - Trend

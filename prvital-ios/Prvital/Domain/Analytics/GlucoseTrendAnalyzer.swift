@@ -64,4 +64,14 @@ enum GlucoseTrendAnalyzer {
         if slope <= -1.5 { return .falling }
         return .stable
     }
+
+    /// Minutes until glucose reaches `target` from `currentMgdL` at the given
+    /// velocity — but only when it is genuinely heading toward it. Returns `nil`
+    /// when the trend is too flat to project (|velocity| < 0.5 mg/dL/min) or is
+    /// moving away from (or already past) the target.
+    static func minutesToReach(_ target: Double, from currentMgdL: Double, velocityPerMinute: Double) -> Double? {
+        guard abs(velocityPerMinute) >= 0.5 else { return nil }
+        let minutes = (target - currentMgdL) / velocityPerMinute
+        return minutes > 0 ? minutes : nil
+    }
 }

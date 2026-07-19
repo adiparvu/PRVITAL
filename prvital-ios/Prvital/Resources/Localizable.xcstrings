@@ -881,6 +881,17 @@
         }
       }
     },
+    "High predicted in ~%lld min": {
+      "extractionState": "manual",
+      "localizations": {
+        "ro": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Ridicat estimat în ~%lld min"
+          }
+        }
+      }
+    },
     "Highest": {
       "extractionState": "manual",
       "localizations": {
@@ -1152,6 +1163,17 @@
           "stringUnit": {
             "state": "translated",
             "value": "Glicemie scăzută"
+          }
+        }
+      }
+    },
+    "Low predicted in ~%lld min": {
+      "extractionState": "manual",
+      "localizations": {
+        "ro": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Scăzut estimat în ~%lld min"
           }
         }
       }
