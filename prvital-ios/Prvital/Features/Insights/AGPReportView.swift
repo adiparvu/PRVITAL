@@ -24,6 +24,19 @@ struct AGPReportView: View {
     private var buckets: [AGPBucket] {
         AGPAggregator.buckets(windowReadings, binMinutes: 60)
     }
+    private var patterns: [GlucoseInsight] {
+        GlucosePatternDetector.insights(windowReadings, thresholds: thresholds)
+    }
+    private var previousWindowReadings: [GlucoseReading] {
+        let range = interval.previousDateRange()
+        return readings.filter { $0.isActive && range.contains($0.timestamp) }
+    }
+    private var comparison: StatComparison {
+        let previous = previousWindowReadings.isEmpty
+            ? nil
+            : StatisticsEngine.glucose(previousWindowReadings, thresholds: thresholds)
+        return StatComparator.compare(current: stats, previous: previous)
+    }
 
     var body: some View {
         ScrollView {
@@ -36,12 +49,24 @@ struct AGPReportView: View {
 
                 if stats.hasGlucose {
                     metrics
+                    if comparison.hasPrevious {
+                        comparisonCard(comparison)
+                    }
                     SectionCard("Ambulatory Glucose Profile", systemImage: "waveform.path.ecg") {
                         AGPChart(buckets: buckets, thresholds: thresholds, unit: unit)
                         agpLegend
                     }
                     SectionCard("Time in range", systemImage: "chart.bar.fill") {
                         TimeInRangeBar(stats: stats)
+                    }
+                    if !patterns.isEmpty {
+                        SectionCard("Patterns", systemImage: "sparkles") {
+                            VStack(alignment: .leading, spacing: 12) {
+                                ForEach(patterns) { insight in
+                                    patternRow(insight)
+                                }
+                            }
+                        }
                     }
                 } else {
                     EmptyStateView(systemImage: "waveform.path.ecg",
@@ -54,14 +79,65 @@ struct AGPReportView: View {
         .background(Theme.background)
     }
 
+    private var coverage: Double {
+        let range = interval.dateRange()
+        let window = range.upperBound.timeIntervalSince(range.lowerBound)
+        return GlucoseCoverage.coverage(readingCount: windowReadings.count, window: window)
+    }
+
     private var metrics: some View {
         let pct: (Double) -> String = { ($0 * 100).formatted(.number.precision(.fractionLength(0))) + "%" }
-        return LazyVGrid(columns: [GridItem(.flexible()), GridItem(.flexible())], spacing: 12) {
-            StatTile(title: "Average", value: GlucoseFormatting.labeled(mgdL: stats.average, unit: unit), systemImage: "number")
-            StatTile(title: "Time in range", value: pct(stats.timeInRange), tint: Theme.zoneInRange, systemImage: "target")
-            StatTile(title: "GMI (est. A1c)", value: stats.glucoseManagementIndicator.formatted(.number.precision(.fractionLength(1))) + "%", systemImage: "drop.fill")
-            StatTile(title: "Variability (CV)", value: pct(stats.coefficientOfVariation), tint: Theme.zoneHigh, systemImage: "waveform.path")
+        return VStack(spacing: 10) {
+            LazyVGrid(columns: [GridItem(.flexible()), GridItem(.flexible())], spacing: 12) {
+                StatTile(title: "Average", value: GlucoseFormatting.labeled(mgdL: stats.average, unit: unit), systemImage: "number")
+                StatTile(title: "Time in range", value: pct(stats.timeInRange), tint: Theme.zoneInRange, systemImage: "target")
+                StatTile(title: "GMI (est. A1c)", value: stats.glucoseManagementIndicator.formatted(.number.precision(.fractionLength(1))) + "%", systemImage: "drop.fill")
+                StatTile(title: "Variability (CV)", value: pct(stats.coefficientOfVariation), tint: Theme.zoneHigh, systemImage: "waveform.path")
+                StatTile(title: "Data coverage", value: pct(coverage),
+                         tint: GlucoseCoverage.isReliable(coverage) ? Theme.zoneInRange : Theme.zoneWarning,
+                         systemImage: "sensor.tag.radiowaves.forward")
+            }
+            if !GlucoseCoverage.isReliable(coverage) {
+                Label("Data coverage is below 70%, so the estimated A1c (GMI) is less reliable for this period.",
+                      systemImage: "exclamationmark.circle")
+                    .font(.caption2)
+                    .foregroundStyle(Theme.textTertiary)
+                    .frame(maxWidth: .infinity, alignment: .leading)
+            }
         }
+    }
+
+    // MARK: Period comparison
+
+    private func comparisonCard(_ comparison: StatComparison) -> some View {
+        let tirDelta = comparison.timeInRangeDelta
+        let tirText = (tirDelta * 100).formatted(.number.precision(.fractionLength(0)).sign(strategy: .always())) + "%"
+        let tirTint = tirDelta > 0 ? Theme.zoneInRange : (tirDelta < 0 ? Theme.zoneCritical : Theme.textSecondary)
+        let tirSymbol = tirDelta > 0 ? "arrow.up.right" : (tirDelta < 0 ? "arrow.down.right" : "arrow.right")
+
+        let avgDelta = unit.fromMgdL(comparison.averageDelta)
+        let avgText = avgDelta.formatted(.number.precision(.fractionLength(unit.fractionDigits)).sign(strategy: .always())) + " " + unit.rawValue
+
+        return SectionCard("Compared with previous period", systemImage: "arrow.left.arrow.right") {
+            HStack(spacing: 20) {
+                deltaMetric(title: "Time in range", value: tirText, symbol: tirSymbol, tint: tirTint)
+                Divider().frame(height: 38).overlay(Theme.hairline)
+                deltaMetric(title: "Average", value: avgText, symbol: "arrow.left.arrow.right", tint: Theme.textSecondary)
+                Spacer()
+            }
+        }
+    }
+
+    private func deltaMetric(title: LocalizedStringKey, value: String, symbol: String, tint: Color) -> some View {
+        VStack(alignment: .leading, spacing: 3) {
+            Label(value, systemImage: symbol)
+                .font(.title3.weight(.bold))
+                .foregroundStyle(tint)
+            Text(title)
+                .font(.caption2)
+                .foregroundStyle(Theme.textSecondary)
+        }
+        .accessibilityElement(children: .combine)
     }
 
     private var agpLegend: some View {
@@ -75,10 +151,58 @@ struct AGPReportView: View {
         .foregroundStyle(Theme.textSecondary)
     }
 
-    private func legendSwatch(_ color: Color, _ label: String) -> some View {
+    private func legendSwatch(_ color: Color, _ label: LocalizedStringKey) -> some View {
         HStack(spacing: 4) {
             RoundedRectangle(cornerRadius: 2).fill(color).frame(width: 14, height: 8)
             Text(label)
+        }
+    }
+
+    // MARK: Patterns
+
+    private func patternRow(_ insight: GlucoseInsight) -> some View {
+        let pct = insight.fraction.formatted(.percent.precision(.fractionLength(0)))
+        return HStack(alignment: .top, spacing: 10) {
+            Image(systemName: insight.symbol)
+                .foregroundStyle(insight.kind == .frequentLow ? Theme.zoneCritical : Theme.zoneHigh)
+                .accessibilityHidden(true)
+            VStack(alignment: .leading, spacing: 2) {
+                HStack(spacing: 5) {
+                    periodText(insight.period)
+                    Text("·").foregroundStyle(Theme.textTertiary)
+                    kindText(insight.kind)
+                }
+                .font(.subheadline.weight(.semibold))
+                .foregroundStyle(Theme.textPrimary)
+                detailText(insight, pct: pct)
+                    .font(.caption)
+                    .foregroundStyle(Theme.textSecondary)
+            }
+            Spacer()
+        }
+        .accessibilityElement(children: .combine)
+    }
+
+    private func periodText(_ period: DayPeriod) -> Text {
+        switch period {
+        case .overnight: return Text("Overnight")
+        case .morning: return Text("Morning")
+        case .afternoon: return Text("Afternoon")
+        case .evening: return Text("Evening")
+        }
+    }
+
+    private func kindText(_ kind: GlucoseInsight.Kind) -> Text {
+        switch kind {
+        case .frequentLow: return Text("frequent lows")
+        case .frequentHigh: return Text("frequent highs")
+        }
+    }
+
+    private func detailText(_ insight: GlucoseInsight, pct: String) -> Text {
+        switch insight.kind {
+        case .frequentLow: return Text("\(pct) below range")
+        case .frequentHigh: return Text("\(pct) above range")
         }
     }
 }

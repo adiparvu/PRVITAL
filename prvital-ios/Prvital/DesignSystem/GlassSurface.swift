@@ -39,12 +39,12 @@ extension View {
 
 /// A titled section container used throughout the app.
 struct SectionCard<Content: View>: View {
-    let title: String
+    let title: LocalizedStringKey
     var systemImage: String?
     var accessory: AnyView?
     @ViewBuilder var content: () -> Content
 
-    init(_ title: String, systemImage: String? = nil, accessory: AnyView? = nil, @ViewBuilder content: @escaping () -> Content) {
+    init(_ title: LocalizedStringKey, systemImage: String? = nil, accessory: AnyView? = nil, @ViewBuilder content: @escaping () -> Content) {
         self.title = title
         self.systemImage = systemImage
         self.accessory = accessory

@@ -36,7 +36,11 @@ struct DashboardView: View {
                     hero(summary: summary, thresholds: thresholds, unit: unit)
                     trendSection(summary: summary, thresholds: thresholds, unit: unit)
                     if bolus.isEnabled && bolus.isValid {
-                        iobCard(units: InsulinMath.activeInsulin(doses: insulin, at: Date(), parameters: bolus))
+                        let now = Date()
+                        onBoardCard(
+                            iob: InsulinMath.activeInsulin(doses: insulin, at: now, parameters: bolus),
+                            cob: CarbMath.carbsOnBoard(entries: carbs, at: now)
+                        )
                     }
                     recentRow(summary: summary)
                 }
@@ -105,6 +109,10 @@ struct DashboardView: View {
                     }
                 }
                 .accessibilityElement(children: .combine)
+
+                if let warning = projectionWarning(summary: summary, thresholds: thresholds) {
+                    warningChip(warning)
+                }
             } else {
                 Button {
                     Haptics.play(.light)
@@ -130,11 +138,55 @@ struct DashboardView: View {
         return "Updated \(minutes) min ago"
     }
 
+    // MARK: - Predictive warning
+
+    private enum ProjectionWarning { case low(Int), high(Int) }
+
+    /// Projects the current velocity to the next threshold and warns when a low
+    /// or high is due within ~45 minutes.
+    private func projectionWarning(summary: DashboardSummary, thresholds: GlucoseThresholds) -> ProjectionWarning? {
+        guard !summary.isStale, let velocity = summary.velocity, let current = summary.current else { return nil }
+        let mgdL = current.valueMgdL
+        let slope = velocity.mgdLPerMinute
+        let horizon = 45.0
+
+        if slope < 0, mgdL > thresholds.targetLower,
+           let minutes = GlucoseTrendAnalyzer.minutesToReach(thresholds.targetLower, from: mgdL, velocityPerMinute: slope),
+           minutes <= horizon {
+            return .low(Int(minutes.rounded()))
+        }
+        if slope > 0, mgdL < thresholds.targetUpper,
+           let minutes = GlucoseTrendAnalyzer.minutesToReach(thresholds.targetUpper, from: mgdL, velocityPerMinute: slope),
+           minutes <= horizon {
+            return .high(Int(minutes.rounded()))
+        }
+        return nil
+    }
+
+    private func warningChip(_ warning: ProjectionWarning) -> some View {
+        let text: Text
+        let tint: Color
+        switch warning {
+        case .low(let minutes): text = Text("Low predicted in ~\(minutes) min"); tint = Theme.zoneWarning
+        case .high(let minutes): text = Text("High predicted in ~\(minutes) min"); tint = Theme.zoneHigh
+        }
+        return Label { text } icon: { Image(systemName: "exclamationmark.triangle.fill") }
+            .font(.caption.weight(.semibold))
+            .foregroundStyle(tint)
+            .padding(.horizontal, 10)
+            .padding(.vertical, 5)
+            .background(tint.opacity(0.14), in: .capsule)
+            .accessibilityElement(children: .combine)
+    }
+
     // MARK: - Trend
 
     @ViewBuilder
     private func trendSection(summary: DashboardSummary, thresholds: GlucoseThresholds, unit: GlucoseUnit) -> some View {
         SectionCard("Last 3 hours", systemImage: "waveform.path.ecg") {
+            if let velocity = summary.velocity, let current = summary.current {
+                velocityLine(velocity, currentMgdL: current.valueMgdL, unit: unit)
+            }
             if summary.recent.isEmpty {
                 EmptyStateView(
                     systemImage: "chart.xyaxis.line",
@@ -152,18 +204,38 @@ struct DashboardView: View {
         }
     }
 
-    // MARK: - Insulin on board
+    private func velocityLine(_ velocity: GlucoseVelocity, currentMgdL: Double, unit: GlucoseUnit) -> some View {
+        let projected = velocity.projectedMgdL(from: currentMgdL, minutes: 15)
+        let rateValue = unit.fromMgdL(velocity.mgdLPerMinute)
+        let rate = rateValue.formatted(.number.precision(.fractionLength(unit == .mgdL ? 1 : 2)))
+        let rateText = "\(rateValue > 0 ? "+" : "")\(rate) \(unit.rawValue)/min"
+        return HStack(spacing: 8) {
+            Image(systemName: velocity.trend.symbol)
+                .font(.subheadline.weight(.semibold))
+                .foregroundStyle(Theme.accent)
+            Text(velocity.trend.label)
+                .font(.subheadline.weight(.medium))
+                .foregroundStyle(Theme.textPrimary)
+            Text(rateText)
+                .font(.caption)
+                .foregroundStyle(Theme.textSecondary)
+            Spacer()
+            Text("~\(GlucoseFormatting.string(mgdL: projected, unit: unit)) in 15 min")
+                .font(.caption)
+                .foregroundStyle(Theme.textSecondary)
+        }
+        .accessibilityElement(children: .combine)
+        .accessibilityLabel("\(velocity.trend.label), \(rateText), projected \(GlucoseFormatting.labeled(mgdL: projected, unit: unit)) in 15 minutes")
+    }
 
-    private func iobCard(units: Double) -> some View {
-        SectionCard("Insulin on board", systemImage: "chart.line.downtrend.xyaxis") {
-            HStack(alignment: .firstTextBaseline, spacing: 6) {
-                Text(units.formatted(.number.precision(.fractionLength(1))))
-                    .font(.system(size: 30, weight: .bold, design: .rounded))
-                    .foregroundStyle(Theme.textPrimary)
-                    .contentTransition(.numericText())
-                Text("U")
-                    .font(.subheadline.weight(.semibold))
-                    .foregroundStyle(Theme.textSecondary)
+    // MARK: - On board (insulin + carbs)
+
+    private func onBoardCard(iob: Double, cob: Double) -> some View {
+        SectionCard("On board", systemImage: "chart.line.downtrend.xyaxis") {
+            HStack(spacing: 18) {
+                onBoardMetric(value: iob.formatted(.number.precision(.fractionLength(1))), unit: "U", label: "Insulin")
+                Divider().frame(height: 34).overlay(Theme.hairline)
+                onBoardMetric(value: cob.formatted(.number.precision(.fractionLength(0))), unit: "g", label: "Carbs")
                 Spacer()
                 NavigationLink {
                     BolusCalculatorView()
@@ -173,6 +245,23 @@ struct DashboardView: View {
                         .foregroundStyle(Theme.accent)
                 }
             }
+        }
+    }
+
+    private func onBoardMetric(value: String, unit: String, label: String) -> some View {
+        VStack(alignment: .leading, spacing: 2) {
+            HStack(alignment: .firstTextBaseline, spacing: 3) {
+                Text(value)
+                    .font(.system(size: 26, weight: .bold, design: .rounded))
+                    .foregroundStyle(Theme.textPrimary)
+                    .contentTransition(.numericText())
+                Text(unit)
+                    .font(.subheadline.weight(.semibold))
+                    .foregroundStyle(Theme.textSecondary)
+            }
+            Text(label)
+                .font(.caption2)
+                .foregroundStyle(Theme.textSecondary)
         }
     }
 

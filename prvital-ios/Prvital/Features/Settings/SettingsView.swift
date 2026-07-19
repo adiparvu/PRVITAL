@@ -48,6 +48,17 @@ struct SettingsView: View {
                     }
 
                     NavigationLink {
+                        AlertsSettingsView()
+                    } label: {
+                        SettingsRow(
+                            title: "Glucose alerts",
+                            subtitle: env.preferences.alerts.enabled ? "On" : "Off",
+                            systemImage: "exclamationmark.triangle.fill",
+                            tint: Theme.zoneCritical
+                        )
+                    }
+
+                    NavigationLink {
                         TherapySettingsView()
                     } label: {
                         SettingsRow(
@@ -112,7 +123,8 @@ struct SettingsView: View {
 
 /// A settings destination row: a tinted glyph, a title and a live subtitle.
 private struct SettingsRow: View {
-    let title: String
+    /// Localized row title. `subtitle` shows live data (a unit, a source name).
+    let title: LocalizedStringKey
     let subtitle: String
     let systemImage: String
     var tint: Color = Theme.accent
@@ -136,8 +148,8 @@ private struct SettingsRow: View {
             }
         }
         .padding(.vertical, 4)
+        // Combine the (localized) title and the subtitle for VoiceOver.
         .accessibilityElement(children: .combine)
-        .accessibilityLabel("\(title), \(subtitle)")
     }
 }
 

@@ -1,6 +1,72 @@
 {
   "sourceLanguage": "en",
   "strings": {
+    "%@ above range": {
+      "extractionState": "manual",
+      "localizations": {
+        "ro": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%@ peste interval"
+          }
+        }
+      }
+    },
+    "%@ below range": {
+      "extractionState": "manual",
+      "localizations": {
+        "ro": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%@ sub interval"
+          }
+        }
+      }
+    },
+    "%@ — above your range.": {
+      "extractionState": "manual",
+      "localizations": {
+        "ro": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%@ — peste intervalul tău."
+          }
+        }
+      }
+    },
+    "%@ — below your range.": {
+      "extractionState": "manual",
+      "localizations": {
+        "ro": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%@ — sub intervalul tău."
+          }
+        }
+      }
+    },
+    "%@ — check for ketones and follow your plan.": {
+      "extractionState": "manual",
+      "localizations": {
+        "ro": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%@ — verifică cetonele și urmează planul tău."
+          }
+        }
+      }
+    },
+    "%@ — treat now.": {
+      "extractionState": "manual",
+      "localizations": {
+        "ro": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%@ — tratează acum."
+          }
+        }
+      }
+    },
     "A calculator to help you think through a dose — never a prescription. It uses only the numbers you enter below and is not a substitute for your clinician's advice. Always double-check before dosing.": {
       "extractionState": "manual",
       "localizations": {
@@ -67,6 +133,39 @@
         }
       }
     },
+    "A good moment to log how you're doing.": {
+      "extractionState": "manual",
+      "localizations": {
+        "ro": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Un moment bun să notezi cum te simți."
+          }
+        }
+      }
+    },
+    "A log of every sensitive action": {
+      "extractionState": "manual",
+      "localizations": {
+        "ro": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Un jurnal al fiecărei acțiuni sensibile"
+          }
+        }
+      }
+    },
+    "A quick reading keeps your trend complete.": {
+      "extractionState": "manual",
+      "localizations": {
+        "ro": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "O citire rapidă îți menține tendința completă."
+          }
+        }
+      }
+    },
     "A repeating reminder to drink water through the day.": {
       "extractionState": "manual",
       "localizations": {
@@ -74,6 +173,17 @@
           "stringUnit": {
             "state": "translated",
             "value": "O reamintire repetată să bei apă pe parcursul zilei."
+          }
+        }
+      }
+    },
+    "Activities": {
+      "extractionState": "manual",
+      "localizations": {
+        "ro": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Activități"
           }
         }
       }
@@ -89,6 +199,17 @@
         }
       }
     },
+    "Add a reading or connect a sensor to see your day.": {
+      "extractionState": "manual",
+      "localizations": {
+        "ro": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Adaugă o citire sau conectează un senzor ca să-ți vezi ziua."
+          }
+        }
+      }
+    },
     "Add entry": {
       "extractionState": "manual",
       "localizations": {
@@ -96,6 +217,17 @@
           "stringUnit": {
             "state": "translated",
             "value": "Adaugă înregistrare"
+          }
+        }
+      }
+    },
+    "Add readings and entries to see statistics for this period.": {
+      "extractionState": "manual",
+      "localizations": {
+        "ro": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Adaugă citiri și înregistrări ca să vezi statistici pentru această perioadă."
           }
         }
       }
@@ -111,6 +243,17 @@
         }
       }
     },
+    "Afternoon": {
+      "extractionState": "manual",
+      "localizations": {
+        "ro": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "După-amiaza"
+          }
+        }
+      }
+    },
     "Allow notifications": {
       "extractionState": "manual",
       "localizations": {
@@ -122,6 +265,17 @@
         }
       }
     },
+    "Ambulatory Glucose Profile": {
+      "extractionState": "manual",
+      "localizations": {
+        "ro": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Profil glicemic ambulatoriu"
+          }
+        }
+      }
+    },
     "Audit trail": {
       "extractionState": "manual",
       "localizations": {
@@ -129,6 +283,28 @@
           "stringUnit": {
             "state": "translated",
             "value": "Jurnal de audit"
+          }
+        }
+      }
+    },
+    "Average": {
+      "extractionState": "manual",
+      "localizations": {
+        "ro": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Media"
+          }
+        }
+      }
+    },
+    "Basal insulin": {
+      "extractionState": "manual",
+      "localizations": {
+        "ro": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Insulină bazală"
           }
         }
       }
@@ -155,6 +331,61 @@
         }
       }
     },
+    "Carb entries": {
+      "extractionState": "manual",
+      "localizations": {
+        "ro": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Înregistrări carbohidrați"
+          }
+        }
+      }
+    },
+    "Carbohydrates": {
+      "extractionState": "manual",
+      "localizations": {
+        "ro": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Carbohidrați"
+          }
+        }
+      }
+    },
+    "Check first": {
+      "extractionState": "manual",
+      "localizations": {
+        "ro": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Verifică întâi"
+          }
+        }
+      }
+    },
+    "Check your glucose": {
+      "extractionState": "manual",
+      "localizations": {
+        "ro": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Verifică-ți glicemia"
+          }
+        }
+      }
+    },
+    "Choose a different period, or add a new entry.": {
+      "extractionState": "manual",
+      "localizations": {
+        "ro": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Alege altă perioadă sau adaugă o înregistrare nouă."
+          }
+        }
+      }
+    },
     "Choose what to enable": {
       "extractionState": "manual",
       "localizations": {
@@ -162,6 +393,17 @@
           "stringUnit": {
             "state": "translated",
             "value": "Alege ce să activezi"
+          }
+        }
+      }
+    },
+    "Compared with previous period": {
+      "extractionState": "manual",
+      "localizations": {
+        "ro": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Comparativ cu perioada anterioară"
           }
         }
       }
@@ -184,6 +426,17 @@
           "stringUnit": {
             "state": "translated",
             "value": "Conexiune"
+          }
+        }
+      }
+    },
+    "Consent & permissions": {
+      "extractionState": "manual",
+      "localizations": {
+        "ro": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Consimțământ și permisiuni"
           }
         }
       }
@@ -239,6 +492,39 @@
           "stringUnit": {
             "state": "translated",
             "value": "Panou"
+          }
+        }
+      }
+    },
+    "Data & control": {
+      "extractionState": "manual",
+      "localizations": {
+        "ro": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Date și control"
+          }
+        }
+      }
+    },
+    "Data coverage": {
+      "extractionState": "manual",
+      "localizations": {
+        "ro": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Acoperire date"
+          }
+        }
+      }
+    },
+    "Data coverage is below 70%, so the estimated A1c (GMI) is less reliable for this period.": {
+      "extractionState": "manual",
+      "localizations": {
+        "ro": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Acoperirea datelor este sub 70%, așa că A1c estimat (GMI) este mai puțin fiabil pentru această perioadă."
           }
         }
       }
@@ -397,6 +683,17 @@
         }
       }
     },
+    "Entries": {
+      "extractionState": "manual",
+      "localizations": {
+        "ro": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Înregistrări"
+          }
+        }
+      }
+    },
     "Entries only (no glucose reading)": {
       "extractionState": "manual",
       "localizations": {
@@ -404,6 +701,17 @@
           "stringUnit": {
             "state": "translated",
             "value": "Doar înregistrări (fără citire de glicemie)"
+          }
+        }
+      }
+    },
+    "Evening": {
+      "extractionState": "manual",
+      "localizations": {
+        "ro": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Seara"
           }
         }
       }
@@ -485,6 +793,83 @@
         }
       }
     },
+    "GMI (est. A1c)": {
+      "extractionState": "manual",
+      "localizations": {
+        "ro": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "GMI (A1c est.)"
+          }
+        }
+      }
+    },
+    "Generate report": {
+      "extractionState": "manual",
+      "localizations": {
+        "ro": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Generează raport"
+          }
+        }
+      }
+    },
+    "Glucose": {
+      "extractionState": "manual",
+      "localizations": {
+        "ro": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Glicemie"
+          }
+        }
+      }
+    },
+    "Glucose alerts": {
+      "extractionState": "manual",
+      "localizations": {
+        "ro": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Alerte glicemie"
+          }
+        }
+      }
+    },
+    "Glucose checks": {
+      "extractionState": "manual",
+      "localizations": {
+        "ro": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Verificări glicemie"
+          }
+        }
+      }
+    },
+    "Glucose readings": {
+      "extractionState": "manual",
+      "localizations": {
+        "ro": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Citiri glicemie"
+          }
+        }
+      }
+    },
+    "Glucose trend": {
+      "extractionState": "manual",
+      "localizations": {
+        "ro": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Tendință glicemie"
+          }
+        }
+      }
+    },
     "Glucose unit": {
       "extractionState": "manual",
       "localizations": {
@@ -492,6 +877,61 @@
           "stringUnit": {
             "state": "translated",
             "value": "Unitate glicemie"
+          }
+        }
+      }
+    },
+    "Grams": {
+      "extractionState": "manual",
+      "localizations": {
+        "ro": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Grame"
+          }
+        }
+      }
+    },
+    "Have some water.": {
+      "extractionState": "manual",
+      "localizations": {
+        "ro": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Bea niște apă."
+          }
+        }
+      }
+    },
+    "High glucose": {
+      "extractionState": "manual",
+      "localizations": {
+        "ro": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Glicemie ridicată"
+          }
+        }
+      }
+    },
+    "High predicted in ~%lld min": {
+      "extractionState": "manual",
+      "localizations": {
+        "ro": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Ridicat estimat în ~%lld min"
+          }
+        }
+      }
+    },
+    "Highest": {
+      "extractionState": "manual",
+      "localizations": {
+        "ro": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Cea mai mare"
           }
         }
       }
@@ -507,6 +947,61 @@
         }
       }
     },
+    "Hydration": {
+      "extractionState": "manual",
+      "localizations": {
+        "ro": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Hidratare"
+          }
+        }
+      }
+    },
+    "Hyper events": {
+      "extractionState": "manual",
+      "localizations": {
+        "ro": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Evenimente hiper"
+          }
+        }
+      }
+    },
+    "Hypo events": {
+      "extractionState": "manual",
+      "localizations": {
+        "ro": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Evenimente hipo"
+          }
+        }
+      }
+    },
+    "Included": {
+      "extractionState": "manual",
+      "localizations": {
+        "ro": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Incluse"
+          }
+        }
+      }
+    },
+    "Inputs": {
+      "extractionState": "manual",
+      "localizations": {
+        "ro": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Date introduse"
+          }
+        }
+      }
+    },
     "Insights": {
       "extractionState": "manual",
       "localizations": {
@@ -518,6 +1013,17 @@
         }
       }
     },
+    "Insulin": {
+      "extractionState": "manual",
+      "localizations": {
+        "ro": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Insulină"
+          }
+        }
+      }
+    },
     "Insulin action": {
       "extractionState": "manual",
       "localizations": {
@@ -525,6 +1031,39 @@
           "stringUnit": {
             "state": "translated",
             "value": "Acțiunea insulinei"
+          }
+        }
+      }
+    },
+    "Insulin doses": {
+      "extractionState": "manual",
+      "localizations": {
+        "ro": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Doze de insulină"
+          }
+        }
+      }
+    },
+    "Insulin on board": {
+      "extractionState": "manual",
+      "localizations": {
+        "ro": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Insulină activă"
+          }
+        }
+      }
+    },
+    "Insulin, meals, activity and notes for this day appear here.": {
+      "extractionState": "manual",
+      "localizations": {
+        "ro": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Insulina, mesele, activitatea și notițele pentru această zi apar aici."
           }
         }
       }
@@ -551,6 +1090,17 @@
         }
       }
     },
+    "Journal check-ins": {
+      "extractionState": "manual",
+      "localizations": {
+        "ro": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Notări în jurnal"
+          }
+        }
+      }
+    },
     "Jump to current month": {
       "extractionState": "manual",
       "localizations": {
@@ -573,6 +1123,116 @@
         }
       }
     },
+    "Last 3 hours": {
+      "extractionState": "manual",
+      "localizations": {
+        "ro": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Ultimele 3 ore"
+          }
+        }
+      }
+    },
+    "Legend": {
+      "extractionState": "manual",
+      "localizations": {
+        "ro": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Legendă"
+          }
+        }
+      }
+    },
+    "Local, on-device notifications": {
+      "extractionState": "manual",
+      "localizations": {
+        "ro": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Notificări locale, pe dispozitiv"
+          }
+        }
+      }
+    },
+    "Log carbs and any bolus.": {
+      "extractionState": "manual",
+      "localizations": {
+        "ro": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Notează carbohidrații și orice bolus."
+          }
+        }
+      }
+    },
+    "Log glucose, insulin, meals, activity and notes — they'll appear here on your timeline.": {
+      "extractionState": "manual",
+      "localizations": {
+        "ro": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Înregistrează glicemie, insulină, mese, activitate și notițe — vor apărea aici pe cronologia ta."
+          }
+        }
+      }
+    },
+    "Log or sync more glucose to build your profile.": {
+      "extractionState": "manual",
+      "localizations": {
+        "ro": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Înregistrează sau sincronizează mai multă glicemie pentru a-ți construi profilul."
+          }
+        }
+      }
+    },
+    "Low glucose": {
+      "extractionState": "manual",
+      "localizations": {
+        "ro": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Glicemie scăzută"
+          }
+        }
+      }
+    },
+    "Low predicted in ~%lld min": {
+      "extractionState": "manual",
+      "localizations": {
+        "ro": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Scăzut estimat în ~%lld min"
+          }
+        }
+      }
+    },
+    "Lowest": {
+      "extractionState": "manual",
+      "localizations": {
+        "ro": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Cea mai mică"
+          }
+        }
+      }
+    },
+    "Maximum": {
+      "extractionState": "manual",
+      "localizations": {
+        "ro": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Maxim"
+          }
+        }
+      }
+    },
     "Meal": {
       "extractionState": "manual",
       "localizations": {
@@ -580,6 +1240,83 @@
           "stringUnit": {
             "state": "translated",
             "value": "Masă"
+          }
+        }
+      }
+    },
+    "Meals": {
+      "extractionState": "manual",
+      "localizations": {
+        "ro": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Mese"
+          }
+        }
+      }
+    },
+    "Mealtime": {
+      "extractionState": "manual",
+      "localizations": {
+        "ro": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Ora mesei"
+          }
+        }
+      }
+    },
+    "Mealtimes": {
+      "extractionState": "manual",
+      "localizations": {
+        "ro": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Ore de masă"
+          }
+        }
+      }
+    },
+    "Median": {
+      "extractionState": "manual",
+      "localizations": {
+        "ro": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Mediană"
+          }
+        }
+      }
+    },
+    "Minimum": {
+      "extractionState": "manual",
+      "localizations": {
+        "ro": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Minim"
+          }
+        }
+      }
+    },
+    "Morning": {
+      "extractionState": "manual",
+      "localizations": {
+        "ro": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Dimineața"
+          }
+        }
+      }
+    },
+    "Never sold, never ads": {
+      "extractionState": "manual",
+      "localizations": {
+        "ro": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Niciodată vândute, fără reclame"
           }
         }
       }
@@ -595,6 +1332,160 @@
         }
       }
     },
+    "No activity logged in this period.": {
+      "extractionState": "manual",
+      "localizations": {
+        "ro": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Fără activitate înregistrată în această perioadă."
+          }
+        }
+      }
+    },
+    "No activity yet": {
+      "extractionState": "manual",
+      "localizations": {
+        "ro": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Încă nicio activitate"
+          }
+        }
+      }
+    },
+    "No cloud unless you ask": {
+      "extractionState": "manual",
+      "localizations": {
+        "ro": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Fără cloud dacă nu ceri"
+          }
+        }
+      }
+    },
+    "No data": {
+      "extractionState": "manual",
+      "localizations": {
+        "ro": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Fără date"
+          }
+        }
+      }
+    },
+    "No entries": {
+      "extractionState": "manual",
+      "localizations": {
+        "ro": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Fără înregistrări"
+          }
+        }
+      }
+    },
+    "No entries yet": {
+      "extractionState": "manual",
+      "localizations": {
+        "ro": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Încă nicio înregistrare"
+          }
+        }
+      }
+    },
+    "No glucose readings": {
+      "extractionState": "manual",
+      "localizations": {
+        "ro": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Fără citiri de glicemie"
+          }
+        }
+      }
+    },
+    "No glucose readings in this period.": {
+      "extractionState": "manual",
+      "localizations": {
+        "ro": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Fără citiri de glicemie în această perioadă."
+          }
+        }
+      }
+    },
+    "No glucose yet": {
+      "extractionState": "manual",
+      "localizations": {
+        "ro": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Încă nicio glicemie"
+          }
+        }
+      }
+    },
+    "No insulin doses in this period.": {
+      "extractionState": "manual",
+      "localizations": {
+        "ro": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Fără doze de insulină în această perioadă."
+          }
+        }
+      }
+    },
+    "No meals logged in this period.": {
+      "extractionState": "manual",
+      "localizations": {
+        "ro": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Fără mese înregistrate în această perioadă."
+          }
+        }
+      }
+    },
+    "No recent readings": {
+      "extractionState": "manual",
+      "localizations": {
+        "ro": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Fără citiri recente"
+          }
+        }
+      }
+    },
+    "No training without consent": {
+      "extractionState": "manual",
+      "localizations": {
+        "ro": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Fără antrenare fără consimțământ"
+          }
+        }
+      }
+    },
+    "Not enough data": {
+      "extractionState": "manual",
+      "localizations": {
+        "ro": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Date insuficiente"
+          }
+        }
+      }
+    },
     "Note": {
       "extractionState": "manual",
       "localizations": {
@@ -602,6 +1493,50 @@
           "stringUnit": {
             "state": "translated",
             "value": "Notiță"
+          }
+        }
+      }
+    },
+    "Nothing in this range": {
+      "extractionState": "manual",
+      "localizations": {
+        "ro": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Nimic în acest interval"
+          }
+        }
+      }
+    },
+    "Nothing to summarise": {
+      "extractionState": "manual",
+      "localizations": {
+        "ro": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Nimic de rezumat"
+          }
+        }
+      }
+    },
+    "Observations": {
+      "extractionState": "manual",
+      "localizations": {
+        "ro": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Observații"
+          }
+        }
+      }
+    },
+    "On board": {
+      "extractionState": "manual",
+      "localizations": {
+        "ro": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Active"
           }
         }
       }
@@ -624,6 +1559,39 @@
           "stringUnit": {
             "state": "translated",
             "value": "Deschide calculatorul de bolus"
+          }
+        }
+      }
+    },
+    "Overnight": {
+      "extractionState": "manual",
+      "localizations": {
+        "ro": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Noaptea"
+          }
+        }
+      }
+    },
+    "Patterns": {
+      "extractionState": "manual",
+      "localizations": {
+        "ro": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Tipare"
+          }
+        }
+      }
+    },
+    "Period": {
+      "extractionState": "manual",
+      "localizations": {
+        "ro": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Perioadă"
           }
         }
       }
@@ -716,6 +1684,28 @@
         }
       }
     },
+    "Quick carbs": {
+      "extractionState": "manual",
+      "localizations": {
+        "ro": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Carbohidrați rapizi"
+          }
+        }
+      }
+    },
+    "Quick insulin": {
+      "extractionState": "manual",
+      "localizations": {
+        "ro": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Insulină rapidă"
+          }
+        }
+      }
+    },
     "Range": {
       "extractionState": "manual",
       "localizations": {
@@ -734,6 +1724,28 @@
           "stringUnit": {
             "state": "translated",
             "value": "Rapoarte"
+          }
+        }
+      }
+    },
+    "Readings from the last three hours appear here.": {
+      "extractionState": "manual",
+      "localizations": {
+        "ro": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Citirile din ultimele trei ore apar aici."
+          }
+        }
+      }
+    },
+    "Ready to share": {
+      "extractionState": "manual",
+      "localizations": {
+        "ro": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Gata de partajat"
           }
         }
       }
@@ -837,6 +1849,17 @@
         }
       }
     },
+    "Sensitive actions will be recorded here as they happen.": {
+      "extractionState": "manual",
+      "localizations": {
+        "ro": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Acțiunile sensibile vor fi înregistrate aici pe măsură ce au loc."
+          }
+        }
+      }
+    },
     "Settings": {
       "extractionState": "manual",
       "localizations": {
@@ -903,6 +1926,50 @@
         }
       }
     },
+    "Stay hydrated": {
+      "extractionState": "manual",
+      "localizations": {
+        "ro": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Rămâi hidratat"
+          }
+        }
+      }
+    },
+    "Stays on your device": {
+      "extractionState": "manual",
+      "localizations": {
+        "ro": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Rămâne pe dispozitiv"
+          }
+        }
+      }
+    },
+    "Std deviation": {
+      "extractionState": "manual",
+      "localizations": {
+        "ro": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Deviație standard"
+          }
+        }
+      }
+    },
+    "Suggested dose": {
+      "extractionState": "manual",
+      "localizations": {
+        "ro": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Doză sugerată"
+          }
+        }
+      }
+    },
     "Sync": {
       "extractionState": "manual",
       "localizations": {
@@ -925,6 +1992,17 @@
         }
       }
     },
+    "Sync, delete, export": {
+      "extractionState": "manual",
+      "localizations": {
+        "ro": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Sincronizare, ștergere, export"
+          }
+        }
+      }
+    },
     "Tags": {
       "extractionState": "manual",
       "localizations": {
@@ -932,6 +2010,28 @@
           "stringUnit": {
             "state": "translated",
             "value": "Etichete"
+          }
+        }
+      }
+    },
+    "Target high": {
+      "extractionState": "manual",
+      "localizations": {
+        "ro": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Țintă superioară"
+          }
+        }
+      }
+    },
+    "Target low": {
+      "extractionState": "manual",
+      "localizations": {
+        "ro": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Țintă inferioară"
           }
         }
       }
@@ -969,6 +2069,17 @@
         }
       }
     },
+    "This day has entries but no glucose values.": {
+      "extractionState": "manual",
+      "localizations": {
+        "ro": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Această zi are înregistrări, dar fără valori de glicemie."
+          }
+        }
+      }
+    },
     "This permanently removes every glucose, insulin, meal, activity and observation record from this device. It cannot be undone. To disconnect a source, use Sources; to export a report, use Insights.": {
       "extractionState": "manual",
       "localizations": {
@@ -1002,6 +2113,50 @@
         }
       }
     },
+    "Time above": {
+      "extractionState": "manual",
+      "localizations": {
+        "ro": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Timp peste"
+          }
+        }
+      }
+    },
+    "Time below": {
+      "extractionState": "manual",
+      "localizations": {
+        "ro": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Timp sub"
+          }
+        }
+      }
+    },
+    "Time for your long-acting dose.": {
+      "extractionState": "manual",
+      "localizations": {
+        "ro": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "E timpul pentru doza cu acțiune lungă."
+          }
+        }
+      }
+    },
+    "Time in range": {
+      "extractionState": "manual",
+      "localizations": {
+        "ro": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Timp în interval"
+          }
+        }
+      }
+    },
     "To": {
       "extractionState": "manual",
       "localizations": {
@@ -1020,6 +2175,28 @@
           "stringUnit": {
             "state": "translated",
             "value": "Astăzi"
+          }
+        }
+      }
+    },
+    "Total basal": {
+      "extractionState": "manual",
+      "localizations": {
+        "ro": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Total bazal"
+          }
+        }
+      }
+    },
+    "Total carbs": {
+      "extractionState": "manual",
+      "localizations": {
+        "ro": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Total carbohidrați"
           }
         }
       }
@@ -1046,6 +2223,17 @@
         }
       }
     },
+    "Units": {
+      "extractionState": "manual",
+      "localizations": {
+        "ro": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Unități"
+          }
+        }
+      }
+    },
     "Units & targets": {
       "extractionState": "manual",
       "localizations": {
@@ -1057,6 +2245,39 @@
         }
       }
     },
+    "Update your journal": {
+      "extractionState": "manual",
+      "localizations": {
+        "ro": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Actualizează-ți jurnalul"
+          }
+        }
+      }
+    },
+    "Urgent low glucose": {
+      "extractionState": "manual",
+      "localizations": {
+        "ro": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Glicemie urgent scăzută"
+          }
+        }
+      }
+    },
+    "Value": {
+      "extractionState": "manual",
+      "localizations": {
+        "ro": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Valoare"
+          }
+        }
+      }
+    },
     "Values are stored in mg/dL and converted for display. Switching units never changes your data.": {
       "extractionState": "manual",
       "localizations": {
@@ -1064,6 +2285,61 @@
           "stringUnit": {
             "state": "translated",
             "value": "Valorile sunt stocate în mg/dL și convertite pentru afișare. Schimbarea unităților nu îți modifică niciodată datele."
+          }
+        }
+      }
+    },
+    "Variability": {
+      "extractionState": "manual",
+      "localizations": {
+        "ro": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Variabilitate"
+          }
+        }
+      }
+    },
+    "Variability (CV)": {
+      "extractionState": "manual",
+      "localizations": {
+        "ro": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Variabilitate (CV)"
+          }
+        }
+      }
+    },
+    "Very high above": {
+      "extractionState": "manual",
+      "localizations": {
+        "ro": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Foarte ridicat peste"
+          }
+        }
+      }
+    },
+    "Very high glucose": {
+      "extractionState": "manual",
+      "localizations": {
+        "ro": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Glicemie foarte ridicată"
+          }
+        }
+      }
+    },
+    "Very low below": {
+      "extractionState": "manual",
+      "localizations": {
+        "ro": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Foarte scăzut sub"
           }
         }
       }
@@ -1156,6 +2432,28 @@
         }
       }
     },
+    "frequent highs": {
+      "extractionState": "manual",
+      "localizations": {
+        "ro": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "creșteri frecvente"
+          }
+        }
+      }
+    },
+    "frequent lows": {
+      "extractionState": "manual",
+      "localizations": {
+        "ro": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "scăderi frecvente"
+          }
+        }
+      }
+    },
     "iCloud sync": {
       "extractionState": "manual",
       "localizations": {
@@ -1163,17 +2461,6 @@
           "stringUnit": {
             "state": "translated",
             "value": "Sincronizare iCloud"
-          }
-        }
-      }
-    },
-    "Insulin on board": {
-      "extractionState": "manual",
-      "localizations": {
-        "ro": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Insulină activă"
           }
         }
       }

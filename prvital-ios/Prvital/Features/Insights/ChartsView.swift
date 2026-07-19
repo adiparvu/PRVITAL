@@ -199,7 +199,7 @@ struct ChartsView: View {
         }
     }
 
-    private func emptyChart(_ message: String) -> some View {
+    private func emptyChart(_ message: LocalizedStringKey) -> some View {
         EmptyStateView(
             systemImage: "chart.bar",
             title: "No data",

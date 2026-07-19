@@ -17,6 +17,10 @@ final class SyncCoordinator {
     /// How far back a first sync backfills when there is no prior data.
     var backfillWindow: TimeInterval = 60 * 60 * 24 * 3
 
+    /// Called after each sync finishes, so the app can republish the snapshot
+    /// and re-evaluate alerts from any newly imported readings.
+    var onChange: (() -> Void)?
+
     init(context: ModelContext, registry: SourceRegistry, audit: AuditService) {
         self.context = context
         self.registry = registry
@@ -47,6 +51,7 @@ final class SyncCoordinator {
 
         report.conflicts = resolveRecentConflicts(since: since)
         try? context.save()
+        onChange?()
         return report
     }
 

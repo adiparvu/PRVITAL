@@ -107,6 +107,15 @@ enum InsightsInterval: String, CaseIterable, Identifiable {
         }
         return min(start, now)...now
     }
+
+    /// The equal-length window immediately before `dateRange`, computed
+    /// calendar-consistently (e.g. the month before the current month), used for
+    /// period-over-period comparison.
+    func previousDateRange(now: Date = Date()) -> ClosedRange<Date> {
+        let currentStart = dateRange(now: now).lowerBound
+        let previousStart = dateRange(now: currentStart).lowerBound
+        return min(previousStart, currentStart)...currentStart
+    }
 }
 
 #Preview {

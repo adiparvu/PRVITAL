@@ -12,6 +12,7 @@ struct BolusCalculatorView: View {
 
     @Query(sort: \InsulinDose.timestamp, order: .reverse) private var doses: [InsulinDose]
     @Query(sort: \GlucoseReading.timestamp, order: .reverse) private var readings: [GlucoseReading]
+    @Query(sort: \CarbEntry.timestamp, order: .reverse) private var carbEntries: [CarbEntry]
 
     @State private var carbs: Double = 0
     @State private var glucoseDisplay: Double = 0
@@ -27,6 +28,9 @@ struct BolusCalculatorView: View {
     }
     private var iob: Double {
         InsulinMath.activeInsulin(doses: recentDoses, at: Date(), parameters: params)
+    }
+    private var cob: Double {
+        CarbMath.carbsOnBoard(entries: carbEntries, at: Date())
     }
     private var currentMgdL: Double? {
         glucoseDisplay > 0 ? unit.toMgdL(glucoseDisplay) : nil
@@ -46,6 +50,8 @@ struct BolusCalculatorView: View {
                     Divider().overlay(Theme.hairline)
                     inputRow("Current glucose", value: $glucoseDisplay, suffix: unit.rawValue, digits: unit.fractionDigits)
                 }
+
+                onBoardContext
 
                 resultCard
 
@@ -84,6 +90,34 @@ struct BolusCalculatorView: View {
         .frame(maxWidth: .infinity, alignment: .leading)
         .padding(14)
         .background(Theme.accentSoft, in: .rect(cornerRadius: 14))
+    }
+
+    private var onBoardContext: some View {
+        SectionCard("On board", systemImage: "chart.line.downtrend.xyaxis") {
+            VStack(alignment: .leading, spacing: 8) {
+                HStack(spacing: 22) {
+                    labeledValue("\(iob.formatted(.number.precision(.fractionLength(1)))) U", "Insulin")
+                    labeledValue("\(cob.formatted(.number.precision(.fractionLength(0)))) g", "Carbs")
+                    Spacer()
+                }
+                Text(cob > 0
+                     ? "Insulin on board is already subtracted below. Active carbs from earlier meals are shown for context and are not added to the dose — factor them into your own judgement."
+                     : "Insulin on board is already subtracted from the suggestion below.")
+                    .font(.caption2)
+                    .foregroundStyle(Theme.textTertiary)
+            }
+        }
+    }
+
+    private func labeledValue(_ value: String, _ label: String) -> some View {
+        VStack(alignment: .leading, spacing: 2) {
+            Text(value)
+                .font(.headline.monospacedDigit())
+                .foregroundStyle(Theme.textPrimary)
+            Text(label)
+                .font(.caption2)
+                .foregroundStyle(Theme.textSecondary)
+        }
     }
 
     private var resultCard: some View {

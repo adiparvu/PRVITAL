@@ -65,8 +65,9 @@ final class NotificationScheduler {
 
     private func content(_ title: String, _ body: String) -> UNMutableNotificationContent {
         let content = UNMutableNotificationContent()
-        content.title = title
-        content.body = body
+        // The call sites pass the English strings, which double as catalog keys.
+        content.title = String(localized: String.LocalizationValue(stringLiteral: title))
+        content.body = String(localized: String.LocalizationValue(stringLiteral: body))
         content.sound = .default
         return content
     }

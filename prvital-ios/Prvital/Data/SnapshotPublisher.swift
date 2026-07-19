@@ -8,11 +8,13 @@ final class SnapshotPublisher {
     private let context: ModelContext
     private let preferences: Preferences
     private let registry: SourceRegistry
+    private let alerts: GlucoseAlertService
 
-    init(context: ModelContext, preferences: Preferences, registry: SourceRegistry) {
+    init(context: ModelContext, preferences: Preferences, registry: SourceRegistry, alerts: GlucoseAlertService) {
         self.context = context
         self.preferences = preferences
         self.registry = registry
+        self.alerts = alerts
     }
 
     func refresh(now: Date = Date()) {
@@ -60,6 +62,17 @@ final class SnapshotPublisher {
         SharedStore.save(snapshot)
         WatchSessionManager.shared.updateSnapshot(snapshot)
         GlucoseLiveActivityManager.shared.sync(with: snapshot)
+
+        // Reactive glucose alerts, evaluated only on fresh readings.
+        alerts.evaluate(
+            current: (summary.isStale ? nil : summary.current).map {
+                GlucoseAlertEvaluator.Reading(mgdL: $0.valueMgdL, timestamp: $0.timestamp)
+            },
+            thresholds: thresholds,
+            preferences: preferences.alerts,
+            unit: unit,
+            now: now
+        )
     }
 
     private func fetch<T: PersistentModel>(_ type: T.Type) -> [T] {

@@ -26,6 +26,13 @@ struct DashboardSummary {
         current.map { Int(now.timeIntervalSince($0.timestamp) / 60) }
     }
 
+    /// Short-term rate of change and projection, when a fresh reading and enough
+    /// recent points exist. `nil` while the current reading is stale.
+    var velocity: GlucoseVelocity? {
+        guard !isStale else { return nil }
+        return GlucoseTrendAnalyzer.velocity(recent, now: now)
+    }
+
     static func make(
         readings: [GlucoseReading],
         insulin: [InsulinDose],
