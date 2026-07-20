@@ -17,6 +17,7 @@ final class Preferences {
         self.bolusParameters = Self.readBolus(self.defaults)
         self.alerts = Self.readAlerts(self.defaults)
         self.glucoseSchedule = Self.readGlucoseSchedule(self.defaults)
+        self.liveSyncSeconds = (self.defaults.object(forKey: Keys.liveSync) as? Int) ?? 60
     }
 
     var glucoseUnit: GlucoseUnit {
@@ -53,6 +54,13 @@ final class Preferences {
         didSet { if let data = try? JSONEncoder().encode(glucoseSchedule) { defaults.set(data, forKey: Keys.glucoseSchedule) } }
     }
 
+    /// How often (seconds) to poll connected CGM sources while the app is open.
+    /// 0 disables live polling. Default 60s, which matches a Libre's per-minute
+    /// cadence; Dexcom publishes every 5 minutes so extra polls simply no-op.
+    var liveSyncSeconds: Int {
+        didSet { defaults.set(liveSyncSeconds, forKey: Keys.liveSync) }
+    }
+
     /// Quick-add presets (the +1U … +10U row and 20g … 100g row).
     let insulinPresets: [Double] = [1, 2, 4, 6, 8, 10]
     let carbPresets: [Double] = [20, 40, 60, 80, 100]
@@ -68,6 +76,7 @@ final class Preferences {
         static let bolus = "pref.bolusParameters"
         static let alerts = "pref.alerts"
         static let glucoseSchedule = "pref.glucoseSchedule"
+        static let liveSync = "pref.liveSyncSeconds"
     }
 
     private static func readUnit(_ d: UserDefaults) -> GlucoseUnit {

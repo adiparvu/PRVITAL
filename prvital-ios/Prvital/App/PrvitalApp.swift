@@ -22,6 +22,7 @@ struct PrvitalApp: App {
 /// Gates the app behind first-run consent onboarding, then shows the tab shell.
 struct RootView: View {
     @Environment(AppEnvironment.self) private var env
+    @Environment(\.scenePhase) private var scenePhase
     @State private var showOnboarding = false
 
     var body: some View {
@@ -29,6 +30,18 @@ struct RootView: View {
             .onAppear { showOnboarding = !env.consent.hasCompletedOnboarding }
             .fullScreenCover(isPresented: $showOnboarding) {
                 OnboardingView()
+            }
+            // Live foreground polling: while the app is open, refresh connected
+            // CGM sources on the user's chosen cadence (default ~1 min) so the
+            // reading stays current without waiting for a pull-to-refresh.
+            .task(id: scenePhase) {
+                guard scenePhase == .active else { return }
+                let seconds = max(15, env.preferences.liveSyncSeconds)
+                guard env.preferences.liveSyncSeconds > 0 else { return }
+                while !Task.isCancelled {
+                    await env.sync.refreshLatest()
+                    try? await Task.sleep(for: .seconds(seconds))
+                }
             }
     }
 }

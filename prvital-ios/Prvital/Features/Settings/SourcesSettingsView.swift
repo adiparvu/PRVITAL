@@ -18,6 +18,13 @@ struct SourcesSettingsView: View {
         )
     }
 
+    private var liveSyncBinding: Binding<Int> {
+        Binding(
+            get: { env.preferences.liveSyncSeconds },
+            set: { env.preferences.liveSyncSeconds = $0 }
+        )
+    }
+
     private var dexcomStatus: String {
         SourceCredentialStore.shared.hasCredentials(for: .dexcom) ? "Signed in" : "Not set up"
     }
@@ -130,6 +137,23 @@ struct SourcesSettingsView: View {
                 Text("Cloud accounts")
             } footer: {
                 Text("Connect Dexcom (via Dexcom Share) or FreeStyle Libre (via LibreLinkUp) with your account. Credentials are kept in this device's Keychain.")
+                    .font(.footnote)
+                    .foregroundStyle(Theme.textTertiary)
+            }
+            .listRowBackground(Theme.surface)
+
+            Section {
+                Picker("Check for readings", selection: liveSyncBinding) {
+                    Text("Off").tag(0)
+                    Text("Every 30 seconds").tag(30)
+                    Text("Every minute").tag(60)
+                    Text("Every 2 minutes").tag(120)
+                    Text("Every 5 minutes").tag(300)
+                }
+            } header: {
+                Text("Live updates")
+            } footer: {
+                Text("How often Prvital checks your connected source for a new reading while the app is open. A FreeStyle Libre updates about once a minute and Dexcom about every five, so faster settings mainly help Libre. Polling only runs while the app is open.")
                     .font(.footnote)
                     .foregroundStyle(Theme.textTertiary)
             }

@@ -29,11 +29,26 @@ final class SyncCoordinator {
 
     struct SyncReport { var imported = 0; var conflicts = 0; var failures: [String] = [] }
 
-    /// Pulls new samples from every connected source and integrates them.
+    /// A full sync that backfills up to `backfillWindow`. Used by pull-to-refresh
+    /// and background refresh.
     @discardableResult
     func syncAll() async -> SyncReport {
+        await sync(since: Date().addingTimeInterval(-backfillWindow))
+    }
+
+    /// A light, frequent refresh that only pulls the recent window — used by the
+    /// foreground live poller so it can update often without re-fetching days of
+    /// data each time.
+    @discardableResult
+    func refreshLatest(window: TimeInterval = 30 * 60) async -> SyncReport {
+        await sync(since: Date().addingTimeInterval(-max(window, 300)))
+    }
+
+    /// Pulls new samples from every connected source since `since` and integrates
+    /// them.
+    @discardableResult
+    private func sync(since: Date) async -> SyncReport {
         var report = SyncReport()
-        let since = Date().addingTimeInterval(-backfillWindow)
 
         for source in registry.connectedSources() {
             do {
