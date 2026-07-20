@@ -441,6 +441,28 @@
         }
       }
     },
+    "Best & toughest day": {
+      "extractionState": "manual",
+      "localizations": {
+        "ro": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Cea mai bună și cea mai grea zi"
+          }
+        }
+      }
+    },
+    "Best day": {
+      "extractionState": "manual",
+      "localizations": {
+        "ro": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Cea mai bună zi"
+          }
+        }
+      }
+    },
     "Bolus %@": {
       "extractionState": "manual",
       "localizations": {
@@ -2560,6 +2582,17 @@
           "stringUnit": {
             "state": "translated",
             "value": "Total carbohidrați"
+          }
+        }
+      }
+    },
+    "Toughest day": {
+      "extractionState": "manual",
+      "localizations": {
+        "ro": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Cea mai grea zi"
           }
         }
       }

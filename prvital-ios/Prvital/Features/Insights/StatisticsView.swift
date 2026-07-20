@@ -69,6 +69,10 @@ struct StatisticsView: View {
         InsulinAnalyzer.summary(filteredInsulin)
     }
 
+    private var dailyDays: [DayTIR] {
+        DailyBreakdown.perDay(activeReadings, thresholds: thresholds)
+    }
+
     private let columns = [
         GridItem(.flexible(), spacing: 12),
         GridItem(.flexible(), spacing: 12),
@@ -91,6 +95,7 @@ struct StatisticsView: View {
                     if stats.hasGlucose { timeInRangeBar }
                     statsGrid
                     if let insulin = insulinSummary { insulinBalanceCard(insulin) }
+                    if dailyDays.count >= 2 { bestWorstDayCard }
                     if gmiTrend.count >= 2 { gmiTrendCard }
                 } else {
                     EmptyStateView(
@@ -104,6 +109,37 @@ struct StatisticsView: View {
             .padding()
         }
         .background(Theme.background)
+    }
+
+    // MARK: Best & toughest day
+
+    @ViewBuilder
+    private var bestWorstDayCard: some View {
+        if let best = DailyBreakdown.best(dailyDays), let worst = DailyBreakdown.worst(dailyDays) {
+            SectionCard("Best & toughest day", systemImage: "calendar.badge.clock") {
+                HStack(spacing: 16) {
+                    dayColumn(title: "Best day", day: best, tint: Theme.zoneInRange)
+                    Divider().frame(height: 52).overlay(Theme.hairline)
+                    dayColumn(title: "Toughest day", day: worst, tint: Theme.zoneHigh)
+                    Spacer()
+                }
+            }
+        }
+    }
+
+    private func dayColumn(title: LocalizedStringKey, day: DayTIR, tint: Color) -> some View {
+        VStack(alignment: .leading, spacing: 3) {
+            Text(title)
+                .font(.caption2)
+                .foregroundStyle(Theme.textSecondary)
+            Text(percent(day.timeInRange))
+                .font(.title3.weight(.bold))
+                .foregroundStyle(tint)
+            Text(day.day.formatted(.dateTime.weekday(.abbreviated).month(.abbreviated).day()))
+                .font(.caption2)
+                .foregroundStyle(Theme.textTertiary)
+        }
+        .accessibilityElement(children: .combine)
     }
 
     // MARK: Insulin balance
