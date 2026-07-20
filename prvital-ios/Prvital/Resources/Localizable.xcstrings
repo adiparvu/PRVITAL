@@ -1,6 +1,17 @@
 {
   "sourceLanguage": "en",
   "strings": {
+    "%@ U": {
+      "extractionState": "manual",
+      "localizations": {
+        "ro": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%@ U"
+          }
+        }
+      }
+    },
     "%@ above range": {
       "extractionState": "manual",
       "localizations": {
@@ -12,6 +23,17 @@
         }
       }
     },
+    "%@ avg": {
+      "extractionState": "manual",
+      "localizations": {
+        "ro": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%@ medie"
+          }
+        }
+      }
+    },
     "%@ below range": {
       "extractionState": "manual",
       "localizations": {
@@ -19,6 +41,39 @@
           "stringUnit": {
             "state": "translated",
             "value": "%@ sub interval"
+          }
+        }
+      }
+    },
+    "%@ g": {
+      "extractionState": "manual",
+      "localizations": {
+        "ro": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%@ g"
+          }
+        }
+      }
+    },
+    "%@ g · peak in ~%lld min": {
+      "extractionState": "manual",
+      "localizations": {
+        "ro": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%@ g · vârf în ~%lld min"
+          }
+        }
+      }
+    },
+    "%@ in range": {
+      "extractionState": "manual",
+      "localizations": {
+        "ro": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%@ în interval"
           }
         }
       }
@@ -63,6 +118,28 @@
           "stringUnit": {
             "state": "translated",
             "value": "%@ — tratează acum."
+          }
+        }
+      }
+    },
+    "%@ → %@": {
+      "extractionState": "manual",
+      "localizations": {
+        "ro": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%@ → %@"
+          }
+        }
+      }
+    },
+    "%lld readings": {
+      "extractionState": "manual",
+      "localizations": {
+        "ro": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%lld valori"
           }
         }
       }
@@ -199,6 +276,17 @@
         }
       }
     },
+    "Activity impact": {
+      "extractionState": "manual",
+      "localizations": {
+        "ro": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Impactul activității"
+          }
+        }
+      }
+    },
     "Add a reading or connect a sensor to see your day.": {
       "extractionState": "manual",
       "localizations": {
@@ -298,6 +386,50 @@
         }
       }
     },
+    "Average rise": {
+      "extractionState": "manual",
+      "localizations": {
+        "ro": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Creștere medie"
+          }
+        }
+      }
+    },
+    "Avg change after activity": {
+      "extractionState": "manual",
+      "localizations": {
+        "ro": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Schimbare medie după activitate"
+          }
+        }
+      }
+    },
+    "Avg low recovery": {
+      "extractionState": "manual",
+      "localizations": {
+        "ro": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Recuperare medie după minime"
+          }
+        }
+      }
+    },
+    "Basal %@": {
+      "extractionState": "manual",
+      "localizations": {
+        "ro": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Bazal %@"
+          }
+        }
+      }
+    },
     "Basal insulin": {
       "extractionState": "manual",
       "localizations": {
@@ -309,6 +441,50 @@
         }
       }
     },
+    "Based on %lld meals with a reading before and after.": {
+      "extractionState": "manual",
+      "localizations": {
+        "ro": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Pe baza a %lld mese cu o valoare înainte și după."
+          }
+        }
+      }
+    },
+    "Best & toughest day": {
+      "extractionState": "manual",
+      "localizations": {
+        "ro": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Cea mai bună și cea mai grea zi"
+          }
+        }
+      }
+    },
+    "Best day": {
+      "extractionState": "manual",
+      "localizations": {
+        "ro": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Cea mai bună zi"
+          }
+        }
+      }
+    },
+    "Bolus %@": {
+      "extractionState": "manual",
+      "localizations": {
+        "ro": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Bolus %@"
+          }
+        }
+      }
+    },
     "Bolus calculator": {
       "extractionState": "manual",
       "localizations": {
@@ -316,6 +492,17 @@
           "stringUnit": {
             "state": "translated",
             "value": "Calculator de bolus"
+          }
+        }
+      }
+    },
+    "Breakfast": {
+      "extractionState": "manual",
+      "localizations": {
+        "ro": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Mic dejun"
           }
         }
       }
@@ -349,6 +536,17 @@
           "stringUnit": {
             "state": "translated",
             "value": "Carbohidrați"
+          }
+        }
+      }
+    },
+    "Carbs by meal": {
+      "extractionState": "manual",
+      "localizations": {
+        "ro": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Carbohidrați pe masă"
           }
         }
       }
@@ -529,6 +727,17 @@
         }
       }
     },
+    "Dawn phenomenon": {
+      "extractionState": "manual",
+      "localizations": {
+        "ro": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Fenomenul de zori"
+          }
+        }
+      }
+    },
     "Defaults follow the international consensus: a 70–180 mg/dL target with 54 and 250 marking severe lows and highs.": {
       "extractionState": "manual",
       "localizations": {
@@ -569,6 +778,17 @@
           "stringUnit": {
             "state": "translated",
             "value": "Administrare"
+          }
+        }
+      }
+    },
+    "Dinner": {
+      "extractionState": "manual",
+      "localizations": {
+        "ro": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Cină"
           }
         }
       }
@@ -705,6 +925,17 @@
         }
       }
     },
+    "Estimated A1c trend": {
+      "extractionState": "manual",
+      "localizations": {
+        "ro": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Tendința A1c estimat"
+          }
+        }
+      }
+    },
     "Evening": {
       "extractionState": "manual",
       "localizations": {
@@ -712,6 +943,17 @@
           "stringUnit": {
             "state": "translated",
             "value": "Seara"
+          }
+        }
+      }
+    },
+    "Evening snack": {
+      "extractionState": "manual",
+      "localizations": {
+        "ro": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Gustare de seară"
           }
         }
       }
@@ -844,6 +1086,28 @@
           "stringUnit": {
             "state": "translated",
             "value": "Verificări glicemie"
+          }
+        }
+      }
+    },
+    "Glucose climbed above range within two hours of a low. Treating lows with a measured amount of carbs helps avoid the overshoot.": {
+      "extractionState": "manual",
+      "localizations": {
+        "ro": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Glicemia a urcat peste interval în două ore de la o minimă. Tratarea minimelor cu o cantitate măsurată de carbohidrați ajută la evitarea depășirii."
+          }
+        }
+      }
+    },
+    "Glucose distribution": {
+      "extractionState": "manual",
+      "localizations": {
+        "ro": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Distribuția glicemiei"
           }
         }
       }
@@ -1035,6 +1299,17 @@
         }
       }
     },
+    "Insulin balance": {
+      "extractionState": "manual",
+      "localizations": {
+        "ro": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Echilibru insulină"
+          }
+        }
+      }
+    },
     "Insulin doses": {
       "extractionState": "manual",
       "localizations": {
@@ -1189,6 +1464,17 @@
         }
       }
     },
+    "Longest sensor gap": {
+      "extractionState": "manual",
+      "localizations": {
+        "ro": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Cea mai lungă pauză senzor"
+          }
+        }
+      }
+    },
     "Low glucose": {
       "extractionState": "manual",
       "localizations": {
@@ -1222,6 +1508,17 @@
         }
       }
     },
+    "Lunch": {
+      "extractionState": "manual",
+      "localizations": {
+        "ro": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Prânz"
+          }
+        }
+      }
+    },
     "Maximum": {
       "extractionState": "manual",
       "localizations": {
@@ -1240,6 +1537,17 @@
           "stringUnit": {
             "state": "translated",
             "value": "Masă"
+          }
+        }
+      }
+    },
+    "Meal impact": {
+      "extractionState": "manual",
+      "localizations": {
+        "ro": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Impactul mesei"
           }
         }
       }
@@ -1541,6 +1849,17 @@
         }
       }
     },
+    "On most mornings your glucose climbs from its overnight low into breakfast — the dawn phenomenon. Seen on %lld days.": {
+      "extractionState": "manual",
+      "localizations": {
+        "ro": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "În majoritatea dimineților glicemia urcă de la minimul nocturn spre micul dejun — fenomenul de zori. Observat în %lld zile."
+          }
+        }
+      }
+    },
     "On this device": {
       "extractionState": "manual",
       "localizations": {
@@ -1570,6 +1889,17 @@
           "stringUnit": {
             "state": "translated",
             "value": "Noaptea"
+          }
+        }
+      }
+    },
+    "Overnight (12–6 AM)": {
+      "extractionState": "manual",
+      "localizations": {
+        "ro": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Peste noapte (12–6)"
           }
         }
       }
@@ -1750,6 +2080,28 @@
         }
       }
     },
+    "Rebound highs": {
+      "extractionState": "manual",
+      "localizations": {
+        "ro": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Reveniri în urcare"
+          }
+        }
+      }
+    },
+    "Rebounds after lows": {
+      "extractionState": "manual",
+      "localizations": {
+        "ro": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Reveniri după minime"
+          }
+        }
+      }
+    },
     "Refresh": {
       "extractionState": "manual",
       "localizations": {
@@ -1878,6 +2230,17 @@
           "stringUnit": {
             "state": "translated",
             "value": "Distribuie raportul"
+          }
+        }
+      }
+    },
+    "Snack": {
+      "extractionState": "manual",
+      "localizations": {
+        "ro": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Gustare"
           }
         }
       }
@@ -2102,6 +2465,28 @@
         }
       }
     },
+    "Tight range": {
+      "extractionState": "manual",
+      "localizations": {
+        "ro": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Interval strict"
+          }
+        }
+      }
+    },
+    "Tight range (70–140)": {
+      "extractionState": "manual",
+      "localizations": {
+        "ro": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Interval strict (70–140)"
+          }
+        }
+      }
+    },
     "Time": {
       "extractionState": "manual",
       "localizations": {
@@ -2157,6 +2542,28 @@
         }
       }
     },
+    "Time in range trend": {
+      "extractionState": "manual",
+      "localizations": {
+        "ro": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Tendința timpului în interval"
+          }
+        }
+      }
+    },
+    "Time to peak": {
+      "extractionState": "manual",
+      "localizations": {
+        "ro": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Timp până la vârf"
+          }
+        }
+      }
+    },
     "To": {
       "extractionState": "manual",
       "localizations": {
@@ -2175,6 +2582,28 @@
           "stringUnit": {
             "state": "translated",
             "value": "Astăzi"
+          }
+        }
+      }
+    },
+    "Today's time in range": {
+      "extractionState": "manual",
+      "localizations": {
+        "ro": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Timpul în interval azi"
+          }
+        }
+      }
+    },
+    "Today's time in range %@, %lld readings": {
+      "extractionState": "manual",
+      "localizations": {
+        "ro": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Timpul în interval azi %@, %lld valori"
           }
         }
       }
@@ -2201,6 +2630,17 @@
         }
       }
     },
+    "Toughest day": {
+      "extractionState": "manual",
+      "localizations": {
+        "ro": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Cea mai grea zi"
+          }
+        }
+      }
+    },
     "Trend": {
       "extractionState": "manual",
       "localizations": {
@@ -2219,6 +2659,28 @@
           "stringUnit": {
             "state": "translated",
             "value": "Tip"
+          }
+        }
+      }
+    },
+    "Typical glucose change during and after your activity — glucose often falls, so stay alert for lows. Based on %lld sessions.": {
+      "extractionState": "manual",
+      "localizations": {
+        "ro": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Schimbarea tipică a glicemiei în timpul și după activitate — glicemia scade adesea, deci fii atent la minime. Pe baza a %lld sesiuni."
+          }
+        }
+      }
+    },
+    "Typical morning rise": {
+      "extractionState": "manual",
+      "localizations": {
+        "ro": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Creștere matinală tipică"
           }
         }
       }
@@ -2355,6 +2817,39 @@
         }
       }
     },
+    "Weekday vs weekend": {
+      "extractionState": "manual",
+      "localizations": {
+        "ro": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Zile lucrătoare vs weekend"
+          }
+        }
+      }
+    },
+    "Weekdays": {
+      "extractionState": "manual",
+      "localizations": {
+        "ro": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Zile lucrătoare"
+          }
+        }
+      }
+    },
+    "Weekend": {
+      "extractionState": "manual",
+      "localizations": {
+        "ro": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Weekend"
+          }
+        }
+      }
+    },
     "When on, your journal syncs across your devices through your own private iCloud database. Apple cannot read the contents.": {
       "extractionState": "manual",
       "localizations": {
@@ -2432,6 +2927,17 @@
         }
       }
     },
+    "avg / day": {
+      "extractionState": "manual",
+      "localizations": {
+        "ro": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "medie / zi"
+          }
+        }
+      }
+    },
     "frequent highs": {
       "extractionState": "manual",
       "localizations": {
@@ -2461,6 +2967,17 @@
           "stringUnit": {
             "state": "translated",
             "value": "Sincronizare iCloud"
+          }
+        }
+      }
+    },
+    "~%lld min": {
+      "extractionState": "manual",
+      "localizations": {
+        "ro": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "~%lld min"
           }
         }
       }

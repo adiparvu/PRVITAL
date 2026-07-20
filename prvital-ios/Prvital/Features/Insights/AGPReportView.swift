@@ -8,6 +8,8 @@ import Charts
 struct AGPReportView: View {
     @Environment(AppEnvironment.self) private var env
     @Query(sort: \GlucoseReading.timestamp, order: .reverse) private var readings: [GlucoseReading]
+    @Query(sort: \CarbEntry.timestamp, order: .reverse) private var carbs: [CarbEntry]
+    @Query(sort: \ActivityEntry.startTimestamp, order: .reverse) private var activity: [ActivityEntry]
 
     @State private var interval: InsightsInterval = .month
 
@@ -36,6 +38,30 @@ struct AGPReportView: View {
             ? nil
             : StatisticsEngine.glucose(previousWindowReadings, thresholds: thresholds)
         return StatComparator.compare(current: stats, previous: previous)
+    }
+    private var mealImpacts: [MealImpact] {
+        let range = interval.dateRange()
+        let windowMeals = carbs.filter { range.contains($0.timestamp) }
+        return MealImpactAnalyzer.analyze(meals: windowMeals, readings: readings)
+    }
+    private var mealImpactSummary: MealImpactSummary? {
+        MealImpactAnalyzer.summary(mealImpacts)
+    }
+    private var dawnPhenomenon: DawnPhenomenonResult? {
+        DawnPhenomenonDetector.analyze(windowReadings)
+    }
+    private var dayTypeComparison: DayTypeStats? {
+        WeekdayWeekendComparator.compare(windowReadings, thresholds: thresholds)
+    }
+    private var rebounds: [ReboundEvent] {
+        ReboundDetector.detect(windowReadings, thresholds: thresholds)
+    }
+    private var activityImpactSummary: ActivityImpactSummary? {
+        let range = interval.dateRange()
+        let windowSessions = activity.filter { range.contains($0.startTimestamp) }
+        return ActivityImpactAnalyzer.summary(
+            ActivityImpactAnalyzer.analyze(sessions: windowSessions, readings: readings)
+        )
     }
 
     var body: some View {
@@ -68,6 +94,31 @@ struct AGPReportView: View {
                             }
                         }
                     }
+                    if let summary = mealImpactSummary {
+                        SectionCard("Meal impact", systemImage: "fork.knife") {
+                            mealImpactContent(summary)
+                        }
+                    }
+                    if let dawn = dawnPhenomenon, dawn.isPresent {
+                        SectionCard("Dawn phenomenon", systemImage: "sunrise.fill") {
+                            dawnContent(dawn)
+                        }
+                    }
+                    if let dayType = dayTypeComparison {
+                        SectionCard("Weekday vs weekend", systemImage: "calendar") {
+                            dayTypeContent(dayType)
+                        }
+                    }
+                    if !rebounds.isEmpty {
+                        SectionCard("Rebound highs", systemImage: "arrow.up.and.down") {
+                            reboundContent(rebounds)
+                        }
+                    }
+                    if let activitySummary = activityImpactSummary {
+                        SectionCard("Activity impact", systemImage: "figure.run") {
+                            activityImpactContent(activitySummary)
+                        }
+                    }
                 } else {
                     EmptyStateView(systemImage: "waveform.path.ecg",
                                    title: "Not enough data",
@@ -91,6 +142,7 @@ struct AGPReportView: View {
             LazyVGrid(columns: [GridItem(.flexible()), GridItem(.flexible())], spacing: 12) {
                 StatTile(title: "Average", value: GlucoseFormatting.labeled(mgdL: stats.average, unit: unit), systemImage: "number")
                 StatTile(title: "Time in range", value: pct(stats.timeInRange), tint: Theme.zoneInRange, systemImage: "target")
+                StatTile(title: "Tight range (70–140)", value: pct(stats.timeInTightRange), tint: Theme.zoneInRange, systemImage: "scope")
                 StatTile(title: "GMI (est. A1c)", value: stats.glucoseManagementIndicator.formatted(.number.precision(.fractionLength(1))) + "%", systemImage: "drop.fill")
                 StatTile(title: "Variability (CV)", value: pct(stats.coefficientOfVariation), tint: Theme.zoneHigh, systemImage: "waveform.path")
                 StatTile(title: "Data coverage", value: pct(coverage),
@@ -135,6 +187,166 @@ struct AGPReportView: View {
                 .foregroundStyle(tint)
             Text(title)
                 .font(.caption2)
+                .foregroundStyle(Theme.textSecondary)
+        }
+        .accessibilityElement(children: .combine)
+    }
+
+    // MARK: Meal impact
+
+    @ViewBuilder
+    private func mealImpactContent(_ summary: MealImpactSummary) -> some View {
+        let rise = unit.fromMgdL(summary.averageRiseMgdL)
+        let riseText = rise.formatted(.number.precision(.fractionLength(unit.fractionDigits)).sign(strategy: .always())) + " " + unit.rawValue
+        let toPeak = Int(summary.averageMinutesToPeak.rounded())
+        let top = mealImpacts.sorted { $0.deltaMgdL > $1.deltaMgdL }.prefix(3)
+
+        VStack(alignment: .leading, spacing: 12) {
+            HStack(spacing: 20) {
+                deltaMetric(title: "Average rise", value: riseText, symbol: "arrow.up.forward", tint: Theme.zoneHigh)
+                Divider().frame(height: 38).overlay(Theme.hairline)
+                deltaMetric(title: "Time to peak", value: "~\(toPeak) min", symbol: "clock", tint: Theme.textSecondary)
+                Spacer()
+            }
+            Text("Based on \(summary.count) meals with a reading before and after.")
+                .font(.caption2)
+                .foregroundStyle(Theme.textTertiary)
+            if !top.isEmpty {
+                Divider().overlay(Theme.hairline)
+                ForEach(Array(top)) { impact in
+                    mealImpactRow(impact)
+                }
+            }
+        }
+    }
+
+    private func mealImpactRow(_ impact: MealImpact) -> some View {
+        let rise = unit.fromMgdL(impact.deltaMgdL)
+        let riseText = rise.formatted(.number.precision(.fractionLength(unit.fractionDigits)).sign(strategy: .always())) + " " + unit.rawValue
+        let grams = impact.grams.formatted(.number.precision(.fractionLength(0)))
+        return HStack(spacing: 10) {
+            Image(systemName: impact.mealType.symbol)
+                .foregroundStyle(Theme.accent)
+                .frame(width: 22)
+                .accessibilityHidden(true)
+            VStack(alignment: .leading, spacing: 1) {
+                mealTypeText(impact.mealType)
+                    .font(.subheadline.weight(.semibold))
+                    .foregroundStyle(Theme.textPrimary)
+                Text("\(grams) g · peak in ~\(impact.minutesToPeak) min")
+                    .font(.caption2)
+                    .foregroundStyle(Theme.textSecondary)
+            }
+            Spacer()
+            Text(riseText)
+                .font(.subheadline.weight(.bold))
+                .foregroundStyle(impact.deltaMgdL > 0 ? Theme.zoneHigh : Theme.zoneInRange)
+        }
+        .accessibilityElement(children: .combine)
+    }
+
+    private func mealTypeText(_ type: MealType) -> Text {
+        switch type {
+        case .breakfast: return Text("Breakfast")
+        case .morningSnack: return Text("Snack")
+        case .lunch: return Text("Lunch")
+        case .dinner: return Text("Dinner")
+        case .eveningSnack: return Text("Evening snack")
+        }
+    }
+
+    // MARK: Dawn phenomenon
+
+    private func dawnContent(_ dawn: DawnPhenomenonResult) -> some View {
+        let rise = unit.fromMgdL(dawn.medianRiseMgdL)
+        let riseText = rise.formatted(.number.precision(.fractionLength(unit.fractionDigits)).sign(strategy: .always())) + " " + unit.rawValue
+        return VStack(alignment: .leading, spacing: 8) {
+            HStack(spacing: 20) {
+                deltaMetric(title: "Typical morning rise", value: riseText, symbol: "sunrise", tint: Theme.zoneHigh)
+                Spacer()
+            }
+            Text("On most mornings your glucose climbs from its overnight low into breakfast — the dawn phenomenon. Seen on \(dawn.dayCount) days.")
+                .font(.caption2)
+                .foregroundStyle(Theme.textTertiary)
+        }
+    }
+
+    // MARK: Weekday vs weekend
+
+    private func dayTypeContent(_ stats: DayTypeStats) -> some View {
+        HStack(spacing: 16) {
+            dayTypeColumn(title: "Weekdays", tir: stats.weekdayTimeInRange, average: stats.weekdayAverageMgdL)
+            Divider().frame(height: 52).overlay(Theme.hairline)
+            dayTypeColumn(title: "Weekend", tir: stats.weekendTimeInRange, average: stats.weekendAverageMgdL)
+            Spacer()
+        }
+    }
+
+    private func dayTypeColumn(title: LocalizedStringKey, tir: Double, average: Double) -> some View {
+        let pct = (tir * 100).formatted(.number.precision(.fractionLength(0))) + "%"
+        let avg = GlucoseFormatting.labeled(mgdL: average, unit: unit)
+        return VStack(alignment: .leading, spacing: 3) {
+            Text(title)
+                .font(.caption2)
+                .foregroundStyle(Theme.textSecondary)
+            Text(pct)
+                .font(.title3.weight(.bold))
+                .foregroundStyle(Theme.zoneInRange)
+            Text("\(avg) avg")
+                .font(.caption2)
+                .foregroundStyle(Theme.textTertiary)
+        }
+        .accessibilityElement(children: .combine)
+    }
+
+    // MARK: Activity impact
+
+    private func activityImpactContent(_ summary: ActivityImpactSummary) -> some View {
+        let change = unit.fromMgdL(summary.averageChangeMgdL)
+        let changeText = change.formatted(.number.precision(.fractionLength(unit.fractionDigits)).sign(strategy: .always())) + " " + unit.rawValue
+        let tint = summary.averageChangeMgdL <= 0 ? Theme.zoneInRange : Theme.zoneHigh
+        return VStack(alignment: .leading, spacing: 8) {
+            HStack(spacing: 20) {
+                deltaMetric(title: "Avg change after activity", value: changeText, symbol: "arrow.down.forward", tint: tint)
+                Spacer()
+            }
+            Text("Typical glucose change during and after your activity — glucose often falls, so stay alert for lows. Based on \(summary.count) sessions.")
+                .font(.caption2)
+                .foregroundStyle(Theme.textTertiary)
+        }
+    }
+
+    // MARK: Rebound highs
+
+    private func reboundContent(_ events: [ReboundEvent]) -> some View {
+        VStack(alignment: .leading, spacing: 10) {
+            HStack(spacing: 20) {
+                deltaMetric(title: "Rebounds after lows", value: "\(events.count)", symbol: "arrow.up.forward", tint: Theme.zoneHigh)
+                Spacer()
+            }
+            Text("Glucose climbed above range within two hours of a low. Treating lows with a measured amount of carbs helps avoid the overshoot.")
+                .font(.caption2)
+                .foregroundStyle(Theme.textTertiary)
+            Divider().overlay(Theme.hairline)
+            ForEach(Array(events.prefix(3))) { event in
+                reboundRow(event)
+            }
+        }
+    }
+
+    private func reboundRow(_ event: ReboundEvent) -> some View {
+        let low = GlucoseFormatting.string(mgdL: event.lowMgdL, unit: unit)
+        let high = GlucoseFormatting.string(mgdL: event.highMgdL, unit: unit)
+        return HStack(spacing: 8) {
+            Image(systemName: "arrow.up.forward")
+                .foregroundStyle(Theme.zoneHigh)
+                .accessibilityHidden(true)
+            Text("\(low) → \(high)")
+                .font(.subheadline.weight(.medium))
+                .foregroundStyle(Theme.textPrimary)
+            Spacer()
+            Text("~\(event.minutesLowToHigh) min")
+                .font(.caption)
                 .foregroundStyle(Theme.textSecondary)
         }
         .accessibilityElement(children: .combine)

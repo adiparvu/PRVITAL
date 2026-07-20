@@ -1,5 +1,6 @@
 import SwiftUI
 import SwiftData
+import Charts
 
 /// The numeric pane of Insights: a computed `PeriodStatistics` for the selected
 /// interval, rendered as a grid of `StatTile`s plus a Time-in-Range stacked bar.
@@ -52,6 +53,38 @@ struct StatisticsView: View {
             || !filteredActivity.isEmpty
     }
 
+    private var hypoRecovery: HypoRecoveryStats? {
+        HypoRecoveryAnalyzer.analyze(activeReadings, thresholds: thresholds)
+    }
+
+    private var gmiTrend: [GMIPoint] {
+        GMITrend.weekly(activeReadings)
+    }
+
+    private var tirTrend: [TIRPoint] {
+        TIRTrend.weekly(activeReadings, thresholds: thresholds)
+    }
+
+    private var dataGaps: GapStats? {
+        DataGapDetector.analyze(activeReadings)
+    }
+
+    private var insulinSummary: InsulinSummary? {
+        InsulinAnalyzer.summary(filteredInsulin)
+    }
+
+    private var dailyDays: [DayTIR] {
+        DailyBreakdown.perDay(activeReadings, thresholds: thresholds)
+    }
+
+    private var overnightStats: PeriodStatistics? {
+        OvernightStability.analyze(activeReadings, thresholds: thresholds)
+    }
+
+    private var carbsByMeal: [MealTypeCarbs] {
+        CarbDistribution.byMealType(filteredCarbs)
+    }
+
     private let columns = [
         GridItem(.flexible(), spacing: 12),
         GridItem(.flexible(), spacing: 12),
@@ -73,6 +106,12 @@ struct StatisticsView: View {
                 if hasAnyData {
                     if stats.hasGlucose { timeInRangeBar }
                     statsGrid
+                    if let insulin = insulinSummary { insulinBalanceCard(insulin) }
+                    if !carbsByMeal.isEmpty { carbsByMealCard(carbsByMeal) }
+                    if let overnight = overnightStats, overnight.hasGlucose { overnightCard(overnight) }
+                    if dailyDays.count >= 2 { bestWorstDayCard }
+                    if tirTrend.count >= 2 { tirTrendCard }
+                    if gmiTrend.count >= 2 { gmiTrendCard }
                 } else {
                     EmptyStateView(
                         systemImage: "chart.pie",
@@ -85,6 +124,207 @@ struct StatisticsView: View {
             .padding()
         }
         .background(Theme.background)
+    }
+
+    // MARK: Carbs by meal
+
+    private func carbsByMealCard(_ items: [MealTypeCarbs]) -> some View {
+        SectionCard("Carbs by meal", systemImage: "fork.knife") {
+            VStack(alignment: .leading, spacing: 10) {
+                ForEach(items) { item in
+                    HStack {
+                        mealTypeText(item.mealType)
+                            .font(.subheadline.weight(.medium))
+                            .foregroundStyle(Theme.textPrimary)
+                        Spacer()
+                        Text("\(item.totalGrams.formatted(.number.precision(.fractionLength(0)))) g")
+                            .font(.subheadline.weight(.semibold))
+                            .foregroundStyle(Theme.zoneHigh)
+                    }
+                    .accessibilityElement(children: .combine)
+                }
+            }
+        }
+    }
+
+    private func mealTypeText(_ type: MealType) -> Text {
+        switch type {
+        case .breakfast: return Text("Breakfast")
+        case .morningSnack: return Text("Snack")
+        case .lunch: return Text("Lunch")
+        case .dinner: return Text("Dinner")
+        case .eveningSnack: return Text("Evening snack")
+        }
+    }
+
+    // MARK: Overnight stability
+
+    private func overnightCard(_ stats: PeriodStatistics) -> some View {
+        SectionCard("Overnight (12–6 AM)", systemImage: "moon.stars.fill") {
+            HStack(spacing: 16) {
+                overnightMetric("Average", glucoseValue(stats.average), Theme.textPrimary)
+                Divider().frame(height: 40).overlay(Theme.hairline)
+                overnightMetric("Time in range", percent(stats.timeInRange), Theme.zoneInRange)
+                Divider().frame(height: 40).overlay(Theme.hairline)
+                overnightMetric("Time below", percent(stats.timeBelowRange), Theme.zoneCritical)
+                Spacer()
+            }
+        }
+    }
+
+    private func overnightMetric(_ title: LocalizedStringKey, _ value: String, _ tint: Color) -> some View {
+        VStack(alignment: .leading, spacing: 3) {
+            Text(value)
+                .font(.headline)
+                .foregroundStyle(tint)
+            Text(title)
+                .font(.caption2)
+                .foregroundStyle(Theme.textSecondary)
+        }
+        .accessibilityElement(children: .combine)
+    }
+
+    // MARK: Best & toughest day
+
+    @ViewBuilder
+    private var bestWorstDayCard: some View {
+        if let best = DailyBreakdown.best(dailyDays), let worst = DailyBreakdown.worst(dailyDays) {
+            SectionCard("Best & toughest day", systemImage: "calendar.badge.clock") {
+                HStack(spacing: 16) {
+                    dayColumn(title: "Best day", day: best, tint: Theme.zoneInRange)
+                    Divider().frame(height: 52).overlay(Theme.hairline)
+                    dayColumn(title: "Toughest day", day: worst, tint: Theme.zoneHigh)
+                    Spacer()
+                }
+            }
+        }
+    }
+
+    private func dayColumn(title: LocalizedStringKey, day: DayTIR, tint: Color) -> some View {
+        VStack(alignment: .leading, spacing: 3) {
+            Text(title)
+                .font(.caption2)
+                .foregroundStyle(Theme.textSecondary)
+            Text(percent(day.timeInRange))
+                .font(.title3.weight(.bold))
+                .foregroundStyle(tint)
+            Text(day.day.formatted(.dateTime.weekday(.abbreviated).month(.abbreviated).day()))
+                .font(.caption2)
+                .foregroundStyle(Theme.textTertiary)
+        }
+        .accessibilityElement(children: .combine)
+    }
+
+    // MARK: Insulin balance
+
+    private func insulinBalanceCard(_ insulin: InsulinSummary) -> some View {
+        let basalPct = (insulin.basalFraction * 100).formatted(.number.precision(.fractionLength(0))) + "%"
+        let bolusPct = (insulin.bolusFraction * 100).formatted(.number.precision(.fractionLength(0))) + "%"
+        let avg = insulin.averageDailyUnits.formatted(.number.precision(.fractionLength(1)))
+        return SectionCard("Insulin balance", systemImage: "syringe.fill") {
+            VStack(alignment: .leading, spacing: 10) {
+                HStack(alignment: .firstTextBaseline, spacing: 6) {
+                    Text("\(avg) U")
+                        .font(.system(size: 24, weight: .semibold, design: .rounded))
+                        .foregroundStyle(Theme.textPrimary)
+                    Text("avg / day")
+                        .font(.caption)
+                        .foregroundStyle(Theme.textSecondary)
+                }
+                GeometryReader { geo in
+                    HStack(spacing: 1) {
+                        Theme.accent.opacity(0.55)
+                            .frame(width: max(geo.size.width * insulin.basalFraction, insulin.basalFraction > 0 ? 2 : 0))
+                        Theme.accent
+                            .frame(width: max(geo.size.width * insulin.bolusFraction, insulin.bolusFraction > 0 ? 2 : 0))
+                    }
+                    .clipShape(RoundedRectangle(cornerRadius: 5))
+                }
+                .frame(height: 14)
+                HStack {
+                    Text("Basal \(basalPct)")
+                        .font(.caption2).foregroundStyle(Theme.accent.opacity(0.85))
+                    Spacer()
+                    Text("Bolus \(bolusPct)")
+                        .font(.caption2).foregroundStyle(Theme.accent)
+                }
+            }
+            .accessibilityElement(children: .combine)
+        }
+    }
+
+    // MARK: Time-in-range trend
+
+    private var tirTrendCard: some View {
+        SectionCard("Time in range trend", systemImage: "chart.line.uptrend.xyaxis") {
+            Chart(tirTrend) { point in
+                AreaMark(x: .value("Week", point.weekStart), y: .value("TIR", point.timeInRange))
+                    .interpolationMethod(.catmullRom)
+                    .foregroundStyle(Theme.zoneInRange.opacity(0.16))
+                LineMark(x: .value("Week", point.weekStart), y: .value("TIR", point.timeInRange))
+                    .interpolationMethod(.catmullRom)
+                    .foregroundStyle(Theme.zoneInRange)
+                PointMark(x: .value("Week", point.weekStart), y: .value("TIR", point.timeInRange))
+                    .foregroundStyle(Theme.zoneInRange)
+            }
+            .chartYScale(domain: 0...1)
+            .chartYAxis {
+                AxisMarks(values: .automatic(desiredCount: 4)) { value in
+                    AxisGridLine().foregroundStyle(Theme.hairline)
+                    AxisValueLabel {
+                        if let fraction = value.as(Double.self) {
+                            Text((fraction * 100).formatted(.number.precision(.fractionLength(0))) + "%")
+                        }
+                    }
+                }
+            }
+            .chartXAxis {
+                AxisMarks(values: .stride(by: .weekOfYear)) { value in
+                    AxisGridLine().foregroundStyle(Theme.hairline)
+                    AxisValueLabel {
+                        if let date = value.as(Date.self) {
+                            Text(date.formatted(.dateTime.month(.abbreviated).day()))
+                        }
+                    }
+                }
+            }
+            .frame(height: 150)
+        }
+    }
+
+    // MARK: Estimated A1c trend
+
+    private var gmiTrendCard: some View {
+        SectionCard("Estimated A1c trend", systemImage: "chart.xyaxis.line") {
+            Chart(gmiTrend) { point in
+                LineMark(x: .value("Week", point.weekStart), y: .value("GMI", point.gmi))
+                    .interpolationMethod(.catmullRom)
+                    .foregroundStyle(Theme.accent)
+                PointMark(x: .value("Week", point.weekStart), y: .value("GMI", point.gmi))
+                    .foregroundStyle(Theme.accent)
+            }
+            .chartYAxis {
+                AxisMarks(values: .automatic(desiredCount: 4)) { value in
+                    AxisGridLine().foregroundStyle(Theme.hairline)
+                    AxisValueLabel {
+                        if let gmi = value.as(Double.self) {
+                            Text(gmi.formatted(.number.precision(.fractionLength(1))) + "%")
+                        }
+                    }
+                }
+            }
+            .chartXAxis {
+                AxisMarks(values: .stride(by: .weekOfYear)) { value in
+                    AxisGridLine().foregroundStyle(Theme.hairline)
+                    AxisValueLabel {
+                        if let date = value.as(Date.self) {
+                            Text(date.formatted(.dateTime.month(.abbreviated).day()))
+                        }
+                    }
+                }
+            }
+            .frame(height: 150)
+        }
     }
 
     // MARK: Time-in-range bar
@@ -148,6 +388,8 @@ struct StatisticsView: View {
 
             StatTile(title: "Time in range", value: percentOrDash(stats.timeInRange, stats.hasGlucose),
                      caption: "Target band", tint: Theme.zoneInRange, systemImage: "target")
+            StatTile(title: "Tight range", value: percentOrDash(stats.timeInTightRange, stats.hasGlucose),
+                     caption: "70–140 mg/dL", tint: Theme.zoneInRange, systemImage: "scope")
             StatTile(title: "Time above", value: percentOrDash(stats.timeAboveRange, stats.hasGlucose),
                      caption: "Above target", tint: Theme.zoneHigh, systemImage: "arrow.up.right")
             StatTile(title: "Time below", value: percentOrDash(stats.timeBelowRange, stats.hasGlucose),
@@ -164,6 +406,15 @@ struct StatisticsView: View {
                      caption: "Low excursions", tint: Theme.zoneCritical, systemImage: "exclamationmark.triangle")
             StatTile(title: "Hyper events", value: stats.hasGlucose ? "\(stats.hyperEvents)" : "—",
                      caption: "High excursions", tint: Theme.zoneHigh, systemImage: "exclamationmark.triangle")
+
+            StatTile(title: "Avg low recovery",
+                     value: hypoRecovery.map { "\(Int($0.averageMinutes.rounded())) min" } ?? "—",
+                     caption: "Time back in range", tint: Theme.zoneWarning, systemImage: "arrow.uturn.up")
+
+            StatTile(title: "Longest sensor gap",
+                     value: dataGaps.map { gapText($0.longestGapMinutes) } ?? "—",
+                     caption: dataGaps.map { "\($0.gapCount) gaps over 30 min" } ?? "No gaps",
+                     tint: Theme.zoneWarning, systemImage: "sensor.tag.radiowaves.forward.fill")
 
             StatTile(title: "Total bolus", value: "\(stats.totalBolusUnits.formatted()) U",
                      caption: "Rapid-acting", tint: Theme.accent, systemImage: "syringe.fill")
@@ -200,6 +451,13 @@ struct StatisticsView: View {
 
     private func percentOrDash(_ fraction: Double, _ available: Bool) -> String {
         available ? percent(fraction) : "—"
+    }
+
+    /// Duration in minutes rendered compactly ("45 min" or "2h 5m").
+    private func gapText(_ minutes: Double) -> String {
+        let total = Int(minutes.rounded())
+        if total < 90 { return "\(total) min" }
+        return "\(total / 60)h \(total % 60)m"
     }
 }
 
