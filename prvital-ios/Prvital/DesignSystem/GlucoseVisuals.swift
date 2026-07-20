@@ -14,19 +14,30 @@ struct GlucoseGaugeRing: View {
     private let scaleLow = 40.0
     private let scaleHigh = 320.0
 
+    @State private var pulse = false
+    @State private var appeared = false
+
     private var fraction: Double {
         min(max((mgdL - scaleLow) / (scaleHigh - scaleLow), 0), 1)
     }
 
     var body: some View {
         ZStack {
+            // Soft glow that breathes behind the ring, tinted by the zone.
+            Circle()
+                .stroke(zone.color.opacity(0.35), lineWidth: 14)
+                .blur(radius: 11)
+                .scaleEffect(pulse ? 1.05 : 0.97)
+                .opacity(pulse ? 0.8 : 0.4)
+
             Circle()
                 .stroke(Theme.hairline, style: StrokeStyle(lineWidth: 14, lineCap: .round))
             Circle()
-                .trim(from: 0, to: fraction)
-                .stroke(zone.color, style: StrokeStyle(lineWidth: 14, lineCap: .round))
+                .trim(from: 0, to: appeared ? fraction : 0)
+                .stroke(zone.color.gradient, style: StrokeStyle(lineWidth: 14, lineCap: .round))
                 .rotationEffect(.degrees(-90))
                 .animation(.smooth, value: fraction)
+
             VStack(spacing: 2) {
                 Text(GlucoseFormatting.string(mgdL: mgdL, unit: unit))
                     .font(.system(size: 54, weight: .bold, design: .rounded))
@@ -37,8 +48,13 @@ struct GlucoseGaugeRing: View {
                     TrendBadge(trend: trend, showsLabel: true).padding(.top, 2)
                 }
             }
+            .scaleEffect(appeared ? 1 : 0.9)
         }
         .frame(width: diameter, height: diameter)
+        .onAppear {
+            withAnimation(.easeInOut(duration: 1.9).repeatForever(autoreverses: true)) { pulse = true }
+            withAnimation(.spring(response: 0.6, dampingFraction: 0.72)) { appeared = true }
+        }
         .accessibilityElement(children: .ignore)
         .accessibilityLabel("Glucose \(GlucoseFormatting.labeled(mgdL: mgdL, unit: unit)), \(zone.label)"
                             + (trend.map { ", \($0.label)" } ?? ""))
@@ -182,5 +198,27 @@ struct GlucoseTrendChart: View {
         let low = min(values.min() ?? thresholds.targetLower, thresholds.targetLower) - 20
         let high = max(values.max() ?? thresholds.targetUpper, thresholds.targetUpper) + 20
         return max(0, low)...high
+    }
+}
+
+/// Fades and lifts a view in with a spring the first time it appears — used to
+/// give charts and cards a bit of life without any per-call boilerplate.
+private struct AppearTransition: ViewModifier {
+    var delay: Double
+    @State private var shown = false
+    func body(content: Content) -> some View {
+        content
+            .opacity(shown ? 1 : 0)
+            .offset(y: shown ? 0 : 10)
+            .onAppear {
+                withAnimation(.spring(response: 0.55, dampingFraction: 0.85).delay(delay)) { shown = true }
+            }
+    }
+}
+
+extension View {
+    /// Spring fade-and-rise when the view first appears.
+    func appearTransition(delay: Double = 0) -> some View {
+        modifier(AppearTransition(delay: delay))
     }
 }

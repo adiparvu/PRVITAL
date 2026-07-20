@@ -289,6 +289,7 @@ struct StatisticsView: View {
                 }
             }
             .frame(height: 150)
+            .appearTransition()
         }
     }
 
@@ -324,6 +325,7 @@ struct StatisticsView: View {
                 }
             }
             .frame(height: 150)
+            .appearTransition()
         }
     }
 

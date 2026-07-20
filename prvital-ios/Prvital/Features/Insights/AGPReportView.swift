@@ -425,6 +425,8 @@ private struct AGPChart: View {
     let thresholds: GlucoseThresholds
     let unit: GlucoseUnit
 
+    @State private var appeared = false
+
     private var yDomain: ClosedRange<Double> {
         let hi = max(buckets.map(\.p90).max() ?? thresholds.high, thresholds.high) + 20
         return 0...max(hi, 250)
@@ -486,6 +488,11 @@ private struct AGPChart: View {
             }
         }
         .frame(height: 240)
+        .opacity(appeared ? 1 : 0)
+        .scaleEffect(y: appeared ? 1 : 0.96, anchor: .bottom)
+        .onAppear {
+            withAnimation(.spring(response: 0.7, dampingFraction: 0.85)) { appeared = true }
+        }
     }
 }
 
