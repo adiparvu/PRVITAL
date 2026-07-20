@@ -85,10 +85,12 @@ jobs:
             CODE_SIGNING_ALLOWED=NO CODE_SIGNING_REQUIRED=NO
 
   testflight:
-    # Manual only. Archives the app (with its widget + watch targets) and uploads
-    # the build to TestFlight via the App Store Connect API. Requires these repo
-    # secrets and a DEVELOPMENT_TEAM set in prvital-ios/project.yml:
-    #   ASC_KEY_ID, ASC_ISSUER_ID, ASC_API_KEY_P8 (the .p8 file contents).
+    # Archives the app (with its widget + watch targets) and uploads the build
+    # to TestFlight via the App Store Connect API. Triggered by a manual run
+    # (testflight=true), a `testflight-*` tag, or a push whose commit message
+    # contains [testflight]. Requires these repo secrets and a DEVELOPMENT_TEAM
+    # set in prvital-ios/project.yml:
+    #   ASC_KEY_ID, ASC_ISSUER_ID, ASC_API_KEY_P8 (raw .p8 or its base64).
     # Uses automatic signing (-allowProvisioningUpdates); the App IDs
     # (com.prvital.app + .widgets + .watchkitapp) must exist in the
     # account with HealthKit, App Groups and iCloud (CloudKit) capabilities.
