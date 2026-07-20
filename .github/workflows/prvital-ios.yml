@@ -259,7 +259,7 @@ jobs:
           security set-key-partition-list -S apple-tool:,apple: -k "" "$KEYCHAIN" >/dev/null
           security list-keychains -d user -s "$KEYCHAIN" $(security list-keychains -d user | tr -d '"')
           security find-identity -v -p codesigning "$KEYCHAIN"
-      - name: Archive (manual signing)
+      - name: Archive (unsigned)
         working-directory: prvital-ios
         run: |
           set -o pipefail
@@ -268,10 +268,7 @@ jobs:
             -scheme Prvital \
             -destination 'generic/platform=iOS' \
             -archivePath build/Prvital.xcarchive \
-            CODE_SIGN_STYLE=Manual \
-            CODE_SIGN_IDENTITY="Apple Distribution" \
-            DEVELOPMENT_TEAM="$DEVELOPMENT_TEAM" \
-            OTHER_CODE_SIGN_FLAGS="--keychain $RUNNER_TEMP/prvital.keychain-db"
+            CODE_SIGNING_ALLOWED=NO CODE_SIGNING_REQUIRED=NO
       - name: Export & upload to TestFlight
         working-directory: prvital-ios
         run: |
@@ -288,6 +285,7 @@ jobs:
             echo '  <key>method</key><string>app-store-connect</string>'
             echo '  <key>destination</key><string>upload</string>'
             echo '  <key>signingStyle</key><string>manual</string>'
+            echo '  <key>signingCertificate</key><string>Apple Distribution</string>'
             echo "  <key>teamID</key><string>${DEVELOPMENT_TEAM}</string>"
             echo '  <key>provisioningProfiles</key><dict>'
             printf '%s' "$PROFILES_XML"
