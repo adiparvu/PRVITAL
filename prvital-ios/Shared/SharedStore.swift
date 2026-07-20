@@ -16,6 +16,11 @@ enum SharedStore {
 
     static func save(_ snapshot: GlucoseSnapshot) {
         guard let data = try? JSONEncoder().encode(snapshot) else { return }
+        // Skip redundant writes and reloads. WidgetKit gives each app a limited
+        // daily budget of timeline reloads; reloading on every republish — even
+        // when the snapshot is unchanged — exhausts it and freezes the widgets.
+        // Only nudge when the content actually changed.
+        if defaults.data(forKey: key) == data { return }
         defaults.set(data, forKey: key)
         #if canImport(WidgetKit)
         WidgetCenter.shared.reloadAllTimelines()

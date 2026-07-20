@@ -85,11 +85,17 @@ private struct WidgetGlucoseSmall: View {
                     .font(.caption2)
                     .foregroundStyle(.secondary)
                     .lineLimit(1)
+                    .minimumScaleFactor(0.8)
+                Spacer(minLength: 0)
                 if snapshot.isStale {
-                    Spacer(minLength: 0)
                     Image(systemName: "clock.badge.exclamationmark")
                         .font(.caption2)
                         .foregroundStyle(.secondary)
+                } else if snapshot.updatedAt > .distantPast {
+                    Text(snapshot.updatedAt, style: .relative)
+                        .font(.caption2)
+                        .foregroundStyle(.tertiary)
+                        .lineLimit(1)
                 }
             }
         }
@@ -116,6 +122,9 @@ private struct WidgetGlucoseMedium: View {
                         .lineLimit(1)
                         .accessibilityLabel("Last insulin \(insulin)")
                 }
+                WidgetUpdatedText(snapshot: snapshot)
+                    .font(.caption2)
+                    .foregroundStyle(.tertiary)
             }
             .frame(maxWidth: .infinity, alignment: .leading)
 
@@ -148,7 +157,7 @@ private struct WidgetGlucoseLarge: View {
                             .foregroundStyle(.secondary)
                             .lineLimit(1)
                     }
-                    Text(WidgetSnapshotText.updatedCaption(snapshot))
+                    WidgetUpdatedText(snapshot: snapshot)
                         .font(.caption2)
                         .foregroundStyle(.tertiary)
                 }
@@ -301,6 +310,26 @@ private struct WidgetGlucoseChart: View {
     }
 }
 
+// MARK: - Updated caption
+
+/// A self-updating "Updated N min ago" caption. `Text(_:style:.relative)` keeps
+/// counting on its own without a timeline reload, so the widget always looks
+/// live even between the app's snapshot republishes.
+private struct WidgetUpdatedText: View {
+    let snapshot: GlucoseSnapshot
+    var body: some View {
+        if snapshot.updatedAt > .distantPast {
+            HStack(spacing: 3) {
+                Text("Updated")
+                Text(snapshot.updatedAt, style: .relative)
+            }
+            .lineLimit(1)
+        } else {
+            Text("No update")
+        }
+    }
+}
+
 // MARK: - Text helpers
 
 /// Pre-composed strings for VoiceOver and captions, kept in one place so the
@@ -312,10 +341,5 @@ private enum WidgetSnapshotText {
             summary += ", reading may be out of date"
         }
         return summary
-    }
-
-    static func updatedCaption(_ snapshot: GlucoseSnapshot) -> String {
-        guard snapshot.updatedAt > .distantPast else { return "No update" }
-        return "Updated " + snapshot.updatedAt.formatted(date: .omitted, time: .shortened)
     }
 }

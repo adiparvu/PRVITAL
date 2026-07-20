@@ -17,7 +17,9 @@ struct GlucoseEntry: TimelineEntry {
 /// interval is just a backstop.
 struct GlucoseProvider: TimelineProvider {
     /// Minutes between backstop refreshes when the app is idle.
-    private static let refreshMinutes = 15
+    private static let refreshMinutes = 10
+    /// After this long with no fresh reading, the widget shows itself as stale.
+    private static let staleAfterMinutes = 20.0
 
     func placeholder(in context: Context) -> GlucoseEntry {
         GlucoseEntry(date: Date(), snapshot: .placeholder)
@@ -32,12 +34,23 @@ struct GlucoseProvider: TimelineProvider {
 
     func getTimeline(in context: Context, completion: @escaping (Timeline<GlucoseEntry>) -> Void) {
         let now = Date()
-        let entry = GlucoseEntry(date: now, snapshot: SharedStore.load())
-        let refreshDate = Calendar.current.date(
-            byAdding: .minute,
-            value: Self.refreshMinutes,
-            to: now
-        ) ?? now.addingTimeInterval(Double(Self.refreshMinutes) * 60)
-        completion(Timeline(entries: [entry], policy: .after(refreshDate)))
+        let snapshot = SharedStore.load()
+        var entries = [GlucoseEntry(date: now, snapshot: snapshot)]
+
+        // If there's a real, fresh reading, add a later entry that marks it stale
+        // so the widget visibly dims once updates stop — even if the app can't run
+        // to republish. The relative "updated" text keeps advancing on its own.
+        if snapshot.updatedAt > .distantPast, !snapshot.isStale {
+            let staleAt = max(
+                now.addingTimeInterval(60),
+                snapshot.updatedAt.addingTimeInterval(Self.staleAfterMinutes * 60)
+            )
+            var stale = snapshot
+            stale.isStale = true
+            entries.append(GlucoseEntry(date: staleAt, snapshot: stale))
+        }
+
+        let refreshDate = now.addingTimeInterval(Double(Self.refreshMinutes) * 60)
+        completion(Timeline(entries: entries, policy: .after(refreshDate)))
     }
 }
