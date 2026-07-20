@@ -7,6 +7,12 @@ import SwiftUI
 struct SettingsView: View {
     @Environment(AppEnvironment.self) private var env
 
+    private var scheduleSubtitle: String {
+        let count = env.preferences.glucoseSchedule.activeSlots.count
+        let times = "\(count) \(count == 1 ? "time" : "times") a day"
+        return env.preferences.glucoseSchedule.remindersEnabled ? "\(times) · reminders on" : times
+    }
+
     var body: some View {
         let unit = env.preferences.glucoseUnit
         let primary = env.registry.primarySource
@@ -44,6 +50,17 @@ struct SettingsView: View {
                             subtitle: "Local, on-device notifications",
                             systemImage: "bell.badge",
                             tint: Theme.zoneHigh
+                        )
+                    }
+
+                    NavigationLink {
+                        GlucoseScheduleView()
+                    } label: {
+                        SettingsRow(
+                            title: "Logging schedule",
+                            subtitle: scheduleSubtitle,
+                            systemImage: "clock.badge.checkmark",
+                            tint: Theme.accent
                         )
                     }
 

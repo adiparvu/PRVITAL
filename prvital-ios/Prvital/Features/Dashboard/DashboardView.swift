@@ -42,16 +42,21 @@ struct DashboardView: View {
                         todayCard(todayStats)
                             .appearTransition(delay: 0.12)
                     }
+                    let scheduleStatuses = glucoseScheduleStatuses
+                    if !scheduleStatuses.isEmpty {
+                        scheduleCard(scheduleStatuses)
+                            .appearTransition(delay: 0.18)
+                    }
                     if bolus.isEnabled && bolus.isValid {
                         let now = Date()
                         onBoardCard(
                             iob: InsulinMath.activeInsulin(doses: insulin, at: now, parameters: bolus),
                             cob: CarbMath.carbsOnBoard(entries: carbs, at: now)
                         )
-                        .appearTransition(delay: 0.18)
+                        .appearTransition(delay: 0.24)
                     }
                     recentRow(summary: summary)
-                        .appearTransition(delay: 0.24)
+                        .appearTransition(delay: 0.30)
                 }
                 .padding()
             }
@@ -312,6 +317,94 @@ struct DashboardView: View {
                 .font(.caption2)
                 .foregroundStyle(Theme.textSecondary)
         }
+    }
+
+    // MARK: - Today's checks (logging schedule)
+
+    private var glucoseScheduleStatuses: [GlucoseSlotStatus] {
+        let schedule = env.preferences.glucoseSchedule
+        guard !schedule.activeSlots.isEmpty else { return [] }
+        let times = readings.filter(\.isActive).map(\.timestamp)
+        return GlucoseScheduleEvaluator.status(schedule: schedule, readingTimes: times, now: Date())
+    }
+
+    private func scheduleCard(_ statuses: [GlucoseSlotStatus]) -> some View {
+        let progress = GlucoseScheduleEvaluator.progress(statuses)
+        let badge = AnyView(
+            Text("\(progress.done)/\(progress.total)")
+                .font(.subheadline.weight(.bold))
+                .foregroundStyle(progress.done == progress.total ? Theme.zoneInRange : Theme.textSecondary)
+                .contentTransition(.numericText())
+        )
+        return SectionCard("Today's checks", systemImage: "checklist", accessory: badge) {
+            VStack(spacing: 0) {
+                ForEach(Array(statuses.enumerated()), id: \.element.id) { index, status in
+                    scheduleRow(status)
+                    if index < statuses.count - 1 {
+                        Divider().overlay(Theme.hairline).padding(.leading, 38)
+                    }
+                }
+            }
+        }
+    }
+
+    private func scheduleRow(_ status: GlucoseSlotStatus) -> some View {
+        Button {
+            if status.state != .done {
+                Haptics.play(.light)
+                showGlucoseEntry = true
+            }
+        } label: {
+            HStack(spacing: 12) {
+                Image(systemName: scheduleIcon(status.state))
+                    .font(.title3)
+                    .foregroundStyle(scheduleTint(status.state))
+                    .frame(width: 26)
+                VStack(alignment: .leading, spacing: 1) {
+                    Text(status.slot.label)
+                        .font(.subheadline.weight(.medium)).foregroundStyle(Theme.textPrimary)
+                    Text(scheduleStateText(status.state))
+                        .font(.caption2).foregroundStyle(Theme.textSecondary)
+                }
+                Spacer()
+                Text(slotTimeText(status.slot))
+                    .font(.subheadline.monospacedDigit()).foregroundStyle(Theme.textSecondary)
+            }
+            .padding(.vertical, 9)
+            .contentShape(.rect)
+        }
+        .buttonStyle(PressableCardStyle())
+        .disabled(status.state == .done)
+        .accessibilityElement(children: .combine)
+    }
+
+    private func scheduleIcon(_ state: GlucoseSlotState) -> String {
+        switch state {
+        case .done: return "checkmark.circle.fill"
+        case .due: return "exclamationmark.circle.fill"
+        case .upcoming: return "clock"
+        }
+    }
+    private func scheduleTint(_ state: GlucoseSlotState) -> Color {
+        switch state {
+        case .done: return Theme.zoneInRange
+        case .due: return Theme.zoneWarning
+        case .upcoming: return Theme.textTertiary
+        }
+    }
+    private func scheduleStateText(_ state: GlucoseSlotState) -> LocalizedStringKey {
+        switch state {
+        case .done: return "Logged"
+        case .due: return "Due now"
+        case .upcoming: return "Upcoming"
+        }
+    }
+    private func slotTimeText(_ slot: GlucoseLogSlot) -> String {
+        var comps = DateComponents()
+        comps.hour = slot.hour
+        comps.minute = slot.minute
+        let date = Calendar.current.date(from: comps) ?? Date()
+        return date.formatted(date: .omitted, time: .shortened)
     }
 
     // MARK: - Recent entries
