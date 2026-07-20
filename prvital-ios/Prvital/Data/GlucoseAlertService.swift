@@ -61,6 +61,19 @@ final class GlucoseAlertService {
         content.title = alert.title
         content.body = alert.body
         content.sound = .default
+
+        // Urgent lows and highs are time-critical. Raising the interruption level
+        // to .timeSensitive lets them break through Focus and scheduled-summary
+        // (honoured when the app carries the Time Sensitive Notifications
+        // capability). Out-of-range but non-urgent alerts stay at the default
+        // level. relevanceScore keeps the urgent one at the top of a summary.
+        if alert.level.severity >= 2 {
+            content.interruptionLevel = .timeSensitive
+            content.relevanceScore = 1.0
+        } else {
+            content.relevanceScore = 0.6
+        }
+
         // One pending notification per level: a fresh alert of the same level
         // updates rather than stacks.
         let request = UNNotificationRequest(

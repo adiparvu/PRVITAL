@@ -75,6 +75,9 @@ targets:
         com.apple.developer.healthkit: true
         com.apple.developer.healthkit.access: []
         com.apple.developer.default-data-protection: NSFileProtectionComplete
+        # Lets urgent low/high alerts use the .timeSensitive interruption level so
+        # they can break through Focus and scheduled summaries.
+        com.apple.developer.usernotifications.time-sensitive: true
         com.apple.security.application-groups:
           - group.com.prvital
         com.apple.developer.icloud-services:
