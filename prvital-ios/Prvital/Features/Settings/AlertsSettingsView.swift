@@ -34,6 +34,8 @@ struct AlertsSettingsView: View {
                 Section {
                     Stepper(value: $prefs.snoozeMinutes, in: 5...120, step: 5) {
                         Text("Snooze repeats: \(prefs.snoozeMinutes) min")
+                            .contentTransition(.numericText())
+                            .animation(.snappy, value: prefs.snoozeMinutes)
                     }
                 } footer: {
                     Text("The same level won't alert again within this window. A change in level — for example low to urgent low, or crossing back through your range — always alerts right away.")

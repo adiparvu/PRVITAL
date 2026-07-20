@@ -116,7 +116,8 @@ struct ChartsView: View {
                         y: .value("Readings", bin.count),
                         width: .fixed(9)
                     )
-                    .foregroundStyle(barColor(bin))
+                    .foregroundStyle(barColor(bin).gradient)
+                    .cornerRadius(2)
                 }
                 .chartXAxis {
                     AxisMarks(values: .stride(by: 40)) { value in

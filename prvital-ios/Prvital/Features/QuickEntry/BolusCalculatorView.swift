@@ -126,8 +126,9 @@ struct BolusCalculatorView: View {
                 HStack(alignment: .firstTextBaseline, spacing: 6) {
                     Text(estimate.suggested.formatted(.number.precision(.fractionLength(0...1))))
                         .font(.system(size: 46, weight: .bold, design: .rounded))
-                        .foregroundStyle(Theme.textPrimary)
+                        .foregroundStyle(Theme.accent)
                         .contentTransition(.numericText())
+                        .animation(.snappy, value: estimate.suggested)
                     Text("U")
                         .font(.title3.weight(.semibold))
                         .foregroundStyle(Theme.textSecondary)
@@ -177,6 +178,8 @@ struct BolusCalculatorView: View {
             Text("\(sign)\((magnitude ?? value).formatted(.number.precision(.fractionLength(1)))) U")
                 .font(.subheadline.weight(.medium).monospacedDigit())
                 .foregroundStyle(Theme.textPrimary)
+                .contentTransition(.numericText())
+                .animation(.snappy, value: value)
         }
     }
 

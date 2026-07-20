@@ -22,6 +22,9 @@ struct InsulinEntrySheet: View {
                     HStack {
                         Text("\(units.formatted()) U")
                             .font(.system(size: 30, weight: .bold, design: .rounded))
+                            .foregroundStyle(Theme.accent)
+                            .contentTransition(.numericText())
+                            .animation(.snappy, value: units)
                         Spacer()
                         Stepper("", value: $units, in: 0...100, step: 0.5).labelsHidden()
                     }

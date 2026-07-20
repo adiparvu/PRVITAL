@@ -23,6 +23,8 @@ struct GlucoseEntrySheet: View {
                     HStack {
                         TextField("Value", text: $valueText)
                             .font(.system(size: 34, weight: .bold, design: .rounded))
+                            .foregroundStyle(liveZoneColor)
+                            .animation(.easeInOut(duration: 0.25), value: liveZoneColor)
                             .keyboardType(.decimalPad)
                         Text(unit.rawValue).foregroundStyle(Theme.textSecondary)
                     }
@@ -70,6 +72,12 @@ struct GlucoseEntrySheet: View {
     private var enteredMgdL: Double? {
         guard let value = Double(valueText.replacingOccurrences(of: ",", with: ".")), value > 0 else { return nil }
         return unit.toMgdL(value)
+    }
+
+    /// Tints the big value by its glucose zone as you type; neutral when empty.
+    private var liveZoneColor: Color {
+        guard let mgdL = enteredMgdL else { return Theme.textPrimary }
+        return env.preferences.thresholds.zone(forMgdL: mgdL).color
     }
 
     private func load() {

@@ -25,7 +25,11 @@ struct ActivityEntrySheet: View {
                     }
                 }
                 Section("Duration") {
-                    Text("\(minutes) min").font(.system(size: 24, weight: .bold, design: .rounded))
+                    Text("\(minutes) min")
+                        .font(.system(size: 24, weight: .bold, design: .rounded))
+                        .foregroundStyle(Theme.zoneInRange)
+                        .contentTransition(.numericText())
+                        .animation(.snappy, value: minutes)
                     ScrollView(.horizontal, showsIndicators: false) {
                         HStack(spacing: 8) {
                             ForEach(env.preferences.activityDurations, id: \.self) { duration in

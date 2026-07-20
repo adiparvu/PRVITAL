@@ -16,6 +16,7 @@ struct GlucoseGaugeRing: View {
 
     @State private var pulse = false
     @State private var appeared = false
+    @Environment(\.accessibilityReduceMotion) private var reduceMotion
 
     private var fraction: Double {
         min(max((mgdL - scaleLow) / (scaleHigh - scaleLow), 0), 1)
@@ -52,7 +53,11 @@ struct GlucoseGaugeRing: View {
         }
         .frame(width: diameter, height: diameter)
         .onAppear {
-            withAnimation(.easeInOut(duration: 1.9).repeatForever(autoreverses: true)) { pulse = true }
+            // The perpetual "breathing" glow is decorative — skip it under Reduce
+            // Motion, leaving a calm static glow; the one-shot appear still plays.
+            if !reduceMotion {
+                withAnimation(.easeInOut(duration: 1.9).repeatForever(autoreverses: true)) { pulse = true }
+            }
             withAnimation(.spring(response: 0.6, dampingFraction: 0.72)) { appeared = true }
         }
         .accessibilityElement(children: .ignore)

@@ -233,7 +233,7 @@ struct StatisticsView: View {
                 }
                 GeometryReader { geo in
                     HStack(spacing: 1) {
-                        Theme.accent.opacity(0.55)
+                        Theme.zoneWarning
                             .frame(width: max(geo.size.width * insulin.basalFraction, insulin.basalFraction > 0 ? 2 : 0))
                         Theme.accent
                             .frame(width: max(geo.size.width * insulin.bolusFraction, insulin.bolusFraction > 0 ? 2 : 0))
@@ -243,7 +243,7 @@ struct StatisticsView: View {
                 .frame(height: 14)
                 HStack {
                     Text("Basal \(basalPct)")
-                        .font(.caption2).foregroundStyle(Theme.accent.opacity(0.85))
+                        .font(.caption2).foregroundStyle(Theme.zoneWarning)
                     Spacer()
                     Text("Bolus \(bolusPct)")
                         .font(.caption2).foregroundStyle(Theme.accent)

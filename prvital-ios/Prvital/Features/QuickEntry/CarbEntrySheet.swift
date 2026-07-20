@@ -20,6 +20,9 @@ struct CarbEntrySheet: View {
                     HStack {
                         Text("\(grams.formatted()) g")
                             .font(.system(size: 30, weight: .bold, design: .rounded))
+                            .foregroundStyle(Theme.zoneHigh)
+                            .contentTransition(.numericText())
+                            .animation(.snappy, value: grams)
                         Spacer()
                         Stepper("", value: $grams, in: 0...300, step: 5).labelsHidden()
                     }

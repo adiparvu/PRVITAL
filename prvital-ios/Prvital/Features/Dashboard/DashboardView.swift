@@ -272,9 +272,9 @@ struct DashboardView: View {
     private func onBoardCard(iob: Double, cob: Double) -> some View {
         SectionCard("On board", systemImage: "chart.line.downtrend.xyaxis") {
             HStack(spacing: 18) {
-                onBoardMetric(value: iob.formatted(.number.precision(.fractionLength(1))), unit: "U", label: "Insulin")
+                onBoardMetric(value: iob.formatted(.number.precision(.fractionLength(1))), unit: "U", label: "Insulin", tint: Theme.accent)
                 Divider().frame(height: 34).overlay(Theme.hairline)
-                onBoardMetric(value: cob.formatted(.number.precision(.fractionLength(0))), unit: "g", label: "Carbs")
+                onBoardMetric(value: cob.formatted(.number.precision(.fractionLength(0))), unit: "g", label: "Carbs", tint: Theme.zoneHigh)
                 Spacer()
                 NavigationLink {
                     BolusCalculatorView()
@@ -287,12 +287,12 @@ struct DashboardView: View {
         }
     }
 
-    private func onBoardMetric(value: String, unit: String, label: String) -> some View {
+    private func onBoardMetric(value: String, unit: String, label: String, tint: Color = Theme.accent) -> some View {
         VStack(alignment: .leading, spacing: 2) {
             HStack(alignment: .firstTextBaseline, spacing: 3) {
                 Text(value)
                     .font(.system(size: 26, weight: .bold, design: .rounded))
-                    .foregroundStyle(Theme.textPrimary)
+                    .foregroundStyle(tint)
                     .contentTransition(.numericText())
                 Text(unit)
                     .font(.subheadline.weight(.semibold))
