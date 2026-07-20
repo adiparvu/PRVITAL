@@ -222,6 +222,15 @@ jobs:
           # 2) App Store provisioning profile per bundle id.
           pp_dir = File.join(HOME, "Library/MobileDevice/Provisioning Profiles")
           FileUtils.mkdir_p(pp_dir)
+          # Remove profiles left over from earlier runs so the names don't collide.
+          code, resp = api(:get, "/v1/profiles?limit=200")
+          if code == 200
+            (resp["data"] || []).each do |p|
+              next unless BUNDLES.value?(p["attributes"]["name"])
+              dc, _ = api(:delete, "/v1/profiles/#{p["id"]}")
+              puts "deleted stale profile '#{p["attributes"]["name"]}' (HTTP #{dc})"
+            end
+          end
           map = []
           BUNDLES.each do |bid, pname|
             code, resp = api(:get, "/v1/bundleIds?filter[identifier]=#{bid}&limit=1")
