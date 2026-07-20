@@ -246,7 +246,7 @@ private struct CalendarDayCell: View {
                 }
             }
         }
-        .buttonStyle(.plain)
+        .buttonStyle(PressableCardStyle())
         .disabled(!hasData)
         .accessibilityElement(children: .ignore)
         .accessibilityLabel(accessibilityText)

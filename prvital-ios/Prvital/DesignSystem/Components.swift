@@ -1,5 +1,24 @@
 import SwiftUI
 
+/// Press-down spring for tappable cards and large surfaces — a gentle 3% sink
+/// that makes the whole app feel physical without stealing attention.
+struct PressableCardStyle: ButtonStyle {
+    func makeBody(configuration: Configuration) -> some View {
+        configuration.label
+            .scaleEffect(configuration.isPressed ? 0.97 : 1)
+            .animation(.spring(response: 0.3, dampingFraction: 0.7), value: configuration.isPressed)
+    }
+}
+
+/// A tighter press style for chips and small controls.
+struct PressableChipStyle: ButtonStyle {
+    func makeBody(configuration: Configuration) -> some View {
+        configuration.label
+            .scaleEffect(configuration.isPressed ? 0.94 : 1)
+            .animation(.snappy(duration: 0.18), value: configuration.isPressed)
+    }
+}
+
 /// Coloured pill showing a glucose zone ("In range", "Low"…).
 struct ZonePill: View {
     let zone: GlucoseZone
@@ -87,8 +106,9 @@ struct QuickChip: View {
                 .frame(minWidth: 56)
                 .background(isSelected ? tint : tint.opacity(0.12), in: .capsule)
                 .foregroundStyle(isSelected ? Color.white : tint)
+                .animation(.snappy, value: isSelected)
         }
-        .buttonStyle(.plain)
+        .buttonStyle(PressableChipStyle())
     }
 }
 

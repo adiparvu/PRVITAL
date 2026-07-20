@@ -20,13 +20,21 @@ private struct GlassBackground: ViewModifier {
     func body(content: Content) -> some View {
         #if os(iOS) || os(watchOS)
         if #available(iOS 26, watchOS 26, *) {
-            content.glassEffect(.regular, in: .rect(cornerRadius: cornerRadius))
+            content.glassEffect(.regular, in: .rect(cornerRadius: cornerRadius)).overlay { edge }
         } else {
-            content.background(.ultraThinMaterial, in: .rect(cornerRadius: cornerRadius))
+            content.background(.ultraThinMaterial, in: .rect(cornerRadius: cornerRadius)).overlay { edge }
         }
         #else
-        content.background(.ultraThinMaterial, in: .rect(cornerRadius: cornerRadius))
+        content.background(.ultraThinMaterial, in: .rect(cornerRadius: cornerRadius)).overlay { edge }
         #endif
+    }
+
+    /// A hairline edge that gives every card a defined border in light mode and
+    /// on the material fallback, where the surface can otherwise blend into the
+    /// background.
+    private var edge: some View {
+        RoundedRectangle(cornerRadius: cornerRadius, style: .continuous)
+            .strokeBorder(Theme.hairline, lineWidth: 1)
     }
 }
 

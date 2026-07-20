@@ -64,7 +64,7 @@ struct JournalView: View {
                                             } label: {
                                                 JournalEntryRow(item: item, unit: unit, thresholds: thresholds)
                                             }
-                                            .buttonStyle(.plain)
+                                            .buttonStyle(PressableCardStyle())
                                             if index < section.items.count - 1 {
                                                 Divider().overlay(Theme.hairline)
                                             }

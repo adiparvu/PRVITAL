@@ -101,7 +101,7 @@ struct DashboardView: View {
                         ZonePill(zone: zone)
                     }
                 }
-                .buttonStyle(.plain)
+                .buttonStyle(PressableCardStyle())
                 .accessibilityHint("Opens glucose entry")
 
                 VStack(spacing: 4) {
@@ -115,6 +115,7 @@ struct DashboardView: View {
                         Label("Stale reading", systemImage: "clock.badge.exclamationmark")
                             .font(.caption2)
                             .foregroundStyle(Theme.zoneWarning)
+                            .transition(.move(edge: .top).combined(with: .opacity))
                     }
                 }
                 .accessibilityElement(children: .combine)
@@ -133,12 +134,14 @@ struct DashboardView: View {
                         message: "Add a reading or connect a sensor to see your day."
                     )
                 }
-                .buttonStyle(.plain)
+                .buttonStyle(PressableCardStyle())
                 .accessibilityHint("Opens glucose entry")
             }
         }
         .frame(maxWidth: .infinity)
         .glassCard(cornerRadius: 26, padding: 20)
+        // Animate the stale / prediction chips in and out as new readings land.
+        .animation(.smooth(duration: 0.3), value: summary.current?.valueMgdL)
     }
 
     private func updatedText(summary: DashboardSummary) -> String {
@@ -186,6 +189,8 @@ struct DashboardView: View {
             .padding(.vertical, 5)
             .background(tint.opacity(0.14), in: .capsule)
             .accessibilityElement(children: .combine)
+            .transition(.move(edge: .top).combined(with: .opacity))
+            .onAppear { Haptics.play(.warning) }
     }
 
     // MARK: - Trend
