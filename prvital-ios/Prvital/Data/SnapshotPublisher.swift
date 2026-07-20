@@ -47,6 +47,15 @@ final class SnapshotPublisher {
             snapshot.sourceName = current.source.displayName
             snapshot.updatedAt = current.timestamp
             snapshot.isStale = summary.isStale
+
+            if !summary.isStale, let velocity = summary.velocity,
+               let projection = GlucoseTrendAnalyzer.imminentProjection(
+                currentMgdL: current.valueMgdL,
+                velocityPerMinute: velocity.mgdLPerMinute,
+                thresholds: thresholds
+               ) {
+                snapshot.predictionText = Self.predictionText(projection)
+            }
         }
 
         snapshot.points = summary.recent.map { .init(date: $0.timestamp, mgdL: $0.valueMgdL) }
@@ -77,6 +86,14 @@ final class SnapshotPublisher {
 
     private func fetch<T: PersistentModel>(_ type: T.Type) -> [T] {
         (try? context.fetch(FetchDescriptor<T>())) ?? []
+    }
+
+    /// Localized imminent-projection text, reusing the dashboard's catalog keys.
+    private static func predictionText(_ projection: GlucoseProjection) -> String {
+        switch projection.kind {
+        case .low: return String(localized: "Low predicted in ~\(projection.minutes) min")
+        case .high: return String(localized: "High predicted in ~\(projection.minutes) min")
+        }
     }
 
     static func hex(for zone: GlucoseZone) -> UInt {

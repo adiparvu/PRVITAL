@@ -17,6 +17,7 @@ struct GlucoseActivityAttributes: ActivityAttributes, Sendable {
         var zoneColorHex: UInt
         var updatedAt: Date
         var isStale: Bool
+        var predictionText: String?
     }
 
     var title: String = "Glucose"

@@ -74,4 +74,36 @@ enum GlucoseTrendAnalyzer {
         let minutes = (target - currentMgdL) / velocityPerMinute
         return minutes > 0 ? minutes : nil
     }
+
+    /// Warns that a low or high is *imminent* — the current velocity projects
+    /// crossing the target band within `horizonMinutes`, and only for a genuine
+    /// trend (`|slope| >= minSlopePerMinute`). A shorter horizon and a real-slope
+    /// floor keep the warning quiet until it's actually about to happen.
+    static func imminentProjection(
+        currentMgdL: Double,
+        velocityPerMinute slope: Double,
+        thresholds: GlucoseThresholds,
+        horizonMinutes: Double = 30,
+        minSlopePerMinute: Double = 1.0
+    ) -> GlucoseProjection? {
+        guard abs(slope) >= minSlopePerMinute else { return nil }
+        if slope < 0, currentMgdL > thresholds.targetLower,
+           let m = minutesToReach(thresholds.targetLower, from: currentMgdL, velocityPerMinute: slope),
+           m <= horizonMinutes {
+            return GlucoseProjection(kind: .low, minutes: Int(m.rounded()))
+        }
+        if slope > 0, currentMgdL < thresholds.targetUpper,
+           let m = minutesToReach(thresholds.targetUpper, from: currentMgdL, velocityPerMinute: slope),
+           m <= horizonMinutes {
+            return GlucoseProjection(kind: .high, minutes: Int(m.rounded()))
+        }
+        return nil
+    }
+}
+
+/// A short-term projection that a low or high is imminent.
+struct GlucoseProjection: Equatable, Sendable {
+    enum Kind: String, Sendable { case low, high }
+    let kind: Kind
+    let minutes: Int
 }

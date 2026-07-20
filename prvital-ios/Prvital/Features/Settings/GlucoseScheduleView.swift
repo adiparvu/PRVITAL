@@ -19,7 +19,7 @@ struct GlucoseScheduleView: View {
             }
             .listRowBackground(Theme.surface)
 
-            Section("Your logging times") {
+            Section {
                 ForEach($schedule.slots) { $slot in
                     slotRow($slot)
                 }
@@ -30,6 +30,8 @@ struct GlucoseScheduleView: View {
                 } label: {
                     Label("Add a time", systemImage: "plus.circle.fill").foregroundStyle(Theme.accent)
                 }
+            } header: {
+                Text("Your logging times")
             } footer: {
                 Text("For example: a waking reading at 07:00, one before each meal, and one at bedtime. Swipe a time to remove it.")
                     .font(.footnote).foregroundStyle(Theme.textTertiary)

@@ -30,6 +30,8 @@ struct GlucoseSnapshot: Codable, Equatable, Sendable {
     var lastInsulinText: String?
     var lastMealText: String?
     var nextReminderText: String?
+    /// A localized "Low/High predicted in ~N min" when a low or high is imminent.
+    var predictionText: String?
     var recentEntries: [String] = []
 
     static let placeholder = GlucoseSnapshot(

@@ -159,35 +159,34 @@ struct DashboardView: View {
 
     private enum ProjectionWarning { case low(Int), high(Int) }
 
-    /// Projects the current velocity to the next threshold and warns when a low
-    /// or high is due within ~45 minutes.
+    /// Warns only when a low or high is *imminent* — heading across the target
+    /// band within ~30 minutes on a genuine trend — so the chip appears just when
+    /// it's actionable rather than lingering on every drift.
     private func projectionWarning(summary: DashboardSummary, thresholds: GlucoseThresholds) -> ProjectionWarning? {
-        guard !summary.isStale, let velocity = summary.velocity, let current = summary.current else { return nil }
-        let mgdL = current.valueMgdL
-        let slope = velocity.mgdLPerMinute
-        let horizon = 45.0
-
-        if slope < 0, mgdL > thresholds.targetLower,
-           let minutes = GlucoseTrendAnalyzer.minutesToReach(thresholds.targetLower, from: mgdL, velocityPerMinute: slope),
-           minutes <= horizon {
-            return .low(Int(minutes.rounded()))
+        guard !summary.isStale, let velocity = summary.velocity, let current = summary.current,
+              let projection = GlucoseTrendAnalyzer.imminentProjection(
+                currentMgdL: current.valueMgdL,
+                velocityPerMinute: velocity.mgdLPerMinute,
+                thresholds: thresholds
+              )
+        else { return nil }
+        switch projection.kind {
+        case .low: return .low(projection.minutes)
+        case .high: return .high(projection.minutes)
         }
-        if slope > 0, mgdL < thresholds.targetUpper,
-           let minutes = GlucoseTrendAnalyzer.minutesToReach(thresholds.targetUpper, from: mgdL, velocityPerMinute: slope),
-           minutes <= horizon {
-            return .high(Int(minutes.rounded()))
-        }
-        return nil
     }
 
     private func warningChip(_ warning: ProjectionWarning) -> some View {
         let text: Text
         let tint: Color
+        let icon: String
         switch warning {
-        case .low(let minutes): text = Text("Low predicted in ~\(minutes) min"); tint = Theme.zoneWarning
-        case .high(let minutes): text = Text("High predicted in ~\(minutes) min"); tint = Theme.zoneHigh
+        case .low(let minutes):
+            text = Text("Low predicted in ~\(minutes) min"); tint = Theme.zoneWarning; icon = "arrow.down.forward"
+        case .high(let minutes):
+            text = Text("High predicted in ~\(minutes) min"); tint = Theme.zoneHigh; icon = "arrow.up.forward"
         }
-        return Label { text } icon: { Image(systemName: "exclamationmark.triangle.fill") }
+        return Label { text } icon: { Image(systemName: icon) }
             .font(.caption.weight(.semibold))
             .foregroundStyle(tint)
             .padding(.horizontal, 10)

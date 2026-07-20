@@ -30,7 +30,8 @@ final class GlucoseLiveActivityManager {
             zoneLabel: snapshot.zoneLabel,
             zoneColorHex: snapshot.zoneColorHex,
             updatedAt: snapshot.updatedAt,
-            isStale: snapshot.isStale
+            isStale: snapshot.isStale,
+            predictionText: snapshot.predictionText
         )
         let staleDate = snapshot.updatedAt.addingTimeInterval(30 * 60)
         let store = self.store
