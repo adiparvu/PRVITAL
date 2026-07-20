@@ -36,6 +36,8 @@ final class SnapshotPublisher {
         snapshot.targetLowerMgdL = thresholds.targetLower
         snapshot.targetUpperMgdL = thresholds.targetUpper
 
+        var imminent: GlucoseProjection?
+
         if let current = summary.current {
             let zone = thresholds.zone(forMgdL: current.valueMgdL)
             snapshot.mgdL = current.valueMgdL
@@ -54,6 +56,7 @@ final class SnapshotPublisher {
                 velocityPerMinute: velocity.mgdLPerMinute,
                 thresholds: thresholds
                ) {
+                imminent = projection
                 snapshot.predictionText = Self.predictionText(projection)
             }
         }
@@ -80,6 +83,13 @@ final class SnapshotPublisher {
             thresholds: thresholds,
             preferences: preferences.alerts,
             unit: unit,
+            now: now
+        )
+
+        // Predictive early-low warning — before glucose crosses the threshold.
+        alerts.evaluatePredictiveLow(
+            projection: summary.isStale ? nil : imminent,
+            preferences: preferences.alerts,
             now: now
         )
     }

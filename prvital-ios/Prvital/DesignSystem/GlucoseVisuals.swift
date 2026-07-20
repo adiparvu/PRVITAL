@@ -100,6 +100,21 @@ struct GlucoseTrendChart: View {
         )
     }
 
+    /// A spoken summary of the trend for VoiceOver, since the chart marks alone
+    /// convey nothing to a non-visual reader.
+    private var accessibilitySummary: String {
+        guard let latest = sorted.last else {
+            return String(localized: "Glucose trend chart, no readings yet")
+        }
+        let values = sorted.map(\.valueMgdL)
+        let average = values.reduce(0, +) / Double(values.count)
+        let latestText = GlucoseFormatting.labeled(mgdL: latest.valueMgdL, unit: unit)
+        let averageText = GlucoseFormatting.labeled(mgdL: average, unit: unit)
+        let lowText = GlucoseFormatting.labeled(mgdL: values.min() ?? 0, unit: unit)
+        let highText = GlucoseFormatting.labeled(mgdL: values.max() ?? 0, unit: unit)
+        return String(localized: "Glucose trend over \(sorted.count) readings. Latest \(latestText), average \(averageText), low \(lowText), high \(highText).")
+    }
+
     var body: some View {
         Chart {
             RuleMark(y: .value("Target upper", thresholds.targetUpper))
@@ -181,6 +196,8 @@ struct GlucoseTrendChart: View {
         .onAppear {
             withAnimation(.spring(response: 0.6, dampingFraction: 0.85)) { appeared = true }
         }
+        .accessibilityElement(children: .ignore)
+        .accessibilityLabel(accessibilitySummary)
     }
 
     private func scrubCallout(_ reading: GlucoseReading) -> some View {
