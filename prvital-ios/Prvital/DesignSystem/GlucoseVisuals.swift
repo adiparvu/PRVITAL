@@ -47,15 +47,36 @@ struct GlucoseGaugeRing: View {
 
 /// A line chart of glucose over time with the target range shaded, built on
 /// Swift Charts. Values are plotted in mg/dL and the axis is formatted to the
-/// display unit.
+/// display unit. The full-size variant fills the curve with a gradient, lets
+/// you scrub with a finger to read any point, and fades in on appear.
 struct GlucoseTrendChart: View {
     let readings: [GlucoseReading]
     let thresholds: GlucoseThresholds
     let unit: GlucoseUnit
     var compact = false
 
+    @State private var selectedDate: Date?
+    @State private var appeared = false
+
     private var sorted: [GlucoseReading] {
         readings.filter(\.isActive).sorted { $0.timestamp < $1.timestamp }
+    }
+
+    /// Whether scrubbing / detailed marks are enabled (full-size only).
+    private var interactive: Bool { !compact }
+
+    private var selectedReading: GlucoseReading? {
+        guard interactive, let selectedDate, !sorted.isEmpty else { return nil }
+        return sorted.min {
+            abs($0.timestamp.timeIntervalSince(selectedDate)) < abs($1.timestamp.timeIntervalSince(selectedDate))
+        }
+    }
+
+    private var areaGradient: LinearGradient {
+        LinearGradient(
+            colors: [Theme.accent.opacity(0.30), Theme.accent.opacity(0.02)],
+            startPoint: .top, endPoint: .bottom
+        )
     }
 
     var body: some View {
@@ -68,23 +89,54 @@ struct GlucoseTrendChart: View {
                 .lineStyle(StrokeStyle(lineWidth: 1, dash: [4, 4]))
 
             ForEach(sorted) { reading in
+                AreaMark(
+                    x: .value("Time", reading.timestamp),
+                    y: .value("Glucose", reading.valueMgdL)
+                )
+                .interpolationMethod(.catmullRom)
+                .foregroundStyle(areaGradient)
+
                 LineMark(
                     x: .value("Time", reading.timestamp),
                     y: .value("Glucose", reading.valueMgdL)
                 )
                 .interpolationMethod(.catmullRom)
                 .foregroundStyle(Theme.accent)
+                .lineStyle(StrokeStyle(lineWidth: 2.5, lineCap: .round, lineJoin: .round))
 
-                if !compact {
+                if interactive {
                     PointMark(
                         x: .value("Time", reading.timestamp),
                         y: .value("Glucose", reading.valueMgdL)
                     )
-                    .symbolSize(18)
+                    .symbolSize(20)
                     .foregroundStyle(thresholds.zone(forMgdL: reading.valueMgdL).color)
                 }
             }
+
+            if let last = sorted.last {
+                PointMark(x: .value("Time", last.timestamp), y: .value("Glucose", last.valueMgdL))
+                    .symbolSize(compact ? 60 : 140)
+                    .foregroundStyle(thresholds.zone(forMgdL: last.valueMgdL).color.opacity(0.18))
+                PointMark(x: .value("Time", last.timestamp), y: .value("Glucose", last.valueMgdL))
+                    .symbolSize(compact ? 24 : 44)
+                    .foregroundStyle(thresholds.zone(forMgdL: last.valueMgdL).color)
+            }
+
+            if let sel = selectedReading {
+                RuleMark(x: .value("Selected", sel.timestamp))
+                    .foregroundStyle(Theme.textTertiary.opacity(0.45))
+                    .lineStyle(StrokeStyle(lineWidth: 1))
+                    .annotation(position: .top, spacing: 6,
+                                overflowResolution: .init(x: .fit(to: .chart), y: .disabled)) {
+                        scrubCallout(sel)
+                    }
+                PointMark(x: .value("Selected", sel.timestamp), y: .value("Glucose", sel.valueMgdL))
+                    .symbolSize(120)
+                    .foregroundStyle(thresholds.zone(forMgdL: sel.valueMgdL).color)
+            }
         }
+        .chartXSelection(value: interactive ? $selectedDate : .constant(nil))
         .chartYScale(domain: yDomain)
         .chartYAxis {
             AxisMarks(values: .automatic(desiredCount: compact ? 3 : 5)) { value in
@@ -103,6 +155,26 @@ struct GlucoseTrendChart: View {
             }
         }
         .frame(height: compact ? 120 : 220)
+        .opacity(appeared ? 1 : 0)
+        .scaleEffect(y: appeared ? 1 : 0.94, anchor: .bottom)
+        .onAppear {
+            withAnimation(.spring(response: 0.6, dampingFraction: 0.85)) { appeared = true }
+        }
+    }
+
+    private func scrubCallout(_ reading: GlucoseReading) -> some View {
+        VStack(alignment: .leading, spacing: 1) {
+            Text(GlucoseFormatting.labeled(mgdL: reading.valueMgdL, unit: unit))
+                .font(.caption.weight(.bold))
+                .foregroundStyle(thresholds.zone(forMgdL: reading.valueMgdL).color)
+            Text(reading.timestamp, format: .dateTime.hour().minute())
+                .font(.caption2)
+                .foregroundStyle(Theme.textSecondary)
+        }
+        .padding(.horizontal, 8)
+        .padding(.vertical, 5)
+        .background(.ultraThinMaterial, in: RoundedRectangle(cornerRadius: 8))
+        .overlay(RoundedRectangle(cornerRadius: 8).stroke(Theme.hairline))
     }
 
     private var yDomain: ClosedRange<Double> {
