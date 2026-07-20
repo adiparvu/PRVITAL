@@ -189,11 +189,22 @@ jobs:
           end
           def api(method, path, body = nil)
             uri = URI("https://api.appstoreconnect.apple.com#{path}")
-            req = (method == :post ? Net::HTTP::Post : Net::HTTP::Get).new(uri)
+            klass = {get: Net::HTTP::Get, post: Net::HTTP::Post, delete: Net::HTTP::Delete}[method]
+            req = klass.new(uri)
             req["Authorization"] = "Bearer #{token}"; req["Content-Type"] = "application/json"
             req.body = body.to_json if body
             res = Net::HTTP.start(uri.host, uri.port, use_ssl: true) { |h| h.request(req) }
-            [res.code.to_i, (JSON.parse(res.body) rescue res.body)]
+            [res.code.to_i, (res.body.to_s.empty? ? {} : (JSON.parse(res.body) rescue res.body))]
+          end
+          # 0) Revoke leftover distribution certificates (fresh account) so each run
+          #    starts clean and never hits Apple's certificate limit. We cannot reuse
+          #    an existing cert without its private key, so we always mint a new one.
+          code, resp = api(:get, "/v1/certificates?filter[certificateType]=DISTRIBUTION&limit=200")
+          if code == 200
+            (resp["data"] || []).each do |c|
+              dc, _ = api(:delete, "/v1/certificates/#{c["id"]}")
+              puts "revoked existing distribution certificate #{c["id"]} (HTTP #{dc})"
+            end
           end
           # 1) Apple Distribution certificate from a fresh CSR.
           csr_key = OpenSSL::PKey::RSA.new(2048)
