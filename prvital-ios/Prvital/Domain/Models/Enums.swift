@@ -394,3 +394,83 @@ enum ObservationTag: String, Codable, CaseIterable, Sendable, Identifiable {
         }
     }
 }
+
+// MARK: - Profile
+
+/// The kind of diabetes (or related status) the person manages. Personalises
+/// education and copy, and appears on the profile. Stored as a raw string so it
+/// is CloudKit-safe.
+enum DiabetesType: String, Codable, CaseIterable, Sendable, Identifiable {
+    case type1 = "type_1"
+    case type2 = "type_2"
+    case lada
+    case mody
+    case gestational
+    case prediabetes
+    case caregiver
+    case other
+
+    var id: String { rawValue }
+
+    var displayName: String {
+        switch self {
+        case .type1: return "Type 1"
+        case .type2: return "Type 2"
+        case .lada: return "LADA"
+        case .mody: return "MODY"
+        case .gestational: return "Gestational"
+        case .prediabetes: return "Prediabetes"
+        case .caregiver: return "Caregiver"
+        case .other: return "Other"
+        }
+    }
+
+    /// A one-line description shown under the picker.
+    var detail: String {
+        switch self {
+        case .type1: return "Autoimmune — the body makes little or no insulin."
+        case .type2: return "The body doesn't use insulin well, and may not make enough."
+        case .lada: return "Latent autoimmune diabetes in adults."
+        case .mody: return "A rare inherited form of diabetes."
+        case .gestational: return "Diabetes that develops during pregnancy."
+        case .prediabetes: return "Higher-than-normal glucose, not yet type 2."
+        case .caregiver: return "You're managing diabetes for someone you care for."
+        case .other: return "Another form, or you'd rather not say."
+        }
+    }
+}
+
+/// How the person manages therapy day to day. Shown on the profile and used to
+/// tailor guidance. CloudKit-safe raw string.
+enum TherapyApproach: String, Codable, CaseIterable, Sendable, Identifiable {
+    case mdi
+    case pump
+    case basalOnly = "basal_only"
+    case lifestyle
+    case notOnInsulin = "not_on_insulin"
+    case other
+
+    var id: String { rawValue }
+
+    var displayName: String {
+        switch self {
+        case .mdi: return "Injections (MDI)"
+        case .pump: return "Insulin pump"
+        case .basalOnly: return "Basal only"
+        case .lifestyle: return "Diet & exercise"
+        case .notOnInsulin: return "Not on insulin"
+        case .other: return "Other"
+        }
+    }
+
+    var symbol: String {
+        switch self {
+        case .mdi: return "syringe"
+        case .pump: return "cross.case.fill"
+        case .basalOnly: return "moon.circle"
+        case .lifestyle: return "figure.run"
+        case .notOnInsulin: return "pills"
+        case .other: return "ellipsis.circle"
+        }
+    }
+}

@@ -18,6 +18,7 @@ final class AppEnvironment {
     let audit: AuditService
     let consent: ConsentStore
     let entryStore: EntryStore
+    let profile: ProfileStore
     let sync: SyncCoordinator
     let snapshots: SnapshotPublisher
     let exporter: ExportService
@@ -56,6 +57,7 @@ final class AppEnvironment {
         self.sync = SyncCoordinator(context: context, registry: registry, audit: audit)
         self.entryStore = EntryStore(context: context, audit: audit, healthKit: healthKit,
                                      consent: consent, registry: registry)
+        self.profile = ProfileStore(context: context, audit: audit)
 
         // Any write — a manual entry or a completed sync — republishes the
         // widget/watch snapshot and re-evaluates glucose alerts.
@@ -87,6 +89,7 @@ final class AppEnvironment {
         }
         WatchSessionManager.shared.activate()
 
+        _ = profile.current()   // create the single profile on first launch
         snapshots.refresh()
         notifications.reschedule(from: preferences.reminders, glucoseSchedule: preferences.glucoseSchedule)
         scheduleBackgroundRefresh()

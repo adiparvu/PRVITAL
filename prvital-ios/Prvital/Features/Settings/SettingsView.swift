@@ -17,8 +17,19 @@ struct SettingsView: View {
         let unit = env.preferences.glucoseUnit
         let primary = env.registry.primarySource
 
+        let profile = env.profile.current()
+
         return NavigationStack {
             List {
+                Section {
+                    NavigationLink {
+                        ProfileView(profile: profile)
+                    } label: {
+                        ProfileSettingsRow(profile: profile)
+                    }
+                }
+                .listRowBackground(Theme.surface)
+
                 Section {
                     NavigationLink {
                         SourcesSettingsView()
@@ -148,6 +159,41 @@ struct SettingsView: View {
 }
 
 // MARK: - Private helpers
+
+/// The profile row at the top of Settings: avatar (initials or glyph), name and a
+/// one-line clinical summary.
+private struct ProfileSettingsRow: View {
+    @Bindable var profile: UserProfile
+
+    var body: some View {
+        HStack(spacing: 14) {
+            ZStack {
+                Circle().fill(Theme.accentSoft).frame(width: 44, height: 44)
+                if let initials = profile.initials {
+                    Text(initials)
+                        .font(.system(size: 17, weight: .semibold, design: .rounded))
+                        .foregroundStyle(Theme.accent)
+                } else {
+                    Image(systemName: profile.avatarSymbol)
+                        .font(.system(size: 20))
+                        .foregroundStyle(Theme.accent)
+                }
+            }
+            .accessibilityHidden(true)
+
+            VStack(alignment: .leading, spacing: 2) {
+                Text(profile.displayName.isEmpty ? "Your profile" : profile.displayName)
+                    .font(.body.weight(.semibold))
+                    .foregroundStyle(Theme.textPrimary)
+                Text(profile.displayName.isEmpty ? "Add your name & diabetes details" : profile.summaryLine)
+                    .font(.caption)
+                    .foregroundStyle(Theme.textSecondary)
+            }
+        }
+        .padding(.vertical, 4)
+        .accessibilityElement(children: .combine)
+    }
+}
 
 /// A settings destination row: a tinted glyph, a title and a live subtitle.
 private struct SettingsRow: View {
