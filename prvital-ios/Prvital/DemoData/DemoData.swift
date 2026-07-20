@@ -14,6 +14,46 @@ enum DemoData {
         seed(into: context, days: days)
     }
 
+    /// Removes any sample data an earlier build seeded into the live store, once.
+    /// The live app shows only the user's own readings and entries.
+    @MainActor
+    static func removeSeededDataOnce(from context: ModelContext) {
+        let defaults = UserDefaults(suiteName: AppSchema.appGroupIdentifier) ?? .standard
+        let key = "demo.purged.v1"
+        guard !defaults.bool(forKey: key) else { return }
+        purgeSeededData(from: context)
+        defaults.set(true, forKey: key)
+    }
+
+    /// Deletes the records this file seeds, matched by their demo signatures, so
+    /// a real install is left with only genuine sensor and user data.
+    @MainActor
+    static func purgeSeededData(from context: ModelContext) {
+        let glucose = (try? context.fetch(FetchDescriptor<GlucoseReading>())) ?? []
+        for reading in glucose where reading.externalID?.hasPrefix("demo-") == true {
+            context.delete(reading)
+        }
+        let insulin = (try? context.fetch(FetchDescriptor<InsulinDose>())) ?? []
+        for dose in insulin where dose.insulinName == "Tresiba" || dose.insulinName == "NovoRapid" {
+            context.delete(dose)
+        }
+        let demoFoods: Set<String> = ["Oats & berries", "Chicken & rice", "Pasta"]
+        let carbs = (try? context.fetch(FetchDescriptor<CarbEntry>())) ?? []
+        for entry in carbs where entry.foodDescription.map(demoFoods.contains) == true {
+            context.delete(entry)
+        }
+        let observations = (try? context.fetch(FetchDescriptor<ObservationEntry>())) ?? []
+        for observation in observations where observation.text == "Busy day, short night." {
+            context.delete(observation)
+        }
+        let activity = (try? context.fetch(FetchDescriptor<ActivityEntry>())) ?? []
+        for session in activity where session.activityType == .walking
+            && session.durationSeconds == 1800 && (session.distanceMeters ?? 0) == 2400 {
+            context.delete(session)
+        }
+        try? context.save()
+    }
+
     @MainActor
     static func seed(into context: ModelContext, days: Int = 4) {
         let calendar = Calendar.current
@@ -44,7 +84,8 @@ enum DemoData {
         context.insert(GlucoseReading(
             valueMgdL: curve(at: conflictTime, calendar: calendar) + 14,
             timestamp: conflictTime.addingTimeInterval(40),
-            source: .manual, measurementType: .fingerstick
+            source: .manual, measurementType: .fingerstick,
+            externalID: "demo-fingerstick"
         ))
 
         // Insulin, carbs, activity and an observation across each day.

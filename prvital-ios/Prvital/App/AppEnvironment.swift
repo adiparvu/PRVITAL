@@ -64,11 +64,13 @@ final class AppEnvironment {
         sync.onChange = { publisher.refresh() }
     }
 
-    /// One-time launch work: prune the audit trail, seed demo data on a fresh
-    /// install, wire the watch bridge, and publish the first snapshot.
+    /// One-time launch work: prune the audit trail, clean up any sample data an
+    /// earlier build seeded, wire the watch bridge, and publish the first
+    /// snapshot. The live app never seeds demo data — it shows only the user's
+    /// own readings and entries.
     func bootstrap() {
         audit.pruneExpired()
-        DemoData.seedIfEmpty(into: modelContainer.mainContext)
+        DemoData.removeSeededDataOnce(from: modelContainer.mainContext)
 
         // Log quick entries sent from the Apple Watch through the normal path.
         WatchSessionManager.shared.onQuickEntry = { [weak self] kind, amount in
