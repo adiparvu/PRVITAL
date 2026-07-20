@@ -65,6 +65,10 @@ struct StatisticsView: View {
         DataGapDetector.analyze(activeReadings)
     }
 
+    private var insulinSummary: InsulinSummary? {
+        InsulinAnalyzer.summary(filteredInsulin)
+    }
+
     private let columns = [
         GridItem(.flexible(), spacing: 12),
         GridItem(.flexible(), spacing: 12),
@@ -86,6 +90,7 @@ struct StatisticsView: View {
                 if hasAnyData {
                     if stats.hasGlucose { timeInRangeBar }
                     statsGrid
+                    if let insulin = insulinSummary { insulinBalanceCard(insulin) }
                     if gmiTrend.count >= 2 { gmiTrendCard }
                 } else {
                     EmptyStateView(
@@ -99,6 +104,44 @@ struct StatisticsView: View {
             .padding()
         }
         .background(Theme.background)
+    }
+
+    // MARK: Insulin balance
+
+    private func insulinBalanceCard(_ insulin: InsulinSummary) -> some View {
+        let basalPct = (insulin.basalFraction * 100).formatted(.number.precision(.fractionLength(0))) + "%"
+        let bolusPct = (insulin.bolusFraction * 100).formatted(.number.precision(.fractionLength(0))) + "%"
+        let avg = insulin.averageDailyUnits.formatted(.number.precision(.fractionLength(1)))
+        return SectionCard("Insulin balance", systemImage: "syringe.fill") {
+            VStack(alignment: .leading, spacing: 10) {
+                HStack(alignment: .firstTextBaseline, spacing: 6) {
+                    Text("\(avg) U")
+                        .font(.system(size: 24, weight: .semibold, design: .rounded))
+                        .foregroundStyle(Theme.textPrimary)
+                    Text("avg / day")
+                        .font(.caption)
+                        .foregroundStyle(Theme.textSecondary)
+                }
+                GeometryReader { geo in
+                    HStack(spacing: 1) {
+                        Theme.accent.opacity(0.55)
+                            .frame(width: max(geo.size.width * insulin.basalFraction, insulin.basalFraction > 0 ? 2 : 0))
+                        Theme.accent
+                            .frame(width: max(geo.size.width * insulin.bolusFraction, insulin.bolusFraction > 0 ? 2 : 0))
+                    }
+                    .clipShape(RoundedRectangle(cornerRadius: 5))
+                }
+                .frame(height: 14)
+                HStack {
+                    Text("Basal \(basalPct)")
+                        .font(.caption2).foregroundStyle(Theme.accent.opacity(0.85))
+                    Spacer()
+                    Text("Bolus \(bolusPct)")
+                        .font(.caption2).foregroundStyle(Theme.accent)
+                }
+            }
+            .accessibilityElement(children: .combine)
+        }
     }
 
     // MARK: Estimated A1c trend

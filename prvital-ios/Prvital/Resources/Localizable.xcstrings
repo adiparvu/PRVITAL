@@ -1,6 +1,17 @@
 {
   "sourceLanguage": "en",
   "strings": {
+    "%@ U": {
+      "extractionState": "manual",
+      "localizations": {
+        "ro": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%@ U"
+          }
+        }
+      }
+    },
     "%@ above range": {
       "extractionState": "manual",
       "localizations": {
@@ -397,6 +408,17 @@
         }
       }
     },
+    "Basal %@": {
+      "extractionState": "manual",
+      "localizations": {
+        "ro": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Bazal %@"
+          }
+        }
+      }
+    },
     "Basal insulin": {
       "extractionState": "manual",
       "localizations": {
@@ -415,6 +437,17 @@
           "stringUnit": {
             "state": "translated",
             "value": "Pe baza a %lld mese cu o valoare înainte și după."
+          }
+        }
+      }
+    },
+    "Bolus %@": {
+      "extractionState": "manual",
+      "localizations": {
+        "ro": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Bolus %@"
           }
         }
       }
@@ -1218,6 +1251,17 @@
           "stringUnit": {
             "state": "translated",
             "value": "Acțiunea insulinei"
+          }
+        }
+      }
+    },
+    "Insulin balance": {
+      "extractionState": "manual",
+      "localizations": {
+        "ro": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Echilibru insulină"
           }
         }
       }
@@ -2802,6 +2846,17 @@
           "stringUnit": {
             "state": "translated",
             "value": "Zonă"
+          }
+        }
+      }
+    },
+    "avg / day": {
+      "extractionState": "manual",
+      "localizations": {
+        "ro": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "medie / zi"
           }
         }
       }
