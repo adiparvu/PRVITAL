@@ -74,6 +74,12 @@ final class SyncCoordinator {
                 audit.log(.sync, source: source.source, result: .success,
                           detail: "Imported \(inserted) reading(s)")
             } catch {
+                // A source that simply isn't set up / needs re-linking (no valid
+                // credentials, unavailable hardware) is an expected state, not a
+                // refresh failure — don't surface it to the user or spam the audit
+                // trail on every poll. Only genuine fetch errors (network, server)
+                // are reported.
+                if (error as? SourceError)?.isConfigurationState == true { continue }
                 report.failures.append("\(source.displayName): \(error.localizedDescription)")
                 audit.log(.sync, source: source.source, result: .failure,
                           detail: error.localizedDescription)

@@ -45,6 +45,17 @@ enum SourceError: LocalizedError {
         case .underlying(let message): return message
         }
     }
+
+    /// True for "this source isn't set up / not usable yet" states, as opposed to a
+    /// genuine transient fetch failure. These must NOT be surfaced as refresh
+    /// errors on every poll — the Sources screen already shows connection status,
+    /// and popping an alert each pull-to-refresh would be noise.
+    var isConfigurationState: Bool {
+        switch self {
+        case .notAuthorized, .unavailable, .integrationNotConfigured: return true
+        case .underlying: return false
+        }
+    }
 }
 
 /// The abstraction every glucose source conforms to. Adding a new sensor means

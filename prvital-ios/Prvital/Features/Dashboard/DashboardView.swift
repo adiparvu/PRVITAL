@@ -84,21 +84,27 @@ struct DashboardView: View {
                 }
             }
             .refreshable {
-                // Surface source/network failures instead of silently looking
-                // like "no new data".
+                // Surface genuine source/network failures (not "source not set up"
+                // states, which are filtered out in SyncCoordinator) instead of
+                // silently looking like "no new data".
                 let report = await env.sync.syncAll()
-                if !report.failures.isEmpty {
-                    syncFailure = report.failures.joined(separator: "\n")
+                syncFailure = report.failures.isEmpty ? nil : report.failures.joined(separator: "\n")
+            }
+            .overlay(alignment: .top) {
+                if let syncFailure {
+                    SyncErrorBanner(message: syncFailure) {
+                        withAnimation { self.syncFailure = nil }
+                    }
+                    .padding(.horizontal, 12)
+                    .transition(.move(edge: .top).combined(with: .opacity))
+                    .task(id: syncFailure) {
+                        // Auto-dismiss the non-blocking banner after a few seconds.
+                        try? await Task.sleep(for: .seconds(6))
+                        withAnimation { self.syncFailure = nil }
+                    }
                 }
             }
-            .alert("Couldn't refresh", isPresented: Binding(
-                get: { syncFailure != nil },
-                set: { if !$0 { syncFailure = nil } }
-            )) {
-                Button("OK", role: .cancel) {}
-            } message: {
-                if let syncFailure { Text(syncFailure) }
-            }
+            .animation(.spring(response: 0.4, dampingFraction: 0.85), value: syncFailure)
             .sheet(isPresented: $showQuickEntry) {
                 QuickEntrySheet()
             }
@@ -504,6 +510,42 @@ struct DashboardView: View {
             tint: Theme.zoneInRange,
             systemImage: "figure.walk"
         )
+    }
+}
+
+/// A non-blocking, dismissible banner shown at the top of the Dashboard when a
+/// pull-to-refresh hits a genuine source/network error. Auto-dismisses; never
+/// interrupts the user the way a modal alert does.
+private struct SyncErrorBanner: View {
+    let message: String
+    let onDismiss: () -> Void
+
+    var body: some View {
+        HStack(alignment: .firstTextBaseline, spacing: 10) {
+            Image(systemName: "exclamationmark.triangle.fill")
+                .foregroundStyle(Theme.zoneWarning)
+                .accessibilityHidden(true)
+            Text(message)
+                .font(.footnote)
+                .foregroundStyle(Theme.textPrimary)
+                .lineLimit(3)
+            Spacer(minLength: 8)
+            Button(action: onDismiss) {
+                Image(systemName: "xmark.circle.fill")
+                    .foregroundStyle(Theme.textTertiary)
+            }
+            .buttonStyle(.plain)
+            .accessibilityLabel("Dismiss")
+        }
+        .padding(12)
+        .background(.regularMaterial, in: .rect(cornerRadius: 14))
+        .overlay(
+            RoundedRectangle(cornerRadius: 14, style: .continuous)
+                .strokeBorder(Theme.hairline)
+        )
+        .shadow(color: .black.opacity(0.08), radius: 8, y: 4)
+        .accessibilityElement(children: .combine)
+        .accessibilityLabel("Couldn't refresh. \(message)")
     }
 }
 
