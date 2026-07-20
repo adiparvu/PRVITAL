@@ -207,7 +207,15 @@ final class EntryStore {
 
     func delete<T: PersistentModel>(_ record: T) {
         let source = (record as? any MedicalRecord)?.source
+        // Capture the timestamp before deletion so we can re-resolve the reading's
+        // conflict cluster afterwards — otherwise deleting the *active* member of a
+        // duplicate group leaves the others stuck inactive and that instant
+        // disappears from every stats/chart path.
+        let glucoseTimestamp = (record as? GlucoseReading)?.timestamp
         context.delete(record)
+        if let glucoseTimestamp {
+            resolveConflicts(around: glucoseTimestamp)
+        }
         finish(.dataDeletion, source: source, detail: "Record deleted")
     }
 

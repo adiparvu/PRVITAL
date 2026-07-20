@@ -25,32 +25,23 @@ enum DemoData {
         defaults.set(true, forKey: key)
     }
 
-    /// Deletes the records this file seeds, matched by their demo signatures, so
-    /// a real install is left with only genuine sensor and user data.
+    /// Deletes only records this file seeds, matched strictly by their app-generated
+    /// `demo-` externalID marker — never by medical content. Matching on content
+    /// (insulin brand, food name, a walk's duration) would silently delete a real
+    /// user's own logged records that happen to look the same.
     @MainActor
     static func purgeSeededData(from context: ModelContext) {
-        let glucose = (try? context.fetch(FetchDescriptor<GlucoseReading>())) ?? []
-        for reading in glucose where reading.externalID?.hasPrefix("demo-") == true {
-            context.delete(reading)
+        func purge<T: PersistentModel & MedicalRecord>(_ type: T.Type) {
+            let records = (try? context.fetch(FetchDescriptor<T>())) ?? []
+            for record in records where record.externalID?.hasPrefix("demo-") == true {
+                context.delete(record)
+            }
         }
-        let insulin = (try? context.fetch(FetchDescriptor<InsulinDose>())) ?? []
-        for dose in insulin where dose.insulinName == "Tresiba" || dose.insulinName == "NovoRapid" {
-            context.delete(dose)
-        }
-        let demoFoods: Set<String> = ["Oats & berries", "Chicken & rice", "Pasta"]
-        let carbs = (try? context.fetch(FetchDescriptor<CarbEntry>())) ?? []
-        for entry in carbs where entry.foodDescription.map(demoFoods.contains) == true {
-            context.delete(entry)
-        }
-        let observations = (try? context.fetch(FetchDescriptor<ObservationEntry>())) ?? []
-        for observation in observations where observation.text == "Busy day, short night." {
-            context.delete(observation)
-        }
-        let activity = (try? context.fetch(FetchDescriptor<ActivityEntry>())) ?? []
-        for session in activity where session.activityType == .walking
-            && session.durationSeconds == 1800 && (session.distanceMeters ?? 0) == 2400 {
-            context.delete(session)
-        }
+        purge(GlucoseReading.self)
+        purge(InsulinDose.self)
+        purge(CarbEntry.self)
+        purge(ActivityEntry.self)
+        purge(ObservationEntry.self)
         try? context.save()
     }
 
@@ -103,12 +94,15 @@ enum DemoData {
             let walk = ActivityEntry(activityType: .walking, startTimestamp: at(base, 18, 0),
                                      durationSeconds: 30 * 60, intensity: .moderate,
                                      caloriesBurned: 150, distanceMeters: 2400)
+            walk.externalID = "demo-activity-\(day)"
             context.insert(walk)
 
             if day == 1 {
-                context.insert(ObservationEntry(tags: [.stress, .lackOfSleep],
-                                                text: "Busy day, short night.",
-                                                timestamp: at(base, 21, 30)))
+                let observation = ObservationEntry(tags: [.stress, .lackOfSleep],
+                                                   text: "Busy day, short night.",
+                                                   timestamp: at(base, 21, 30))
+                observation.externalID = "demo-observation-\(day)"
+                context.insert(observation)
             }
         }
 
@@ -158,13 +152,17 @@ enum DemoData {
 
     @MainActor
     private static func insulin(_ ctx: ModelContext, at base: Date, hour: Int, units: Double, type: InsulinType, context_: InsulinDoseContext) {
-        ctx.insert(InsulinDose(units: units, timestamp: at(base, hour, 0), insulinType: type,
+        let dose = InsulinDose(units: units, timestamp: at(base, hour, 0), insulinType: type,
                                insulinName: type.isBasal ? "Tresiba" : "NovoRapid",
-                               deliveryMethod: .pen, doseContext: context_))
+                               deliveryMethod: .pen, doseContext: context_)
+        dose.externalID = "demo-insulin-\(Int(at(base, hour, 0).timeIntervalSince1970))"
+        ctx.insert(dose)
     }
 
     @MainActor
     private static func carbs(_ ctx: ModelContext, at base: Date, hour: Int, grams: Double, meal: MealType, food: String) {
-        ctx.insert(CarbEntry(grams: grams, timestamp: at(base, hour, 5), mealType: meal, foodDescription: food))
+        let entry = CarbEntry(grams: grams, timestamp: at(base, hour, 5), mealType: meal, foodDescription: food)
+        entry.externalID = "demo-carbs-\(Int(at(base, hour, 5).timeIntervalSince1970))"
+        ctx.insert(entry)
     }
 }

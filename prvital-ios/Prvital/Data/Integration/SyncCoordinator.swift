@@ -95,11 +95,17 @@ final class SyncCoordinator {
     /// Inserts new (non-duplicate) samples for one source; returns the count.
     private func ingest(_ samples: [NormalizedGlucoseSample], from source: DataSource) -> Int {
         guard !samples.isEmpty else { return 0 }
-        let incomingIDs = Set(samples.map(\.id))
+        // Dedup within the incoming batch first — a source can report the same
+        // instant twice in one payload (e.g. LibreLinkUp's current measurement plus
+        // the newest graph point share one id), which would otherwise insert a
+        // permanent phantom duplicate that DB-only dedup never catches.
+        var seenInBatch = Set<String>()
+        let unique = samples.filter { seenInBatch.insert($0.id).inserted }
+        let incomingIDs = Set(unique.map(\.id))
         let existing = fetchExternalIDs(source: source, ids: incomingIDs)
 
         var inserted = 0
-        for sample in samples where !existing.contains(sample.id) {
+        for sample in unique where !existing.contains(sample.id) {
             context.insert(GlucoseNormalizer.reading(from: sample))
             inserted += 1
         }
@@ -110,8 +116,13 @@ final class SyncCoordinator {
     /// records a single audit row summarising the outcome.
     @discardableResult
     func resolveRecentConflicts(since: Date) -> Int {
+        // Widen the window a few minutes so a conflict cluster straddling `since`
+        // is re-resolved with all of its members — otherwise a previously
+        // superseded reading looks like a singleton, gets reset to active, and the
+        // instant is double-counted in averages/TIR.
+        let windowedSince = since.addingTimeInterval(-300)
         let descriptor = FetchDescriptor<GlucoseReading>(
-            predicate: #Predicate { $0.timestamp >= since },
+            predicate: #Predicate { $0.timestamp >= windowedSince },
             sortBy: [SortDescriptor(\.timestamp)]
         )
         guard let readings = try? context.fetch(descriptor), !readings.isEmpty else { return 0 }

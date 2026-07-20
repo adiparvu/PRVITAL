@@ -11,6 +11,10 @@ protocol MedicalRecord: AnyObject, Identifiable {
     var recordType: RecordType { get }
     var source: DataSource { get set }
     var deviceID: String? { get set }
+    /// A stable identifier from the originating system (e.g. a HealthKit sample
+    /// UUID or a demo-seed marker), used for dedup and provenance. `nil` for
+    /// records created directly in the app.
+    var externalID: String? { get set }
     /// The clinically meaningful instant for this record (UTC internally).
     var timestamp: Date { get set }
     var createdAt: Date { get set }
