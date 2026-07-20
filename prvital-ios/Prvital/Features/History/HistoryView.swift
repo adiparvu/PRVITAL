@@ -111,12 +111,14 @@ struct HistoryView: View {
                     .scrollContentBackground(.hidden)
                 }
             }
+            .animation(.snappy, value: sortNewestFirst)
+            .animation(.default, value: range)
             .background(Theme.background)
             .navigationTitle("History")
             .toolbar {
                 ToolbarItem(placement: .topBarLeading) {
                     Button {
-                        sortNewestFirst.toggle()
+                        withAnimation(.snappy) { sortNewestFirst.toggle() }
                         Haptics.play(.selection)
                     } label: {
                         Image(systemName: sortNewestFirst ? "arrow.down" : "arrow.up")

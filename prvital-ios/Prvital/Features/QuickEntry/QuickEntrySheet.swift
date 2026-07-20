@@ -79,7 +79,7 @@ struct QuickEntrySheet: View {
                     .appearTransition(delay: 0.06)
                     LazyVGrid(columns: columns, spacing: 12) {
                         ForEach(Array([EntryEditorKind.glucose, .insulin, .carbs, .activity, .observation].enumerated()), id: \.element) { index, kind in
-                            Button { editor = kind } label: { launcherTile(kind) }
+                            Button { Haptics.play(.selection); editor = kind } label: { launcherTile(kind) }
                                 .buttonStyle(.plain)
                                 .appearTransition(delay: 0.12 + Double(index) * 0.05)
                         }

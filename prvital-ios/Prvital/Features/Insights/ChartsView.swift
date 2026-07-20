@@ -95,6 +95,7 @@ struct ChartsView: View {
                 activitySection.appearTransition(delay: 0.24)
             }
             .padding()
+            .animation(.smooth, value: interval)
         }
         .background(Theme.background)
     }

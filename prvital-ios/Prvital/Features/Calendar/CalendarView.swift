@@ -102,6 +102,8 @@ struct CalendarView: View {
                     }
                 }
             }
+            .id(visibleMonth)
+            .transition(.blurReplace)
         }
         .glassCard(cornerRadius: 26, padding: 18)
     }

@@ -240,6 +240,11 @@ private struct OnboardingConsentCard: View {
         }
         .frame(maxWidth: .infinity, alignment: .leading)
         .glassCard()
+        .overlay {
+            RoundedRectangle(cornerRadius: 22, style: .continuous)
+                .strokeBorder(isOn ? Theme.accent.opacity(0.6) : .clear, lineWidth: 1.5)
+        }
+        .animation(.easeInOut(duration: 0.2), value: isOn)
         .accessibilityElement(children: .combine)
         .accessibilityLabel(scope.title)
         .accessibilityValue(isOn ? "On" : "Off")

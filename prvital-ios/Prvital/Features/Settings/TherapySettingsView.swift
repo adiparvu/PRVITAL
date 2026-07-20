@@ -67,6 +67,7 @@ struct TherapySettingsView: View {
         }
         .scrollContentBackground(.hidden)
         .background(Theme.background)
+        .animation(.easeInOut(duration: 0.25), value: params.isEnabled)
         .navigationTitle("Therapy & bolus")
         .navigationBarTitleDisplayMode(.inline)
         .onAppear { params = env.preferences.bolusParameters }

@@ -47,6 +47,7 @@ struct AlertsSettingsView: View {
         }
         .scrollContentBackground(.hidden)
         .background(Theme.background)
+        .animation(.easeInOut(duration: 0.25), value: prefs.enabled)
         .navigationTitle("Glucose alerts")
         .navigationBarTitleDisplayMode(.inline)
         .onAppear { prefs = env.preferences.alerts }

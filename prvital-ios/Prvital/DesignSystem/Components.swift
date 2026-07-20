@@ -29,6 +29,8 @@ struct ZonePill: View {
             .padding(.vertical, 4)
             .background(zone.color.opacity(0.16), in: .capsule)
             .foregroundStyle(zone.color)
+            .contentTransition(.opacity)
+            .animation(.smooth, value: zone)
             .accessibilityLabel("Zone: \(zone.label)")
     }
 }
@@ -37,12 +39,23 @@ struct ZonePill: View {
 struct TrendBadge: View {
     let trend: GlucoseTrend
     var showsLabel = false
+
+    /// A fast move gets a warning tint; steady trends stay quiet.
+    private var tint: Color {
+        switch trend {
+        case .fallingFast: return Theme.zoneCritical
+        case .risingFast: return Theme.zoneHigh
+        default: return Theme.textSecondary
+        }
+    }
+
     var body: some View {
         HStack(spacing: 4) {
             Image(systemName: trend.symbol).font(.system(size: 13, weight: .bold))
             if showsLabel { Text(trend.label).font(.system(size: 12, weight: .medium)) }
         }
-        .foregroundStyle(Theme.textSecondary)
+        .foregroundStyle(tint)
+        .animation(.smooth, value: trend)
         .accessibilityLabel("Trend: \(trend.label)")
     }
 }

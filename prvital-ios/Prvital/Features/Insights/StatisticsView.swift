@@ -122,6 +122,7 @@ struct StatisticsView: View {
                 }
             }
             .padding()
+            .animation(.smooth, value: interval)
         }
         .background(Theme.background)
     }

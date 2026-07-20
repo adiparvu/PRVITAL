@@ -30,8 +30,9 @@ struct ObservationEntrySheet: View {
                                     .padding(.vertical, 10)
                                     .background(isOn ? Theme.accent.opacity(0.18) : Theme.hairline.opacity(0.4), in: .rect(cornerRadius: 12))
                                     .foregroundStyle(isOn ? Theme.accent : Theme.textSecondary)
+                                    .animation(.snappy(duration: 0.2), value: isOn)
                             }
-                            .buttonStyle(.plain)
+                            .buttonStyle(PressableChipStyle())
                         }
                     }
                     .listRowInsets(EdgeInsets(top: 8, leading: 12, bottom: 8, trailing: 12))
