@@ -47,8 +47,9 @@ struct OnboardingView: View {
                 }
                 .padding(.horizontal, 4)
 
-                ForEach(ConsentScope.allCases) { scope in
+                ForEach(Array(ConsentScope.allCases.enumerated()), id: \.element.id) { index, scope in
                     OnboardingConsentCard(scope: scope, isOn: consentBinding(for: scope))
+                        .appearTransition(delay: Double(index) * 0.06)
                 }
             }
             .padding(20)
@@ -141,9 +142,13 @@ private struct OnboardingWelcomeStep: View {
                         .font(.headline)
                         .foregroundStyle(Theme.textPrimary)
                     OnboardingPrinciple(symbol: "iphone", title: "Stays on your device", detail: "Your journal is stored locally and encrypted at rest.")
+                        .appearTransition(delay: 0.05)
                     OnboardingPrinciple(symbol: "icloud.slash", title: "No cloud unless you ask", detail: "Sync uses only your own private iCloud — off until you enable it.")
+                        .appearTransition(delay: 0.10)
                     OnboardingPrinciple(symbol: "dollarsign.circle", title: "Never sold, never ads", detail: "Your medical data is never sold or used for advertising.")
+                        .appearTransition(delay: 0.15)
                     OnboardingPrinciple(symbol: "brain", title: "No training without consent", detail: "Nothing is used to train models unless you turn it on.")
+                        .appearTransition(delay: 0.20)
                 }
                 .frame(maxWidth: .infinity, alignment: .leading)
                 .glassCard()

@@ -88,11 +88,11 @@ struct ChartsView: View {
                 .pickerStyle(.segmented)
                 .onChange(of: interval) { _, _ in Haptics.play(.selection) }
 
-                glucoseSection
-                distributionSection
-                insulinSection
-                carbsSection
-                activitySection
+                glucoseSection.appearTransition(delay: 0)
+                distributionSection.appearTransition(delay: 0.06)
+                insulinSection.appearTransition(delay: 0.12)
+                carbsSection.appearTransition(delay: 0.18)
+                activitySection.appearTransition(delay: 0.24)
             }
             .padding()
         }

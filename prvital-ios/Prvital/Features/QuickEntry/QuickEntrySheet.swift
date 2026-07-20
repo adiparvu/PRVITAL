@@ -69,16 +69,19 @@ struct QuickEntrySheet: View {
                             Haptics.play(.success); dismiss()
                         }
                     }
+                    .appearTransition(delay: 0)
                     SectionCard("Quick carbs", systemImage: "fork.knife") {
                         chipRow(env.preferences.carbPresets.map { ("\($0.formatted()) g", $0) }, tint: Theme.zoneHigh) { grams in
                             env.entryStore.addCarbs(grams: grams)
                             Haptics.play(.success); dismiss()
                         }
                     }
+                    .appearTransition(delay: 0.06)
                     LazyVGrid(columns: columns, spacing: 12) {
-                        ForEach([EntryEditorKind.glucose, .insulin, .carbs, .activity, .observation]) { kind in
+                        ForEach(Array([EntryEditorKind.glucose, .insulin, .carbs, .activity, .observation].enumerated()), id: \.element) { index, kind in
                             Button { editor = kind } label: { launcherTile(kind) }
                                 .buttonStyle(.plain)
+                                .appearTransition(delay: 0.12 + Double(index) * 0.05)
                         }
                     }
                 }

@@ -104,14 +104,14 @@ struct StatisticsView: View {
                 .onChange(of: interval) { _, _ in Haptics.play(.selection) }
 
                 if hasAnyData {
-                    if stats.hasGlucose { timeInRangeBar }
-                    statsGrid
-                    if let insulin = insulinSummary { insulinBalanceCard(insulin) }
-                    if !carbsByMeal.isEmpty { carbsByMealCard(carbsByMeal) }
-                    if let overnight = overnightStats, overnight.hasGlucose { overnightCard(overnight) }
-                    if dailyDays.count >= 2 { bestWorstDayCard }
-                    if tirTrend.count >= 2 { tirTrendCard }
-                    if gmiTrend.count >= 2 { gmiTrendCard }
+                    if stats.hasGlucose { timeInRangeBar.appearTransition(delay: 0) }
+                    statsGrid.appearTransition(delay: 0.06)
+                    if let insulin = insulinSummary { insulinBalanceCard(insulin).appearTransition(delay: 0.12) }
+                    if !carbsByMeal.isEmpty { carbsByMealCard(carbsByMeal).appearTransition(delay: 0.18) }
+                    if let overnight = overnightStats, overnight.hasGlucose { overnightCard(overnight).appearTransition(delay: 0.24) }
+                    if dailyDays.count >= 2 { bestWorstDayCard.appearTransition(delay: 0.30) }
+                    if tirTrend.count >= 2 { tirTrendCard.appearTransition(delay: 0.36) }
+                    if gmiTrend.count >= 2 { gmiTrendCard.appearTransition(delay: 0.42) }
                 } else {
                     EmptyStateView(
                         systemImage: "chart.pie",
@@ -289,7 +289,6 @@ struct StatisticsView: View {
                 }
             }
             .frame(height: 150)
-            .appearTransition()
         }
     }
 
@@ -325,7 +324,6 @@ struct StatisticsView: View {
                 }
             }
             .frame(height: 150)
-            .appearTransition()
         }
     }
 

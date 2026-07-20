@@ -35,9 +35,12 @@ struct DashboardView: View {
             ScrollView {
                 VStack(spacing: 20) {
                     hero(summary: summary, thresholds: thresholds, unit: unit)
+                        .appearTransition(delay: 0)
                     trendSection(summary: summary, thresholds: thresholds, unit: unit)
+                        .appearTransition(delay: 0.06)
                     if todayStats.hasGlucose {
                         todayCard(todayStats)
+                            .appearTransition(delay: 0.12)
                     }
                     if bolus.isEnabled && bolus.isValid {
                         let now = Date()
@@ -45,8 +48,10 @@ struct DashboardView: View {
                             iob: InsulinMath.activeInsulin(doses: insulin, at: now, parameters: bolus),
                             cob: CarbMath.carbsOnBoard(entries: carbs, at: now)
                         )
+                        .appearTransition(delay: 0.18)
                     }
                     recentRow(summary: summary)
+                        .appearTransition(delay: 0.24)
                 }
                 .padding()
             }

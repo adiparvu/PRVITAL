@@ -54,7 +54,7 @@ struct JournalView: View {
                 } else {
                     ScrollView {
                         LazyVStack(alignment: .leading, spacing: 20) {
-                            ForEach(sections) { section in
+                            ForEach(Array(sections.enumerated()), id: \.element.id) { sectionIndex, section in
                                 Section {
                                     VStack(spacing: 0) {
                                         ForEach(Array(section.items.enumerated()), id: \.element.id) { index, item in
@@ -74,6 +74,7 @@ struct JournalView: View {
                                 } header: {
                                     JournalSectionHeader(day: section.day)
                                 }
+                                .appearTransition(delay: Double(min(sectionIndex, 6)) * 0.05)
                             }
                         }
                         .padding()
