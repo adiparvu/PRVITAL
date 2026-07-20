@@ -88,13 +88,12 @@ jobs:
     # Archives the app (with its widget + watch targets) with MANUAL signing and
     # uploads the build to TestFlight via the App Store Connect API. Triggered by
     # a manual run (testflight=true), a `testflight-*` tag, or a push whose commit
-    # message contains [testflight]. Requires these repo secrets:
-    #   ASC_KEY_ID, ASC_ISSUER_ID, ASC_API_KEY_P8  (upload — raw .p8 or base64)
-    #   DIST_CERT_P12 (base64 of the Apple Distribution .p12), DIST_CERT_PASSWORD
-    #   PROFILE_APP, PROFILE_WIDGETS, PROFILE_WATCH, PROFILE_WATCH_WIDGETS
-    #     (base64 of the App Store .mobileprovision for each of the four bundle IDs)
-    # Automatic signing over the API is not usable here (Apple's provisioning
-    # service rejects the key), so certificate + profiles are supplied directly.
+    # message contains [testflight]. Requires only:
+    #   ASC_KEY_ID, ASC_ISSUER_ID, ASC_API_KEY_P8  (Admin key; raw .p8 or base64)
+    # and the four App IDs existing in the account with their capabilities. The
+    # distribution certificate and App Store profiles are created on the runner
+    # via the App Store Connect API (xcodebuild's own automatic-signing service
+    # rejects the key, but the REST API accepts it), then used for manual signing.
     if: ${{ (github.event_name == 'workflow_dispatch' && inputs.testflight) || startsWith(github.ref, 'refs/tags/testflight-') || (github.event_name == 'push' && contains(github.event.head_commit.message, '[testflight]')) }}
     runs-on: macos-latest
     env:
@@ -162,49 +161,83 @@ jobs:
           exit(res.code.to_i == 200 ? 0 : 1)
           RUBY
           ruby /tmp/asc_preflight.rb
-      - name: Import distribution certificate
+      - name: Create signing assets via App Store Connect API
         env:
-          DIST_CERT_P12: ${{ secrets.DIST_CERT_P12 }}
-          DIST_CERT_PASSWORD: ${{ secrets.DIST_CERT_PASSWORD }}
+          ASC_KEY_ID: ${{ secrets.ASC_KEY_ID }}
+          ASC_ISSUER_ID: ${{ secrets.ASC_ISSUER_ID }}
+        run: |
+          cat > /tmp/provision.rb <<'RUBY'
+          require "openssl"; require "base64"; require "json"; require "net/http"; require "fileutils"
+          KID = ENV["ASC_KEY_ID"].to_s
+          ISS = ENV["ASC_ISSUER_ID"].to_s
+          TMP = ENV["RUNNER_TEMP"]
+          HOME = ENV["HOME"]
+          BUNDLES = {
+            "com.prvital.app" => "Prvital App Store CI",
+            "com.prvital.app.widgets" => "Prvital Widgets App Store CI",
+            "com.prvital.app.watchkitapp" => "Prvital Watch App Store CI",
+            "com.prvital.app.watchkitapp.widgets" => "Prvital Watch Widgets App Store CI",
+          }
+          SIGN_KEY = OpenSSL::PKey.read(File.read(File.join(HOME, "private_keys", "AuthKey_#{KID}.p8")))
+          B64 = ->(s) { Base64.urlsafe_encode64(s).delete("=") }
+          def token
+            now = Time.now.to_i
+            input = "#{B64.call({alg: "ES256", kid: KID, typ: "JWT"}.to_json)}.#{B64.call({iss: ISS, iat: now, exp: now + 900, aud: "appstoreconnect-v1"}.to_json)}"
+            a = OpenSSL::ASN1.decode(SIGN_KEY.sign(OpenSSL::Digest.new("SHA256"), input))
+            r = a.value[0].value.to_s(2).rjust(32, "\x00".b); s = a.value[1].value.to_s(2).rjust(32, "\x00".b)
+            "#{input}.#{B64.call(r + s)}"
+          end
+          def api(method, path, body = nil)
+            uri = URI("https://api.appstoreconnect.apple.com#{path}")
+            req = (method == :post ? Net::HTTP::Post : Net::HTTP::Get).new(uri)
+            req["Authorization"] = "Bearer #{token}"; req["Content-Type"] = "application/json"
+            req.body = body.to_json if body
+            res = Net::HTTP.start(uri.host, uri.port, use_ssl: true) { |h| h.request(req) }
+            [res.code.to_i, (JSON.parse(res.body) rescue res.body)]
+          end
+          # 1) Apple Distribution certificate from a fresh CSR.
+          csr_key = OpenSSL::PKey::RSA.new(2048)
+          csr = OpenSSL::X509::Request.new
+          csr.version = 0
+          csr.subject = OpenSSL::X509::Name.new([["CN", "Prvital Distribution"], ["C", "RO"]])
+          csr.public_key = csr_key.public_key
+          csr.sign(csr_key, OpenSSL::Digest.new("SHA256"))
+          code, resp = api(:post, "/v1/certificates", {data: {type: "certificates", attributes: {certificateType: "DISTRIBUTION", csrContent: csr.to_pem}}})
+          abort("certificate create failed (HTTP #{code}): #{resp}") unless code == 201
+          cert_id = resp["data"]["id"]
+          cert = OpenSSL::X509::Certificate.new(Base64.decode64(resp["data"]["attributes"]["certificateContent"]))
+          File.binwrite(File.join(TMP, "dist.p12"), OpenSSL::PKCS12.create("prvital", "Apple Distribution", csr_key, cert).to_der)
+          puts "created distribution certificate #{cert_id}"
+          # 2) App Store provisioning profile per bundle id.
+          pp_dir = File.join(HOME, "Library/MobileDevice/Provisioning Profiles")
+          FileUtils.mkdir_p(pp_dir)
+          map = []
+          BUNDLES.each do |bid, pname|
+            code, resp = api(:get, "/v1/bundleIds?filter[identifier]=#{bid}&limit=1")
+            abort("bundleId lookup failed for #{bid} (HTTP #{code}): #{resp}") unless code == 200
+            abort("::error::App ID #{bid} does not exist. Create it in Identifiers (with its capabilities) first.") if resp["data"].empty?
+            ref = resp["data"][0]["id"]
+            code, resp = api(:post, "/v1/profiles", {data: {type: "profiles", attributes: {name: pname, profileType: "IOS_APP_STORE"}, relationships: {bundleId: {data: {type: "bundleIds", id: ref}}, certificates: {data: [{type: "certificates", id: cert_id}]}}}})
+            abort("profile create failed for #{bid} (HTTP #{code}): #{resp}") unless code == 201
+            uuid = resp["data"]["attributes"]["uuid"]
+            File.binwrite(File.join(pp_dir, "#{uuid}.mobileprovision"), Base64.decode64(resp["data"]["attributes"]["profileContent"]))
+            map << "#{bid}=#{pname}"
+            puts "created profile '#{pname}' for #{bid} (#{uuid})"
+          end
+          File.write(File.join(TMP, "profile_map.txt"), map.join("\n") + "\n")
+          RUBY
+          ruby /tmp/provision.rb
+      - name: Import certificate into keychain
         run: |
           set -euo pipefail
           KEYCHAIN="$RUNNER_TEMP/prvital.keychain-db"
           security create-keychain -p "" "$KEYCHAIN"
           security set-keychain-settings -lut 21600 "$KEYCHAIN"
           security unlock-keychain -p "" "$KEYCHAIN"
-          printf '%s' "$DIST_CERT_P12" | tr -d '[:space:]' | openssl base64 -d -A > "$RUNNER_TEMP/dist.p12"
-          security import "$RUNNER_TEMP/dist.p12" -P "$DIST_CERT_PASSWORD" -A -t cert -f pkcs12 -k "$KEYCHAIN"
+          security import "$RUNNER_TEMP/dist.p12" -P "prvital" -A -t cert -f pkcs12 -k "$KEYCHAIN"
           security set-key-partition-list -S apple-tool:,apple: -k "" "$KEYCHAIN" >/dev/null
           security list-keychains -d user -s "$KEYCHAIN" $(security list-keychains -d user | tr -d '"')
-          echo "Signing identities in the new keychain:"
           security find-identity -v -p codesigning "$KEYCHAIN"
-      - name: Install provisioning profiles
-        env:
-          PROFILE_APP: ${{ secrets.PROFILE_APP }}
-          PROFILE_WIDGETS: ${{ secrets.PROFILE_WIDGETS }}
-          PROFILE_WATCH: ${{ secrets.PROFILE_WATCH }}
-          PROFILE_WATCH_WIDGETS: ${{ secrets.PROFILE_WATCH_WIDGETS }}
-        run: |
-          set -euo pipefail
-          PP_DIR="$HOME/Library/MobileDevice/Provisioning Profiles"
-          mkdir -p "$PP_DIR"
-          : > "$RUNNER_TEMP/profile_map.txt"
-          install() {
-            if [ -z "$1" ]; then echo "::error::A provisioning-profile secret is empty."; exit 1; fi
-            printf '%s' "$1" | tr -d '[:space:]' | openssl base64 -d -A > "$RUNNER_TEMP/pp.mobileprovision"
-            security cms -D -i "$RUNNER_TEMP/pp.mobileprovision" > "$RUNNER_TEMP/pp.plist"
-            uuid=$(/usr/libexec/PlistBuddy -c "Print :UUID" "$RUNNER_TEMP/pp.plist")
-            name=$(/usr/libexec/PlistBuddy -c "Print :Name" "$RUNNER_TEMP/pp.plist")
-            appid=$(/usr/libexec/PlistBuddy -c "Print :Entitlements:application-identifier" "$RUNNER_TEMP/pp.plist")
-            bundle=${appid#*.}
-            cp "$RUNNER_TEMP/pp.mobileprovision" "$PP_DIR/$uuid.mobileprovision"
-            echo "$bundle=$name" >> "$RUNNER_TEMP/profile_map.txt"
-            echo "installed profile '$name' for $bundle ($uuid)"
-          }
-          install "$PROFILE_APP"
-          install "$PROFILE_WIDGETS"
-          install "$PROFILE_WATCH"
-          install "$PROFILE_WATCH_WIDGETS"
       - name: Archive (manual signing)
         working-directory: prvital-ios
         run: |
