@@ -73,6 +73,10 @@ struct StatisticsView: View {
         DailyBreakdown.perDay(activeReadings, thresholds: thresholds)
     }
 
+    private var overnightStats: PeriodStatistics? {
+        OvernightStability.analyze(activeReadings, thresholds: thresholds)
+    }
+
     private let columns = [
         GridItem(.flexible(), spacing: 12),
         GridItem(.flexible(), spacing: 12),
@@ -95,6 +99,7 @@ struct StatisticsView: View {
                     if stats.hasGlucose { timeInRangeBar }
                     statsGrid
                     if let insulin = insulinSummary { insulinBalanceCard(insulin) }
+                    if let overnight = overnightStats, overnight.hasGlucose { overnightCard(overnight) }
                     if dailyDays.count >= 2 { bestWorstDayCard }
                     if gmiTrend.count >= 2 { gmiTrendCard }
                 } else {
@@ -109,6 +114,33 @@ struct StatisticsView: View {
             .padding()
         }
         .background(Theme.background)
+    }
+
+    // MARK: Overnight stability
+
+    private func overnightCard(_ stats: PeriodStatistics) -> some View {
+        SectionCard("Overnight (12–6 AM)", systemImage: "moon.stars.fill") {
+            HStack(spacing: 16) {
+                overnightMetric("Average", glucoseValue(stats.average), Theme.textPrimary)
+                Divider().frame(height: 40).overlay(Theme.hairline)
+                overnightMetric("Time in range", percent(stats.timeInRange), Theme.zoneInRange)
+                Divider().frame(height: 40).overlay(Theme.hairline)
+                overnightMetric("Time below", percent(stats.timeBelowRange), Theme.zoneCritical)
+                Spacer()
+            }
+        }
+    }
+
+    private func overnightMetric(_ title: LocalizedStringKey, _ value: String, _ tint: Color) -> some View {
+        VStack(alignment: .leading, spacing: 3) {
+            Text(value)
+                .font(.headline)
+                .foregroundStyle(tint)
+            Text(title)
+                .font(.caption2)
+                .foregroundStyle(Theme.textSecondary)
+        }
+        .accessibilityElement(children: .combine)
     }
 
     // MARK: Best & toughest day
