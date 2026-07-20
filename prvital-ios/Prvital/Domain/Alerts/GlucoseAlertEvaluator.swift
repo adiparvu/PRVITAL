@@ -106,9 +106,12 @@ enum GlucoseAlertEvaluator {
         }
 
         // Snooze only when the level is unchanged; any change in level (worse,
-        // better, or crossing the range) alerts right away.
+        // better, or crossing the range) alerts right away. Urgent levels
+        // (severity 2 — urgent low/high) re-alert much sooner than the user's
+        // snooze so a persistent severe low keeps nagging.
+        let effectiveSnooze = level.severity >= 2 ? min(preferences.snoozeMinutes, 5) : preferences.snoozeMinutes
         if level.rawValue == last.lastLevel, let firedAt = last.lastFiredAt,
-           now.timeIntervalSince(firedAt) < TimeInterval(max(0, preferences.snoozeMinutes) * 60) {
+           now.timeIntervalSince(firedAt) < TimeInterval(max(0, effectiveSnooze) * 60) {
             var state = last
             state.lastReadingAt = reading.timestamp
             return Decision(alert: nil, state: state)

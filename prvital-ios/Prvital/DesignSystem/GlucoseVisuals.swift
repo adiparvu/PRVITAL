@@ -210,12 +210,14 @@ struct GlucoseTrendChart: View {
 /// give charts and cards a bit of life without any per-call boilerplate.
 private struct AppearTransition: ViewModifier {
     var delay: Double
+    @Environment(\.accessibilityReduceMotion) private var reduceMotion
     @State private var shown = false
     func body(content: Content) -> some View {
         content
             .opacity(shown ? 1 : 0)
             .offset(y: shown ? 0 : 10)
             .onAppear {
+                guard !reduceMotion else { shown = true; return }
                 withAnimation(.spring(response: 0.55, dampingFraction: 0.85).delay(delay)) { shown = true }
             }
     }

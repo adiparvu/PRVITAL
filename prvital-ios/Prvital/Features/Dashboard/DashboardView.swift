@@ -17,6 +17,7 @@ struct DashboardView: View {
 
     @State private var showQuickEntry = false
     @State private var showGlucoseEntry = false
+    @State private var syncFailure: String?
 
     var body: some View {
         let thresholds = env.preferences.thresholds
@@ -83,7 +84,20 @@ struct DashboardView: View {
                 }
             }
             .refreshable {
-                _ = await env.sync.syncAll()
+                // Surface source/network failures instead of silently looking
+                // like "no new data".
+                let report = await env.sync.syncAll()
+                if !report.failures.isEmpty {
+                    syncFailure = report.failures.joined(separator: "\n")
+                }
+            }
+            .alert("Couldn't refresh", isPresented: Binding(
+                get: { syncFailure != nil },
+                set: { if !$0 { syncFailure = nil } }
+            )) {
+                Button("OK", role: .cancel) {}
+            } message: {
+                if let syncFailure { Text(syncFailure) }
             }
             .sheet(isPresented: $showQuickEntry) {
                 QuickEntrySheet()

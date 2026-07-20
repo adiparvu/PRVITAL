@@ -116,7 +116,7 @@ struct QuickChip: View {
                 .font(.system(size: 15, weight: .semibold, design: .rounded))
                 .padding(.horizontal, 16)
                 .padding(.vertical, 10)
-                .frame(minWidth: 56)
+                .frame(minWidth: 56, minHeight: 44) // meet the 44pt HIG tap-target minimum
                 .background(isSelected ? tint : tint.opacity(0.12), in: .capsule)
                 .foregroundStyle(isSelected ? Color.white : tint)
                 .animation(.snappy, value: isSelected)
@@ -130,6 +130,7 @@ struct EmptyStateView: View {
     let systemImage: String
     let title: LocalizedStringKey
     var message: LocalizedStringKey?
+    @Environment(\.accessibilityReduceMotion) private var reduceMotion
     var body: some View {
         VStack(spacing: 12) {
             Image(systemName: systemImage)
@@ -137,7 +138,7 @@ struct EmptyStateView: View {
                 .foregroundStyle(Theme.accent)
                 .frame(width: 72, height: 72)
                 .background(Theme.accentSoft, in: .circle)
-                .symbolEffect(.pulse)
+                .symbolEffect(.pulse, isActive: !reduceMotion)
             Text(title).font(.headline).foregroundStyle(Theme.textSecondary)
             if let message {
                 Text(message).font(.subheadline).foregroundStyle(Theme.textTertiary)
