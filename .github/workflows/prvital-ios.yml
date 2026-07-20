@@ -109,8 +109,20 @@ jobs:
           ASC_API_KEY_P8: ${{ secrets.ASC_API_KEY_P8 }}
           ASC_KEY_ID: ${{ secrets.ASC_KEY_ID }}
         run: |
+          set -euo pipefail
           mkdir -p "$HOME/private_keys"
-          echo "$ASC_API_KEY_P8" > "$HOME/private_keys/AuthKey_${ASC_KEY_ID}.p8"
+          KEY_PATH="$HOME/private_keys/AuthKey_${ASC_KEY_ID}.p8"
+          # Accept either the raw .p8 (PEM) or a base64-encoded .p8, so the
+          # secret survives copy/paste that strips newlines.
+          if printf '%s' "$ASC_API_KEY_P8" | grep -q "BEGIN PRIVATE KEY"; then
+            printf '%s\n' "$ASC_API_KEY_P8" > "$KEY_PATH"
+          else
+            printf '%s' "$ASC_API_KEY_P8" | tr -d '[:space:]' | openssl base64 -d -A > "$KEY_PATH"
+          fi
+          if ! grep -q "BEGIN PRIVATE KEY" "$KEY_PATH"; then
+            echo "::error::ASC_API_KEY_P8 is not a valid .p8. Store the full .p8 contents (incl. the BEGIN/END lines) or the base64 of the .p8 file."
+            exit 1
+          fi
       - name: Archive
         working-directory: prvital-ios
         run: |
