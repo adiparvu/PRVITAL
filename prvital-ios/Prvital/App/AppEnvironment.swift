@@ -19,6 +19,7 @@ final class AppEnvironment {
     let consent: ConsentStore
     let entryStore: EntryStore
     let profile: ProfileStore
+    let careShare: CareShareService
     let sync: SyncCoordinator
     let snapshots: SnapshotPublisher
     let exporter: ExportService
@@ -58,6 +59,8 @@ final class AppEnvironment {
         self.entryStore = EntryStore(context: context, audit: audit, healthKit: healthKit,
                                      consent: consent, registry: registry)
         self.profile = ProfileStore(context: context, audit: audit)
+        self.careShare = CareShareService(context: context, preferences: prefs,
+                                          profileStore: self.profile, audit: audit)
 
         // Any write — a manual entry or a completed sync — republishes the
         // widget/watch snapshot and re-evaluates glucose alerts.

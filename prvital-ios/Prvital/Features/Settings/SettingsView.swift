@@ -123,6 +123,17 @@ struct SettingsView: View {
                     }
 
                     NavigationLink {
+                        SharingView()
+                    } label: {
+                        SettingsRow(
+                            title: "Sharing",
+                            subtitle: "Partner, caregiver & care team",
+                            systemImage: "person.2.fill",
+                            tint: Theme.zoneInRange
+                        )
+                    }
+
+                    NavigationLink {
                         DataControlsView()
                     } label: {
                         SettingsRow(
