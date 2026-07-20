@@ -12,6 +12,7 @@ struct CarbEntrySheet: View {
     @State private var mealType: MealType = .lunch
     @State private var food = ""
     @State private var note = ""
+    @State private var showingFood = false
 
     var body: some View {
         NavigationStack {
@@ -37,6 +38,19 @@ struct CarbEntrySheet: View {
                     }
                     .listRowInsets(EdgeInsets(top: 6, leading: 12, bottom: 6, trailing: 12))
                 }
+                if existing == nil {
+                    Section {
+                        Button {
+                            Haptics.play(.selection)
+                            showingFood = true
+                        } label: {
+                            Label("Search or scan food", systemImage: "barcode.viewfinder")
+                                .foregroundStyle(Theme.accent)
+                        }
+                    } footer: {
+                        Text("Look up a food's exact carbs from Open Food Facts by name or barcode.")
+                    }
+                }
                 Section {
                     Picker("Meal", selection: $mealType) {
                         ForEach(MealType.allCases) { Label($0.label, systemImage: $0.symbol).tag($0) }
@@ -61,6 +75,12 @@ struct CarbEntrySheet: View {
                 ToolbarItem(placement: .confirmationAction) { Button("Save", action: save).disabled(grams <= 0) }
             }
             .onAppear(perform: load)
+            .sheet(isPresented: $showingFood) {
+                FoodSearchView(mealType: mealType) {
+                    showingFood = false
+                    dismiss()
+                }
+            }
         }
     }
 

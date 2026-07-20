@@ -131,6 +131,59 @@ final class EntryStore {
         return entry
     }
 
+    // MARK: Food library
+
+    /// Inserts a food into the local library if it isn't already there (matched
+    /// by barcode), returning the stored instance.
+    @discardableResult
+    func saveFood(_ food: FoodItem) -> FoodItem {
+        if let existing = existingFood(matching: food) { return existing }
+        context.insert(food)
+        finish(.manualEdit, detail: "Food \"\(food.name)\" saved")
+        return food
+    }
+
+    /// Logs a carbohydrate entry for a portion of a food: saves the food to the
+    /// library, bumps its use count, computes the carbs for the portion and
+    /// records the entry through the normal carb path.
+    @discardableResult
+    func logFood(
+        _ food: FoodItem,
+        portionGrams: Double,
+        mealType: MealType = .lunch,
+        timestamp: Date = Date(),
+        useNetCarbs: Bool = false,
+        note: String? = nil
+    ) -> CarbEntry {
+        let stored = saveFood(food)
+        stored.useCount += 1
+        stored.lastUsedAt = timestamp
+        stored.updatedAt = Date()
+
+        let carbs = CarbCalculator.carbs(
+            portionGrams: portionGrams,
+            carbsPer100g: stored.carbsPer100g,
+            fiberPer100g: stored.fiberPer100g,
+            useNetCarbs: useNetCarbs
+        )
+        let grams = (carbs * 10).rounded() / 10
+        let portion = portionGrams.formatted(.number.precision(.fractionLength(0)))
+        return addCarbs(
+            grams: grams,
+            timestamp: timestamp,
+            mealType: mealType,
+            foodDescription: "\(stored.name) · \(portion) g",
+            note: note
+        )
+    }
+
+    private func existingFood(matching food: FoodItem) -> FoodItem? {
+        if food.modelContext != nil { return food } // already stored
+        guard let barcode = food.barcode, !barcode.isEmpty else { return nil }
+        let descriptor = FetchDescriptor<FoodItem>(predicate: #Predicate { $0.barcode == barcode })
+        return try? context.fetch(descriptor).first
+    }
+
     // MARK: Update / Delete
 
     func touch<T: PersistentModel & MedicalRecord>(_ record: T) {

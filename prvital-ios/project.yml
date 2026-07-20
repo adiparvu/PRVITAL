@@ -60,6 +60,9 @@ targets:
         NSBluetoothAlwaysUsageDescription: >-
           Prvital uses Bluetooth to connect to your blood-glucose meter (such as
           Contour or Accu-Chek) and import its readings.
+        NSCameraUsageDescription: >-
+          Prvital uses the camera to scan food barcodes and look up their
+          nutrition and carbohydrate content.
         NSHealthShareUsageDescription: >-
           Prvital reads your glucose, insulin, carbohydrate and workout
           data from Apple Health so your journal stays complete automatically.
