@@ -226,13 +226,14 @@ jobs:
           code, resp = api(:get, "/v1/profiles?limit=200")
           if code == 200
             (resp["data"] || []).each do |p|
-              next unless BUNDLES.value?(p["attributes"]["name"])
+              next unless BUNDLES.values.any? { |b| p["attributes"]["name"].to_s.start_with?(b) }
               dc, _ = api(:delete, "/v1/profiles/#{p["id"]}")
               puts "deleted stale profile '#{p["attributes"]["name"]}' (HTTP #{dc})"
             end
           end
           map = []
-          BUNDLES.each do |bid, pname|
+          BUNDLES.each do |bid, base|
+            pname = "#{base} #{ENV["GITHUB_RUN_ID"]}"
             code, resp = api(:get, "/v1/bundleIds?filter[identifier]=#{bid}&limit=1")
             abort("bundleId lookup failed for #{bid} (HTTP #{code}): #{resp}") unless code == 200
             abort("::error::App ID #{bid} does not exist. Create it in Identifiers (with its capabilities) first.") if resp["data"].empty?
