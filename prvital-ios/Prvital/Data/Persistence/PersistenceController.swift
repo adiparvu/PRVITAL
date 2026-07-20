@@ -18,6 +18,7 @@ enum AppSchema {
         CarbEntry.self,
         ActivityEntry.self,
         ObservationEntry.self,
+        FoodItem.self,
         PrivacyAuditRecord.self,
         ConsentRecord.self,
     ]

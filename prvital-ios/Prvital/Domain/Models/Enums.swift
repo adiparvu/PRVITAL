@@ -17,6 +17,29 @@ enum RecordType: String, Codable, CaseIterable, Sendable {
     case observation
 }
 
+/// Where a food's nutrition came from: the user's own entry, or a lookup in the
+/// Open Food Facts database.
+enum FoodSource: String, Codable, CaseIterable, Sendable, Identifiable {
+    case manual
+    case openFoodFacts = "open_food_facts"
+
+    var id: String { rawValue }
+
+    var displayName: String {
+        switch self {
+        case .manual: return "Entered by hand"
+        case .openFoodFacts: return "Open Food Facts"
+        }
+    }
+
+    var symbol: String {
+        switch self {
+        case .manual: return "square.and.pencil"
+        case .openFoodFacts: return "barcode.viewfinder"
+        }
+    }
+}
+
 /// Where a value came from. Drives provenance display and conflict priority.
 enum DataSource: String, Codable, CaseIterable, Sendable, Identifiable {
     case dexcom
