@@ -48,6 +48,14 @@ targets:
         CFBundleLocalizations:
           - en
           - ro
+          - de
+          - es
+          - fr
+          - it
+          - nl
+          - pl
+          - pt
+          - ru
         UILaunchScreen: {}
         ITSAppUsesNonExemptEncryption: false
         NSSupportsLiveActivities: true
