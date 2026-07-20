@@ -77,6 +77,10 @@ struct StatisticsView: View {
         OvernightStability.analyze(activeReadings, thresholds: thresholds)
     }
 
+    private var carbsByMeal: [MealTypeCarbs] {
+        CarbDistribution.byMealType(filteredCarbs)
+    }
+
     private let columns = [
         GridItem(.flexible(), spacing: 12),
         GridItem(.flexible(), spacing: 12),
@@ -99,6 +103,7 @@ struct StatisticsView: View {
                     if stats.hasGlucose { timeInRangeBar }
                     statsGrid
                     if let insulin = insulinSummary { insulinBalanceCard(insulin) }
+                    if !carbsByMeal.isEmpty { carbsByMealCard(carbsByMeal) }
                     if let overnight = overnightStats, overnight.hasGlucose { overnightCard(overnight) }
                     if dailyDays.count >= 2 { bestWorstDayCard }
                     if gmiTrend.count >= 2 { gmiTrendCard }
@@ -114,6 +119,37 @@ struct StatisticsView: View {
             .padding()
         }
         .background(Theme.background)
+    }
+
+    // MARK: Carbs by meal
+
+    private func carbsByMealCard(_ items: [MealTypeCarbs]) -> some View {
+        SectionCard("Carbs by meal", systemImage: "fork.knife") {
+            VStack(alignment: .leading, spacing: 10) {
+                ForEach(items) { item in
+                    HStack {
+                        mealTypeText(item.mealType)
+                            .font(.subheadline.weight(.medium))
+                            .foregroundStyle(Theme.textPrimary)
+                        Spacer()
+                        Text("\(item.totalGrams.formatted(.number.precision(.fractionLength(0)))) g")
+                            .font(.subheadline.weight(.semibold))
+                            .foregroundStyle(Theme.zoneHigh)
+                    }
+                    .accessibilityElement(children: .combine)
+                }
+            }
+        }
+    }
+
+    private func mealTypeText(_ type: MealType) -> Text {
+        switch type {
+        case .breakfast: return Text("Breakfast")
+        case .morningSnack: return Text("Snack")
+        case .lunch: return Text("Lunch")
+        case .dinner: return Text("Dinner")
+        case .eveningSnack: return Text("Evening snack")
+        }
     }
 
     // MARK: Overnight stability

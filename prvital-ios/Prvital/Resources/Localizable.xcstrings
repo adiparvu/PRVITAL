@@ -45,6 +45,17 @@
         }
       }
     },
+    "%@ g": {
+      "extractionState": "manual",
+      "localizations": {
+        "ro": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%@ g"
+          }
+        }
+      }
+    },
     "%@ g · peak in ~%lld min": {
       "extractionState": "manual",
       "localizations": {
@@ -525,6 +536,17 @@
           "stringUnit": {
             "state": "translated",
             "value": "Carbohidrați"
+          }
+        }
+      }
+    },
+    "Carbs by meal": {
+      "extractionState": "manual",
+      "localizations": {
+        "ro": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Carbohidrați pe masă"
           }
         }
       }
