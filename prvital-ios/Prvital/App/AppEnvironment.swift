@@ -62,6 +62,10 @@ final class AppEnvironment {
         let publisher = snapshots
         entryStore.onChange = { publisher.refresh() }
         sync.onChange = { publisher.refresh() }
+
+        // Every sync also pulls insulin, meals and activity from Apple Health so
+        // the journal is the full picture, not only the glucose curve.
+        sync.healthImporter = HealthDataImporter(context: context, healthKit: healthKit, consent: consent)
     }
 
     /// One-time launch work: prune the audit trail, clean up any sample data an
@@ -86,6 +90,31 @@ final class AppEnvironment {
         snapshots.refresh()
         notifications.reschedule(from: preferences.reminders, glucoseSchedule: preferences.glucoseSchedule)
         scheduleBackgroundRefresh()
+        startHealthKitBackgroundDelivery()
+    }
+
+    /// Wires Apple Health background delivery: while the user has granted the
+    /// HealthKit scope, new Health data (a fresh CGM reading, a logged meal, a
+    /// finished workout) wakes the app in the background to sync and republish the
+    /// snapshot — so the journal, widgets and Live Activity update even when the
+    /// app isn't open. The `BGAppRefreshTask` above stays as a periodic fallback.
+    private func startHealthKitBackgroundDelivery() {
+        guard consent.isGranted(.healthKit) else { return }
+        BackgroundSyncBridge.environment = self
+        let hk = healthKit
+        Task { await hk.enableBackgroundDelivery() }
+        hk.startObserving {
+            // Fires on an arbitrary queue; hop to the main actor via the bridge,
+            // which avoids capturing this non-Sendable environment in the closure.
+            Task { @MainActor in await BackgroundSyncBridge.handleExternalDataChange() }
+        }
+    }
+
+    /// A light, recent-window sync triggered by a HealthKit background-delivery
+    /// wake. Republishes the snapshot (updating widgets + Live Activity) and
+    /// re-evaluates alerts, without rescheduling the BG app-refresh task.
+    func handleHealthKitBackgroundDelivery() async {
+        _ = await sync.refreshLatest(window: 3 * 60 * 60)
     }
 
     // MARK: Background refresh
@@ -125,5 +154,21 @@ final class AppEnvironment {
         DemoData.seedIfEmpty(into: container.mainContext)
         env.snapshots.refresh()
         return env
+    }
+}
+
+/// A tiny main-actor hand-off between HealthKit's background-delivery observer
+/// and the current `AppEnvironment`.
+///
+/// The observer handler fires on an arbitrary queue with a `@Sendable` callback,
+/// so it can't capture the non-Sendable `@MainActor AppEnvironment` directly.
+/// Instead it references this type (a value-free enum), hops to the main actor,
+/// and reads the weakly-held current environment there.
+@MainActor
+enum BackgroundSyncBridge {
+    weak static var environment: AppEnvironment?
+
+    static func handleExternalDataChange() async {
+        await environment?.handleHealthKitBackgroundDelivery()
     }
 }

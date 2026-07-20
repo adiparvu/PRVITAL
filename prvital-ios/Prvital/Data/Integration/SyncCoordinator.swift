@@ -17,9 +17,20 @@ final class SyncCoordinator {
     /// How far back a first sync backfills when there is no prior data.
     var backfillWindow: TimeInterval = 60 * 60 * 24 * 3
 
+    /// Guards against overlapping runs. With a foreground poller, a background
+    /// refresh and HealthKit background-delivery observers all able to trigger a
+    /// sync, two could otherwise interleave across an `await` and both insert the
+    /// same not-yet-saved sample. `@MainActor` makes this flag check atomic.
+    private var isSyncing = false
+
     /// Called after each sync finishes, so the app can republish the snapshot
     /// and re-evaluate alerts from any newly imported readings.
     var onChange: (() -> Void)?
+
+    /// Imports the non-glucose journal (insulin, meals, activity) from Apple
+    /// Health on the same pass. Injected by the composition root; nil in contexts
+    /// (previews, tests) that don't wire HealthKit.
+    var healthImporter: HealthDataImporter?
 
     init(context: ModelContext, registry: SourceRegistry, audit: AuditService) {
         self.context = context
@@ -48,6 +59,11 @@ final class SyncCoordinator {
     /// them.
     @discardableResult
     private func sync(since: Date) async -> SyncReport {
+        // Skip if a sync is already running — the in-flight one covers this window.
+        guard !isSyncing else { return SyncReport() }
+        isSyncing = true
+        defer { isSyncing = false }
+
         var report = SyncReport()
 
         for source in registry.connectedSources() {
@@ -62,6 +78,12 @@ final class SyncCoordinator {
                 audit.log(.sync, source: source.source, result: .failure,
                           detail: error.localizedDescription)
             }
+        }
+
+        // Fill in the rest of the journal — insulin, meals, activity — from Apple
+        // Health on the same pass, so the timeline is complete, not just glucose.
+        if let healthImporter {
+            report.imported += await healthImporter.importRecords(since: since)
         }
 
         report.conflicts = resolveRecentConflicts(since: since)

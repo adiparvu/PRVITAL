@@ -18,6 +18,17 @@ struct GlucoseActivityAttributes: ActivityAttributes, Sendable {
         var updatedAt: Date
         var isStale: Bool
         var predictionText: String?
+
+        // Extra context the Dynamic Island uses for its live mini-chart and its
+        // out-of-range pulse. The Lock Screen banner ignores these.
+        var targetLowerMgdL: Double = 70
+        var targetUpperMgdL: Double = 180
+        /// True when the current reading is outside the target band — drives the
+        /// discrete pulse animation in the Dynamic Island.
+        var isOutOfRange: Bool = false
+        /// The recent readings (oldest → newest, mg/dL) for the expanded Dynamic
+        /// Island sparkline. Capped small so the activity payload stays tiny.
+        var recentMgdL: [Double] = []
     }
 
     var title: String = "Glucose"

@@ -21,6 +21,12 @@ final class GlucoseLiveActivityManager {
         let hasFreshReading = snapshot.updatedAt != .distantPast && !snapshot.isStale
         guard hasFreshReading else { end(); return }
 
+        let outOfRange = snapshot.mgdL < snapshot.targetLowerMgdL
+            || snapshot.mgdL > snapshot.targetUpperMgdL
+        // The last handful of readings feed the expanded Dynamic Island sparkline.
+        // Capped small so the activity's content payload stays well within budget.
+        let recent = snapshot.points.suffix(16).map(\.mgdL)
+
         let state = GlucoseActivityAttributes.ContentState(
             mgdL: snapshot.mgdL,
             valueText: snapshot.valueText,
@@ -31,7 +37,11 @@ final class GlucoseLiveActivityManager {
             zoneColorHex: snapshot.zoneColorHex,
             updatedAt: snapshot.updatedAt,
             isStale: snapshot.isStale,
-            predictionText: snapshot.predictionText
+            predictionText: snapshot.predictionText,
+            targetLowerMgdL: snapshot.targetLowerMgdL,
+            targetUpperMgdL: snapshot.targetUpperMgdL,
+            isOutOfRange: outOfRange,
+            recentMgdL: recent
         )
         let staleDate = snapshot.updatedAt.addingTimeInterval(30 * 60)
         let store = self.store
