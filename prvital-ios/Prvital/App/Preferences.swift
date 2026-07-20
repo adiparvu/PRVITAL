@@ -16,6 +16,7 @@ final class Preferences {
         self.nightscout = Self.readNightscout(self.defaults)
         self.bolusParameters = Self.readBolus(self.defaults)
         self.alerts = Self.readAlerts(self.defaults)
+        self.glucoseSchedule = Self.readGlucoseSchedule(self.defaults)
     }
 
     var glucoseUnit: GlucoseUnit {
@@ -46,6 +47,12 @@ final class Preferences {
         didSet { if let data = try? JSONEncoder().encode(alerts) { defaults.set(data, forKey: Keys.alerts) } }
     }
 
+    /// The user's chosen glucose-logging routine (times of day + optional
+    /// reminders).
+    var glucoseSchedule: GlucoseSchedule {
+        didSet { if let data = try? JSONEncoder().encode(glucoseSchedule) { defaults.set(data, forKey: Keys.glucoseSchedule) } }
+    }
+
     /// Quick-add presets (the +1U … +10U row and 20g … 100g row).
     let insulinPresets: [Double] = [1, 2, 4, 6, 8, 10]
     let carbPresets: [Double] = [20, 40, 60, 80, 100]
@@ -60,6 +67,7 @@ final class Preferences {
         static let nightscout = "pref.nightscout"
         static let bolus = "pref.bolusParameters"
         static let alerts = "pref.alerts"
+        static let glucoseSchedule = "pref.glucoseSchedule"
     }
 
     private static func readUnit(_ d: UserDefaults) -> GlucoseUnit {
@@ -95,6 +103,12 @@ final class Preferences {
         else { return .default }
         return value
     }
+    private static func readGlucoseSchedule(_ d: UserDefaults) -> GlucoseSchedule {
+        guard let data = d.data(forKey: Keys.glucoseSchedule),
+              let value = try? JSONDecoder().decode(GlucoseSchedule.self, from: data)
+        else { return .default }
+        return value
+    }
 }
 
 /// The connection details for a self-hosted Nightscout site. The URL and token
@@ -121,6 +135,42 @@ struct NightscoutConfig: Codable, Equatable, Sendable {
 
     /// True once there is a usable site URL — the source syncs only then.
     var isConfigured: Bool { normalizedBaseURL != nil }
+}
+
+/// One glucose-logging slot the user has chosen — a named time of day they want
+/// to check and record their glucose (e.g. "Waking" at 07:00).
+struct GlucoseLogSlot: Codable, Equatable, Sendable, Identifiable {
+    var id = UUID()
+    var label: String
+    /// Minutes from midnight, so it serialises cleanly and stays relative to the
+    /// user's day.
+    var minutesFromMidnight: Int
+    var enabled: Bool = true
+
+    var hour: Int { minutesFromMidnight / 60 }
+    var minute: Int { minutesFromMidnight % 60 }
+}
+
+/// The user's personal glucose-logging routine: the times of day they want to
+/// take and record a reading, with optional reminders. Stored separately from
+/// `ReminderPreferences` so adding it never disturbs existing reminder settings.
+struct GlucoseSchedule: Codable, Equatable, Sendable {
+    var remindersEnabled = false
+    var slots: [GlucoseLogSlot] = GlucoseSchedule.defaultSlots
+
+    /// Enabled slots in chronological order.
+    var activeSlots: [GlucoseLogSlot] {
+        slots.filter(\.enabled).sorted { $0.minutesFromMidnight < $1.minutesFromMidnight }
+    }
+
+    static let defaultSlots: [GlucoseLogSlot] = [
+        GlucoseLogSlot(label: "Waking", minutesFromMidnight: 7 * 60),
+        GlucoseLogSlot(label: "Before lunch", minutesFromMidnight: 12 * 60),
+        GlucoseLogSlot(label: "Before dinner", minutesFromMidnight: 18 * 60),
+        GlucoseLogSlot(label: "Bedtime", minutesFromMidnight: 22 * 60)
+    ]
+
+    static let `default` = GlucoseSchedule()
 }
 
 /// Configurable reminder schedule. Times are minutes-from-midnight so they

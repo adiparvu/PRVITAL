@@ -17,10 +17,17 @@ final class NotificationScheduler {
     #endif
 
     /// Clears existing reminders and reschedules from the current preferences.
-    func reschedule(from reminders: ReminderPreferences) {
+    func reschedule(from reminders: ReminderPreferences, glucoseSchedule: GlucoseSchedule = .default) {
         #if canImport(UserNotifications)
         center.removeAllPendingNotificationRequests()
         var requests: [UNNotificationRequest] = []
+
+        if glucoseSchedule.remindersEnabled {
+            for slot in glucoseSchedule.activeSlots {
+                requests.append(daily("Log your glucose", "Time for your \(slot.label.lowercased()) reading.",
+                                      slot.minutesFromMidnight, "glucoseslot-\(slot.id.uuidString)"))
+            }
+        }
 
         if reminders.journalEnabled {
             for minute in reminders.journalTimes {

@@ -82,7 +82,7 @@ final class AppEnvironment {
         WatchSessionManager.shared.activate()
 
         snapshots.refresh()
-        notifications.reschedule(from: preferences.reminders)
+        notifications.reschedule(from: preferences.reminders, glucoseSchedule: preferences.glucoseSchedule)
         scheduleBackgroundRefresh()
     }
 
