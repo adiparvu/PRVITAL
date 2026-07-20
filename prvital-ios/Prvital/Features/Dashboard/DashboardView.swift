@@ -13,6 +13,7 @@ struct DashboardView: View {
     @Query(sort: \InsulinDose.timestamp, order: .reverse) private var insulin: [InsulinDose]
     @Query(sort: \CarbEntry.timestamp, order: .reverse) private var carbs: [CarbEntry]
     @Query(sort: \ActivityEntry.startTimestamp, order: .reverse) private var activity: [ActivityEntry]
+    @Query(sort: \SensorSession.startDate, order: .reverse) private var sensorSessions: [SensorSession]
 
     @State private var showQuickEntry = false
     @State private var showGlucoseEntry = false
@@ -41,6 +42,14 @@ struct DashboardView: View {
                     if todayStats.hasGlucose {
                         todayCard(todayStats)
                             .appearTransition(delay: 0.12)
+                    }
+                    if let session = sensorSessions.first {
+                        let sensorStatus = SensorSessionEvaluator.status(
+                            start: session.startDate, kind: session.kind, now: Date())
+                        if sensorStatus.phase != .active {
+                            sensorBanner(session: session, status: sensorStatus)
+                                .appearTransition(delay: 0.15)
+                        }
                     }
                     let scheduleStatuses = glucoseScheduleStatuses
                     if !scheduleStatuses.isEmpty {
@@ -316,6 +325,33 @@ struct DashboardView: View {
                 .font(.caption2)
                 .foregroundStyle(Theme.textSecondary)
         }
+    }
+
+    // MARK: - Sensor banner
+
+    private func sensorBanner(session: SensorSession, status: SensorStatus) -> some View {
+        NavigationLink {
+            SensorView()
+        } label: {
+            HStack(spacing: 12) {
+                Image(systemName: SensorStatusStyle.icon(status.phase))
+                    .font(.title3)
+                    .foregroundStyle(SensorStatusStyle.tint(status.phase))
+                    .frame(width: 26)
+                VStack(alignment: .leading, spacing: 1) {
+                    Text(SensorStatusStyle.title(status.phase))
+                        .font(.subheadline.weight(.semibold)).foregroundStyle(Theme.textPrimary)
+                    Text(SensorStatusStyle.detail(status))
+                        .font(.caption).foregroundStyle(Theme.textSecondary)
+                }
+                Spacer()
+                Image(systemName: "chevron.right").font(.caption).foregroundStyle(Theme.textTertiary)
+            }
+            .frame(maxWidth: .infinity, alignment: .leading)
+            .glassCard(cornerRadius: 18, padding: 14)
+        }
+        .buttonStyle(PressableCardStyle())
+        .accessibilityElement(children: .combine)
     }
 
     // MARK: - Today's checks (logging schedule)

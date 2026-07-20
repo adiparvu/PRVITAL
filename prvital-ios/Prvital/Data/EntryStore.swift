@@ -184,6 +184,17 @@ final class EntryStore {
         return try? context.fetch(descriptor).first
     }
 
+    // MARK: Sensor sessions
+
+    /// Records the start of a new sensor wear session.
+    @discardableResult
+    func startSensorSession(kind: SensorKind, start: Date = Date()) -> SensorSession {
+        let session = SensorSession(startDate: start, kind: kind)
+        context.insert(session)
+        finish(.manualEdit, detail: "Sensor session started (\(kind.displayName))")
+        return session
+    }
+
     // MARK: Update / Delete
 
     func touch<T: PersistentModel & MedicalRecord>(_ record: T) {

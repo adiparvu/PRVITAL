@@ -17,6 +17,45 @@ enum RecordType: String, Codable, CaseIterable, Sendable {
     case observation
 }
 
+/// A continuous glucose sensor model, with its wear time and warm-up period.
+enum SensorKind: String, Codable, CaseIterable, Sendable, Identifiable {
+    case dexcomG7 = "dexcom_g7"
+    case dexcomG6 = "dexcom_g6"
+    case freeStyleLibre3 = "freestyle_libre_3"
+    case other
+
+    var id: String { rawValue }
+
+    var displayName: String {
+        switch self {
+        case .dexcomG7: return "Dexcom G7"
+        case .dexcomG6: return "Dexcom G6"
+        case .freeStyleLibre3: return "FreeStyle Libre 3"
+        case .other: return "Other sensor"
+        }
+    }
+
+    /// Total time the sensor is worn before it must be replaced.
+    var lifetime: TimeInterval {
+        switch self {
+        case .dexcomG7: return 10.5 * 86_400
+        case .dexcomG6: return 10 * 86_400
+        case .freeStyleLibre3: return 14 * 86_400
+        case .other: return 10 * 86_400
+        }
+    }
+
+    /// Warm-up after insertion before readings appear.
+    var warmup: TimeInterval {
+        switch self {
+        case .dexcomG7: return 30 * 60
+        case .dexcomG6: return 2 * 3_600
+        case .freeStyleLibre3: return 60 * 60
+        case .other: return 60 * 60
+        }
+    }
+}
+
 /// Where a food's nutrition came from: the user's own entry, or a lookup in the
 /// Open Food Facts database.
 enum FoodSource: String, Codable, CaseIterable, Sendable, Identifiable {

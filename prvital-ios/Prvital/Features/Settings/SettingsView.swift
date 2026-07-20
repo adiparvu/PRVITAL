@@ -76,6 +76,17 @@ struct SettingsView: View {
                     }
 
                     NavigationLink {
+                        SensorView()
+                    } label: {
+                        SettingsRow(
+                            title: "Sensor",
+                            subtitle: "Warm-up & expiry countdown",
+                            systemImage: "sensor.tag.radiowaves.forward",
+                            tint: Theme.zoneInRange
+                        )
+                    }
+
+                    NavigationLink {
                         TherapySettingsView()
                     } label: {
                         SettingsRow(
