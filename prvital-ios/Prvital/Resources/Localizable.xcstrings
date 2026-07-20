@@ -2542,6 +2542,17 @@
         }
       }
     },
+    "Time in range trend": {
+      "extractionState": "manual",
+      "localizations": {
+        "ro": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Tendința timpului în interval"
+          }
+        }
+      }
+    },
     "Time to peak": {
       "extractionState": "manual",
       "localizations": {

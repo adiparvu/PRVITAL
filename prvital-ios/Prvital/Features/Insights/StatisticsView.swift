@@ -61,6 +61,10 @@ struct StatisticsView: View {
         GMITrend.weekly(activeReadings)
     }
 
+    private var tirTrend: [TIRPoint] {
+        TIRTrend.weekly(activeReadings, thresholds: thresholds)
+    }
+
     private var dataGaps: GapStats? {
         DataGapDetector.analyze(activeReadings)
     }
@@ -106,6 +110,7 @@ struct StatisticsView: View {
                     if !carbsByMeal.isEmpty { carbsByMealCard(carbsByMeal) }
                     if let overnight = overnightStats, overnight.hasGlucose { overnightCard(overnight) }
                     if dailyDays.count >= 2 { bestWorstDayCard }
+                    if tirTrend.count >= 2 { tirTrendCard }
                     if gmiTrend.count >= 2 { gmiTrendCard }
                 } else {
                     EmptyStateView(
@@ -245,6 +250,45 @@ struct StatisticsView: View {
                 }
             }
             .accessibilityElement(children: .combine)
+        }
+    }
+
+    // MARK: Time-in-range trend
+
+    private var tirTrendCard: some View {
+        SectionCard("Time in range trend", systemImage: "chart.line.uptrend.xyaxis") {
+            Chart(tirTrend) { point in
+                AreaMark(x: .value("Week", point.weekStart), y: .value("TIR", point.timeInRange))
+                    .interpolationMethod(.catmullRom)
+                    .foregroundStyle(Theme.zoneInRange.opacity(0.16))
+                LineMark(x: .value("Week", point.weekStart), y: .value("TIR", point.timeInRange))
+                    .interpolationMethod(.catmullRom)
+                    .foregroundStyle(Theme.zoneInRange)
+                PointMark(x: .value("Week", point.weekStart), y: .value("TIR", point.timeInRange))
+                    .foregroundStyle(Theme.zoneInRange)
+            }
+            .chartYScale(domain: 0...1)
+            .chartYAxis {
+                AxisMarks(values: .automatic(desiredCount: 4)) { value in
+                    AxisGridLine().foregroundStyle(Theme.hairline)
+                    AxisValueLabel {
+                        if let fraction = value.as(Double.self) {
+                            Text((fraction * 100).formatted(.number.precision(.fractionLength(0))) + "%")
+                        }
+                    }
+                }
+            }
+            .chartXAxis {
+                AxisMarks(values: .stride(by: .weekOfYear)) { value in
+                    AxisGridLine().foregroundStyle(Theme.hairline)
+                    AxisValueLabel {
+                        if let date = value.as(Date.self) {
+                            Text(date.formatted(.dateTime.month(.abbreviated).day()))
+                        }
+                    }
+                }
+            }
+            .frame(height: 150)
         }
     }
 
