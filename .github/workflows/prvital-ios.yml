@@ -125,6 +125,9 @@ jobs:
             echo "::error::ASC_API_KEY_P8 is not a valid .p8. Store the full .p8 contents (incl. the BEGIN/END lines) or the base64 of the .p8 file."
             exit 1
           fi
+          # Xcode automatic signing also probes this default location for the key.
+          mkdir -p "$HOME/.appstoreconnect/private_keys"
+          cp "$KEY_PATH" "$HOME/.appstoreconnect/private_keys/AuthKey_${ASC_KEY_ID}.p8"
       - name: Verify App Store Connect credentials (preflight)
         env:
           ASC_KEY_ID: ${{ secrets.ASC_KEY_ID }}
