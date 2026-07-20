@@ -51,6 +51,10 @@ targets:
         UILaunchScreen: {}
         ITSAppUsesNonExemptEncryption: false
         NSSupportsLiveActivities: true
+        CFBundleURLTypes:
+          - CFBundleURLName: com.prvital.app
+            CFBundleURLSchemes:
+              - prvital
         UIBackgroundModes:
           - fetch
         BGTaskSchedulerPermittedIdentifiers:

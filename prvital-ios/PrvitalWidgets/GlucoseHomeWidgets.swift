@@ -39,6 +39,8 @@ private struct GlucoseWidgetEntryView: View {
             }
         }
         .containerBackground(.fill.tertiary, for: .widget)
+        // Tapping the widget opens the quick-entry hub to log a reading or entry.
+        .widgetURL(URL(string: "prvital://log"))
     }
 }
 

@@ -24,12 +24,20 @@ struct RootView: View {
     @Environment(AppEnvironment.self) private var env
     @Environment(\.scenePhase) private var scenePhase
     @State private var showOnboarding = false
+    @State private var showQuickEntry = false
 
     var body: some View {
         MainTabView()
             .onAppear { showOnboarding = !env.consent.hasCompletedOnboarding }
             .fullScreenCover(isPresented: $showOnboarding) {
                 OnboardingView()
+            }
+            .sheet(isPresented: $showQuickEntry) { QuickEntrySheet() }
+            .onOpenURL { url in
+                // Deep link from the widget: open the quick-entry hub.
+                if url.scheme == "prvital", url.host == "log" {
+                    showQuickEntry = true
+                }
             }
             // Live foreground polling: while the app is open, refresh connected
             // CGM sources on the user's chosen cadence (default ~1 min) so the
