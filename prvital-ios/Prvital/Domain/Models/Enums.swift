@@ -209,6 +209,19 @@ enum GlucoseUnit: String, Codable, CaseIterable, Sendable, Identifiable {
 
     /// Sensible number of decimals for display (mg/dL is integer, mmol/L 1 dp).
     var fractionDigits: Int { self == .mgdL ? 0 : 1 }
+
+    /// A sensible initial unit for a region. mmol/L is standard across much of
+    /// the world (UK, Ireland, Canada, Australia, NZ, the Nordics, the
+    /// Netherlands, Russia, China…); most other regions report in mg/dL. Used
+    /// only to seed onboarding — the user always confirms.
+    static func localeDefault(regionCode: String? = Locale.current.region?.identifier) -> GlucoseUnit {
+        let mmolRegions: Set<String> = [
+            "GB", "IE", "CA", "AU", "NZ", "NL", "RU", "CN", "SE", "NO",
+            "FI", "DK", "CH", "IS", "HK", "ZA", "MY", "SG", "UA", "CZ"
+        ]
+        guard let region = regionCode?.uppercased() else { return .mgdL }
+        return mmolRegions.contains(region) ? .mmolL : .mgdL
+    }
 }
 
 /// Classification of a glucose value against the user's target range.

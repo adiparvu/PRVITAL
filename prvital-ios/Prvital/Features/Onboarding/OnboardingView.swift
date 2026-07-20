@@ -9,16 +9,20 @@ struct OnboardingView: View {
     @Environment(\.dismiss) private var dismiss
 
     @State private var step = 0
-    private let lastStep = 2
+    @State private var didSeedUnit = false
+    private let lastStep = 3
 
     var body: some View {
-        ZStack {
+        let profile = env.profile.current()
+
+        return ZStack {
             Theme.background.ignoresSafeArea()
 
             TabView(selection: $step) {
                 OnboardingWelcomeStep().tag(0)
                 consentStep.tag(1)
-                OnboardingReadyStep().tag(2)
+                OnboardingPersonalizeStep(profile: profile).tag(2)
+                OnboardingReadyStep().tag(3)
             }
             #if os(iOS)
             .tabViewStyle(.page(indexDisplayMode: .never))
@@ -26,9 +30,19 @@ struct OnboardingView: View {
             .animation(.easeInOut, value: step)
         }
         .safeAreaInset(edge: .bottom) {
-            bottomBar
+            bottomBar(profile: profile)
         }
         .interactiveDismissDisabled()
+        .onAppear(perform: seedUnitFromLocale)
+    }
+
+    /// Seeds the glucose unit from the device region on first run so most of the
+    /// world lands on mmol/L rather than a hardcoded mg/dL. The user still
+    /// confirms on the personalization step.
+    private func seedUnitFromLocale() {
+        guard !didSeedUnit else { return }
+        didSeedUnit = true
+        env.preferences.glucoseUnit = GlucoseUnit.localeDefault()
     }
 
     // MARK: Steps
@@ -58,7 +72,7 @@ struct OnboardingView: View {
 
     // MARK: Bottom bar
 
-    private var bottomBar: some View {
+    private func bottomBar(profile: UserProfile) -> some View {
         VStack(spacing: 14) {
             HStack(spacing: 8) {
                 ForEach(0...lastStep, id: \.self) { index in
@@ -71,7 +85,7 @@ struct OnboardingView: View {
             .accessibilityHidden(true)
 
             Button {
-                advance()
+                advance(profile: profile)
             } label: {
                 Text(step < lastStep ? "Continue" : "Get started")
                     .font(.headline)
@@ -89,12 +103,13 @@ struct OnboardingView: View {
         .background(.ultraThinMaterial)
     }
 
-    private func advance() {
+    private func advance(profile: UserProfile) {
         if step < lastStep {
             Haptics.play(.selection)
             withAnimation { step += 1 }
         } else {
             Haptics.play(.success)
+            env.profile.save(profile)
             env.consent.hasCompletedOnboarding = true
             dismiss()
         }
@@ -149,6 +164,98 @@ private struct OnboardingWelcomeStep: View {
                         .appearTransition(delay: 0.15)
                     OnboardingPrinciple(symbol: "brain", title: "No training without consent", detail: "Nothing is used to train models unless you turn it on.")
                         .appearTransition(delay: 0.20)
+                }
+                .frame(maxWidth: .infinity, alignment: .leading)
+                .glassCard()
+            }
+            .padding(20)
+        }
+    }
+}
+
+/// Personalization: the unit the user thinks in, plus who they are and how they
+/// manage diabetes. Reuses `Preferences` and the `UserProfile` so the app is set
+/// up correctly from the first screen instead of on mg/dL + Type 1 defaults.
+private struct OnboardingPersonalizeStep: View {
+    @Environment(AppEnvironment.self) private var env
+    @Bindable var profile: UserProfile
+
+    private var unitBinding: Binding<GlucoseUnit> {
+        Binding(
+            get: { env.preferences.glucoseUnit },
+            set: { env.preferences.glucoseUnit = $0 }
+        )
+    }
+
+    var body: some View {
+        ScrollView {
+            VStack(alignment: .leading, spacing: 18) {
+                VStack(alignment: .leading, spacing: 8) {
+                    Text("Make it yours")
+                        .font(.largeTitle.weight(.bold))
+                        .foregroundStyle(Theme.textPrimary)
+                    Text("A few details so Prvital speaks your numbers. You can change any of this later in Settings.")
+                        .font(.subheadline)
+                        .foregroundStyle(Theme.textSecondary)
+                        .fixedSize(horizontal: false, vertical: true)
+                }
+                .padding(.horizontal, 4)
+
+                VStack(alignment: .leading, spacing: 10) {
+                    Text("Glucose unit")
+                        .font(.headline)
+                        .foregroundStyle(Theme.textPrimary)
+                    Picker("Glucose unit", selection: unitBinding) {
+                        ForEach(GlucoseUnit.allCases) { unit in
+                            Text(unit.rawValue).tag(unit)
+                        }
+                    }
+                    .pickerStyle(.segmented)
+                }
+                .frame(maxWidth: .infinity, alignment: .leading)
+                .glassCard()
+
+                VStack(alignment: .leading, spacing: 10) {
+                    Text("Your name (optional)")
+                        .font(.headline)
+                        .foregroundStyle(Theme.textPrimary)
+                    TextField("Your name", text: $profile.displayName)
+                        .textInputAutocapitalization(.words)
+                        .textFieldStyle(.roundedBorder)
+                }
+                .frame(maxWidth: .infinity, alignment: .leading)
+                .glassCard()
+
+                VStack(alignment: .leading, spacing: 10) {
+                    Text("Diabetes type")
+                        .font(.headline)
+                        .foregroundStyle(Theme.textPrimary)
+                    Picker("Diabetes type", selection: $profile.diabetesType) {
+                        ForEach(DiabetesType.allCases) { type in
+                            Text(type.displayName).tag(type)
+                        }
+                    }
+                    .pickerStyle(.menu)
+                    .tint(Theme.accent)
+                    Text(profile.diabetesType.detail)
+                        .font(.footnote)
+                        .foregroundStyle(Theme.textTertiary)
+                        .fixedSize(horizontal: false, vertical: true)
+                }
+                .frame(maxWidth: .infinity, alignment: .leading)
+                .glassCard()
+
+                VStack(alignment: .leading, spacing: 10) {
+                    Text("How you manage it")
+                        .font(.headline)
+                        .foregroundStyle(Theme.textPrimary)
+                    Picker("Therapy", selection: $profile.therapy) {
+                        ForEach(TherapyApproach.allCases) { approach in
+                            Text(approach.displayName).tag(approach)
+                        }
+                    }
+                    .pickerStyle(.menu)
+                    .tint(Theme.accent)
                 }
                 .frame(maxWidth: .infinity, alignment: .leading)
                 .glassCard()
@@ -219,37 +326,44 @@ private struct OnboardingConsentCard: View {
     @Binding var isOn: Bool
 
     var body: some View {
-        VStack(alignment: .leading, spacing: 10) {
-            HStack(spacing: 12) {
-                Image(systemName: scope.symbol)
-                    .font(.system(size: 20, weight: .semibold))
-                    .foregroundStyle(Theme.accent)
-                    .frame(width: 28)
-                    .accessibilityHidden(true)
-                Text(scope.title)
-                    .font(.headline)
-                    .foregroundStyle(Theme.textPrimary)
-                Spacer()
-                Toggle("", isOn: $isOn)
-                    .labelsHidden()
+        // The whole card is the control, so tapping anywhere toggles the scope.
+        // The Toggle is display-only (hit testing off) to avoid a double toggle.
+        Button {
+            isOn.toggle()
+        } label: {
+            VStack(alignment: .leading, spacing: 10) {
+                HStack(spacing: 12) {
+                    Image(systemName: scope.symbol)
+                        .font(.system(size: 20, weight: .semibold))
+                        .foregroundStyle(Theme.accent)
+                        .frame(width: 28)
+                        .accessibilityHidden(true)
+                    Text(scope.title)
+                        .font(.headline)
+                        .foregroundStyle(Theme.textPrimary)
+                    Spacer()
+                    Toggle("", isOn: $isOn)
+                        .labelsHidden()
+                        .allowsHitTesting(false)
+                }
+                Text(scope.rationale)
+                    .font(.footnote)
+                    .foregroundStyle(Theme.textSecondary)
+                    .fixedSize(horizontal: false, vertical: true)
             }
-            Text(scope.rationale)
-                .font(.footnote)
-                .foregroundStyle(Theme.textSecondary)
-                .fixedSize(horizontal: false, vertical: true)
+            .frame(maxWidth: .infinity, alignment: .leading)
+            .glassCard()
+            .overlay {
+                RoundedRectangle(cornerRadius: 22, style: .continuous)
+                    .strokeBorder(isOn ? Theme.accent.opacity(0.6) : .clear, lineWidth: 1.5)
+            }
         }
-        .frame(maxWidth: .infinity, alignment: .leading)
-        .glassCard()
-        .overlay {
-            RoundedRectangle(cornerRadius: 22, style: .continuous)
-                .strokeBorder(isOn ? Theme.accent.opacity(0.6) : .clear, lineWidth: 1.5)
-        }
+        .buttonStyle(.plain)
         .animation(.easeInOut(duration: 0.2), value: isOn)
         .accessibilityElement(children: .combine)
         .accessibilityLabel(scope.title)
         .accessibilityValue(isOn ? "On" : "Off")
         .accessibilityHint(scope.rationale)
-        .accessibilityAddTraits(.isButton)
     }
 }
 
