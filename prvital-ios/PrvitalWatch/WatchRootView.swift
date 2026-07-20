@@ -18,6 +18,10 @@ struct WatchRootView: View {
         TabView {
             WatchNowPage(snapshot: model.snapshot)
 
+            WatchGlucosePage(snapshot: model.snapshot)
+
+            WatchTreatLowPage()
+
             WatchQuickEntryPage(
                 title: "Insulin",
                 systemImage: "syringe",
@@ -220,6 +224,176 @@ private struct WatchLogConfirmation: Equatable {
     let amount: Double
 }
 
+// MARK: - Glucose entry
+
+/// Log a glucose reading from the wrist with the Digital Crown. The value is
+/// shown in the same unit as the snapshot (mg/dL or mmol/L) and converted to
+/// mg/dL before it's sent to the phone, which logs it through the normal path.
+private struct WatchGlucosePage: View {
+    let snapshot: GlucoseSnapshot
+
+    /// The value the user is dialling, in the *display* unit.
+    @State private var value: Double
+    @State private var confirmation: WatchLogConfirmation?
+
+    /// mg/dL per 1 mmol/L, inlined so the watch needs no domain layer.
+    private static let mmolFactor = 18.0182
+
+    private var isMmol: Bool { snapshot.unitText.lowercased().contains("mmol") }
+    private var step: Double { isMmol ? 0.1 : 1 }
+    private var range: ClosedRange<Double> { isMmol ? 2.2...22.2 : 40...400 }
+    private var valueText: String {
+        isMmol ? String(format: "%.1f", value) : String(Int(value.rounded()))
+    }
+
+    init(snapshot: GlucoseSnapshot) {
+        self.snapshot = snapshot
+        let mmol = snapshot.unitText.lowercased().contains("mmol")
+        _value = State(initialValue: mmol ? 6.0 : 110)
+    }
+
+    var body: some View {
+        VStack(spacing: 6) {
+            Label("Glucose", systemImage: "drop.fill")
+                .font(.headline)
+                .foregroundStyle(Theme.textPrimary)
+                .frame(maxWidth: .infinity, alignment: .leading)
+
+            Spacer(minLength: 0)
+
+            VStack(spacing: 0) {
+                Text(valueText)
+                    .font(.system(size: 44, weight: .bold, design: .rounded))
+                    .foregroundStyle(Theme.textPrimary)
+                    .contentTransition(.numericText(value: value))
+                Text(snapshot.unitText)
+                    .font(.caption2)
+                    .foregroundStyle(Theme.textSecondary)
+            }
+            .focusable()
+            .digitalCrownRotation(
+                $value,
+                from: range.lowerBound,
+                through: range.upperBound,
+                by: step,
+                sensitivity: .medium,
+                isContinuous: false,
+                isHapticFeedbackEnabled: true
+            )
+
+            Spacer(minLength: 0)
+
+            Button {
+                commit()
+            } label: {
+                Text("Log")
+                    .font(.headline)
+                    .frame(maxWidth: .infinity)
+            }
+            .buttonStyle(.borderedProminent)
+            .tint(Theme.accent)
+        }
+        .padding(.horizontal, 4)
+        .frame(maxWidth: .infinity, maxHeight: .infinity)
+        .overlay(alignment: .bottom) {
+            if confirmation != nil {
+                Label("Logged \(valueText) \(snapshot.unitText)", systemImage: "checkmark.circle.fill")
+                    .font(.caption2.weight(.semibold))
+                    .foregroundStyle(Theme.textPrimary)
+                    .padding(.horizontal, 10).padding(.vertical, 6)
+                    .background(Theme.zoneInRange.opacity(0.9), in: Capsule())
+                    .transition(.move(edge: .bottom).combined(with: .opacity))
+            }
+        }
+        .animation(.spring(duration: 0.3), value: confirmation)
+        .task(id: confirmation?.id) {
+            guard confirmation != nil else { return }
+            try? await Task.sleep(for: .seconds(2))
+            confirmation = nil
+        }
+    }
+
+    private func commit() {
+        let mgdL = isMmol ? value * Self.mmolFactor : value
+        WatchSessionManager.shared.sendQuickEntry(kind: "glucose", amount: mgdL)
+        confirmation = WatchLogConfirmation(amount: value)
+    }
+}
+
+// MARK: - Treat a low (rule of 15)
+
+/// One prominent action for the moment that matters most: treating a low. Logs
+/// 15 g of fast-acting carbs (the "rule of 15") in a single confirmed tap.
+private struct WatchTreatLowPage: View {
+    private let grams: Double = 15
+    @State private var pending = false
+    @State private var done = false
+
+    var body: some View {
+        VStack(spacing: 8) {
+            Label("Treat a low", systemImage: "cross.case.fill")
+                .font(.headline)
+                .foregroundStyle(Theme.textPrimary)
+                .frame(maxWidth: .infinity, alignment: .leading)
+
+            Spacer(minLength: 0)
+
+            Button {
+                pending = true
+            } label: {
+                VStack(spacing: 2) {
+                    Text("15 g")
+                        .font(.system(size: 30, weight: .bold, design: .rounded))
+                    Text("fast carbs")
+                        .font(.caption2)
+                }
+                .frame(maxWidth: .infinity, minHeight: 64)
+                .foregroundStyle(Theme.zoneCritical)
+                .background(Theme.zoneCritical.opacity(0.18), in: RoundedRectangle(cornerRadius: 16, style: .continuous))
+            }
+            .buttonStyle(.plain)
+
+            Text("Recheck in 15 min.")
+                .font(.caption2)
+                .foregroundStyle(Theme.textTertiary)
+
+            Spacer(minLength: 0)
+        }
+        .padding(.horizontal, 4)
+        .frame(maxWidth: .infinity, maxHeight: .infinity)
+        .overlay(alignment: .bottom) {
+            if done {
+                Label("Logged 15 g", systemImage: "checkmark.circle.fill")
+                    .font(.caption2.weight(.semibold))
+                    .foregroundStyle(Theme.textPrimary)
+                    .padding(.horizontal, 10).padding(.vertical, 6)
+                    .background(Theme.zoneInRange.opacity(0.9), in: Capsule())
+                    .transition(.move(edge: .bottom).combined(with: .opacity))
+            }
+        }
+        .animation(.spring(duration: 0.3), value: done)
+        .confirmationDialog(
+            "Log 15 g fast carbs?",
+            isPresented: $pending,
+            titleVisibility: .visible
+        ) {
+            Button("Log 15 g") { commit() }
+            Button("Cancel", role: .cancel) { pending = false }
+        }
+        .task(id: done) {
+            guard done else { return }
+            try? await Task.sleep(for: .seconds(2))
+            done = false
+        }
+    }
+
+    private func commit() {
+        WatchSessionManager.shared.sendQuickEntry(kind: "carbs", amount: grams)
+        pending = false
+        done = true
+    }
+}
+
 // MARK: - Formatting helpers
 
 /// Small formatting helpers shared by the watch pages. Kept in one place so the
@@ -254,4 +428,42 @@ private enum WatchSnapshotFormat {
         }
         return summary
     }
+}
+
+// MARK: - Previews
+
+#Preview("Now") {
+    WatchNowPage(snapshot: .placeholder)
+}
+
+#Preview("Now · stale") {
+    var stale = GlucoseSnapshot.placeholder
+    stale.isStale = true
+    return WatchNowPage(snapshot: stale)
+}
+
+#Preview("Glucose") {
+    WatchGlucosePage(snapshot: .placeholder)
+}
+
+#Preview("Treat low") {
+    WatchTreatLowPage()
+}
+
+#Preview("Insulin") {
+    WatchQuickEntryPage(
+        title: "Insulin", systemImage: "syringe", kind: "insulin",
+        unit: "U", values: [1, 2, 4, 6], tint: Theme.accent
+    )
+}
+
+#Preview("Carbs") {
+    WatchQuickEntryPage(
+        title: "Carbs", systemImage: "fork.knife", kind: "carbs",
+        unit: "g", values: [20, 40, 60], tint: Theme.zoneHigh
+    )
+}
+
+#Preview("Full app") {
+    WatchRootView(model: WatchModel())
 }

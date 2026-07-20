@@ -87,6 +87,7 @@ final class AppEnvironment {
             switch kind {
             case "insulin": self.entryStore.addInsulin(units: amount)
             case "carbs": self.entryStore.addCarbs(grams: amount)
+            case "glucose": self.entryStore.addGlucose(mgdL: amount)
             default: break
             }
         }

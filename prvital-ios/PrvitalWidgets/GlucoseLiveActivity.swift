@@ -18,9 +18,13 @@ import Charts
 struct GlucoseLiveActivity: Widget {
     var body: some WidgetConfiguration {
         ActivityConfiguration(for: GlucoseActivityAttributes.self) { context in
-            // Lock Screen / banner: neutral, no zone background tint.
+            // Lock Screen / banner: neutral, translucent "liquid glass" — a dark
+            // tint at low opacity so the wallpaper shows through as frosted glass,
+            // without the zone colour. (Omitting the tint entirely renders an
+            // opaque black slab, which is not what we want.)
             lockScreen(context.state)
                 .padding(16)
+                .activityBackgroundTint(Color.black.opacity(0.35))
                 .activitySystemActionForegroundColor(.white)
         } dynamicIsland: { context in
             let state = context.state
