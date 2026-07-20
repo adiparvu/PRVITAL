@@ -258,8 +258,7 @@ jobs:
           PROFILES_XML=""
           while IFS='=' read -r bundle name; do
             [ -z "$bundle" ] && continue
-            PROFILES_XML="${PROFILES_XML}    <key>${bundle}</key><string>${name}</string>
-"
+            PROFILES_XML="${PROFILES_XML}    <key>${bundle}</key><string>${name}</string>"$'\n'
           done < "$RUNNER_TEMP/profile_map.txt"
           {
             echo '<?xml version="1.0" encoding="UTF-8"?>'
