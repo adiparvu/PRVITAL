@@ -34,7 +34,8 @@ struct RootView: View {
 }
 
 /// The five primary destinations. History, Charts, Statistics and Export are
-/// reached from within Insights; quick entry is presented from Dashboard/Journal.
+/// reached from within Insights; the Calendar month view is reached from the
+/// Journal; quick entry is presented from Dashboard/Journal.
 struct MainTabView: View {
     var body: some View {
         TabView {
@@ -42,10 +43,10 @@ struct MainTabView: View {
                 .tabItem { Label("Dashboard", systemImage: "drop.fill") }
             JournalView()
                 .tabItem { Label("Journal", systemImage: "book.closed.fill") }
-            CalendarView()
-                .tabItem { Label("Calendar", systemImage: "calendar") }
             InsightsView()
                 .tabItem { Label("Insights", systemImage: "chart.xyaxis.line") }
+            LearnView()
+                .tabItem { Label("Learn", systemImage: "book.fill") }
             SettingsView()
                 .tabItem { Label("Settings", systemImage: "gearshape.fill") }
         }

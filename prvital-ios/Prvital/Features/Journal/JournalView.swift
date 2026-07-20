@@ -19,6 +19,7 @@ struct JournalView: View {
 
     @State private var editTarget: JournalEditTarget?
     @State private var showingQuickEntry = false
+    @State private var showingCalendar = false
 
     private var unit: GlucoseUnit { env.preferences.glucoseUnit }
     private var thresholds: GlucoseThresholds { env.preferences.thresholds }
@@ -85,6 +86,15 @@ struct JournalView: View {
             .background(Theme.background)
             .navigationTitle("Journal")
             .toolbar {
+                ToolbarItem(placement: .topBarLeading) {
+                    Button {
+                        Haptics.play(.selection)
+                        showingCalendar = true
+                    } label: {
+                        Image(systemName: "calendar")
+                    }
+                    .accessibilityLabel("Open calendar")
+                }
                 ToolbarItem(placement: .primaryAction) {
                     Button {
                         Haptics.play(.light)
@@ -97,6 +107,9 @@ struct JournalView: View {
             }
             .sheet(isPresented: $showingQuickEntry) {
                 QuickEntrySheet()
+            }
+            .sheet(isPresented: $showingCalendar) {
+                CalendarView()
             }
             .sheet(item: $editTarget) { target in
                 editorSheet(for: target.item)
