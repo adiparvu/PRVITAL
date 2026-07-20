@@ -87,6 +87,7 @@ struct HistoryView: View {
                             ForEach(filteredItems) { item in
                                 JournalEntryRow(item: item, unit: unit, thresholds: thresholds)
                                     .listRowBackground(Theme.surface)
+                                    .listRowSeparatorTint(Theme.hairline)
                                     .contentShape(.rect)
                                     .onTapGesture {
                                         Haptics.play(.selection)

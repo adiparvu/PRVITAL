@@ -67,6 +67,7 @@ struct JournalView: View {
                                             .buttonStyle(PressableCardStyle())
                                             if index < section.items.count - 1 {
                                                 Divider().overlay(Theme.hairline)
+                                                    .padding(.leading, 48)
                                             }
                                         }
                                     }
@@ -144,6 +145,7 @@ private struct JournalSectionHeader: View {
             .font(.subheadline.weight(.semibold))
             .foregroundStyle(Theme.textSecondary)
             .frame(maxWidth: .infinity, alignment: .leading)
+            .accessibilityAddTraits(.isHeader)
     }
 
     private var title: String {

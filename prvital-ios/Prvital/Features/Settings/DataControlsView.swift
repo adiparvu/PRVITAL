@@ -33,11 +33,20 @@ struct DataControlsView: View {
     var body: some View {
         Form {
             Section {
-                DataCountRow(title: "Glucose readings", systemImage: "drop.fill", tint: Theme.zoneInRange, count: glucose.count)
-                DataCountRow(title: "Insulin doses", systemImage: "syringe.fill", tint: Theme.accent, count: insulin.count)
-                DataCountRow(title: "Carb entries", systemImage: "fork.knife", tint: Theme.zoneHigh, count: carbs.count)
-                DataCountRow(title: "Activities", systemImage: "figure.walk", tint: Theme.zoneWarning, count: activity.count)
-                DataCountRow(title: "Observations", systemImage: "note.text", tint: Theme.textSecondary, count: observations.count)
+                if totalCount == 0 {
+                    EmptyStateView(
+                        systemImage: "tray",
+                        title: "No data yet",
+                        message: "Readings and entries you log will appear here."
+                    )
+                    .listRowBackground(Color.clear)
+                } else {
+                    DataCountRow(title: "Glucose readings", systemImage: "drop.fill", tint: Theme.zoneInRange, count: glucose.count)
+                    DataCountRow(title: "Insulin doses", systemImage: "syringe.fill", tint: Theme.accent, count: insulin.count)
+                    DataCountRow(title: "Carb entries", systemImage: "fork.knife", tint: Theme.zoneHigh, count: carbs.count)
+                    DataCountRow(title: "Activities", systemImage: "figure.walk", tint: Theme.zoneWarning, count: activity.count)
+                    DataCountRow(title: "Observations", systemImage: "note.text", tint: Theme.textSecondary, count: observations.count)
+                }
             } header: {
                 Text("On this device")
             } footer: {

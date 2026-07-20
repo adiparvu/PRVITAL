@@ -525,6 +525,8 @@ private struct TimeInRangeBar: View {
                 .clipShape(RoundedRectangle(cornerRadius: 6))
             }
             .frame(height: 22)
+            .accessibilityElement(children: .ignore)
+            .accessibilityLabel(rangeSummary)
 
             HStack {
                 label("In range", stats.timeInRange, Theme.zoneInRange)
@@ -542,6 +544,11 @@ private struct TimeInRangeBar: View {
             Text(((fraction * 100).formatted(.number.precision(.fractionLength(0)))) + "%")
                 .font(.subheadline.weight(.semibold)).foregroundStyle(color)
         }
+    }
+
+    private var rangeSummary: String {
+        func pct(_ v: Double) -> String { (v * 100).formatted(.number.precision(.fractionLength(0))) + "%" }
+        return "Time in range \(pct(stats.timeInRange)), below \(pct(stats.timeBelowRange)), above \(pct(stats.timeAboveRange))"
     }
 }
 

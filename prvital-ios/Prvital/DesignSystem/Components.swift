@@ -24,7 +24,7 @@ struct ZonePill: View {
     let zone: GlucoseZone
     var body: some View {
         Text(zone.label)
-            .font(.system(size: 12, weight: .semibold))
+            .font(.caption.weight(.semibold))
             .padding(.horizontal, 10)
             .padding(.vertical, 4)
             .background(zone.color.opacity(0.16), in: .capsule)
@@ -51,8 +51,8 @@ struct TrendBadge: View {
 
     var body: some View {
         HStack(spacing: 4) {
-            Image(systemName: trend.symbol).font(.system(size: 13, weight: .bold))
-            if showsLabel { Text(trend.label).font(.system(size: 12, weight: .medium)) }
+            Image(systemName: trend.symbol).font(.caption.weight(.bold))
+            if showsLabel { Text(trend.label).font(.caption2.weight(.medium)) }
         }
         .foregroundStyle(tint)
         .animation(.smooth, value: trend)
@@ -65,8 +65,8 @@ struct ProvenanceBadge: View {
     let source: DataSource
     var body: some View {
         HStack(spacing: 4) {
-            Image(systemName: source.symbol).font(.system(size: 11, weight: .semibold))
-            Text(source.displayName).font(.system(size: 12, weight: .medium))
+            Image(systemName: source.symbol).font(.caption2.weight(.semibold))
+            Text(source.displayName).font(.caption2.weight(.medium))
         }
         .foregroundStyle(Theme.textSecondary)
         .padding(.horizontal, 8)
@@ -131,10 +131,13 @@ struct EmptyStateView: View {
     let title: LocalizedStringKey
     var message: LocalizedStringKey?
     var body: some View {
-        VStack(spacing: 10) {
+        VStack(spacing: 12) {
             Image(systemName: systemImage)
-                .font(.system(size: 34, weight: .light))
-                .foregroundStyle(Theme.textTertiary)
+                .font(.system(size: 30, weight: .regular))
+                .foregroundStyle(Theme.accent)
+                .frame(width: 72, height: 72)
+                .background(Theme.accentSoft, in: .circle)
+                .symbolEffect(.pulse)
             Text(title).font(.headline).foregroundStyle(Theme.textSecondary)
             if let message {
                 Text(message).font(.subheadline).foregroundStyle(Theme.textTertiary)
@@ -143,5 +146,6 @@ struct EmptyStateView: View {
         }
         .frame(maxWidth: .infinity)
         .padding(.vertical, 28)
+        .appearTransition()
     }
 }

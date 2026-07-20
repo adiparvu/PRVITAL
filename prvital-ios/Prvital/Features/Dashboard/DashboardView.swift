@@ -318,10 +318,19 @@ struct DashboardView: View {
 
     @ViewBuilder
     private func recentRow(summary: DashboardSummary) -> some View {
-        HStack(spacing: 12) {
-            insulinTile(summary.lastInsulin)
-            mealTile(summary.lastMeal)
-            activityTile(summary.lastActivity)
+        VStack(alignment: .leading, spacing: 10) {
+            Label {
+                Text("Recent").foregroundStyle(Theme.textPrimary)
+            } icon: {
+                Image(systemName: "clock.arrow.circlepath").foregroundStyle(Theme.accent)
+            }
+            .font(.headline)
+            .accessibilityAddTraits(.isHeader)
+            HStack(spacing: 12) {
+                insulinTile(summary.lastInsulin)
+                mealTile(summary.lastMeal)
+                activityTile(summary.lastActivity)
+            }
         }
     }
 

@@ -18,6 +18,7 @@ struct ExportView: View {
     @State private var exportedURL: URL?
     @State private var errorMessage: String?
     @State private var showingError = false
+    @State private var isExporting = false
 
     private var unit: GlucoseUnit { env.preferences.glucoseUnit }
     private var thresholds: GlucoseThresholds { env.preferences.thresholds }
@@ -54,7 +55,7 @@ struct ExportView: View {
                 intervalCard
                 contentsCard
                 actionsCard
-                if let url = exportedURL { shareCard(url) }
+                if let url = exportedURL { shareCard(url).appearTransition() }
                 warningCard
             }
             .padding()
@@ -118,30 +119,36 @@ struct ExportView: View {
                     .frame(maxWidth: .infinity, alignment: .leading)
 
                 Button {
-                    export { try env.exporter.writePDF(makeInput()) }
+                    export(.pdf)
                 } label: {
-                    Label("Export PDF", systemImage: "doc.richtext")
-                        .font(.headline)
-                        .frame(maxWidth: .infinity)
-                        .padding(.vertical, 4)
+                    exportLabel("Export PDF", systemImage: "doc.richtext")
                 }
                 .buttonStyle(.borderedProminent)
                 .tint(Theme.accent)
 
                 Button {
-                    export { try env.exporter.writeCSV(makeInput()) }
+                    export(.csv)
                 } label: {
-                    Label("Export CSV", systemImage: "tablecells")
-                        .font(.headline)
-                        .frame(maxWidth: .infinity)
-                        .padding(.vertical, 4)
+                    exportLabel("Export CSV", systemImage: "tablecells")
                 }
                 .buttonStyle(.bordered)
                 .tint(Theme.accent)
             }
-            .disabled(recordCount == 0)
+            .disabled(recordCount == 0 || isExporting)
             .opacity(recordCount == 0 ? 0.5 : 1)
         }
+    }
+
+    /// A generate button's label, swapping the icon for a spinner while writing.
+    private func exportLabel(_ title: LocalizedStringKey, systemImage: String) -> some View {
+        Label {
+            Text(title)
+        } icon: {
+            if isExporting { ProgressView() } else { Image(systemName: systemImage) }
+        }
+        .font(.headline)
+        .frame(maxWidth: .infinity)
+        .padding(.vertical, 4)
     }
 
     private func shareCard(_ url: URL) -> some View {
@@ -206,16 +213,30 @@ struct ExportView: View {
         )
     }
 
-    /// Runs a throwing writer, storing the URL on success or surfacing an alert.
-    private func export(_ writer: () throws -> URL) {
-        do {
-            let url = try writer()
-            exportedURL = url
-            Haptics.play(.success)
-        } catch {
-            errorMessage = error.localizedDescription
-            showingError = true
-            Haptics.play(.warning)
+    private enum ExportFormat { case pdf, csv }
+
+    /// Generates the report for the chosen format, storing the URL on success or
+    /// surfacing an alert. Yields once first so the button's spinner paints
+    /// before the (synchronous, main-actor) report generation runs.
+    private func export(_ format: ExportFormat) {
+        isExporting = true
+        Task { @MainActor in
+            await Task.yield()
+            do {
+                let input = makeInput()
+                let url: URL
+                switch format {
+                case .pdf: url = try env.exporter.writePDF(input)
+                case .csv: url = try env.exporter.writeCSV(input)
+                }
+                exportedURL = url
+                Haptics.play(.success)
+            } catch {
+                errorMessage = error.localizedDescription
+                showingError = true
+                Haptics.play(.warning)
+            }
+            isExporting = false
         }
     }
 }

@@ -16,7 +16,10 @@ struct UnitsSettingsView: View {
     private var unitBinding: Binding<GlucoseUnit> {
         Binding(
             get: { env.preferences.glucoseUnit },
-            set: { env.preferences.glucoseUnit = $0 }
+            set: {
+                Haptics.play(.selection)
+                env.preferences.glucoseUnit = $0
+            }
         )
     }
 
@@ -39,6 +42,8 @@ struct UnitsSettingsView: View {
             .listRowBackground(Theme.surface)
 
             Section {
+                ZonePreviewBar(thresholds: thresholds)
+                    .listRowInsets(EdgeInsets(top: 12, leading: 16, bottom: 12, trailing: 16))
                 UnitsThresholdStepper(
                     title: "Very low below",
                     systemImage: "arrow.down.to.line",
@@ -116,6 +121,43 @@ struct UnitsSettingsView: View {
 }
 
 // MARK: - Private helpers
+
+/// A live preview of the five glucose zones as the thresholds are edited: a
+/// capsule split into red / orange / green / yellow / red spans, each sized to
+/// its share of a 40–400 mg/dL scale. Purely illustrative, so it's hidden from
+/// VoiceOver (the steppers below carry the real values).
+private struct ZonePreviewBar: View {
+    let thresholds: GlucoseThresholds
+
+    private let lo = 40.0
+    private let hi = 400.0
+
+    private var spans: [(color: Color, fraction: Double)] {
+        let total = hi - lo
+        func f(_ a: Double, _ b: Double) -> Double { max(0, (b - a) / total) }
+        return [
+            (Theme.zoneCritical, f(lo, thresholds.veryLow)),
+            (Theme.zoneWarning, f(thresholds.veryLow, thresholds.targetLower)),
+            (Theme.zoneInRange, f(thresholds.targetLower, thresholds.targetUpper)),
+            (Theme.zoneHigh, f(thresholds.targetUpper, thresholds.high)),
+            (Theme.zoneCritical, f(thresholds.high, hi)),
+        ]
+    }
+
+    var body: some View {
+        GeometryReader { geo in
+            HStack(spacing: 0) {
+                ForEach(Array(spans.enumerated()), id: \.offset) { _, span in
+                    span.color.frame(width: geo.size.width * span.fraction)
+                }
+            }
+            .clipShape(Capsule())
+        }
+        .frame(height: 10)
+        .animation(.smooth, value: thresholds)
+        .accessibilityHidden(true)
+    }
+}
 
 /// A single threshold stepper. Operates in the chosen display unit while keeping
 /// the underlying mg/dL storage authoritative and clamped between its neighbours.
