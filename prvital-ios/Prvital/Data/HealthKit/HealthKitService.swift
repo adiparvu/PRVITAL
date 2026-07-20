@@ -74,8 +74,13 @@ final class HealthKitService: @unchecked Sendable {
 
     func fetchGlucoseSamples(since date: Date, limit: Int = HKObjectQueryNoLimit) async throws -> [NormalizedGlucoseSample] {
         let samples = try await quantitySamples(of: glucoseType, since: date, limit: limit)
-        return samples.map { sample in
-            NormalizedGlucoseSample(
+        return samples.compactMap { sample in
+            // Skip readings we mirrored to Apple Health ourselves — otherwise a
+            // manual glucose entry round-trips back in as a duplicate .appleHealth
+            // reading (and, since .appleHealth outranks .manual, its provenance
+            // would silently flip from Manual to Apple Health).
+            guard !isOwnSample(sample) else { return nil }
+            return NormalizedGlucoseSample(
                 id: sample.uuid.uuidString,
                 valueMgdL: sample.quantity.doubleValue(for: glucoseUnit),
                 timestamp: sample.startDate,
