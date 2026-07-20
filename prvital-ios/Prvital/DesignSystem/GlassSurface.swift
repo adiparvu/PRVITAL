@@ -18,14 +18,24 @@ private struct GlassBackground: ViewModifier {
     var cornerRadius: CGFloat
 
     func body(content: Content) -> some View {
+        // Clip the whole card (content + surface) to the rounded shape so nothing
+        // — e.g. a chart's area fill that reaches the padded content's edge — pokes
+        // past the rounded corners, since the corner radius can exceed the padding.
+        let shape = RoundedRectangle(cornerRadius: cornerRadius, style: .continuous)
         #if os(iOS) || os(watchOS)
         if #available(iOS 26, watchOS 26, *) {
-            content.glassEffect(.regular, in: .rect(cornerRadius: cornerRadius)).overlay { edge }
+            content.glassEffect(.regular, in: .rect(cornerRadius: cornerRadius))
+                .overlay { edge }
+                .clipShape(shape)
         } else {
-            content.background(.ultraThinMaterial, in: .rect(cornerRadius: cornerRadius)).overlay { edge }
+            content.background(.ultraThinMaterial, in: .rect(cornerRadius: cornerRadius))
+                .overlay { edge }
+                .clipShape(shape)
         }
         #else
-        content.background(.ultraThinMaterial, in: .rect(cornerRadius: cornerRadius)).overlay { edge }
+        content.background(.ultraThinMaterial, in: .rect(cornerRadius: cornerRadius))
+            .overlay { edge }
+            .clipShape(shape)
         #endif
     }
 
