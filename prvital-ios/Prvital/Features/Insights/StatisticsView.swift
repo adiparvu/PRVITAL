@@ -69,6 +69,14 @@ struct StatisticsView: View {
         labResults.filter { range.contains($0.timestamp) }
     }
 
+    /// Reconciliation of the most recent lab A1c against the CGM estimate over
+    /// the ~90 days it reflects. Uses the full reading history (not the selected
+    /// interval) so the comparison window is always the clinically correct one.
+    private var latestReconciliation: A1cReconciliation? {
+        guard let latest = labResults.first else { return nil } // sorted newest-first
+        return A1cReconciler.reconcile(lab: latest, readings: glucose, thresholds: thresholds)
+    }
+
     /// Least-squares trajectory of the weekly GMI series, kept only when the
     /// fit is confident (enough weeks, small residuals) — a shaky trend line
     /// is worse than none.
@@ -138,6 +146,9 @@ struct StatisticsView: View {
                     if tirTrend.count >= 2 { tirTrendCard.appearTransition(delay: 0.36) }
                     if gmiTrend.count >= 2 || !labResultsInRange.isEmpty {
                         gmiTrendCard.appearTransition(delay: 0.42)
+                    }
+                    if let reconciliation = latestReconciliation {
+                        labReconciliationCard(reconciliation).appearTransition(delay: 0.44)
                     }
                     if let accuracy = sensorAccuracy {
                         sensorAccuracyCard(accuracy).appearTransition(delay: 0.48)
@@ -444,6 +455,72 @@ struct StatisticsView: View {
 
     private func labA1cText(_ value: Double) -> String {
         value.formatted(.number.precision(.fractionLength(1))) + "%"
+    }
+
+    // MARK: Lab vs estimate reconciliation
+
+    /// Compares the most recent lab HbA1c against the CGM-derived estimate over
+    /// the ~90 days it reflects, and explains the gap supportively.
+    private func labReconciliationCard(_ r: A1cReconciliation) -> some View {
+        let labText = labA1cText(r.labA1c)
+        let estText = labA1cText(r.estimatedA1c)
+        let gapText = (r.gap >= 0 ? "+" : "") + r.gap.formatted(.number.precision(.fractionLength(1)))
+        let message = reconcileMessage(r)
+        return SectionCard("Lab vs estimate", systemImage: "cross.case.fill") {
+            VStack(alignment: .leading, spacing: 12) {
+                HStack(alignment: .top, spacing: 16) {
+                    reconcileFigure(title: "Lab A1c", value: labText, tint: Theme.zoneWarning)
+                    reconcileFigure(title: "Estimated", value: estText, tint: Theme.accent)
+                    Spacer()
+                    VStack(alignment: .trailing, spacing: 2) {
+                        Text("Gap")
+                            .font(.caption2)
+                            .foregroundStyle(Theme.textTertiary)
+                        Text("\(gapText) pts")
+                            .font(.subheadline.weight(.bold))
+                            .foregroundStyle(r.alignment == .aligned ? Theme.zoneInRange : Theme.textPrimary)
+                            .monospacedDigit()
+                    }
+                }
+                Text(message)
+                    .font(.caption)
+                    .foregroundStyle(Theme.textSecondary)
+                    .fixedSize(horizontal: false, vertical: true)
+                if !r.estimateReliable {
+                    Text("Sensor data was sparse across that period, so treat the estimate loosely.")
+                        .font(.caption2)
+                        .foregroundStyle(Theme.textTertiary)
+                }
+                Text("For context only — your lab test is the reference. Discuss any gap with your care team.")
+                    .font(.caption2)
+                    .foregroundStyle(Theme.textTertiary)
+            }
+            .accessibilityElement(children: .combine)
+            .accessibilityLabel("Lab A1c \(labText), estimated \(estText), gap \(gapText) points. \(message)")
+        }
+    }
+
+    private func reconcileFigure(title: LocalizedStringKey, value: String, tint: Color) -> some View {
+        VStack(alignment: .leading, spacing: 2) {
+            Text(title)
+                .font(.caption2)
+                .foregroundStyle(Theme.textTertiary)
+            Text(value)
+                .font(.title3.weight(.bold))
+                .foregroundStyle(tint)
+                .monospacedDigit()
+        }
+    }
+
+    private func reconcileMessage(_ r: A1cReconciliation) -> String {
+        switch r.alignment {
+        case .aligned:
+            return String(localized: "Your sensor estimate and your lab A1c line up closely — a good sign the CGM reflects your overall glucose well.")
+        case .labHigher:
+            return String(localized: "Your lab A1c came in a bit higher than the sensor estimate. This can happen with sparse readings, or simply how your body glycates — not necessarily a sensor issue.")
+        case .labLower:
+            return String(localized: "Your lab A1c came in a bit lower than the sensor estimate. Sensors sometimes read slightly high; the gap is worth noting but usually not a concern on its own.")
+        }
     }
 
     // MARK: Sensor accuracy
