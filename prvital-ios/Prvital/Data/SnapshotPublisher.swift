@@ -1,5 +1,8 @@
 import Foundation
 import SwiftData
+#if canImport(WidgetKit)
+import WidgetKit
+#endif
 
 /// Builds a display-ready `GlucoseSnapshot` from the store and publishes it to
 /// the App Group for the widgets and watch. Called after any data change.
@@ -71,7 +74,20 @@ final class SnapshotPublisher {
         }
         snapshot.recentEntries = Self.recentLines(summary: summary, unit: unit, now: now)
 
+        // Reload the widgets only when the reading actually changed. Without any
+        // reload the Home/Lock Screen widgets sat on a stale value (the "widgets
+        // don't update" bug); reloading on *every* poll would instead burn
+        // WidgetKit's refresh budget, so gate it on the value/time changing —
+        // roughly CGM cadence, well within budget.
+        #if canImport(WidgetKit)
+        let previous = SharedStore.load()
         SharedStore.save(snapshot)
+        if previous.updatedAt != snapshot.updatedAt || previous.mgdL != snapshot.mgdL {
+            WidgetCenter.shared.reloadAllTimelines()
+        }
+        #else
+        SharedStore.save(snapshot)
+        #endif
         WatchSessionManager.shared.updateSnapshot(snapshot)
         GlucoseLiveActivityManager.shared.sync(with: snapshot)
 

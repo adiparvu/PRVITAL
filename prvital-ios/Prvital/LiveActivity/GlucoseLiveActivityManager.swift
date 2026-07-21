@@ -74,6 +74,21 @@ private final class LiveActivityStore: @unchecked Sendable {
 
     func upsert(state: GlucoseActivityAttributes.ContentState, staleDate: Date) async {
         let content = ActivityContent(state: state, staleDate: staleDate)
+
+        // Re-adopt an activity started in a previous launch. The in-memory handle
+        // is lost when the app is killed, but the Live Activity itself keeps
+        // running — so without this we'd `request` a brand-new one on every
+        // launch and they'd stack up on the Lock Screen (the "old one stays and a
+        // new one appears" bug). Adopt the first existing activity and end any
+        // extras a prior build may already have stacked.
+        if activity == nil {
+            let existing = Activity<GlucoseActivityAttributes>.activities
+            activity = existing.first
+            for extra in existing.dropFirst() {
+                await extra.end(nil, dismissalPolicy: .immediate)
+            }
+        }
+
         if let activity {
             await activity.update(content)
         } else {
@@ -82,6 +97,11 @@ private final class LiveActivityStore: @unchecked Sendable {
     }
 
     func finish() async {
+        // End every running glucose activity, not just our handle, so any
+        // duplicates left by an earlier build are cleared too.
+        for a in Activity<GlucoseActivityAttributes>.activities {
+            await a.end(nil, dismissalPolicy: .immediate)
+        }
         await activity?.end(nil, dismissalPolicy: .immediate)
         activity = nil
     }
