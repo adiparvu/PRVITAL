@@ -101,23 +101,24 @@ struct GlucoseLiveActivity: Widget {
         }
     }
 
-    /// The Lock Screen banner: neutral colours (white/secondary), no zone tint, so
-    /// it reads calmly on the wallpaper. The glucose colour lives in the Dynamic
-    /// Island instead.
+    /// The Lock Screen banner: neutral translucent-glass background, but the value,
+    /// zone label and trend arrow are tinted by the glucose zone so a low/high
+    /// reads at a glance. Unit and trend label stay neutral white.
     private func lockScreen(_ state: GlucoseActivityAttributes.ContentState) -> some View {
-        HStack(spacing: 14) {
+        let tint = Color(hex: state.zoneColorHex)
+        return HStack(spacing: 14) {
             VStack(alignment: .leading, spacing: 3) {
                 HStack(alignment: .firstTextBaseline, spacing: 4) {
                     Text(state.valueText)
                         .font(.system(size: 40, weight: .bold, design: .rounded))
-                        .foregroundStyle(.white)
+                        .foregroundStyle(tint)
                         .minimumScaleFactor(0.7)
                         .lineLimit(1)
                         .contentTransition(.numericText(value: state.mgdL))
                     Text(state.unitText).font(.caption).foregroundStyle(.white.opacity(0.7))
                 }
                 HStack(spacing: 6) {
-                    Text(state.zoneLabel).font(.caption.weight(.medium)).foregroundStyle(.white.opacity(0.85))
+                    Text(state.zoneLabel).font(.caption.weight(.semibold)).foregroundStyle(tint)
                     if let prediction = state.predictionText {
                         Text("·").foregroundStyle(.white.opacity(0.4))
                         Label(prediction, systemImage: "exclamationmark.triangle.fill")
@@ -129,7 +130,7 @@ struct GlucoseLiveActivity: Widget {
             }
             Spacer(minLength: 8)
             VStack(alignment: .trailing, spacing: 4) {
-                Image(systemName: state.trendSymbol).font(.title2.weight(.bold)).foregroundStyle(.white)
+                Image(systemName: state.trendSymbol).font(.title2.weight(.bold)).foregroundStyle(tint)
                 Text(state.trendLabel).font(.caption2).foregroundStyle(.white.opacity(0.7))
             }
         }
