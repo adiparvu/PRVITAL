@@ -1097,6 +1097,20 @@ struct GoalsEditorSheet: View {
                     }
                 }
 
+                Section {
+                    Toggle("Per time-of-day targets", isOn: $preferences.periodTIRTargets.enabled)
+                    if preferences.periodTIRTargets.enabled {
+                        periodStepper("Overnight", $preferences.periodTIRTargets.overnightPercent)
+                        periodStepper("Morning", $preferences.periodTIRTargets.morningPercent)
+                        periodStepper("Afternoon", $preferences.periodTIRTargets.afternoonPercent)
+                        periodStepper("Evening", $preferences.periodTIRTargets.eveningPercent)
+                    }
+                } header: {
+                    Text("By time of day")
+                } footer: {
+                    Text("Set a separate time-in-range target for each part of the day — for example a gentler overnight goal. When off, your single target applies everywhere.")
+                }
+
                 Section("A1c") {
                     Stepper(value: $preferences.glucoseGoals.targetA1c, in: 5.0...9.0, step: 0.1) {
                         HStack {
@@ -1117,7 +1131,19 @@ struct GoalsEditorSheet: View {
                 }
             }
         }
-        .presentationDetents([.medium])
+        .presentationDetents([.medium, .large])
+    }
+
+    private func periodStepper(_ title: LocalizedStringKey, _ value: Binding<Double>) -> some View {
+        Stepper(value: value, in: 40...95, step: 5) {
+            HStack {
+                Text(title)
+                Spacer()
+                Text("\(value.wrappedValue.formatted(.number.precision(.fractionLength(0))))%")
+                    .foregroundStyle(Theme.accent)
+                    .monospacedDigit()
+            }
+        }
     }
 }
 

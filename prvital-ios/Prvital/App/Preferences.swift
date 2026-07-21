@@ -19,6 +19,7 @@ final class Preferences {
         self.glucoseSchedule = Self.readGlucoseSchedule(self.defaults)
         self.glucoseGoals = Self.readGlucoseGoals(self.defaults)
         self.ringGoals = Self.readRingGoals(self.defaults)
+        self.periodTIRTargets = Self.readPeriodTIRTargets(self.defaults)
         self.medicationPlan = Self.readMedicationPlan(self.defaults)
         self.liveSyncSeconds = (self.defaults.object(forKey: Keys.liveSync) as? Int) ?? 60
         self.postprandialWindowHours = (self.defaults.object(forKey: Keys.postprandialWindow) as? Int) ?? 3
@@ -100,6 +101,14 @@ final class Preferences {
     /// so this only owns the two ring-specific numbers.
     var ringGoals: RingGoals {
         didSet { if let data = try? JSONEncoder().encode(ringGoals) { defaults.set(data, forKey: Keys.ringGoals) } }
+    }
+
+    /// Optional per-time-of-day Time-in-Range targets. When disabled, every
+    /// period uses the single `glucoseGoals` target; when enabled, each part of
+    /// the day can carry its own goal (e.g. a looser overnight target). Stored
+    /// under its own key, so this is a purely additive, migration-safe change.
+    var periodTIRTargets: PeriodTIRTargets {
+        didSet { if let data = try? JSONEncoder().encode(periodTIRTargets) { defaults.set(data, forKey: Keys.periodTIRTargets) } }
     }
 
     /// The user's non-insulin medication schedule (names, doses, times). Drives
@@ -248,6 +257,7 @@ final class Preferences {
         static let glucoseSchedule = "pref.glucoseSchedule"
         static let glucoseGoals = "pref.glucoseGoals"
         static let ringGoals = "pref.ringGoals"
+        static let periodTIRTargets = "pref.periodTIRTargets"
         static let medicationPlan = "pref.medicationPlan"
         static let liveSync = "pref.liveSyncSeconds"
         static let postprandialWindow = "pref.postprandialWindowHours"
@@ -318,6 +328,12 @@ final class Preferences {
     private static func readRingGoals(_ d: UserDefaults) -> RingGoals {
         guard let data = d.data(forKey: Keys.ringGoals),
               let value = try? JSONDecoder().decode(RingGoals.self, from: data)
+        else { return .default }
+        return value
+    }
+    private static func readPeriodTIRTargets(_ d: UserDefaults) -> PeriodTIRTargets {
+        guard let data = d.data(forKey: Keys.periodTIRTargets),
+              let value = try? JSONDecoder().decode(PeriodTIRTargets.self, from: data)
         else { return .default }
         return value
     }
@@ -408,6 +424,66 @@ struct RingGoals: Codable, Equatable, Sendable {
 
     /// The uptime target as a 0…1 fraction, matching `DailyRings.coverageFraction`.
     var coverageGoalFraction: Double { coverageGoalPercent / 100 }
+}
+
+/// Optional per-time-of-day Time-in-Range targets. Some people run tighter by
+/// day and looser overnight (to reduce nocturnal-hypo risk), so each `DayPeriod`
+/// can carry its own goal. When `enabled` is false, callers fall back to the
+/// single global TIR target.
+///
+/// Tolerant `Codable`: a hand-written `init(from:)` uses `decodeIfPresent` so
+/// future fields (or an older payload) never wipe a user's saved targets.
+struct PeriodTIRTargets: Codable, Equatable, Sendable {
+    var enabled: Bool = false
+    var overnightPercent: Double = 70
+    var morningPercent: Double = 70
+    var afternoonPercent: Double = 70
+    var eveningPercent: Double = 70
+
+    static let `default` = PeriodTIRTargets()
+
+    init(enabled: Bool = false,
+         overnightPercent: Double = 70,
+         morningPercent: Double = 70,
+         afternoonPercent: Double = 70,
+         eveningPercent: Double = 70) {
+        self.enabled = enabled
+        self.overnightPercent = overnightPercent
+        self.morningPercent = morningPercent
+        self.afternoonPercent = afternoonPercent
+        self.eveningPercent = eveningPercent
+    }
+
+    private enum CodingKeys: String, CodingKey {
+        case enabled, overnightPercent, morningPercent, afternoonPercent, eveningPercent
+    }
+
+    init(from decoder: Decoder) throws {
+        let c = try decoder.container(keyedBy: CodingKeys.self)
+        let base = PeriodTIRTargets.default
+        enabled = try c.decodeIfPresent(Bool.self, forKey: .enabled) ?? base.enabled
+        overnightPercent = try c.decodeIfPresent(Double.self, forKey: .overnightPercent) ?? base.overnightPercent
+        morningPercent = try c.decodeIfPresent(Double.self, forKey: .morningPercent) ?? base.morningPercent
+        afternoonPercent = try c.decodeIfPresent(Double.self, forKey: .afternoonPercent) ?? base.afternoonPercent
+        eveningPercent = try c.decodeIfPresent(Double.self, forKey: .eveningPercent) ?? base.eveningPercent
+    }
+
+    /// The target percentage for a period — the period-specific value when
+    /// enabled, otherwise the caller's global target.
+    func targetPercent(for period: DayPeriod, global: Double) -> Double {
+        guard enabled else { return global }
+        switch period {
+        case .overnight: return overnightPercent
+        case .morning: return morningPercent
+        case .afternoon: return afternoonPercent
+        case .evening: return eveningPercent
+        }
+    }
+
+    /// The target as a 0…1 fraction, matching `PeriodStatistics.timeInRange`.
+    func targetFraction(for period: DayPeriod, global: Double) -> Double {
+        targetPercent(for: period, global: global) / 100
+    }
 }
 
 /// The connection details for a self-hosted Nightscout site. The URL and token

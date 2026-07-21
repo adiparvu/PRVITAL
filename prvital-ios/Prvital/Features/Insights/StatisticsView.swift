@@ -118,6 +118,16 @@ struct StatisticsView: View {
         CarbDistribution.byMealType(filteredCarbs)
     }
 
+    /// Time-in-range split across the four parts of the day, each against its
+    /// (optionally per-period) target.
+    private var periodTIRs: [PeriodTIR] {
+        PeriodTIRAnalyzer.breakdown(
+            activeReadings,
+            thresholds: thresholds,
+            targets: env.preferences.periodTIRTargets,
+            globalTargetPercent: env.preferences.glucoseGoals.targetTIRPercent)
+    }
+
     private let columns = [
         GridItem(.flexible(), spacing: 12),
         GridItem(.flexible(), spacing: 12),
@@ -142,6 +152,7 @@ struct StatisticsView: View {
                     if let insulin = insulinSummary { insulinBalanceCard(insulin).appearTransition(delay: 0.12) }
                     if !carbsByMeal.isEmpty { carbsByMealCard(carbsByMeal).appearTransition(delay: 0.18) }
                     if let overnight = overnightStats, overnight.hasGlucose { overnightCard(overnight).appearTransition(delay: 0.24) }
+                    if periodTIRs.contains(where: \.hasData) { periodTIRCard.appearTransition(delay: 0.27) }
                     if dailyDays.count >= 2 { bestWorstDayCard.appearTransition(delay: 0.30) }
                     if tirTrend.count >= 2 { tirTrendCard.appearTransition(delay: 0.36) }
                     if gmiTrend.count >= 2 || !labResultsInRange.isEmpty {
@@ -225,6 +236,69 @@ struct StatisticsView: View {
                 .foregroundStyle(Theme.textSecondary)
         }
         .accessibilityElement(children: .combine)
+    }
+
+    // MARK: Time in range by time of day
+
+    private var periodTIRCard: some View {
+        let rows = periodTIRs.filter(\.hasData)
+        return SectionCard("Time in range by time of day", systemImage: "clock.badge.checkmark") {
+            VStack(alignment: .leading, spacing: 14) {
+                ForEach(rows) { row in periodTIRRow(row) }
+                if let takeaway = periodTIRTakeaway(rows) {
+                    Text(takeaway)
+                        .font(.caption)
+                        .foregroundStyle(Theme.textSecondary)
+                        .fixedSize(horizontal: false, vertical: true)
+                }
+            }
+        }
+    }
+
+    private func periodTIRRow(_ row: PeriodTIR) -> some View {
+        let tint = row.met ? Theme.zoneInRange : Theme.zoneWarning
+        return VStack(alignment: .leading, spacing: 5) {
+            HStack(spacing: 8) {
+                Text(row.period.label)
+                    .font(.subheadline.weight(.medium))
+                    .foregroundStyle(Theme.textPrimary)
+                Spacer()
+                if row.met {
+                    Image(systemName: "checkmark.circle.fill")
+                        .font(.caption)
+                        .foregroundStyle(Theme.zoneInRange)
+                        .accessibilityHidden(true)
+                }
+                Text(percent(row.timeInRange))
+                    .font(.subheadline.weight(.semibold))
+                    .foregroundStyle(tint)
+                    .monospacedDigit()
+            }
+            GeometryReader { geo in
+                ZStack(alignment: .leading) {
+                    Capsule().fill(Theme.hairline).frame(height: 8)
+                    Capsule().fill(tint)
+                        .frame(width: max(geo.size.width * row.timeInRange, row.timeInRange > 0 ? 3 : 0), height: 8)
+                    // Target marker.
+                    Rectangle()
+                        .fill(Theme.textTertiary)
+                        .frame(width: 2, height: 13)
+                        .offset(x: min(max(geo.size.width * row.targetFraction - 1, 0), geo.size.width - 2))
+                }
+            }
+            .frame(height: 13)
+        }
+        .accessibilityElement(children: .combine)
+        .accessibilityLabel("\(row.period.label): \(percent(row.timeInRange)) in range, target \(percent(row.targetFraction))\(row.met ? ", met" : "")")
+    }
+
+    private func periodTIRTakeaway(_ rows: [PeriodTIR]) -> String? {
+        guard rows.count >= 2,
+              let best = rows.max(by: { $0.timeInRange < $1.timeInRange }),
+              let worst = rows.min(by: { $0.timeInRange < $1.timeInRange }),
+              best.period != worst.period,
+              best.timeInRange - worst.timeInRange >= 0.1 else { return nil }
+        return String(localized: "Your \(best.period.label.lowercased()) is your steadiest window; \(worst.period.label.lowercased()) needs the most attention.")
     }
 
     // MARK: Best & toughest day
