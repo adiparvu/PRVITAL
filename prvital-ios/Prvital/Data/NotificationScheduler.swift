@@ -12,9 +12,30 @@ final class NotificationScheduler {
     private let center = UNUserNotificationCenter.current()
 
     func requestAuthorization() async -> Bool {
-        (try? await center.requestAuthorization(options: [.alert, .sound, .badge])) ?? false
+        Self.registerNotificationCategories()
+        return (try? await center.requestAuthorization(options: [.alert, .sound, .badge])) ?? false
     }
     #endif
+
+    /// Registers the app's actionable notification categories. Today that is
+    /// just the critical-alarm category, whose "I'm on it" action acknowledges
+    /// the repeat-until-acknowledged urgent-low escalation.
+    /// `setNotificationCategories` replaces the entire set, so this must stay
+    /// the single place categories are defined. Safe to call repeatedly.
+    static func registerNotificationCategories() {
+        #if canImport(UserNotifications)
+        let acknowledge = UNNotificationAction(
+            identifier: CriticalAlarmPlanner.acknowledgeActionIdentifier,
+            title: "I'm on it",
+            options: [])
+        let critical = UNNotificationCategory(
+            identifier: CriticalAlarmPlanner.categoryIdentifier,
+            actions: [acknowledge],
+            intentIdentifiers: [],
+            options: [])
+        UNUserNotificationCenter.current().setNotificationCategories([critical])
+        #endif
+    }
 
     /// Clears existing reminders and reschedules from the current preferences.
     func reschedule(from reminders: ReminderPreferences, glucoseSchedule: GlucoseSchedule = .default) {
@@ -53,6 +74,13 @@ final class NotificationScheduler {
         }
 
         for request in requests { center.add(request) }
+
+        // The wholesale clear above also drops any armed critical-low repeat
+        // notifications; rebuild the ones still due from their persisted
+        // anchor so a settings change can never silently disarm the alarm.
+        CriticalAlarmScheduler.restorePendingRepeats()
+        // Same for the Monday "week in review" invitation.
+        WeeklyDigestScheduler.restoreFromDefaults()
         #endif
     }
 

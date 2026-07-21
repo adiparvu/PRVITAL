@@ -36,6 +36,24 @@ final class GlucoseAlertService {
         )
         if let alert = decision.alert { fire(alert) }
         saveState(decision.state)
+
+        // Critical-low escalation (opt-in "repeat until acknowledged"):
+        //  - a fresh urgent-low alert arms a batch of follow-up notifications
+        //    that the system delivers even if the app gets no more runtime;
+        //  - a fresh reading back at/above the urgent-low threshold stands the
+        //    batch down automatically. That recovery check runs whenever the
+        //    app evaluates a new snapshot (foreground polling, HealthKit
+        //    background delivery, or a background refresh) — the best signal
+        //    available without a server; if the app never gets to evaluate,
+        //    the repeats simply run until acknowledged or the configured cap.
+        guard now.timeIntervalSince(current.timestamp) <= GlucoseAlertEvaluator.maxReadingAge else { return }
+        if GlucoseAlertEvaluator.level(for: current.mgdL, thresholds: thresholds) == .urgentLow {
+            if decision.alert?.level == .urgentLow {
+                CriticalAlarmScheduler.armForUrgentLow(now: now)
+            }
+        } else {
+            CriticalAlarmScheduler.standDownIfArmed()
+        }
     }
 
     /// Fires an early, opt-in warning when a low is *imminent* (projected within
@@ -98,6 +116,14 @@ final class GlucoseAlertService {
             content.relevanceScore = 1.0
         } else {
             content.relevanceScore = 0.6
+        }
+
+        // With escalation on, the urgent-low alert carries the critical-alarm
+        // category so it shows the "I'm on it" acknowledge action — and a plain
+        // tap on it also cancels the scheduled repeats (see the notification
+        // delegate).
+        if alert.level == .urgentLow, CriticalAlarmScheduler.isEscalationEnabled {
+            content.categoryIdentifier = CriticalAlarmPlanner.categoryIdentifier
         }
 
         // One pending notification per level: a fresh alert of the same level

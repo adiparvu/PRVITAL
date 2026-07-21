@@ -48,4 +48,14 @@ final class WeeklyDigestScheduler {
         center.add(UNNotificationRequest(identifier: Self.identifier, content: content, trigger: trigger))
         #endif
     }
+
+    /// Re-arms the Monday invitation from the persisted preference, for callers
+    /// that just cleared every pending request (`NotificationScheduler.reschedule`)
+    /// and don't hold a `Preferences` instance. The key literal must match
+    /// `Preferences.Keys.weeklyDigest`.
+    static func restoreFromDefaults() {
+        let enabled = UserDefaults(suiteName: SharedStore.appGroupIdentifier)?
+            .bool(forKey: "pref.weeklyDigestEnabled") ?? false
+        WeeklyDigestScheduler().update(enabled: enabled)
+    }
 }

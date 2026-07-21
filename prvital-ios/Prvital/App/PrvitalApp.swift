@@ -5,6 +5,13 @@ import SwiftData
 struct PrvitalApp: App {
     @State private var environment = AppEnvironment.live()
 
+    init() {
+        // Handles notification action taps (acknowledging critical-low alarm
+        // repeats). Must be attached before the app finishes launching so a
+        // response that cold-starts the app is not missed.
+        CriticalAlarmNotificationDelegate.install()
+    }
+
     var body: some Scene {
         WindowGroup {
             RootView()
