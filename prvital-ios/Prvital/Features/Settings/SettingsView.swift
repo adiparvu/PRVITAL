@@ -232,14 +232,11 @@ private struct ProfileSettingsRow: View {
             }
             .accessibilityHidden(true)
 
-            VStack(alignment: .leading, spacing: 2) {
-                Text(profile.displayName.isEmpty ? "Your profile" : profile.displayName)
-                    .font(.body.weight(.semibold))
-                    .foregroundStyle(Theme.textPrimary)
-                Text(profile.displayName.isEmpty ? "Add your name & diabetes details" : profile.summaryLine)
-                    .font(.caption)
-                    .foregroundStyle(Theme.textSecondary)
-            }
+            // Just the avatar and the name (per device feedback) — the medical
+            // summary stays inside the profile, not on the settings list.
+            Text(profile.displayName.isEmpty ? "Your profile" : profile.displayName)
+                .font(.body.weight(.semibold))
+                .foregroundStyle(Theme.textPrimary)
         }
         .padding(.vertical, 4)
         .accessibilityElement(children: .combine)
