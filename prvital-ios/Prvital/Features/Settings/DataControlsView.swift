@@ -1,5 +1,6 @@
 import SwiftUI
 import SwiftData
+import UniformTypeIdentifiers
 
 /// Your data. Shows how many records of each type live on the device, toggles
 /// private iCloud sync, and offers an irreversible "delete all" that removes
@@ -15,6 +16,9 @@ struct DataControlsView: View {
     @Query private var observations: [ObservationEntry]
 
     @State private var showingDeleteConfirm = false
+    @State private var showingImporter = false
+    @State private var showingImportResult = false
+    @State private var importResultMessage = ""
 
     private var totalCount: Int {
         glucose.count + insulin.count + carbs.count + activity.count + observations.count
@@ -74,6 +78,26 @@ struct DataControlsView: View {
             .listRowBackground(Theme.surface)
 
             Section {
+                Button {
+                    Haptics.play(.selection)
+                    showingImporter = true
+                } label: {
+                    Label {
+                        Text("Import from CSV").foregroundStyle(Theme.textPrimary)
+                    } icon: {
+                        Image(systemName: "square.and.arrow.down").foregroundStyle(Theme.accent)
+                    }
+                }
+            } header: {
+                Text("Import")
+            } footer: {
+                Text("Add records from a CSV file you exported from Prvital. Imported rows are added as manual entries, and duplicate glucose readings are resolved automatically.")
+                    .font(.footnote)
+                    .foregroundStyle(Theme.textTertiary)
+            }
+            .listRowBackground(Theme.surface)
+
+            Section {
                 Button(role: .destructive) {
                     Haptics.play(.warning)
                     showingDeleteConfirm = true
@@ -115,6 +139,44 @@ struct DataControlsView: View {
         } message: {
             Text("Every record on this device will be permanently removed. This cannot be undone.")
         }
+        .fileImporter(
+            isPresented: $showingImporter,
+            allowedContentTypes: [.commaSeparatedText, .plainText]
+        ) { result in
+            handleImport(result)
+        }
+        .alert("Import", isPresented: $showingImportResult) {
+            Button("OK", role: .cancel) {}
+        } message: {
+            Text(importResultMessage)
+        }
+    }
+
+    private func handleImport(_ result: Result<URL, Error>) {
+        switch result {
+        case .failure:
+            importResultMessage = String(localized: "Couldn't open that file.")
+            showingImportResult = true
+        case .success(let url):
+            let scoped = url.startAccessingSecurityScopedResource()
+            defer { if scoped { url.stopAccessingSecurityScopedResource() } }
+            guard let data = try? Data(contentsOf: url),
+                  let text = String(data: data, encoding: .utf8) else {
+                importResultMessage = String(localized: "Couldn't read that file.")
+                showingImportResult = true
+                return
+            }
+            let summary = CSVGlucoseImporter.importCSV(text, into: env.entryStore)
+            Haptics.play(summary.imported > 0 ? .success : .warning)
+            importResultMessage = Self.resultMessage(for: summary)
+            showingImportResult = true
+        }
+    }
+
+    private static func resultMessage(for summary: ImportSummary) -> String {
+        let imported = String(localized: "Imported \(summary.imported) record(s).")
+        guard summary.skipped > 0 else { return imported }
+        return imported + " " + String(localized: "Skipped \(summary.skipped) row(s).")
     }
 
     private func deleteEverything() {
