@@ -18,6 +18,7 @@ final class Preferences {
         self.alerts = Self.readAlerts(self.defaults)
         self.glucoseSchedule = Self.readGlucoseSchedule(self.defaults)
         self.glucoseGoals = Self.readGlucoseGoals(self.defaults)
+        self.ringGoals = Self.readRingGoals(self.defaults)
         self.liveSyncSeconds = (self.defaults.object(forKey: Keys.liveSync) as? Int) ?? 60
         self.postprandialWindowHours = (self.defaults.object(forKey: Keys.postprandialWindow) as? Int) ?? 3
         self.sickDayEnabled = self.defaults.bool(forKey: Keys.sickDayEnabled)
@@ -90,6 +91,13 @@ final class Preferences {
     /// existing preference.
     var glucoseGoals: GlucoseGoals {
         didSet { if let data = try? JSONEncoder().encode(glucoseGoals) { defaults.set(data, forKey: Keys.glucoseGoals) } }
+    }
+
+    /// Goals for the daily activity rings (active-minutes target and sensor
+    /// uptime target). The in-range ring reuses `glucoseGoals.targetTIRFraction`,
+    /// so this only owns the two ring-specific numbers.
+    var ringGoals: RingGoals {
+        didSet { if let data = try? JSONEncoder().encode(ringGoals) { defaults.set(data, forKey: Keys.ringGoals) } }
     }
 
     /// How often (seconds) to poll connected CGM sources while the app is open.
@@ -225,6 +233,7 @@ final class Preferences {
         static let alerts = "pref.alerts"
         static let glucoseSchedule = "pref.glucoseSchedule"
         static let glucoseGoals = "pref.glucoseGoals"
+        static let ringGoals = "pref.ringGoals"
         static let liveSync = "pref.liveSyncSeconds"
         static let postprandialWindow = "pref.postprandialWindowHours"
         static let sickDayEnabled = "pref.sickDayEnabled"
@@ -287,6 +296,12 @@ final class Preferences {
     private static func readGlucoseGoals(_ d: UserDefaults) -> GlucoseGoals {
         guard let data = d.data(forKey: Keys.glucoseGoals),
               let value = try? JSONDecoder().decode(GlucoseGoals.self, from: data)
+        else { return .default }
+        return value
+    }
+    private static func readRingGoals(_ d: UserDefaults) -> RingGoals {
+        guard let data = d.data(forKey: Keys.ringGoals),
+              let value = try? JSONDecoder().decode(RingGoals.self, from: data)
         else { return .default }
         return value
     }
@@ -353,6 +368,24 @@ struct GlucoseGoals: Codable, Equatable, Sendable {
     /// The TIR target as a 0…1 fraction, matching `PeriodStatistics.timeInRange`
     /// and the fraction `StreakCalculator` expects.
     var targetTIRFraction: Double { targetTIRPercent / 100 }
+}
+
+/// Goals for the two daily rings that aren't the Time-in-Range ring: a movement
+/// target (active minutes/day) and a sensor-uptime target (% of the elapsed day
+/// with CGM data). Stored under their own key so this is a migration-safe,
+/// purely additive change.
+struct RingGoals: Codable, Equatable, Sendable {
+    /// Daily active-minutes target for the Active ring (default 30, per WHO's
+    /// ~150 min/week guidance).
+    var activeMinutesGoal: Int = 30
+    /// Sensor-uptime target for the Sensor ring, as a percentage of the elapsed
+    /// day (default 85; consensus calls ≥ 70 % "reliable").
+    var coverageGoalPercent: Double = 85
+
+    static let `default` = RingGoals()
+
+    /// The uptime target as a 0…1 fraction, matching `DailyRings.coverageFraction`.
+    var coverageGoalFraction: Double { coverageGoalPercent / 100 }
 }
 
 /// The connection details for a self-hosted Nightscout site. The URL and token

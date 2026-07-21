@@ -58,6 +58,10 @@ struct DashboardView: View {
                         goalsCard(todayStats, thresholds: thresholds)
                             .appearTransition(delay: 0.14)
                     }
+                    if todayStats.hasGlucose {
+                        ringsCard(thresholds: thresholds)
+                            .appearTransition(delay: 0.16)
+                    }
                     if let session = sensorSessions.first {
                         let sensorStatus = SensorSessionEvaluator.status(
                             start: session.startDate, kind: session.kind, now: Date())
@@ -418,6 +422,69 @@ struct DashboardView: View {
 
     private func todayBand(_ geo: GeometryProxy, _ fraction: Double, _ color: Color) -> some View {
         color.frame(width: max(geo.size.width * fraction, fraction > 0 ? 2 : 0))
+    }
+
+    // MARK: - Daily rings
+
+    /// A compact three-ring summary (In range / Active / Sensor) that opens the
+    /// full Daily goals screen — where the rings are broken down and the data
+    /// sources' live status is shown.
+    private func ringsCard(thresholds: GlucoseThresholds) -> some View {
+        let rings = DailyRings.make(
+            readings: readings,
+            activity: activity,
+            thresholds: thresholds,
+            inRangeGoalFraction: env.preferences.glucoseGoals.targetTIRFraction,
+            activeGoalMinutes: env.preferences.ringGoals.activeMinutesGoal,
+            coverageGoalFraction: env.preferences.ringGoals.coverageGoalFraction
+        )
+        return NavigationLink {
+            DailyGoalsView()
+        } label: {
+            HStack(spacing: 16) {
+                ActivityRingsGauge(rings: rings, diameter: 66, thicknessRatio: 0.13, gapRatio: 0.05)
+                VStack(alignment: .leading, spacing: 4) {
+                    Text("Daily rings")
+                        .font(.headline)
+                        .foregroundStyle(Theme.textPrimary)
+                    Text(ringsSummary(rings))
+                        .font(.caption)
+                        .foregroundStyle(Theme.textSecondary)
+                    HStack(spacing: 10) {
+                        ringsDot(.inRange, "\((rings.inRangeFraction * 100).formatted(.number.precision(.fractionLength(0))))%")
+                        ringsDot(.active, "\(rings.activeMinutes)m")
+                        ringsDot(.sensor, "\((rings.coverageFraction * 100).formatted(.number.precision(.fractionLength(0))))%")
+                    }
+                    .padding(.top, 1)
+                }
+                Spacer()
+                Image(systemName: "chevron.right").font(.caption).foregroundStyle(Theme.textTertiary)
+            }
+            .frame(maxWidth: .infinity, alignment: .leading)
+            .glassCard()
+        }
+        .buttonStyle(PressableCardStyle())
+        .accessibilityElement(children: .combine)
+        .accessibilityLabel("Daily rings, \(ringsSummary(rings))")
+        .accessibilityHint("Opens your daily goals and source status")
+    }
+
+    private func ringsDot(_ kind: RingKind, _ text: String) -> some View {
+        HStack(spacing: 4) {
+            Circle().fill(kind.tint).frame(width: 7, height: 7)
+            Text(text)
+                .font(.caption2.weight(.semibold))
+                .foregroundStyle(Theme.textSecondary)
+                .monospacedDigit()
+        }
+    }
+
+    private func ringsSummary(_ rings: DailyRings) -> String {
+        switch rings.metCount {
+        case 3: return String(localized: "All three rings closed today")
+        case 0: return String(localized: "In range · Active · Sensor")
+        default: return String(localized: "\(rings.metCount) of 3 rings closed")
+        }
     }
 
     // MARK: - Goals & streak
