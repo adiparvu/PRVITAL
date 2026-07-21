@@ -184,9 +184,10 @@ struct JournalDayBucket: Identifiable {
 /// A Tide Guide-style day card: a big day header with a zone-tinted TIR ring
 /// glyph, the day's compact glucose curve, then rows of small icon chips —
 /// lowest / highest / average / time-in-range, and (standard and up) carbs /
-/// insulin / activity / notes. Detailed density inlines the day's entry list;
-/// the other densities keep it one tap away behind a "Show entries" disclosure
-/// so every record stays reachable for editing.
+/// insulin / activity / notes. The day's entries open on their own page (a
+/// navigation push) rather than expanding inline — long days would otherwise
+/// stretch the card across the whole screen; Detailed density additionally
+/// previews the first few entries on the card.
 struct JournalDayCard: View {
     let bucket: JournalDayBucket
     let density: JournalCardDensity
@@ -195,11 +196,10 @@ struct JournalDayCard: View {
     /// Called when an entry row is tapped, so the owner can present its editor.
     let onSelect: (JournalTimelineItem) -> Void
 
-    /// Compact / standard: whether the user disclosed this card's entry list.
-    @State private var showsEntries = false
+    /// How many entries the Detailed density previews on the card itself.
+    private static let previewEntryCount = 3
 
     private var stats: JournalDayStats { bucket.stats }
-    private var listVisible: Bool { density.showsEntryList || showsEntries }
 
     var body: some View {
         VStack(alignment: .leading, spacing: 14) {
@@ -217,12 +217,12 @@ struct JournalDayCard: View {
             if density.showsTherapyRow && stats.hasTherapyData {
                 therapyChipRow
             }
-            if listVisible && !bucket.items.isEmpty {
+            if density.showsEntryList && !bucket.items.isEmpty {
                 Divider().overlay(Theme.hairline)
-                entryList
+                entryList(Array(bucket.items.prefix(Self.previewEntryCount)))
             }
-            if !density.showsEntryList && !bucket.items.isEmpty {
-                entriesToggle
+            if !bucket.items.isEmpty {
+                entriesLink
             }
         }
         .frame(maxWidth: .infinity, alignment: .leading)
@@ -303,10 +303,10 @@ struct JournalDayCard: View {
             parts.append("average \(GlucoseFormatting.labeled(mgdL: stats.averageMgdL, unit: unit))")
             parts.append("\(tirPercent) percent in range")
             if let lowestAt = stats.lowestAt {
-                parts.append("lowest \(GlucoseFormatting.string(mgdL: stats.lowestMgdL, unit: unit)) at \(timeText(lowestAt))")
+                parts.append("lowest \(GlucoseFormatting.string(mgdL: stats.lowestMgdL, unit: unit)) at \(Self.timeText(lowestAt))")
             }
             if let highestAt = stats.highestAt {
-                parts.append("highest \(GlucoseFormatting.string(mgdL: stats.highestMgdL, unit: unit)) at \(timeText(highestAt))")
+                parts.append("highest \(GlucoseFormatting.string(mgdL: stats.highestMgdL, unit: unit)) at \(Self.timeText(highestAt))")
             }
         } else {
             parts.append("no glucose readings")
@@ -320,6 +320,17 @@ struct JournalDayCard: View {
     /// Row A — always shown when the day has glucose: lowest with its time,
     /// highest with its time, average, and time in range.
     private var glucoseChipRow: some View {
+        Self.glucoseChips(stats: stats, unit: unit, thresholds: thresholds)
+    }
+
+    /// Row B — standard and detailed: carbs, insulin, activity, notes totals.
+    private var therapyChipRow: some View {
+        Self.therapyChips(stats: stats)
+    }
+
+    /// Shared with `JournalDayDetailView`, so the day page shows the exact same
+    /// chips as the card.
+    static func glucoseChips(stats: JournalDayStats, unit: GlucoseUnit, thresholds: GlucoseThresholds) -> some View {
         chipGrid {
             JournalStatChip(
                 systemImage: "arrow.down",
@@ -342,14 +353,13 @@ struct JournalDayCard: View {
             JournalStatChip(
                 systemImage: "target",
                 tint: Theme.zoneInRange,
-                value: "\(tirPercent)%",
+                value: "\(Int((stats.timeInRange * 100).rounded()))%",
                 caption: "in range"
             )
         }
     }
 
-    /// Row B — standard and detailed: carbs, insulin, activity, notes totals.
-    private var therapyChipRow: some View {
+    static func therapyChips(stats: JournalDayStats) -> some View {
         chipGrid {
             JournalStatChip(
                 systemImage: "fork.knife",
@@ -378,7 +388,7 @@ struct JournalDayCard: View {
         }
     }
 
-    private func chipGrid(@ViewBuilder content: () -> some View) -> some View {
+    private static func chipGrid(@ViewBuilder content: () -> some View) -> some View {
         LazyVGrid(
             columns: Array(repeating: GridItem(.flexible(), spacing: 8), count: 4),
             alignment: .leading,
@@ -388,24 +398,24 @@ struct JournalDayCard: View {
         }
     }
 
-    private func timeText(_ date: Date) -> String {
+    private static func timeText(_ date: Date) -> String {
         date.formatted(date: .omitted, time: .shortened)
     }
 
     // MARK: Entry list
 
-    /// The day's tappable entry rows — the same rows (and editors) the old flat
+    /// A few tappable entry rows — the same rows (and editors) the old flat
     /// timeline used, so no capability is lost.
-    private var entryList: some View {
+    private func entryList(_ items: [JournalTimelineItem]) -> some View {
         VStack(spacing: 0) {
-            ForEach(Array(bucket.items.enumerated()), id: \.element.id) { index, item in
+            ForEach(Array(items.enumerated()), id: \.element.id) { index, item in
                 Button {
                     onSelect(item)
                 } label: {
                     JournalEntryRow(item: item, unit: unit, thresholds: thresholds)
                 }
                 .buttonStyle(PressableCardStyle())
-                if index < bucket.items.count - 1 {
+                if index < items.count - 1 {
                     Divider().overlay(Theme.hairline)
                         .padding(.leading, 48)
                 }
@@ -413,28 +423,99 @@ struct JournalDayCard: View {
         }
     }
 
-    /// Compact / standard footer: disclose or hide this day's entry list.
-    private var entriesToggle: some View {
-        Button {
-            Haptics.play(.selection)
-            withAnimation(.snappy) { showsEntries.toggle() }
+    /// Footer link: the day's full entry list lives on its own page, so a
+    /// 100-reading day never stretches the card down the whole screen.
+    private var entriesLink: some View {
+        NavigationLink {
+            JournalDayDetailView(bucket: bucket, unit: unit, thresholds: thresholds, onSelect: onSelect)
         } label: {
             HStack(spacing: 5) {
-                Text(showsEntries ? "Hide entries" : showEntriesText)
-                Image(systemName: "chevron.down")
+                Text(showEntriesText)
+                Image(systemName: "chevron.right")
                     .font(.caption2.weight(.bold))
-                    .rotationEffect(.degrees(showsEntries ? 180 : 0))
             }
             .font(.footnote.weight(.semibold))
             .foregroundStyle(Theme.accent)
             .contentShape(.rect)
         }
         .buttonStyle(PressableChipStyle())
-        .accessibilityLabel(showsEntries ? "Hide entries" : showEntriesText)
+        .accessibilityLabel(showEntriesText)
+        .accessibilityHint("Opens this day's entries on their own page")
     }
 
     private var showEntriesText: String {
         bucket.items.count == 1 ? "Show 1 entry" : "Show \(bucket.items.count) entries"
+    }
+}
+
+// MARK: - Day detail page
+
+/// One day on its own page: the full-size annotated glucose curve, every stat
+/// chip, and the complete tappable entry list. Pushed from a day card's
+/// entries link; editing goes through the same `onSelect` closure (and the
+/// journal's editor sheets), so behavior matches the card exactly.
+struct JournalDayDetailView: View {
+    let bucket: JournalDayBucket
+    let unit: GlucoseUnit
+    let thresholds: GlucoseThresholds
+    let onSelect: (JournalTimelineItem) -> Void
+
+    private var stats: JournalDayStats { bucket.stats }
+
+    var body: some View {
+        ScrollView {
+            VStack(alignment: .leading, spacing: 20) {
+                if !bucket.readings.isEmpty {
+                    VStack(alignment: .leading, spacing: 14) {
+                        GlucoseTrendChart(readings: bucket.readings, thresholds: thresholds, unit: unit, compact: false)
+                    }
+                    .glassCard(cornerRadius: 26, padding: 18)
+                    .appearTransition(delay: 0)
+                }
+
+                VStack(alignment: .leading, spacing: 14) {
+                    if stats.hasGlucose {
+                        JournalDayCard.glucoseChips(stats: stats, unit: unit, thresholds: thresholds)
+                    }
+                    if stats.hasTherapyData {
+                        JournalDayCard.therapyChips(stats: stats)
+                    }
+                }
+                .frame(maxWidth: .infinity, alignment: .leading)
+                .glassCard(cornerRadius: 26, padding: 18)
+                .appearTransition(delay: 0.06)
+
+                if !bucket.items.isEmpty {
+                    VStack(spacing: 0) {
+                        ForEach(Array(bucket.items.enumerated()), id: \.element.id) { index, item in
+                            Button {
+                                onSelect(item)
+                            } label: {
+                                JournalEntryRow(item: item, unit: unit, thresholds: thresholds)
+                            }
+                            .buttonStyle(PressableCardStyle())
+                            if index < bucket.items.count - 1 {
+                                Divider().overlay(Theme.hairline)
+                                    .padding(.leading, 48)
+                            }
+                        }
+                    }
+                    .glassCard(cornerRadius: 26, padding: 12)
+                    .appearTransition(delay: 0.12)
+                }
+            }
+            .padding()
+        }
+        .background(Theme.background)
+        .navigationTitle(titleText)
+        .navigationBarTitleDisplayMode(.inline)
+    }
+
+    private var titleText: String {
+        let calendar = Calendar.current
+        if calendar.isDateInToday(bucket.day) { return String(localized: "Today") }
+        if calendar.isDateInYesterday(bucket.day) { return String(localized: "Yesterday") }
+        return bucket.day.formatted(.dateTime.weekday(.wide).month(.abbreviated).day())
     }
 }
 
