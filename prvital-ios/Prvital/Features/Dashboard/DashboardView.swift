@@ -53,6 +53,12 @@ struct DashboardView: View {
                     if env.preferences.sickDayEnabled {
                         SickDayBanner()
                             .appearTransition(delay: 0.03)
+                    } else {
+                        let suggestion = SickDayAdvisor.evaluate(readings: readings)
+                        if suggestion.shouldSuggest {
+                            SickDaySuggestionBanner(averageMgdL: suggestion.averageMgdL, unit: unit)
+                                .appearTransition(delay: 0.03)
+                        }
                     }
                     trendSection(summary: summary, thresholds: thresholds, unit: unit)
                         .appearTransition(delay: 0.06)

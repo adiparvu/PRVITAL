@@ -1,27 +1,34 @@
 import SwiftUI
+import SwiftData
 
 /// Sick-day guidance for people with diabetes. Static, widely-taught education —
 /// never medical advice and never an insulin dose. It gathers the standard
 /// sick-day rules (keep taking insulin, check more often, watch for ketones, stay
-/// hydrated, know when to call for help) and lets the user turn on a lightweight
-/// "sick-day mode" that surfaces a reminder banner on the dashboard.
+/// hydrated, know when to call for help), lets the user log ketone readings, and
+/// lets them turn on a lightweight "sick-day mode" that surfaces a reminder
+/// banner on the dashboard.
 struct SickDayView: View {
     @Environment(AppEnvironment.self) private var env
+
+    @Query(sort: \KetoneReading.timestamp, order: .reverse) private var ketones: [KetoneReading]
+    @State private var showingLogKetone = false
 
     var body: some View {
         ScrollView {
             VStack(spacing: 20) {
                 header.appearTransition(delay: 0)
                 modeCard.appearTransition(delay: 0.04)
-                rulesCard.appearTransition(delay: 0.10)
-                whenToCallCard.appearTransition(delay: 0.16)
-                disclaimer.appearTransition(delay: 0.22)
+                ketonesCard.appearTransition(delay: 0.08)
+                rulesCard.appearTransition(delay: 0.12)
+                whenToCallCard.appearTransition(delay: 0.18)
+                disclaimer.appearTransition(delay: 0.24)
             }
             .padding()
         }
         .background(Theme.background)
         .navigationTitle("Sick-day mode")
         .navigationBarTitleDisplayMode(.inline)
+        .sheet(isPresented: $showingLogKetone) { LogKetoneSheet() }
     }
 
     private var header: some View {
@@ -62,6 +69,77 @@ struct SickDayView: View {
         .onChange(of: prefs.sickDayEnabled) { _, isOn in
             prefs.sickDayStartedAt = isOn ? Date() : nil
             env.rescheduleContextualReminders()
+        }
+    }
+
+    // MARK: - Ketones
+
+    /// Records ketone readings and shows the latest one with its risk band and
+    /// supportive guidance. Ketones are the early sign of DKA, so they live right
+    /// under the sick-day toggle.
+    private var ketonesCard: some View {
+        let latest = ketones.first
+        let logButton = AnyView(
+            Button {
+                Haptics.play(.selection)
+                showingLogKetone = true
+            } label: {
+                Label("Log ketones", systemImage: "plus.circle.fill")
+                    .font(.footnote.weight(.semibold))
+                    .labelStyle(.titleAndIcon)
+            }
+            .buttonStyle(.plain)
+            .foregroundStyle(Theme.accent)
+            .accessibilityHint("Record a blood or urine ketone reading.")
+        )
+        return SectionCard("Ketones", systemImage: "drop.triangle.fill", accessory: logButton) {
+            VStack(alignment: .leading, spacing: 12) {
+                if let latest {
+                    let band = KetoneBands.band(forMmolPerL: latest.value)
+                    HStack(alignment: .firstTextBaseline, spacing: 8) {
+                        Text(latest.value.formatted(.number.precision(.fractionLength(1))))
+                            .font(.system(size: 30, weight: .bold, design: .rounded))
+                            .foregroundStyle(ketoneTint(band))
+                            .monospacedDigit()
+                        Text("mmol/L")
+                            .font(.subheadline)
+                            .foregroundStyle(Theme.textSecondary)
+                        Spacer()
+                        bandChip(band)
+                    }
+                    Text(band.guidance)
+                        .font(.caption)
+                        .foregroundStyle(Theme.textSecondary)
+                        .fixedSize(horizontal: false, vertical: true)
+                    Text("\(latest.sample.label) · \(latest.timestamp.formatted(date: .abbreviated, time: .shortened))")
+                        .font(.caption2)
+                        .foregroundStyle(Theme.textTertiary)
+                } else {
+                    Text("No ketone readings yet. If you have strips, checking when glucose runs high or you feel unwell is a good habit.")
+                        .font(.caption)
+                        .foregroundStyle(Theme.textSecondary)
+                        .fixedSize(horizontal: false, vertical: true)
+                }
+            }
+            .frame(maxWidth: .infinity, alignment: .leading)
+        }
+    }
+
+    private func bandChip(_ band: KetoneBand) -> some View {
+        Text(band.title)
+            .font(.caption2.weight(.semibold))
+            .foregroundStyle(ketoneTint(band))
+            .padding(.horizontal, 8)
+            .padding(.vertical, 4)
+            .background(ketoneTint(band).opacity(0.14), in: Capsule())
+    }
+
+    private func ketoneTint(_ band: KetoneBand) -> Color {
+        switch band.severity {
+        case 0: return Theme.zoneInRange
+        case 1: return Theme.zoneWarning
+        case 2: return Theme.zoneHigh
+        default: return Theme.zoneCritical
         }
     }
 
@@ -184,6 +262,109 @@ struct SickDayBanner: View {
         .buttonStyle(PressableCardStyle())
         .accessibilityElement(children: .combine)
         .accessibilityHint("Opens sick-day guidance")
+    }
+}
+
+/// Shown on the dashboard when glucose has been running high for a sustained
+/// stretch and sick-day mode is *off* — a gentle nudge to check ketones and take
+/// precautions. Taps through to the full guidance. Never alarming.
+struct SickDaySuggestionBanner: View {
+    let averageMgdL: Double
+    let unit: GlucoseUnit
+
+    var body: some View {
+        NavigationLink {
+            SickDayView()
+        } label: {
+            HStack(spacing: 12) {
+                Image(systemName: "drop.triangle.fill")
+                    .font(.title3)
+                    .foregroundStyle(Theme.zoneHigh)
+                    .frame(width: 26)
+                VStack(alignment: .leading, spacing: 1) {
+                    Text("Running high for a while")
+                        .font(.subheadline.weight(.semibold)).foregroundStyle(Theme.textPrimary)
+                    Text("Around \(GlucoseFormatting.labeled(mgdL: averageMgdL, unit: unit)) lately. Checking ketones and reviewing sick-day steps can help.")
+                        .font(.caption).foregroundStyle(Theme.textSecondary)
+                        .lineLimit(3)
+                }
+                Spacer()
+                Image(systemName: "chevron.right").font(.caption).foregroundStyle(Theme.textTertiary)
+            }
+            .frame(maxWidth: .infinity, alignment: .leading)
+            .glassCard(cornerRadius: 18, padding: 14)
+        }
+        .buttonStyle(PressableCardStyle())
+        .accessibilityElement(children: .combine)
+        .accessibilityHint("Opens sick-day guidance and ketone logging")
+    }
+}
+
+/// A sheet for recording a blood or urine ketone reading (mmol/L), with the risk
+/// band shown live as the value changes.
+struct LogKetoneSheet: View {
+    @Environment(\.dismiss) private var dismiss
+    @Environment(\.modelContext) private var modelContext
+
+    @State private var value: Double = 0.0
+    @State private var sample: KetoneSample = .blood
+    @State private var date = Date()
+    @State private var note = ""
+
+    var body: some View {
+        NavigationStack {
+            Form {
+                Section {
+                    HStack {
+                        Text(value.formatted(.number.precision(.fractionLength(1))))
+                            .font(.system(size: 30, weight: .bold, design: .rounded))
+                            .foregroundStyle(Theme.accent)
+                            .contentTransition(.numericText())
+                            .animation(.snappy, value: value)
+                        Text("mmol/L").foregroundStyle(Theme.textSecondary)
+                        Spacer()
+                        Stepper("Ketones", value: $value, in: 0.0...8.0, step: 0.1)
+                            .labelsHidden()
+                    }
+                    Picker("Sample", selection: $sample) {
+                        ForEach(KetoneSample.allCases) { Text($0.label).tag($0) }
+                    }
+                    .pickerStyle(.segmented)
+                    if value >= KetoneBands.elevatedThreshold {
+                        Text(KetoneBands.band(forMmolPerL: value).guidance)
+                            .font(.caption)
+                            .foregroundStyle(Theme.textSecondary)
+                            .fixedSize(horizontal: false, vertical: true)
+                    }
+                } header: {
+                    Text("Ketone reading")
+                } footer: {
+                    Text("Blood ketones are measured in mmol/L. Urine strips read differently — record the number your meter or strip shows.")
+                }
+                Section {
+                    DatePicker("Time", selection: $date, in: ...Date())
+                }
+                Section("Note") {
+                    TextField("Optional", text: $note, axis: .vertical)
+                }
+            }
+            .navigationTitle("Log ketones")
+            .navigationBarTitleDisplayMode(.inline)
+            .toolbar {
+                ToolbarItem(placement: .cancellationAction) { Button("Cancel") { dismiss() } }
+                ToolbarItem(placement: .confirmationAction) { Button("Save", action: save) }
+            }
+        }
+    }
+
+    private func save() {
+        let reading = KetoneReading(
+            value: value, sample: sample, timestamp: date,
+            note: note.isEmpty ? nil : note)
+        modelContext.insert(reading)
+        try? modelContext.save()
+        Haptics.play(.success)
+        dismiss()
     }
 }
 

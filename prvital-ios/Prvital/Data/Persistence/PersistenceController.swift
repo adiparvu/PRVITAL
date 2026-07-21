@@ -23,6 +23,7 @@ enum AppSchema {
         SensorSession.self,
         MedicationDose.self,
         LabResult.self,
+        KetoneReading.self,
         UserProfile.self,
         PrivacyAuditRecord.self,
         ConsentRecord.self,
