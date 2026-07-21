@@ -94,7 +94,12 @@ jobs:
     # distribution certificate and App Store profiles are created on the runner
     # via the App Store Connect API (xcodebuild's own automatic-signing service
     # rejects the key, but the REST API accepts it), then used for manual signing.
-    if: ${{ (github.event_name == 'workflow_dispatch' && inputs.testflight) || startsWith(github.ref, 'refs/tags/testflight-') || (github.event_name == 'push' && contains(github.event.head_commit.message, '[testflight]')) }}
+    # Never ship from main: releases are cut from a development branch (via a
+    # [testflight] commit or a testflight-* tag). When that commit later merges to
+    # main it would otherwise re-run this job and re-upload the same build number,
+    # which Apple rejects (duplicate) or the daily upload cap blocks — a spurious
+    # red on main every merge. The ref guard keeps main pushes build-only.
+    if: ${{ github.ref != 'refs/heads/main' && ((github.event_name == 'workflow_dispatch' && inputs.testflight) || startsWith(github.ref, 'refs/tags/testflight-') || (github.event_name == 'push' && contains(github.event.head_commit.message, '[testflight]'))) }}
     runs-on: macos-latest
     env:
       DEVELOPMENT_TEAM: SU92TVZT8W
