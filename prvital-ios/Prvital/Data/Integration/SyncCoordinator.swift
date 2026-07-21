@@ -32,6 +32,11 @@ final class SyncCoordinator {
     /// (previews, tests) that don't wire HealthKit.
     var healthImporter: HealthDataImporter?
 
+    /// Mirrors the user's own manually entered records up to their Nightscout
+    /// site after each sync pass. Injected by the composition root, like
+    /// `healthImporter`; nil in contexts that don't wire it.
+    var nightscoutUploader: NightscoutUploader?
+
     init(context: ModelContext, registry: SourceRegistry, audit: AuditService) {
         self.context = context
         self.registry = registry
@@ -94,6 +99,19 @@ final class SyncCoordinator {
 
         report.conflicts = resolveRecentConflicts(since: since)
         try? context.save()
+
+        // After a successful pass, mirror the user's own MANUAL entries up to
+        // their Nightscout site (opt-in). Only `source == .manual` rows are
+        // gathered — never Nightscout-, Health- or sensor-sourced ones — so an
+        // uploaded record can never round-trip back in on the next sync. The
+        // uploader checks the toggle + site configuration itself and quietly
+        // no-ops (audit-only on failure) otherwise.
+        if let nightscoutUploader, nightscoutUploader.isEnabled {
+            let pending = NightscoutUploader.gatherPending(
+                in: context, since: nightscoutUploader.uploadWindowStart())
+            await nightscoutUploader.upload(pending)
+        }
+
         onChange?()
         return report
     }

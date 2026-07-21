@@ -14,7 +14,15 @@ struct NightscoutSettingsView: View {
     private var unit: GlucoseUnit { env.preferences.glucoseUnit }
     private var trimmedURL: String { urlString.trimmingCharacters(in: .whitespacesAndNewlines) }
 
+    /// The dedup watermark left by `NightscoutUploader` — the newest record
+    /// timestamp already mirrored up to the site, if uploading has run.
+    private var lastUpload: Date? {
+        (UserDefaults(suiteName: AppSchema.appGroupIdentifier) ?? .standard)
+            .object(forKey: NightscoutUploadPlanner.watermarkKey) as? Date
+    }
+
     var body: some View {
+        @Bindable var preferences = env.preferences
         Form {
             Section {
                 TextField("https://your-site.example.com", text: $urlString)
@@ -54,6 +62,22 @@ struct NightscoutSettingsView: View {
                             .foregroundStyle(result.isSuccess ? Theme.zoneInRange : Theme.zoneCritical)
                     }
                 }
+            }
+            .listRowBackground(Theme.surface)
+
+            Section {
+                Toggle("Upload my entries", isOn: $preferences.nightscoutUploadEnabled)
+            } header: {
+                Text("Upload")
+            } footer: {
+                VStack(alignment: .leading, spacing: 4) {
+                    Text("Sends the glucose, carbs and insulin you log in Prvital to your Nightscout site. Only entries you typed in — never data that came from Nightscout or Health.")
+                    if let lastUpload {
+                        Text("Last upload: \(lastUpload.formatted(date: .abbreviated, time: .shortened)).")
+                    }
+                }
+                .font(.footnote)
+                .foregroundStyle(Theme.textTertiary)
             }
             .listRowBackground(Theme.surface)
 
