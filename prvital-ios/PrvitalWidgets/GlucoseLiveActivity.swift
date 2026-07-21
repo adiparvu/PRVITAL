@@ -71,16 +71,20 @@ struct GlucoseLiveActivity: Widget {
                         HStack(spacing: 6) {
                             // Matches the Lock Screen banner: neutral label, tinted value/arrow.
                             Text(state.zoneLabel).font(.caption.weight(.medium)).foregroundStyle(.secondary)
-                            if let prediction = state.predictionText {
-                                Text("·").foregroundStyle(.secondary)
-                                Label(prediction, systemImage: "exclamationmark.triangle.fill")
-                                    .font(.caption2).foregroundStyle(.secondary)
-                                    .lineLimit(1)
-                            }
                             Spacer(minLength: 0)
                             Text(state.updatedAt, style: .relative)
                                 .font(.caption2).foregroundStyle(.secondary)
                                 .lineLimit(1)
+                        }
+                        // Own line so the localized prediction isn't clipped by
+                        // the zone label and the live "updated" timer beside it.
+                        if let prediction = state.predictionText {
+                            HStack(spacing: 0) {
+                                Label(prediction, systemImage: "exclamationmark.triangle.fill")
+                                    .font(.caption2).foregroundStyle(.secondary)
+                                    .lineLimit(1).minimumScaleFactor(0.8)
+                                Spacer(minLength: 0)
+                            }
                         }
                     }
                     .padding(.horizontal, 6)
@@ -107,34 +111,37 @@ struct GlucoseLiveActivity: Widget {
     /// reads at a glance. Unit and trend label stay neutral white.
     private func lockScreen(_ state: GlucoseActivityAttributes.ContentState) -> some View {
         let tint = Color(hex: state.zoneColorHex)
-        return HStack(spacing: 14) {
-            VStack(alignment: .leading, spacing: 3) {
-                HStack(alignment: .firstTextBaseline, spacing: 4) {
-                    Text(state.valueText)
-                        .font(.system(size: 40, weight: .bold, design: .rounded))
-                        .foregroundStyle(tint)
-                        .minimumScaleFactor(0.7)
-                        .lineLimit(1)
-                        .contentTransition(.numericText(value: state.mgdL))
-                    Text(state.unitText).font(.caption).foregroundStyle(.white.opacity(0.7))
-                }
-                HStack(spacing: 6) {
+        return VStack(alignment: .leading, spacing: 6) {
+            HStack(spacing: 14) {
+                VStack(alignment: .leading, spacing: 3) {
+                    HStack(alignment: .firstTextBaseline, spacing: 4) {
+                        Text(state.valueText)
+                            .font(.system(size: 40, weight: .bold, design: .rounded))
+                            .foregroundStyle(tint)
+                            .minimumScaleFactor(0.7)
+                            .lineLimit(1)
+                            .contentTransition(.numericText(value: state.mgdL))
+                        Text(state.unitText).font(.caption).foregroundStyle(.white.opacity(0.7))
+                    }
                     // Neutral by request: the value and arrow carry the zone
                     // colour; the label reads calmer in white.
                     Text(state.zoneLabel).font(.caption.weight(.semibold)).foregroundStyle(.white.opacity(0.7))
-                    if let prediction = state.predictionText {
-                        Text("·").foregroundStyle(.white.opacity(0.4))
-                        Label(prediction, systemImage: "exclamationmark.triangle.fill")
-                            .font(.caption2)
-                            .foregroundStyle(.white.opacity(0.85))
-                            .lineLimit(1)
-                    }
+                }
+                Spacer(minLength: 8)
+                VStack(alignment: .trailing, spacing: 4) {
+                    Image(systemName: state.trendSymbol).font(.title2.weight(.bold)).foregroundStyle(tint)
+                    Text(state.trendLabel).font(.caption2).foregroundStyle(.white.opacity(0.7))
                 }
             }
-            Spacer(minLength: 8)
-            VStack(alignment: .trailing, spacing: 4) {
-                Image(systemName: state.trendSymbol).font(.title2.weight(.bold)).foregroundStyle(tint)
-                Text(state.trendLabel).font(.caption2).foregroundStyle(.white.opacity(0.7))
+            // The prediction gets its own full-width line so the (often long)
+            // localized text — e.g. "Scăzut estimat în ~15 min" — is never
+            // truncated the way it was when it shared the zone-label row.
+            if let prediction = state.predictionText {
+                Label(prediction, systemImage: "exclamationmark.triangle.fill")
+                    .font(.caption2)
+                    .foregroundStyle(.white.opacity(0.85))
+                    .lineLimit(1)
+                    .minimumScaleFactor(0.8)
             }
         }
         .frame(maxWidth: .infinity)
