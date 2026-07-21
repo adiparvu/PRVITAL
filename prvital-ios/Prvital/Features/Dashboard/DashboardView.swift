@@ -107,6 +107,16 @@ struct DashboardView: View {
                     .accessibilityLabel("Goals")
                     .accessibilityHint("Set your time-in-range and A1c goals")
                 }
+                ToolbarItem(placement: .topBarLeading) {
+                    Button {
+                        Haptics.play(.selection)
+                        GlucoseSpeaker.shared.speak(SharedStore.load())
+                    } label: {
+                        Image(systemName: "speaker.wave.2.fill")
+                    }
+                    .accessibilityLabel("Speak my glucose")
+                    .accessibilityHint("Reads your latest glucose aloud")
+                }
                 ToolbarItem(placement: .primaryAction) {
                     Button {
                         Haptics.play(.selection)
