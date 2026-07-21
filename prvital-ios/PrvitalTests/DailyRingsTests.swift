@@ -59,7 +59,7 @@ final class DailyRingsTests: XCTestCase {
     func testCoverageOverElapsedDay() {
         // 12 elapsed hours = 720 min → 144 expected samples at 5-min cadence.
         // 144 readings would be 100% coverage; use a handful → low coverage.
-        let readings = (0..<12).map { reading(hour: $0, 0, 120) }
+        let readings = (0..<12).map { reading(hour: $0, 120) }
         let r = rings(readings)
         XCTAssertLessThan(r.coverageFraction, 0.2)
         XCTAssertFalse(r.coverageMet)
