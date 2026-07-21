@@ -69,7 +69,8 @@ struct GlucoseLiveActivity: Widget {
                             .transition(.opacity)
                         }
                         HStack(spacing: 6) {
-                            Text(state.zoneLabel).font(.caption.weight(.medium)).foregroundStyle(tint)
+                            // Matches the Lock Screen banner: neutral label, tinted value/arrow.
+                            Text(state.zoneLabel).font(.caption.weight(.medium)).foregroundStyle(.secondary)
                             if let prediction = state.predictionText {
                                 Text("·").foregroundStyle(.secondary)
                                 Label(prediction, systemImage: "exclamationmark.triangle.fill")
@@ -118,7 +119,9 @@ struct GlucoseLiveActivity: Widget {
                     Text(state.unitText).font(.caption).foregroundStyle(.white.opacity(0.7))
                 }
                 HStack(spacing: 6) {
-                    Text(state.zoneLabel).font(.caption.weight(.semibold)).foregroundStyle(tint)
+                    // Neutral by request: the value and arrow carry the zone
+                    // colour; the label reads calmer in white.
+                    Text(state.zoneLabel).font(.caption.weight(.semibold)).foregroundStyle(.white.opacity(0.7))
                     if let prediction = state.predictionText {
                         Text("·").foregroundStyle(.white.opacity(0.4))
                         Label(prediction, systemImage: "exclamationmark.triangle.fill")
