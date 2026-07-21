@@ -36,8 +36,19 @@ struct PlainLanguageSummaryView: View {
         Binding(get: { period }, set: { Haptics.play(.selection); period = $0 })
     }
 
+    /// Coaching tips from the last week's time-of-day patterns (needs enough
+    /// data, so it always uses the full window regardless of the Today/Week pick).
+    private var tips: [CoachingTip] {
+        let active = readings.filter(\.isActive)
+        let thresholds = env.preferences.thresholds
+        let insights = GlucosePatternDetector.insights(active, thresholds: thresholds)
+        let stats = StatisticsEngine.glucose(active, thresholds: thresholds)
+        return PatternCoach.tips(insights: insights, stats: stats)
+    }
+
     var body: some View {
         let summary = self.summary
+        let tips = self.tips
         return ScrollView {
             VStack(spacing: 18) {
                 Picker("Period", selection: periodBinding) {
@@ -63,7 +74,17 @@ struct PlainLanguageSummaryView: View {
                     .frame(maxWidth: .infinity, alignment: .leading)
                 }
 
-                Text("Generated from your own readings — a gentle read, not medical advice.")
+                if !tips.isEmpty {
+                    SectionCard("Suggestions", systemImage: "lightbulb.fill") {
+                        VStack(spacing: 14) {
+                            ForEach(tips) { tip in
+                                CoachingTipRow(tip: tip)
+                            }
+                        }
+                    }
+                }
+
+                Text("Generated from your own readings — general guidance, not medical advice. Talk to your care team before changing doses.")
                     .font(.caption2)
                     .foregroundStyle(Theme.textTertiary)
                     .frame(maxWidth: .infinity, alignment: .center)
@@ -73,6 +94,33 @@ struct PlainLanguageSummaryView: View {
         .prvitalTabBackground()
         .navigationTitle("In plain words")
         .navigationBarTitleDisplayMode(.inline)
+    }
+}
+
+/// One coaching suggestion: icon, headline, and the actionable detail.
+private struct CoachingTipRow: View {
+    let tip: CoachingTip
+
+    var body: some View {
+        HStack(alignment: .top, spacing: 12) {
+            Image(systemName: tip.symbol)
+                .font(.system(size: 16, weight: .semibold))
+                .foregroundStyle(Theme.accent)
+                .frame(width: 26)
+                .accessibilityHidden(true)
+            VStack(alignment: .leading, spacing: 3) {
+                Text(tip.title)
+                    .font(.subheadline.weight(.semibold))
+                    .foregroundStyle(Theme.textPrimary)
+                Text(tip.detail)
+                    .font(.caption)
+                    .foregroundStyle(Theme.textSecondary)
+                    .fixedSize(horizontal: false, vertical: true)
+            }
+        }
+        .frame(maxWidth: .infinity, alignment: .leading)
+        .accessibilityElement(children: .combine)
+        .accessibilityLabel("\(tip.title). \(tip.detail)")
     }
 }
 
