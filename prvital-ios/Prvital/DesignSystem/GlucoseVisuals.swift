@@ -299,8 +299,8 @@ struct GlucoseTrendChart: View {
 
     /// The two-line label attached to an annotated extreme: the value in the
     /// zone's colour with the time beneath, like a tide chart's crest labels.
-    /// No frame or box — plain text sitting on the curve; a soft halo in the
-    /// page-background colour keeps it legible over the line and gradient fill.
+    /// Plain floating text — no frame, no box, and no halo (the soft
+    /// background-coloured halo read as a faint rounded box over the fill).
     private func extremeLabel(_ extreme: ChartExtreme) -> some View {
         VStack(spacing: 0) {
             Text(GlucoseFormatting.string(mgdL: extreme.value, unit: unit))
@@ -310,11 +310,11 @@ struct GlucoseTrendChart: View {
                 .font(.system(size: 9, weight: .medium))
                 .foregroundStyle(Theme.textSecondary)
         }
-        .shadow(color: Theme.background, radius: 2.5)
-        .shadow(color: Theme.background.opacity(0.8), radius: 1)
     }
 
     private func scrubCallout(_ reading: GlucoseReading) -> some View {
+        // Plain floating text — no frame, no box, no halo. Just the value in its
+        // zone colour with the time beneath, tracking the finger across the curve.
         VStack(alignment: .leading, spacing: 1) {
             Text(GlucoseFormatting.labeled(mgdL: reading.valueMgdL, unit: unit))
                 .font(.caption.weight(.bold))
@@ -323,11 +323,6 @@ struct GlucoseTrendChart: View {
                 .font(.caption2)
                 .foregroundStyle(Theme.textSecondary)
         }
-        // No frame: a clean floating label. The soft page-coloured halo (rather
-        // than a boxed material chip with a border) keeps it readable as it
-        // tracks the finger across the curve.
-        .shadow(color: Theme.background, radius: 3)
-        .shadow(color: Theme.background.opacity(0.85), radius: 1.5)
     }
 
     /// The x-range with a little trailing headroom (3% of the window, at least
