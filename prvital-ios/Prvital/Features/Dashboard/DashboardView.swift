@@ -225,9 +225,9 @@ struct DashboardView: View {
     }
 
     private func updatedText(summary: DashboardSummary) -> String {
-        guard let minutes = summary.minutesSinceUpdate else { return "Updated recently" }
-        if minutes <= 0 { return "Updated just now" }
-        return "Updated \(minutes) min ago"
+        guard let minutes = summary.minutesSinceUpdate else { return String(localized: "Updated recently") }
+        if minutes <= 0 { return String(localized: "Updated just now") }
+        return String(localized: "Updated \(minutes) min ago")
     }
 
     // MARK: - Predictive warning
@@ -494,17 +494,17 @@ struct DashboardView: View {
 
     private func streakText(_ current: Int) -> String {
         switch current {
-        case 0: return "Start your streak today"
-        case 1: return "1 day streak"
-        default: return "\(current) day streak"
+        case 0: return String(localized: "Start your streak today")
+        case 1: return String(localized: "1 day streak")
+        default: return String(localized: "\(current) day streak")
         }
     }
 
     private func a1cText(target: Double, estimate: Double, hasGlucose: Bool) -> String {
         let targetStr = target.formatted(.number.precision(.fractionLength(1)))
-        guard hasGlucose else { return "A1c goal \(targetStr)%" }
+        guard hasGlucose else { return String(localized: "A1c goal \(targetStr)%") }
         let estStr = estimate.formatted(.number.precision(.fractionLength(1)))
-        return "A1c goal \(targetStr)% · est. \(estStr)% today"
+        return String(localized: "A1c goal \(targetStr)% · est. \(estStr)% today")
     }
 
     private func goalsAccessibilityLabel(
@@ -522,9 +522,9 @@ struct DashboardView: View {
     private func onBoardCard(iob: Double, cob: Double) -> some View {
         SectionCard("On board", systemImage: "chart.line.downtrend.xyaxis") {
             HStack(spacing: 18) {
-                onBoardMetric(value: iob.formatted(.number.precision(.fractionLength(1))), unit: "U", label: "Insulin", tint: Theme.accent)
+                onBoardMetric(value: iob.formatted(.number.precision(.fractionLength(1))), unit: "U", label: String(localized: "Insulin"), tint: Theme.accent)
                 Divider().frame(height: 34).overlay(Theme.hairline)
-                onBoardMetric(value: cob.formatted(.number.precision(.fractionLength(0))), unit: "g", label: "Carbs", tint: Theme.zoneHigh)
+                onBoardMetric(value: cob.formatted(.number.precision(.fractionLength(0))), unit: "g", label: String(localized: "Carbs"), tint: Theme.zoneHigh)
                 Spacer()
                 NavigationLink {
                     BolusCalculatorView()
@@ -692,8 +692,8 @@ struct DashboardView: View {
     private func insulinTile(_ dose: InsulinDose?) -> some View {
         StatTile(
             title: "Insulin",
-            value: dose.map { "\($0.units.formatted()) U" } ?? "—",
-            caption: dose.map { "\(dashboardRelativeText($0.timestamp)) · \($0.insulinType.label)" } ?? "No doses",
+            value: dose.map { String(localized: "\($0.units.formatted()) U") } ?? "—",
+            caption: dose.map { "\(dashboardRelativeText($0.timestamp)) · \($0.insulinType.label)" } ?? String(localized: "No doses"),
             tint: Theme.accent,
             systemImage: "syringe.fill"
         )
@@ -702,8 +702,8 @@ struct DashboardView: View {
     private func mealTile(_ meal: CarbEntry?) -> some View {
         StatTile(
             title: "Meal",
-            value: meal.map { "\($0.grams.formatted()) g" } ?? "—",
-            caption: meal.map { "\($0.mealType.label) · \(dashboardRelativeText($0.timestamp))" } ?? "No meals",
+            value: meal.map { String(localized: "\($0.grams.formatted()) g") } ?? "—",
+            caption: meal.map { "\($0.mealType.label) · \(dashboardRelativeText($0.timestamp))" } ?? String(localized: "No meals"),
             tint: Theme.zoneHigh,
             systemImage: "fork.knife"
         )
@@ -712,8 +712,8 @@ struct DashboardView: View {
     private func activityTile(_ session: ActivityEntry?) -> some View {
         StatTile(
             title: "Activity",
-            value: session.map { "\($0.durationMinutes) min" } ?? "—",
-            caption: session.map { "\($0.activityType.label) · \(dashboardRelativeText($0.startTimestamp))" } ?? "No activity",
+            value: session.map { String(localized: "\($0.durationMinutes) min") } ?? "—",
+            caption: session.map { "\($0.activityType.label) · \(dashboardRelativeText($0.startTimestamp))" } ?? String(localized: "No activity"),
             tint: Theme.zoneInRange,
             systemImage: "figure.walk"
         )
@@ -743,7 +743,7 @@ private enum DashboardTrendRange: String, CaseIterable, Identifiable {
         case .sixHours: return "6h"
         case .twelveHours: return "12h"
         case .twentyFourHours: return "24h"
-        case .custom: return "Custom"
+        case .custom: return String(localized: "Custom")
         }
     }
 

@@ -112,6 +112,7 @@ targets:
       - path: PrvitalWidgets
       - path: Shared
       - path: Prvital/DesignSystem/Theme.swift # reuse the palette
+      - path: Prvital/Resources/Localizable.xcstrings # shared string catalog
     info:
       path: PrvitalWidgets/Info.plist
       properties:
@@ -150,6 +151,7 @@ targets:
       - path: Shared
       - path: Connectivity # WatchConnectivity bridge
       - path: Prvital/DesignSystem/Theme.swift # reuse the palette
+      - path: Prvital/Resources/Localizable.xcstrings # shared string catalog
     dependencies:
       - target: PrvitalWatchWidgets
     info:
@@ -177,6 +179,7 @@ targets:
       - path: PrvitalWidgets/GlucoseTimelineProvider.swift # reuse the provider
       - path: PrvitalWidgets/GlucoseAccessoryWidgets.swift  # reuse the accessory views
       - path: Prvital/DesignSystem/Theme.swift # Color(hex:)
+      - path: Prvital/Resources/Localizable.xcstrings # shared string catalog
     info:
       path: PrvitalWatchWidgets/Info.plist
       properties:

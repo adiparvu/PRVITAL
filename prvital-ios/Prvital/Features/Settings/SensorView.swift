@@ -109,9 +109,9 @@ enum SensorStatusStyle {
     }
     static func detail(_ status: SensorStatus) -> String {
         switch status.phase {
-        case .warmup: return "Ready in \(durationText(status.timeRemaining))"
-        case .active, .expiringSoon: return "\(durationText(status.timeRemaining)) left"
-        case .expired: return "Replace your sensor"
+        case .warmup: return String(localized: "Ready in \(durationText(status.timeRemaining))")
+        case .active, .expiringSoon: return String(localized: "\(durationText(status.timeRemaining)) left")
+        case .expired: return String(localized: "Replace your sensor")
         }
     }
     /// A compact "2d 4h" / "3h 10m" / "20m" duration.

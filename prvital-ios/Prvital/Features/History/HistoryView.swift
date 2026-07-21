@@ -59,7 +59,9 @@ struct HistoryView: View {
 
     private var summaryText: String {
         let count = filteredItems.count
-        return "\(count) \(count == 1 ? "entry" : "entries") · \(range.label)"
+        return count == 1
+            ? String(localized: "\(count) entry · \(range.label)")
+            : String(localized: "\(count) entries · \(range.label)")
     }
 
     var body: some View {
@@ -217,11 +219,11 @@ private enum HistoryRange: String, CaseIterable, Identifiable {
 
     var label: String {
         switch self {
-        case .today: return "Today"
-        case .yesterday: return "Yesterday"
-        case .thisWeek: return "This week"
-        case .thisMonth: return "This month"
-        case .custom: return "Custom"
+        case .today: return String(localized: "Today")
+        case .yesterday: return String(localized: "Yesterday")
+        case .thisWeek: return String(localized: "This week")
+        case .thisMonth: return String(localized: "This month")
+        case .custom: return String(localized: "Custom")
         }
     }
 

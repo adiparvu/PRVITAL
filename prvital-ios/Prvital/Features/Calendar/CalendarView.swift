@@ -343,7 +343,7 @@ private struct CalendarDayDetailSheet: View {
                     StatTile(
                         title: "Time in range",
                         value: "\(Int((stats.timeInRange * 100).rounded()))%",
-                        caption: "\(stats.readingCount) readings",
+                        caption: String(localized: "\(stats.readingCount) readings"),
                         tint: Theme.zoneInRange,
                         systemImage: "target"
                     )
@@ -476,7 +476,7 @@ private struct CalendarEntryItem: Identifiable {
                 id: "insulin-\(dose.id)",
                 icon: "syringe.fill",
                 tint: Theme.accent,
-                title: "\(dose.units.formatted()) U · \(dose.insulinType.label)",
+                title: String(localized: "\(dose.units.formatted()) U · \(dose.insulinType.label)"),
                 subtitle: [dose.doseContext.label, dose.insulinName].compactMap { $0 }.joined(separator: " · "),
                 date: dose.timestamp
             ))
@@ -487,7 +487,7 @@ private struct CalendarEntryItem: Identifiable {
                 id: "carbs-\(meal.id)",
                 icon: meal.mealType.symbol,
                 tint: Theme.zoneHigh,
-                title: "\(meal.grams.formatted()) g · \(meal.mealType.label)",
+                title: String(localized: "\(meal.grams.formatted()) g · \(meal.mealType.label)"),
                 subtitle: meal.foodDescription,
                 date: meal.timestamp
             ))
@@ -499,13 +499,13 @@ private struct CalendarEntryItem: Identifiable {
                 icon: session.activityType.symbol,
                 tint: Theme.zoneInRange,
                 title: session.activityType.label,
-                subtitle: "\(session.durationMinutes) min · \(session.intensity.label)",
+                subtitle: String(localized: "\(session.durationMinutes) min · \(session.intensity.label)"),
                 date: session.startTimestamp
             ))
         }
 
         for note in observations {
-            let title = note.tags.isEmpty ? "Note" : note.tags.map(\.label).joined(separator: ", ")
+            let title = note.tags.isEmpty ? String(localized: "Note") : note.tags.map(\.label).joined(separator: ", ")
             items.append(CalendarEntryItem(
                 id: "observation-\(note.id)",
                 icon: note.tags.first?.symbol ?? "note.text",

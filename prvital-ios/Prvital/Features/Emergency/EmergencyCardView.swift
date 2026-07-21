@@ -168,7 +168,7 @@ struct EmergencyCardView: View {
     private func contactRow(_ contact: EmergencyContact, callable: Bool) -> some View {
         HStack(spacing: 12) {
             VStack(alignment: .leading, spacing: 2) {
-                Text(contact.name.isEmpty ? "Contact" : contact.name)
+                Text(contact.name.isEmpty ? String(localized: "Contact") : contact.name)
                     .font(.body.weight(.semibold))
                     .foregroundStyle(Theme.textPrimary)
                 Text(contact.phone)

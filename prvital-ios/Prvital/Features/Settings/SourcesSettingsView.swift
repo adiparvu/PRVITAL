@@ -26,10 +26,10 @@ struct SourcesSettingsView: View {
     }
 
     private var dexcomStatus: String {
-        SourceCredentialStore.shared.hasCredentials(for: .dexcom) ? "Signed in" : "Not set up"
+        SourceCredentialStore.shared.hasCredentials(for: .dexcom) ? String(localized: "Signed in") : String(localized: "Not set up")
     }
     private var libreStatus: String {
-        SourceCredentialStore.shared.hasCredentials(for: .freeStyleLibre) ? "Signed in" : "Not set up"
+        SourceCredentialStore.shared.hasCredentials(for: .freeStyleLibre) ? String(localized: "Signed in") : String(localized: "Not set up")
     }
 
     private func cloudRow(title: String, subtitle: String, symbol: String) -> some View {
@@ -113,25 +113,25 @@ struct SourcesSettingsView: View {
                 NavigationLink {
                     CredentialSourceSettingsView(
                         dataSource: .dexcom,
-                        usernameLabel: "Dexcom username",
+                        usernameLabel: String(localized: "Dexcom username"),
                         usernameIsEmail: false,
                         needsRegion: true,
-                        footerText: "Sign in with your Dexcom account to import readings through Dexcom Share (the Dexcom Follow service). Choose the region that matches your account."
+                        footerText: String(localized: "Sign in with your Dexcom account to import readings through Dexcom Share (the Dexcom Follow service). Choose the region that matches your account.")
                     )
                 } label: {
-                    cloudRow(title: "Dexcom", subtitle: dexcomStatus, symbol: DataSource.dexcom.symbol)
+                    cloudRow(title: String(localized: "Dexcom"), subtitle: dexcomStatus, symbol: DataSource.dexcom.symbol)
                 }
 
                 NavigationLink {
                     CredentialSourceSettingsView(
                         dataSource: .freeStyleLibre,
-                        usernameLabel: "LibreLinkUp email",
+                        usernameLabel: String(localized: "LibreLinkUp email"),
                         usernameIsEmail: true,
                         needsRegion: false,
-                        footerText: "Sign in with your LibreLinkUp account and share a sensor to import readings. Region is detected automatically."
+                        footerText: String(localized: "Sign in with your LibreLinkUp account and share a sensor to import readings. Region is detected automatically.")
                     )
                 } label: {
-                    cloudRow(title: "FreeStyle Libre", subtitle: libreStatus, symbol: DataSource.freeStyleLibre.symbol)
+                    cloudRow(title: String(localized: "FreeStyle Libre"), subtitle: libreStatus, symbol: DataSource.freeStyleLibre.symbol)
                 }
             } header: {
                 Text("Cloud accounts")
@@ -247,17 +247,17 @@ private struct SourcesStateDescriptor {
     init(state: SourceConnectionState) {
         switch state {
         case .connected:
-            label = "Connected"; color = Theme.zoneInRange; canConnect = false
+            label = String(localized: "Connected"); color = Theme.zoneInRange; canConnect = false
         case .connecting:
-            label = "Connecting…"; color = Theme.zoneHigh; canConnect = false
+            label = String(localized: "Connecting…"); color = Theme.zoneHigh; canConnect = false
         case .needsAuthorization:
-            label = "Needs authorization"; color = Theme.zoneHigh; canConnect = true
+            label = String(localized: "Needs authorization"); color = Theme.zoneHigh; canConnect = true
         case .notConnected:
-            label = "Not connected"; color = Theme.textTertiary; canConnect = true
+            label = String(localized: "Not connected"); color = Theme.textTertiary; canConnect = true
         case .unavailable:
-            label = "Unavailable on this device"; color = Theme.textTertiary; canConnect = false
+            label = String(localized: "Unavailable on this device"); color = Theme.textTertiary; canConnect = false
         case .failed(let message):
-            label = message.isEmpty ? "Connection failed" : message
+            label = message.isEmpty ? String(localized: "Connection failed") : message
             color = Theme.zoneCritical; canConnect = true
         }
     }

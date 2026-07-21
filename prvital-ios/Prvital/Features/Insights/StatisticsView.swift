@@ -407,10 +407,10 @@ struct StatisticsView: View {
                 .frame(height: 150)
 
                 HStack(spacing: 16) {
-                    trendLegend("Estimated (GMI)", color: Theme.accent)
-                    trendLegend("Lab A1c", color: Theme.zoneWarning)
+                    trendLegend(String(localized: "Estimated (GMI)"), color: Theme.accent)
+                    trendLegend(String(localized: "Lab A1c"), color: Theme.zoneWarning)
                     if a1cProjection != nil {
-                        trendLegend("Projection", color: Theme.textTertiary)
+                        trendLegend(String(localized: "Projection"), color: Theme.textTertiary)
                     }
                     Spacer()
                 }
@@ -496,9 +496,9 @@ struct StatisticsView: View {
     }
 
     private func mardInterpretation(_ mard: Double) -> String {
-        if mard < 10 { return "Excellent agreement between sensor and meter." }
-        if mard <= 15 { return "Good agreement between sensor and meter." }
-        return "Larger differences than typical — check sensor placement or calibrate per the manufacturer's instructions."
+        if mard < 10 { return String(localized: "Excellent agreement between sensor and meter.") }
+        if mard <= 15 { return String(localized: "Good agreement between sensor and meter.") }
+        return String(localized: "Larger differences than typical — check sensor placement or calibrate per the manufacturer's instructions.")
     }
 
     private func mardTint(_ mard: Double) -> Color {
@@ -529,9 +529,9 @@ struct StatisticsView: View {
                 )
 
                 HStack(spacing: 16) {
-                    legendDot("Below", value: stats.timeBelowRange, color: Theme.zoneCritical)
-                    legendDot("In range", value: stats.timeInRange, color: Theme.zoneInRange)
-                    legendDot("Above", value: stats.timeAboveRange, color: Theme.zoneHigh)
+                    legendDot(String(localized: "Below"), value: stats.timeBelowRange, color: Theme.zoneCritical)
+                    legendDot(String(localized: "In range"), value: stats.timeInRange, color: Theme.zoneInRange)
+                    legendDot(String(localized: "Above"), value: stats.timeAboveRange, color: Theme.zoneHigh)
                 }
             }
         }
@@ -567,48 +567,50 @@ struct StatisticsView: View {
                      caption: unit.rawValue, tint: Theme.zoneHigh, systemImage: "arrow.up")
 
             StatTile(title: "Time in range", value: percentOrDash(stats.timeInRange, stats.hasGlucose),
-                     caption: "Target band", tint: Theme.zoneInRange, systemImage: "target")
+                     caption: String(localized: "Target band"), tint: Theme.zoneInRange, systemImage: "target")
             StatTile(title: "Tight range", value: percentOrDash(stats.timeInTightRange, stats.hasGlucose),
-                     caption: "70–140 mg/dL", tint: Theme.zoneInRange, systemImage: "scope")
+                     caption: String(localized: "70–140 mg/dL"), tint: Theme.zoneInRange, systemImage: "scope")
             StatTile(title: "Time above", value: percentOrDash(stats.timeAboveRange, stats.hasGlucose),
-                     caption: "Above target", tint: Theme.zoneHigh, systemImage: "arrow.up.right")
+                     caption: String(localized: "Above target"), tint: Theme.zoneHigh, systemImage: "arrow.up.right")
             StatTile(title: "Time below", value: percentOrDash(stats.timeBelowRange, stats.hasGlucose),
-                     caption: "Below target", tint: Theme.zoneCritical, systemImage: "arrow.down.right")
+                     caption: String(localized: "Below target"), tint: Theme.zoneCritical, systemImage: "arrow.down.right")
 
             StatTile(title: "eA1c / GMI", value: gmiValue,
-                     caption: "Estimated A1c", systemImage: "waveform.path.ecg")
+                     caption: String(localized: "Estimated A1c"), systemImage: "waveform.path.ecg")
             StatTile(title: "Variability", value: percentOrDash(stats.coefficientOfVariation, stats.hasGlucose),
-                     caption: "CV", systemImage: "chart.line.uptrend.xyaxis")
+                     caption: String(localized: "CV"), systemImage: "chart.line.uptrend.xyaxis")
             StatTile(title: "Std deviation", value: glucoseValue(stats.standardDeviation),
                      caption: unit.rawValue, systemImage: "plusminus")
 
             StatTile(title: "Hypo events", value: stats.hasGlucose ? "\(stats.hypoEvents)" : "—",
-                     caption: "Low excursions", tint: Theme.zoneCritical, systemImage: "exclamationmark.triangle")
+                     caption: String(localized: "Low excursions"), tint: Theme.zoneCritical, systemImage: "exclamationmark.triangle")
             StatTile(title: "Hyper events", value: stats.hasGlucose ? "\(stats.hyperEvents)" : "—",
-                     caption: "High excursions", tint: Theme.zoneHigh, systemImage: "exclamationmark.triangle")
+                     caption: String(localized: "High excursions"), tint: Theme.zoneHigh, systemImage: "exclamationmark.triangle")
 
             StatTile(title: "Avg low recovery",
-                     value: hypoRecovery.map { "\(Int($0.averageMinutes.rounded())) min" } ?? "—",
-                     caption: "Time back in range", tint: Theme.zoneWarning, systemImage: "arrow.uturn.up")
+                     value: hypoRecovery.map { String(localized: "\(Int($0.averageMinutes.rounded())) min") } ?? "—",
+                     caption: String(localized: "Time back in range"), tint: Theme.zoneWarning, systemImage: "arrow.uturn.up")
 
             StatTile(title: "Longest sensor gap",
                      value: dataGaps.map { gapText($0.longestGapMinutes) } ?? "—",
-                     caption: dataGaps.map { "\($0.gapCount) gaps over 30 min" } ?? "No gaps",
+                     caption: dataGaps.map { String(localized: "\($0.gapCount) gaps over 30 min") } ?? String(localized: "No gaps"),
                      tint: Theme.zoneWarning, systemImage: "sensor.tag.radiowaves.forward.fill")
 
-            StatTile(title: "Total bolus", value: "\(stats.totalBolusUnits.formatted()) U",
-                     caption: "Rapid-acting", tint: Theme.accent, systemImage: "syringe.fill")
-            StatTile(title: "Total basal", value: "\(stats.totalBasalUnits.formatted()) U",
-                     caption: "Long-acting", tint: Theme.accent, systemImage: "syringe")
+            StatTile(title: "Total bolus", value: String(localized: "\(stats.totalBolusUnits.formatted()) U"),
+                     caption: String(localized: "Rapid-acting"), tint: Theme.accent, systemImage: "syringe.fill")
+            StatTile(title: "Total basal", value: String(localized: "\(stats.totalBasalUnits.formatted()) U"),
+                     caption: String(localized: "Long-acting"), tint: Theme.accent, systemImage: "syringe")
 
-            StatTile(title: "Total carbs", value: "\(stats.totalCarbGrams.formatted()) g",
-                     caption: "\(stats.mealCount) meal\(stats.mealCount == 1 ? "" : "s")",
+            StatTile(title: "Total carbs", value: String(localized: "\(stats.totalCarbGrams.formatted()) g"),
+                     caption: stats.mealCount == 1
+                         ? String(localized: "1 meal")
+                         : String(localized: "\(stats.mealCount) meals"),
                      tint: Theme.zoneHigh, systemImage: "fork.knife")
             StatTile(title: "Meals", value: "\(stats.mealCount)",
-                     caption: "Logged", tint: Theme.zoneHigh, systemImage: "list.bullet")
+                     caption: String(localized: "Logged"), tint: Theme.zoneHigh, systemImage: "list.bullet")
 
-            StatTile(title: "Activity", value: "\(stats.activityMinutes) min",
-                     caption: "Active time", tint: Theme.zoneInRange, systemImage: "figure.walk")
+            StatTile(title: "Activity", value: String(localized: "\(stats.activityMinutes) min"),
+                     caption: String(localized: "Active time"), tint: Theme.zoneInRange, systemImage: "figure.walk")
         }
     }
 
@@ -636,8 +638,8 @@ struct StatisticsView: View {
     /// Duration in minutes rendered compactly ("45 min" or "2h 5m").
     private func gapText(_ minutes: Double) -> String {
         let total = Int(minutes.rounded())
-        if total < 90 { return "\(total) min" }
-        return "\(total / 60)h \(total % 60)m"
+        if total < 90 { return String(localized: "\(total) min") }
+        return String(localized: "\(total / 60)h \(total % 60)m")
     }
 }
 

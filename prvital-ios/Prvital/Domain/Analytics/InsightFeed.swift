@@ -121,8 +121,8 @@ enum InsightFeed {
             case .frequentLow:
                 return InsightCard(
                     id: "pattern-\(insight.id)",
-                    title: "Often low \(phrase(insight.period))",
-                    detail: "\(pct)% of \(period) readings are below range",
+                    title: String(localized: "Often low \(phrase(insight.period))"),
+                    detail: String(localized: "\(pct)% of \(period) readings are below range"),
                     systemImage: "arrow.down.circle.fill",
                     severity: .critical,
                     tint: .critical,
@@ -132,8 +132,8 @@ enum InsightFeed {
             case .frequentHigh:
                 return InsightCard(
                     id: "pattern-\(insight.id)",
-                    title: "Often high \(phrase(insight.period))",
-                    detail: "\(pct)% of \(period) readings are above range",
+                    title: String(localized: "Often high \(phrase(insight.period))"),
+                    detail: String(localized: "\(pct)% of \(period) readings are above range"),
                     systemImage: "arrow.up.circle.fill",
                     severity: .moderate,
                     tint: .high,
@@ -154,8 +154,8 @@ enum InsightFeed {
         guard events.count >= reboundMinEvents else { return [] }
         return [InsightCard(
             id: "rebound",
-            title: "Rebound highs after lows",
-            detail: "Glucose spiked high after a low \(events.count) times — watch for over-treating lows",
+            title: String(localized: "Rebound highs after lows"),
+            detail: String(localized: "Glucose spiked high after a low \(events.count) times — watch for over-treating lows"),
             systemImage: "arrow.up.arrow.down",
             severity: .high,
             tint: .warning,
@@ -176,8 +176,8 @@ enum InsightFeed {
         let mins = Int(stats.averageMinutes.rounded())
         return [InsightCard(
             id: "hypo-recovery",
-            title: "Lows are slow to recover",
-            detail: "Lows take about \(mins) min to return to range over \(stats.episodeCount) episodes",
+            title: String(localized: "Lows are slow to recover"),
+            detail: String(localized: "Lows take about \(mins) min to return to range over \(stats.episodeCount) episodes"),
             systemImage: "clock.arrow.circlepath",
             severity: .high,
             tint: .warning,
@@ -193,8 +193,8 @@ enum InsightFeed {
         let rise = Int(dawn.medianRiseMgdL.rounded())
         return [InsightCard(
             id: "dawn",
-            title: "Dawn phenomenon",
-            detail: "Glucose climbs about +\(rise) mg/dL before breakfast across \(dawn.dayCount) days",
+            title: String(localized: "Dawn phenomenon"),
+            detail: String(localized: "Glucose climbs about +\(rise) mg/dL before breakfast across \(dawn.dayCount) days"),
             systemImage: "sunrise.fill",
             severity: .moderate,
             tint: .high,
@@ -222,8 +222,8 @@ enum InsightFeed {
             let rise = Int(avgRise.rounded())
             return InsightCard(
                 id: "meal-\(type.rawValue)",
-                title: "\(type.label) spikes +\(rise) mg/dL",
-                detail: "Peaks about \(avgMinutes) min after eating, over \(group.count) meals",
+                title: String(localized: "\(type.label) spikes +\(rise) mg/dL"),
+                detail: String(localized: "Peaks about \(avgMinutes) min after eating, over \(group.count) meals"),
                 systemImage: type.symbol,
                 severity: .low,
                 tint: .high,
@@ -246,10 +246,10 @@ enum InsightFeed {
         let large = summary.averageChangeMgdL <= -activityLargeDropMgdL
         return [InsightCard(
             id: "activity",
-            title: "Activity lowers your glucose",
+            title: String(localized: "Activity lowers your glucose"),
             detail: large
-                ? "Glucose drops about \(drop) mg/dL after activity — watch for lows"
-                : "Glucose drops about \(drop) mg/dL after activity, across \(summary.count) sessions",
+                ? String(localized: "Glucose drops about \(drop) mg/dL after activity — watch for lows")
+                : String(localized: "Glucose drops about \(drop) mg/dL after activity, across \(summary.count) sessions"),
             systemImage: "figure.walk.motion",
             severity: .informational,
             tint: large ? .warning : .positive,
@@ -264,10 +264,10 @@ enum InsightFeed {
 
     private static func phrase(_ period: DayPeriod) -> String {
         switch period {
-        case .overnight: return "overnight"
-        case .morning: return "in the morning"
-        case .afternoon: return "in the afternoon"
-        case .evening: return "in the evening"
+        case .overnight: return String(localized: "overnight")
+        case .morning: return String(localized: "in the morning")
+        case .afternoon: return String(localized: "in the afternoon")
+        case .evening: return String(localized: "in the evening")
         }
     }
 }

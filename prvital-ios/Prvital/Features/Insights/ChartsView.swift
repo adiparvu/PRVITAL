@@ -257,7 +257,7 @@ struct ChartsView: View {
 private struct ChartsInsulinBar: Identifiable {
     enum Category {
         case basal, bolus
-        var label: String { self == .basal ? "Basal" : "Bolus" }
+        var label: String { self == .basal ? String(localized: "Basal") : String(localized: "Bolus") }
     }
 
     let id = UUID()

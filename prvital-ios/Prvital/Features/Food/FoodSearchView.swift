@@ -112,7 +112,7 @@ struct FoodSearchView: View {
                     Button { portionTarget = food } label: {
                         foodRow(name: food.name, brand: food.brand,
                                 carbsPer100g: food.carbsPer100g,
-                                caption: "Used \(food.useCount)×")
+                                caption: String(localized: "Used \(food.useCount)×"))
                     }
                     .buttonStyle(.plain)
                     .listRowBackground(Theme.surface)
@@ -172,9 +172,9 @@ struct FoodSearchView: View {
         defer { isSearching = false }
         do {
             results = try await client.search(name: term)
-            if results.isEmpty { errorText = "No foods found for “\(term)”." }
+            if results.isEmpty { errorText = String(localized: "No foods found for “\(term)”.") }
         } catch {
-            errorText = (error as? LocalizedError)?.errorDescription ?? "Couldn't reach Open Food Facts."
+            errorText = (error as? LocalizedError)?.errorDescription ?? String(localized: "Couldn't reach Open Food Facts.")
         }
     }
 
@@ -186,10 +186,10 @@ struct FoodSearchView: View {
             if let product = try await client.product(barcode: code) {
                 portionTarget = product.makeFoodItem()
             } else {
-                errorText = "No product found for barcode \(code)."
+                errorText = String(localized: "No product found for barcode \(code).")
             }
         } catch {
-            errorText = (error as? LocalizedError)?.errorDescription ?? "Couldn't reach Open Food Facts."
+            errorText = (error as? LocalizedError)?.errorDescription ?? String(localized: "Couldn't reach Open Food Facts.")
         }
     }
 }
@@ -257,7 +257,7 @@ struct FoodPortionView: View {
                     ScrollView(.horizontal, showsIndicators: false) {
                         HStack(spacing: 8) {
                             ForEach(portionPresets, id: \.self) { grams in
-                                QuickChip(label: "\(Int(grams)) g",
+                                QuickChip(label: String(localized: "\(Int(grams)) g"),
                                           isSelected: portion == grams,
                                           tint: Theme.zoneHigh) {
                                     portion = grams; Haptics.play(.selection)

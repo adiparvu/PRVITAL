@@ -26,7 +26,7 @@ struct WatchRootView: View {
             WatchTreatLowPage()
 
             WatchQuickEntryPage(
-                title: "Insulin",
+                title: String(localized: "Insulin"),
                 systemImage: "syringe",
                 kind: "insulin",
                 unit: "U",
@@ -35,7 +35,7 @@ struct WatchRootView: View {
             )
 
             WatchQuickEntryPage(
-                title: "Carbs",
+                title: String(localized: "Carbs"),
                 systemImage: "fork.knife",
                 kind: "carbs",
                 unit: "g",
@@ -482,10 +482,10 @@ private enum WatchSnapshotFormat {
 
     /// "Updated 3 min ago", or a friendly fallback when there is no reading yet.
     static func updated(_ date: Date) -> String {
-        guard date > .distantPast else { return "No recent data" }
+        guard date > .distantPast else { return String(localized: "No recent data") }
         let formatter = RelativeDateTimeFormatter()
         formatter.unitsStyle = .abbreviated
-        return "Updated " + formatter.localizedString(for: date, relativeTo: Date())
+        return String(localized: "Updated \(formatter.localizedString(for: date, relativeTo: Date()))")
     }
 
     static func valueSummary(_ snapshot: GlucoseSnapshot) -> String {

@@ -26,7 +26,7 @@ final class NotificationScheduler {
         #if canImport(UserNotifications)
         let acknowledge = UNNotificationAction(
             identifier: CriticalAlarmPlanner.acknowledgeActionIdentifier,
-            title: "I'm on it",
+            title: String(localized: "I'm on it"),
             options: [])
         let critical = UNNotificationCategory(
             identifier: CriticalAlarmPlanner.categoryIdentifier,

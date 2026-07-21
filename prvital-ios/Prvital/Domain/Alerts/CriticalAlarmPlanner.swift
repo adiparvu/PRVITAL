@@ -121,7 +121,7 @@ enum CriticalAlarmPlanner {
     static func repeatContent(index: Int, total: Int) -> (title: String, body: String) {
         (
             title: String(localized: "Urgent low — still unacknowledged"),
-            body: "Your urgent low alert hasn't been acknowledged. Check your glucose and treat if needed. (Reminder \(index) of \(total))"
+            body: String(localized: "Your urgent low alert hasn't been acknowledged. Check your glucose and treat if needed. (Reminder \(index) of \(total))")
         )
     }
 }

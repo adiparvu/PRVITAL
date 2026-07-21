@@ -15,8 +15,8 @@ struct GlucoseSnapshot: Codable, Equatable, Sendable {
     var unitText: String = "mg/dL"
     var mgdL: Double = 0
     var trendSymbol: String = "arrow.right"
-    var trendLabel: String = "Stable"
-    var zoneLabel: String = "In range"
+    var trendLabel: String = String(localized: "Stable")
+    var zoneLabel: String = String(localized: "In range")
     /// Zone colour as 0xRRGGBB so the extension can render without the palette.
     var zoneColorHex: UInt = 0x2FB86B
     var sourceName: String = "—"
@@ -40,8 +40,8 @@ struct GlucoseSnapshot: Codable, Equatable, Sendable {
     /// showing a realistic-looking number is dangerous in a glucose app.
     static let empty = GlucoseSnapshot(
         valueText: "—", unitText: "mg/dL", mgdL: 0,
-        trendSymbol: "minus", trendLabel: "No data",
-        zoneLabel: "No data", zoneColorHex: 0x8E8E93,
+        trendSymbol: "minus", trendLabel: String(localized: "No data"),
+        zoneLabel: String(localized: "No data"), zoneColorHex: 0x8E8E93,
         sourceName: "—", updatedAt: .distantPast, isStale: true
     )
 

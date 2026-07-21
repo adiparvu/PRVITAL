@@ -185,11 +185,13 @@ struct DataControlsView: View {
     }
 
     private static func resultMessage(for summary: ImportSummary, format: ExternalCSVFormat) -> String {
-        let noun = summary.imported == 1 ? "record" : "records"
-        var message = "Imported \(summary.imported.formatted()) \(noun) from \(format.displayName)."
+        var message = summary.imported == 1
+            ? String(localized: "Imported \(summary.imported.formatted()) record from \(format.displayName).")
+            : String(localized: "Imported \(summary.imported.formatted()) records from \(format.displayName).")
         if summary.skipped > 0 {
-            let rows = summary.skipped == 1 ? "row" : "rows"
-            message += " Skipped \(summary.skipped.formatted()) \(rows)."
+            message += " " + (summary.skipped == 1
+                ? String(localized: "Skipped \(summary.skipped.formatted()) row.")
+                : String(localized: "Skipped \(summary.skipped.formatted()) rows."))
         }
         return message
     }

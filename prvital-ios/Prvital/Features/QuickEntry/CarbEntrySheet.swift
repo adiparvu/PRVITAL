@@ -64,7 +64,7 @@ struct CarbEntrySheet: View {
                     ScrollView(.horizontal, showsIndicators: false) {
                         HStack(spacing: 8) {
                             ForEach(env.preferences.carbPresets, id: \.self) { preset in
-                                QuickChip(label: "\(preset.formatted()) g", tint: Theme.zoneHigh) {
+                                QuickChip(label: String(localized: "\(preset.formatted()) g"), tint: Theme.zoneHigh) {
                                     grams = preset; Haptics.play(.selection)
                                 }
                             }

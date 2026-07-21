@@ -191,9 +191,9 @@ private enum InsightsSection: String, CaseIterable, Identifiable {
 
     var label: String {
         switch self {
-        case .charts: return "Charts"
-        case .statistics: return "Statistics"
-        case .agp: return "AGP"
+        case .charts: return String(localized: "Charts")
+        case .statistics: return String(localized: "Statistics")
+        case .agp: return String(localized: "AGP")
         }
     }
 }
@@ -208,20 +208,20 @@ enum InsightsInterval: String, CaseIterable, Identifiable {
 
     var label: String {
         switch self {
-        case .day: return "Day"
-        case .week: return "Week"
-        case .month: return "Month"
-        case .year: return "Year"
+        case .day: return String(localized: "Day")
+        case .week: return String(localized: "Week")
+        case .month: return String(localized: "Month")
+        case .year: return String(localized: "Year")
         }
     }
 
     /// A human phrase for the window, used as the export period label.
     var periodLabel: String {
         switch self {
-        case .day: return "Last 24 hours"
-        case .week: return "Last 7 days"
-        case .month: return "Last 30 days"
-        case .year: return "Last 12 months"
+        case .day: return String(localized: "Last 24 hours")
+        case .week: return String(localized: "Last 7 days")
+        case .month: return String(localized: "Last 30 days")
+        case .year: return String(localized: "Last 12 months")
         }
     }
 

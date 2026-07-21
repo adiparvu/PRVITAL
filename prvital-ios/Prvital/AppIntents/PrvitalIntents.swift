@@ -18,11 +18,11 @@ struct CurrentGlucoseIntent: AppIntent {
         let value = "\(snapshot.valueText) \(snapshot.unitText)"
         let phrase: String
         if snapshot.updatedAt == .distantPast {
-            phrase = "There's no glucose reading yet."
+            phrase = String(localized: "There's no glucose reading yet.")
         } else if snapshot.isStale {
-            phrase = "Your last glucose was \(value), \(snapshot.zoneLabel)."
+            phrase = String(localized: "Your last glucose was \(value), \(snapshot.zoneLabel).")
         } else {
-            phrase = "Your glucose is \(value), \(snapshot.trendLabel), \(snapshot.zoneLabel)."
+            phrase = String(localized: "Your glucose is \(value), \(snapshot.trendLabel), \(snapshot.zoneLabel).")
         }
         return .result(value: value, dialog: IntentDialog(stringLiteral: phrase))
     }
@@ -42,7 +42,7 @@ struct LogInsulinIntent: AppIntent {
         context.insert(InsulinDose(units: units))
         IntentAudit.record(.manualEdit, in: context, detail: "Insulin \(units) U via Siri")
         try? context.save()
-        return .result(dialog: IntentDialog(stringLiteral: "Logged \(units.formatted()) units of insulin."))
+        return .result(dialog: IntentDialog(stringLiteral: String(localized: "Logged \(units.formatted()) units of insulin.")))
     }
 }
 
@@ -60,7 +60,7 @@ struct LogCarbsIntent: AppIntent {
         context.insert(CarbEntry(grams: grams))
         IntentAudit.record(.manualEdit, in: context, detail: "Carbs \(grams) g via Siri")
         try? context.save()
-        return .result(dialog: IntentDialog(stringLiteral: "Logged \(grams.formatted()) grams of carbs."))
+        return .result(dialog: IntentDialog(stringLiteral: String(localized: "Logged \(grams.formatted()) grams of carbs.")))
     }
 }
 
@@ -80,7 +80,7 @@ struct LogGlucoseIntent: AppIntent {
         context.insert(GlucoseReading(valueMgdL: mgdL, source: .manual, measurementType: .manual))
         IntentAudit.record(.manualEdit, in: context, detail: "Glucose via Siri")
         try? context.save()
-        return .result(dialog: IntentDialog(stringLiteral: "Logged glucose \(value.formatted()) \(unit.rawValue)."))
+        return .result(dialog: IntentDialog(stringLiteral: String(localized: "Logged glucose \(value.formatted()) \(unit.rawValue).")))
     }
 }
 

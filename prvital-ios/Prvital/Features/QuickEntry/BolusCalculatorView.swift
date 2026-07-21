@@ -46,9 +46,9 @@ struct BolusCalculatorView: View {
                 disclaimer
 
                 SectionCard("Inputs", systemImage: "square.and.pencil") {
-                    inputRow("Carbohydrates", value: $carbs, suffix: "g", digits: 0)
+                    inputRow(String(localized: "Carbohydrates"), value: $carbs, suffix: "g", digits: 0)
                     Divider().overlay(Theme.hairline)
-                    inputRow("Current glucose", value: $glucoseDisplay, suffix: unit.rawValue, digits: unit.fractionDigits)
+                    inputRow(String(localized: "Current glucose"), value: $glucoseDisplay, suffix: unit.rawValue, digits: unit.fractionDigits)
                 }
 
                 onBoardContext
@@ -135,9 +135,9 @@ struct BolusCalculatorView: View {
                 }
 
                 VStack(spacing: 6) {
-                    breakdownRow("Carbs", estimate.carbBolus, sign: "+")
-                    breakdownRow("Correction", estimate.correctionBolus, sign: estimate.correctionBolus < 0 ? "−" : "+", magnitude: abs(estimate.correctionBolus))
-                    breakdownRow("Insulin on board", estimate.activeInsulin, sign: "−")
+                    breakdownRow(String(localized: "Carbs"), estimate.carbBolus, sign: "+")
+                    breakdownRow(String(localized: "Correction"), estimate.correctionBolus, sign: estimate.correctionBolus < 0 ? "−" : "+", magnitude: abs(estimate.correctionBolus))
+                    breakdownRow(String(localized: "Insulin on board"), estimate.activeInsulin, sign: "−")
                 }
             }
         }
@@ -198,7 +198,7 @@ struct BolusCalculatorView: View {
         guard units > 0 else { return }
         Haptics.play(.success)
         env.entryStore.addInsulin(units: units, type: .rapidActing, context: .mealBolus,
-                                  note: "From bolus calculator")
+                                  note: String(localized: "From bolus calculator"))
         dismiss()
     }
 }

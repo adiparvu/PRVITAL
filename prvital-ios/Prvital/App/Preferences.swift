@@ -327,10 +327,10 @@ struct GlucoseSchedule: Codable, Equatable, Sendable {
     }
 
     static let defaultSlots: [GlucoseLogSlot] = [
-        GlucoseLogSlot(label: "Waking", minutesFromMidnight: 7 * 60),
-        GlucoseLogSlot(label: "Before lunch", minutesFromMidnight: 12 * 60),
-        GlucoseLogSlot(label: "Before dinner", minutesFromMidnight: 18 * 60),
-        GlucoseLogSlot(label: "Bedtime", minutesFromMidnight: 22 * 60)
+        GlucoseLogSlot(label: String(localized: "Waking"), minutesFromMidnight: 7 * 60),
+        GlucoseLogSlot(label: String(localized: "Before lunch"), minutesFromMidnight: 12 * 60),
+        GlucoseLogSlot(label: String(localized: "Before dinner"), minutesFromMidnight: 18 * 60),
+        GlucoseLogSlot(label: String(localized: "Bedtime"), minutesFromMidnight: 22 * 60)
     ]
 
     static let `default` = GlucoseSchedule()

@@ -14,9 +14,9 @@ enum JournalCardDensity: String, CaseIterable, Identifiable {
 
     var title: String {
         switch self {
-        case .compact: return "Compact"
-        case .standard: return "Standard"
-        case .detailed: return "Detailed"
+        case .compact: return String(localized: "Compact")
+        case .standard: return String(localized: "Standard")
+        case .detailed: return String(localized: "Detailed")
         }
     }
 
@@ -265,8 +265,8 @@ struct JournalDayCard: View {
     /// "Today" / "Yesterday" / the wide weekday name.
     private var titleText: String {
         let calendar = Calendar.current
-        if calendar.isDateInToday(bucket.day) { return "Today" }
-        if calendar.isDateInYesterday(bucket.day) { return "Yesterday" }
+        if calendar.isDateInToday(bucket.day) { return String(localized: "Today") }
+        if calendar.isDateInYesterday(bucket.day) { return String(localized: "Yesterday") }
         return bucket.day.formatted(.dateTime.weekday(.wide))
     }
 
@@ -367,7 +367,7 @@ struct JournalDayCard: View {
                 systemImage: "target",
                 tint: Theme.zoneInRange,
                 value: "\(Int((stats.timeInRange * 100).rounded()))%",
-                caption: "in range"
+                caption: String(localized: "in range")
             )
         }
     }
@@ -377,26 +377,26 @@ struct JournalDayCard: View {
             JournalStatChip(
                 systemImage: "fork.knife",
                 tint: Theme.zoneHigh,
-                value: "\(stats.totalCarbGrams.formatted()) g",
-                caption: stats.mealCount == 1 ? "1 meal" : "\(stats.mealCount) meals"
+                value: String(localized: "\(stats.totalCarbGrams.formatted()) g"),
+                caption: stats.mealCount == 1 ? String(localized: "1 meal") : String(localized: "\(stats.mealCount) meals")
             )
             JournalStatChip(
                 systemImage: "syringe.fill",
                 tint: Theme.accent,
-                value: "\(stats.totalInsulinUnits.formatted()) U",
-                caption: stats.doseCount == 1 ? "1 dose" : "\(stats.doseCount) doses"
+                value: String(localized: "\(stats.totalInsulinUnits.formatted()) U"),
+                caption: stats.doseCount == 1 ? String(localized: "1 dose") : String(localized: "\(stats.doseCount) doses")
             )
             JournalStatChip(
                 systemImage: "figure.walk",
                 tint: Theme.zoneInRange,
-                value: "\(stats.activityMinutes) min",
-                caption: stats.activityCount == 1 ? "1 session" : "\(stats.activityCount) sessions"
+                value: String(localized: "\(stats.activityMinutes) min"),
+                caption: stats.activityCount == 1 ? String(localized: "1 session") : String(localized: "\(stats.activityCount) sessions")
             )
             JournalStatChip(
                 systemImage: "note.text",
                 tint: Theme.textSecondary,
                 value: "\(stats.noteCount)",
-                caption: stats.noteCount == 1 ? "note" : "notes"
+                caption: stats.noteCount == 1 ? String(localized: "note") : String(localized: "notes")
             )
         }
     }
@@ -457,7 +457,9 @@ struct JournalDayCard: View {
     }
 
     private var showEntriesText: String {
-        bucket.items.count == 1 ? "Show 1 entry" : "Show \(bucket.items.count) entries"
+        bucket.items.count == 1
+            ? String(localized: "Show 1 entry")
+            : String(localized: "Show \(bucket.items.count) entries")
     }
 }
 

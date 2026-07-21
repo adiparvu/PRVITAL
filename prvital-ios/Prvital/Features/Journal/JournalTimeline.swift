@@ -182,14 +182,14 @@ struct JournalEntryRow: View {
             return GlucoseFormatting.labeled(mgdL: reading.valueMgdL, unit: unit)
         case .insulin:
             guard let dose = item.insulin else { return "" }
-            return "\(dose.units.formatted()) U"
+            return String(localized: "\(dose.units.formatted()) U")
         case .carbs:
             guard let entry = item.carbs else { return "" }
-            return "\(entry.grams.formatted()) g"
+            return String(localized: "\(entry.grams.formatted()) g")
         case .activity:
-            return item.activity?.activityType.label ?? "Activity"
+            return item.activity?.activityType.label ?? String(localized: "Activity")
         case .observation:
-            return item.observation?.tags.first?.label ?? "Note"
+            return item.observation?.tags.first?.label ?? String(localized: "Note")
         }
     }
 
@@ -220,7 +220,7 @@ struct JournalEntryRow: View {
             return entry.mealType.label
         case .activity:
             guard let entry = item.activity else { return "" }
-            return "\(entry.durationMinutes) min · \(entry.intensity.label)"
+            return String(localized: "\(entry.durationMinutes) min · \(entry.intensity.label)")
         case .observation:
             guard let entry = item.observation else { return "" }
             if let text = entry.text, !text.isEmpty { return text }

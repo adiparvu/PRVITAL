@@ -43,7 +43,7 @@ final class SnapshotPublisher {
             snapshot.mgdL = current.valueMgdL
             snapshot.valueText = GlucoseFormatting.string(mgdL: current.valueMgdL, unit: unit)
             snapshot.trendSymbol = current.trend?.symbol ?? "arrow.right"
-            snapshot.trendLabel = current.trend?.label ?? "Stable"
+            snapshot.trendLabel = current.trend?.label ?? String(localized: "Stable")
             snapshot.zoneLabel = zone.label
             snapshot.zoneColorHex = Self.hex(for: zone)
             snapshot.sourceName = current.source.displayName
@@ -64,10 +64,10 @@ final class SnapshotPublisher {
         snapshot.points = summary.recent.map { .init(date: $0.timestamp, mgdL: $0.valueMgdL) }
 
         if let dose = summary.lastInsulin {
-            snapshot.lastInsulinText = "\(dose.units.formatted()) U · \(Self.relative(dose.timestamp, now))"
+            snapshot.lastInsulinText = String(localized: "\(dose.units.formatted()) U · \(Self.relative(dose.timestamp, now))")
         }
         if let meal = summary.lastMeal {
-            snapshot.lastMealText = "\(meal.grams.formatted()) g · \(meal.mealType.label)"
+            snapshot.lastMealText = String(localized: "\(meal.grams.formatted()) g · \(meal.mealType.label)")
         }
         snapshot.recentEntries = Self.recentLines(summary: summary, unit: unit, now: now)
 
@@ -122,10 +122,10 @@ final class SnapshotPublisher {
             lines.append("\(GlucoseFormatting.labeled(mgdL: g.valueMgdL, unit: unit)) · \(relative(g.timestamp, now))")
         }
         if let i = summary.lastInsulin {
-            lines.append("\(i.units.formatted()) U \(i.insulinType.label.lowercased()) · \(relative(i.timestamp, now))")
+            lines.append(String(localized: "\(i.units.formatted()) U \(i.insulinType.label.lowercased()) · \(relative(i.timestamp, now))"))
         }
         if let m = summary.lastMeal {
-            lines.append("\(m.grams.formatted()) g \(m.mealType.label.lowercased()) · \(relative(m.timestamp, now))")
+            lines.append(String(localized: "\(m.grams.formatted()) g \(m.mealType.label.lowercased()) · \(relative(m.timestamp, now))"))
         }
         return lines
     }

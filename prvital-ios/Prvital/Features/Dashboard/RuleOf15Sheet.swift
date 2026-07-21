@@ -126,7 +126,9 @@ struct RuleOf15Sheet: View {
             )
 
             if state.round >= 1 {
-                Text("You've treated \(state.round) \(state.round == 1 ? "time" : "times") so far.")
+                Text(state.round == 1
+                    ? String(localized: "You've treated \(state.round) time so far.")
+                    : String(localized: "You've treated \(state.round) times so far."))
                     .font(.caption)
                     .foregroundStyle(Theme.textSecondary)
                     .frame(maxWidth: .infinity, alignment: .leading)
@@ -134,11 +136,11 @@ struct RuleOf15Sheet: View {
 
             SectionCard("\(RuleOf15.fastCarbGrams) g fast-carb options", systemImage: "bolt.fill") {
                 VStack(alignment: .leading, spacing: 12) {
-                    carbOption("3–4 glucose tablets")
+                    carbOption(String(localized: "3–4 glucose tablets"))
                     Divider().overlay(Theme.hairline)
-                    carbOption("150 ml (½ cup) juice or regular, non-diet soda")
+                    carbOption(String(localized: "150 ml (½ cup) juice or regular, non-diet soda"))
                     Divider().overlay(Theme.hairline)
-                    carbOption("1 tablespoon of honey or sugar")
+                    carbOption(String(localized: "1 tablespoon of honey or sugar"))
                 }
                 .frame(maxWidth: .infinity, alignment: .leading)
             }

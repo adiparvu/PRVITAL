@@ -32,41 +32,41 @@ struct WhatsNewView: View {
 
                 TabView(selection: $page) {
                     TourPage(
-                        title: "Glucose on your Lock Screen",
-                        description: "Start a Live Activity and your latest reading, trend arrow and mini chart stay on the Lock Screen and in the Dynamic Island — no unlocking, no app-switching."
+                        title: String(localized: "Glucose on your Lock Screen"),
+                        description: String(localized: "Start a Live Activity and your latest reading, trend arrow and mini chart stay on the Lock Screen and in the Dynamic Island — no unlocking, no app-switching.")
                     ) { LiveActivityHero() }
                     .tag(0)
 
                     TourPage(
-                        title: "Widgets that tell the truth",
-                        description: "Home Screen and Lock Screen widgets show your latest reading in its zone colour — and say exactly how old it is, so a stale number never looks fresh.",
+                        title: String(localized: "Widgets that tell the truth"),
+                        description: String(localized: "Home Screen and Lock Screen widgets show your latest reading in its zone colour — and say exactly how old it is, so a stale number never looks fresh."),
                         tint: Theme.zoneInRange
                     ) { WidgetsHero() }
                     .tag(1)
 
                     TourPage(
-                        title: "Insights that find the patterns",
-                        description: "Time in range, meal impact, overnight stability, rebounds — Prvital studies your data and can hand you a Monday-morning digest of how your week really went."
+                        title: String(localized: "Insights that find the patterns"),
+                        description: String(localized: "Time in range, meal impact, overnight stability, rebounds — Prvital studies your data and can hand you a Monday-morning digest of how your week really went.")
                     ) { InsightsHero() }
                     .tag(2)
 
                     TourPage(
-                        title: "Safety, three ways",
-                        description: "The Rule of 15 walks you through treating a low, sick-day mode keeps extra guidance close when you're unwell, and the emergency card tells a helper exactly what to do.",
+                        title: String(localized: "Safety, three ways"),
+                        description: String(localized: "The Rule of 15 walks you through treating a low, sick-day mode keeps extra guidance close when you're unwell, and the emergency card tells a helper exactly what to do."),
                         tint: Theme.zoneCritical
                     ) { SafetyHero() }
                     .tag(3)
 
                     TourPage(
-                        title: "Log it before it's forgotten",
-                        description: "Favorite meals, one-tap presets and the quick-entry hub get glucose, insulin, carbs and activity into your journal in seconds.",
+                        title: String(localized: "Log it before it's forgotten"),
+                        description: String(localized: "Favorite meals, one-tap presets and the quick-entry hub get glucose, insulin, carbs and activity into your journal in seconds."),
                         tint: Theme.zoneHigh
                     ) { FavoritesHero() }
                     .tag(4)
 
                     TourPage(
-                        title: "Make it yours",
-                        description: "Six accent themes carried across the app, widgets and watch — plus journal density and appearance options. Calm by default, personal by choice."
+                        title: String(localized: "Make it yours"),
+                        description: String(localized: "Six accent themes carried across the app, widgets and watch — plus journal density and appearance options. Calm by default, personal by choice.")
                     ) { ThemesHero() }
                     .tag(5)
                 }

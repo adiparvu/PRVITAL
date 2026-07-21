@@ -94,14 +94,14 @@ enum DataSource: String, Codable, CaseIterable, Sendable, Identifiable {
 
     var displayName: String {
         switch self {
-        case .dexcom: return "Dexcom"
-        case .freeStyleLibre: return "FreeStyle Libre"
-        case .otherCGM: return "CGM sensor"
-        case .nightscout: return "Nightscout"
-        case .bloodGlucoseMeter: return "Glucose meter"
-        case .appleHealth: return "Apple Health"
-        case .appleWatch: return "Apple Watch"
-        case .manual: return "Manual entry"
+        case .dexcom: return String(localized: "Dexcom")
+        case .freeStyleLibre: return String(localized: "FreeStyle Libre")
+        case .otherCGM: return String(localized: "CGM sensor")
+        case .nightscout: return String(localized: "Nightscout")
+        case .bloodGlucoseMeter: return String(localized: "Glucose meter")
+        case .appleHealth: return String(localized: "Apple Health")
+        case .appleWatch: return String(localized: "Apple Watch")
+        case .manual: return String(localized: "Manual entry")
         }
     }
 
@@ -174,11 +174,11 @@ enum GlucoseMeasurementType: String, Codable, CaseIterable, Sendable {
 
     var label: String {
         switch self {
-        case .cgm: return "Sensor"
-        case .fingerstick: return "Finger stick"
-        case .manual: return "Manual"
-        case .laboratory: return "Lab"
-        case .calibration: return "Calibration"
+        case .cgm: return String(localized: "Sensor")
+        case .fingerstick: return String(localized: "Finger stick")
+        case .manual: return String(localized: "Manual")
+        case .laboratory: return String(localized: "Lab")
+        case .calibration: return String(localized: "Calibration")
         }
     }
 }

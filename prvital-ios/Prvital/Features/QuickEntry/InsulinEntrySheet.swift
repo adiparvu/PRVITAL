@@ -31,7 +31,7 @@ struct InsulinEntrySheet: View {
                     ScrollView(.horizontal, showsIndicators: false) {
                         HStack(spacing: 8) {
                             ForEach(env.preferences.insulinPresets, id: \.self) { preset in
-                                QuickChip(label: "+\(preset.formatted()) U") {
+                                QuickChip(label: String(localized: "+\(preset.formatted()) U")) {
                                     units += preset; Haptics.play(.selection)
                                 }
                             }

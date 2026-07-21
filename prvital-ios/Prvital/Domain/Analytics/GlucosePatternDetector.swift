@@ -16,10 +16,10 @@ enum DayPeriod: String, CaseIterable, Sendable {
 
     var label: String {
         switch self {
-        case .overnight: return "Overnight"
-        case .morning: return "Morning"
-        case .afternoon: return "Afternoon"
-        case .evening: return "Evening"
+        case .overnight: return String(localized: "Overnight")
+        case .morning: return String(localized: "Morning")
+        case .afternoon: return String(localized: "Afternoon")
+        case .evening: return String(localized: "Evening")
         }
     }
 

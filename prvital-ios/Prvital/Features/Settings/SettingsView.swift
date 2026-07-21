@@ -10,8 +10,12 @@ struct SettingsView: View {
 
     private var scheduleSubtitle: String {
         let count = env.preferences.glucoseSchedule.activeSlots.count
-        let times = "\(count) \(count == 1 ? "time" : "times") a day"
-        return env.preferences.glucoseSchedule.remindersEnabled ? "\(times) · reminders on" : times
+        let times = count == 1
+            ? String(localized: "\(count) time a day")
+            : String(localized: "\(count) times a day")
+        return env.preferences.glucoseSchedule.remindersEnabled
+            ? String(localized: "\(times) · reminders on")
+            : times
     }
 
     var body: some View {
@@ -37,7 +41,7 @@ struct SettingsView: View {
                     } label: {
                         SettingsRow(
                             title: "Sources",
-                            subtitle: "Primary: \(primary.displayName)",
+                            subtitle: String(localized: "Primary: \(primary.displayName)"),
                             systemImage: primary.symbol,
                             tint: Theme.accent
                         )
@@ -59,7 +63,7 @@ struct SettingsView: View {
                     } label: {
                         SettingsRow(
                             title: "Reminders",
-                            subtitle: "Local, on-device notifications",
+                            subtitle: String(localized: "Local, on-device notifications"),
                             systemImage: "bell.badge",
                             tint: Theme.zoneHigh
                         )
@@ -81,7 +85,7 @@ struct SettingsView: View {
                     } label: {
                         SettingsRow(
                             title: "Glucose alerts",
-                            subtitle: env.preferences.alerts.enabled ? "On" : "Off",
+                            subtitle: env.preferences.alerts.enabled ? String(localized: "On") : String(localized: "Off"),
                             systemImage: "exclamationmark.triangle.fill",
                             tint: Theme.zoneCritical
                         )
@@ -105,7 +109,7 @@ struct SettingsView: View {
                     } label: {
                         SettingsRow(
                             title: "Sensor",
-                            subtitle: "Warm-up & expiry countdown",
+                            subtitle: String(localized: "Warm-up & expiry countdown"),
                             systemImage: "sensor.tag.radiowaves.forward",
                             tint: Theme.zoneInRange
                         )
@@ -116,7 +120,9 @@ struct SettingsView: View {
                     } label: {
                         SettingsRow(
                             title: "Therapy & bolus",
-                            subtitle: env.preferences.bolusParameters.isEnabled ? "Calculator on" : "Calculator off",
+                            subtitle: env.preferences.bolusParameters.isEnabled
+                                ? String(localized: "Calculator on")
+                                : String(localized: "Calculator off"),
                             systemImage: "syringe",
                             tint: Theme.zoneWarning
                         )
@@ -141,7 +147,7 @@ struct SettingsView: View {
                     } label: {
                         SettingsRow(
                             title: "Privacy",
-                            subtitle: "Consent & permissions",
+                            subtitle: String(localized: "Consent & permissions"),
                             systemImage: "hand.raised.fill",
                             tint: Theme.accent
                         )
@@ -152,7 +158,7 @@ struct SettingsView: View {
                     } label: {
                         SettingsRow(
                             title: "Sharing",
-                            subtitle: "Partner, caregiver & care team",
+                            subtitle: String(localized: "Partner, caregiver & care team"),
                             systemImage: "person.2.fill",
                             tint: Theme.zoneInRange
                         )
@@ -163,7 +169,7 @@ struct SettingsView: View {
                     } label: {
                         SettingsRow(
                             title: "Data & control",
-                            subtitle: "Sync, delete, export",
+                            subtitle: String(localized: "Sync, delete, export"),
                             systemImage: "externaldrive.fill",
                             tint: Theme.zoneWarning
                         )
@@ -174,7 +180,7 @@ struct SettingsView: View {
                     } label: {
                         SettingsRow(
                             title: "Audit trail",
-                            subtitle: "A log of every sensitive action",
+                            subtitle: String(localized: "A log of every sensitive action"),
                             systemImage: "list.bullet.rectangle.portrait",
                             tint: Theme.textSecondary
                         )
@@ -193,7 +199,7 @@ struct SettingsView: View {
                     } label: {
                         SettingsRow(
                             title: "What's new",
-                            subtitle: "A tour of Prvital's best features",
+                            subtitle: String(localized: "A tour of Prvital's best features"),
                             systemImage: "sparkles",
                             tint: Theme.accent
                         )

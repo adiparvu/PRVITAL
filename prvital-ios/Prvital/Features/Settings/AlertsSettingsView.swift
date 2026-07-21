@@ -25,10 +25,10 @@ struct AlertsSettingsView: View {
 
             if prefs.enabled {
                 Section("Notify me about") {
-                    alertToggle("Urgent low", "below \(value(thresholds.veryLow))", isOn: $prefs.urgentLow, tint: Theme.zoneCritical)
-                    alertToggle("Low", "below \(value(thresholds.targetLower))", isOn: $prefs.low, tint: Theme.zoneWarning)
-                    alertToggle("High", "above \(value(thresholds.targetUpper))", isOn: $prefs.high, tint: Theme.zoneHigh)
-                    alertToggle("Very high", "above \(value(thresholds.high))", isOn: $prefs.urgentHigh, tint: Theme.zoneWarning)
+                    alertToggle(String(localized: "Urgent low"), String(localized: "below \(value(thresholds.veryLow))"), isOn: $prefs.urgentLow, tint: Theme.zoneCritical)
+                    alertToggle(String(localized: "Low"), String(localized: "below \(value(thresholds.targetLower))"), isOn: $prefs.low, tint: Theme.zoneWarning)
+                    alertToggle(String(localized: "High"), String(localized: "above \(value(thresholds.targetUpper))"), isOn: $prefs.high, tint: Theme.zoneHigh)
+                    alertToggle(String(localized: "Very high"), String(localized: "above \(value(thresholds.high))"), isOn: $prefs.urgentHigh, tint: Theme.zoneWarning)
                 }
                 .listRowBackground(Theme.surface)
 
