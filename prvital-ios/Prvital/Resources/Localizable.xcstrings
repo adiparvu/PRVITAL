@@ -827,6 +827,242 @@
         }
       }
     },
+    "1 dose": {
+      "extractionState": "manual",
+      "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "1 Dosis"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "1 dosis"
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "1 dose"
+          }
+        },
+        "it": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "1 dose"
+          }
+        },
+        "nl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "1 dosis"
+          }
+        },
+        "pl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "1 dawka"
+          }
+        },
+        "pt": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "1 dose"
+          }
+        },
+        "ro": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "1 doză"
+          }
+        },
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "1 доза"
+          }
+        }
+      }
+    },
+    "1 entry": {
+      "extractionState": "manual",
+      "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "1 Eintrag"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "1 entrada"
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "1 entrée"
+          }
+        },
+        "it": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "1 voce"
+          }
+        },
+        "nl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "1 invoer"
+          }
+        },
+        "pl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "1 wpis"
+          }
+        },
+        "pt": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "1 registo"
+          }
+        },
+        "ro": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "1 înregistrare"
+          }
+        },
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "1 запись"
+          }
+        }
+      }
+    },
+    "1 meal": {
+      "extractionState": "manual",
+      "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "1 Mahlzeit"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "1 comida"
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "1 repas"
+          }
+        },
+        "it": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "1 pasto"
+          }
+        },
+        "nl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "1 maaltijd"
+          }
+        },
+        "pl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "1 posiłek"
+          }
+        },
+        "pt": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "1 refeição"
+          }
+        },
+        "ro": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "1 masă"
+          }
+        },
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "1 приём пищи"
+          }
+        }
+      }
+    },
+    "1 session": {
+      "extractionState": "manual",
+      "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "1 Einheit"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "1 sesión"
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "1 séance"
+          }
+        },
+        "it": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "1 sessione"
+          }
+        },
+        "nl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "1 sessie"
+          }
+        },
+        "pl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "1 sesja"
+          }
+        },
+        "pt": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "1 sessão"
+          }
+        },
+        "ro": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "1 sesiune"
+          }
+        },
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "1 занятие"
+          }
+        }
+      }
+    },
     "10 minutes": {
       "extractionState": "manual",
       "localizations": {
@@ -2003,6 +2239,65 @@
           "stringUnit": {
             "state": "translated",
             "value": "Короткое название блюда, например «Обычный завтрак»."
+          }
+        }
+      }
+    },
+    "A tour of Prvital's best features": {
+      "extractionState": "manual",
+      "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Ein Rundgang durch die besten Funktionen von Prvital"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Un recorrido por las mejores funciones de Prvital"
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Un tour des meilleures fonctionnalités de Prvital"
+          }
+        },
+        "it": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Un tour delle migliori funzioni di Prvital"
+          }
+        },
+        "nl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Een rondleiding langs de beste functies van Prvital"
+          }
+        },
+        "pl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Przegląd najlepszych funkcji Prvital"
+          }
+        },
+        "pt": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Uma visita guiada às melhores funcionalidades do Prvital"
+          }
+        },
+        "ro": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Un tur al celor mai bune funcții din Prvital"
+          }
+        },
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Обзор лучших функций Prvital"
           }
         }
       }
@@ -5252,6 +5547,65 @@
         }
       }
     },
+    "Card density": {
+      "extractionState": "manual",
+      "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Kartendichte"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Densidad de tarjetas"
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Densité des cartes"
+          }
+        },
+        "it": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Densità delle schede"
+          }
+        },
+        "nl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Kaartdichtheid"
+          }
+        },
+        "pl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Gęstość kart"
+          }
+        },
+        "pt": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Densidade dos cartões"
+          }
+        },
+        "ro": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Densitatea cardurilor"
+          }
+        },
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Плотность карточек"
+          }
+        }
+      }
+    },
     "Care summary": {
       "extractionState": "manual",
       "localizations": {
@@ -5901,6 +6255,124 @@
         }
       }
     },
+    "Closes the tour": {
+      "extractionState": "manual",
+      "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Schließt den Rundgang"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Cierra el recorrido"
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Ferme la visite guidée"
+          }
+        },
+        "it": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Chiude il tour"
+          }
+        },
+        "nl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Sluit de rondleiding"
+          }
+        },
+        "pl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Zamyka przegląd"
+          }
+        },
+        "pt": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Fecha a visita guiada"
+          }
+        },
+        "ro": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Închide turul"
+          }
+        },
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Закрывает обзор"
+          }
+        }
+      }
+    },
+    "Compact": {
+      "extractionState": "manual",
+      "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Kompakt"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Compacta"
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Compacte"
+          }
+        },
+        "it": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Compatta"
+          }
+        },
+        "nl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Compact"
+          }
+        },
+        "pl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Kompaktowa"
+          }
+        },
+        "pt": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Compacto"
+          }
+        },
+        "ro": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Compact"
+          }
+        },
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Компактная"
+          }
+        }
+      }
+    },
     "Compared with previous period": {
       "extractionState": "manual",
       "localizations": {
@@ -6310,6 +6782,65 @@
           "stringUnit": {
             "state": "translated",
             "value": "Свяжитесь с вашей лечащей командой или обратитесь за неотложной помощью, если у вас:"
+          }
+        }
+      }
+    },
+    "Continue": {
+      "extractionState": "manual",
+      "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Weiter"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Continuar"
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Continuer"
+          }
+        },
+        "it": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Continua"
+          }
+        },
+        "nl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Ga door"
+          }
+        },
+        "pl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Dalej"
+          }
+        },
+        "pt": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Continuar"
+          }
+        },
+        "ro": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Continuă"
+          }
+        },
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Продолжить"
           }
         }
       }
@@ -7549,6 +8080,65 @@
           "stringUnit": {
             "state": "translated",
             "value": "Введение"
+          }
+        }
+      }
+    },
+    "Detailed": {
+      "extractionState": "manual",
+      "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Detailliert"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Detallada"
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Détaillée"
+          }
+        },
+        "it": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Dettagliata"
+          }
+        },
+        "nl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Gedetailleerd"
+          }
+        },
+        "pl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Szczegółowa"
+          }
+        },
+        "pt": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Detalhado"
+          }
+        },
+        "ro": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Detaliat"
+          }
+        },
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Подробная"
           }
         }
       }
@@ -10562,6 +11152,65 @@
         }
       }
     },
+    "Favorite meals, one-tap presets and the quick-entry hub get glucose, insulin, carbs and activity into your journal in seconds.": {
+      "extractionState": "manual",
+      "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Lieblingsmahlzeiten, Ein-Tipp-Voreinstellungen und die Schnelleingabe bringen Glukose, Insulin, Kohlenhydrate und Aktivität in Sekunden in dein Journal."
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Las comidas favoritas, los preajustes de un toque y el centro de entrada rápida meten glucosa, insulina, carbohidratos y actividad en tu diario en segundos."
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Repas favoris, préréglages à une touche et pôle de saisie rapide : glycémie, insuline, glucides et activité rejoignent votre journal en quelques secondes."
+          }
+        },
+        "it": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Pasti preferiti, preset a un tocco e l'hub di inserimento rapido portano glicemia, insulina, carboidrati e attività nel tuo diario in pochi secondi."
+          }
+        },
+        "nl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Favoriete maaltijden, presets met één tik en de snelle invoerhub zetten glucose, insuline, koolhydraten en activiteit binnen seconden in je dagboek."
+          }
+        },
+        "pl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Ulubione posiłki, gotowe ustawienia na jedno dotknięcie i centrum szybkiego wpisu dodają glukozę, insulinę, węglowodany i aktywność do Twojego dziennika w kilka sekund."
+          }
+        },
+        "pt": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "As refeições favoritas, as predefinições de um toque e o centro de registo rápido põem glicose, insulina, hidratos de carbono e atividade no teu diário em segundos."
+          }
+        },
+        "ro": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Mesele favorite, presetările cu o atingere și centrul de introducere rapidă aduc glicemia, insulina, carbohidrații și activitatea în jurnalul tău în câteva secunde."
+          }
+        },
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Любимые приёмы пищи, пресеты в одно касание и центр быстрого ввода добавляют глюкозу, инсулин, углеводы и активность в ваш дневник за секунды."
+          }
+        }
+      }
+    },
     "Favorites": {
       "extractionState": "manual",
       "localizations": {
@@ -11860,6 +12509,65 @@
         }
       }
     },
+    "Glucose on your Lock Screen": {
+      "extractionState": "manual",
+      "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Glukose auf dem Sperrbildschirm"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Glucosa en tu pantalla de bloqueo"
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "La glycémie sur votre écran verrouillé"
+          }
+        },
+        "it": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "La glicemia sulla schermata di blocco"
+          }
+        },
+        "nl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Glucose op je toegangsscherm"
+          }
+        },
+        "pl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Glukoza na ekranie blokady"
+          }
+        },
+        "pt": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Glicose no teu ecrã bloqueado"
+          }
+        },
+        "ro": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Glicemia pe ecranul de blocare"
+          }
+        },
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Глюкоза на экране блокировки"
+          }
+        }
+      }
+    },
     "Glucose over period": {
       "extractionState": "manual",
       "localizations": {
@@ -12214,6 +12922,65 @@
         }
       }
     },
+    "Goes to the next feature": {
+      "extractionState": "manual",
+      "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Wechselt zur nächsten Funktion"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Va a la siguiente función"
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Passe à la fonctionnalité suivante"
+          }
+        },
+        "it": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Passa alla funzione successiva"
+          }
+        },
+        "nl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Gaat naar de volgende functie"
+          }
+        },
+        "pl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Przechodzi do następnej funkcji"
+          }
+        },
+        "pt": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Avança para a funcionalidade seguinte"
+          }
+        },
+        "ro": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Trece la funcția următoare"
+          }
+        },
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Переходит к следующей функции"
+          }
+        }
+      }
+    },
     "Good to know": {
       "extractionState": "manual",
       "localizations": {
@@ -12446,6 +13213,65 @@
           "stringUnit": {
             "state": "translated",
             "value": "Выпейте немного воды."
+          }
+        }
+      }
+    },
+    "Hide entries": {
+      "extractionState": "manual",
+      "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Einträge ausblenden"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Ocultar entradas"
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Masquer les entrées"
+          }
+        },
+        "it": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Nascondi voci"
+          }
+        },
+        "nl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Invoer verbergen"
+          }
+        },
+        "pl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Ukryj wpisy"
+          }
+        },
+        "pt": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Ocultar registos"
+          }
+        },
+        "ro": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Ascunde înregistrările"
+          }
+        },
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Скрыть записи"
           }
         }
       }
@@ -12977,6 +13803,65 @@
           "stringUnit": {
             "state": "translated",
             "value": "История"
+          }
+        }
+      }
+    },
+    "Home Screen and Lock Screen widgets show your latest reading in its zone colour — and say exactly how old it is, so a stale number never looks fresh.": {
+      "extractionState": "manual",
+      "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Widgets auf dem Home-Bildschirm und dem Sperrbildschirm zeigen deinen letzten Messwert in seiner Zonenfarbe — und sagen genau, wie alt er ist, damit ein alter Wert nie frisch aussieht."
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Los widgets de la pantalla de inicio y la pantalla de bloqueo muestran tu última lectura en el color de su zona — y dicen exactamente cuánto tiempo tiene, para que un valor antiguo nunca parezca reciente."
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Les widgets de l'écran d'accueil et de l'écran verrouillé affichent votre dernière mesure dans la couleur de sa zone — et indiquent précisément son ancienneté, pour qu'une valeur périmée n'ait jamais l'air récente."
+          }
+        },
+        "it": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "I widget della schermata Home e della schermata di blocco mostrano l'ultima lettura nel colore della sua zona — e dicono esattamente quanto è vecchia, così un valore datato non sembra mai recente."
+          }
+        },
+        "nl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Widgets op het beginscherm en het toegangsscherm tonen je laatste meting in de kleur van de zone — en zeggen precies hoe oud die is, zodat een verouderd getal nooit vers lijkt."
+          }
+        },
+        "pl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Widżety na ekranie początkowym i ekranie blokady pokazują Twój ostatni odczyt w kolorze jego strefy — i dokładnie mówią, jak stary jest, więc nieaktualna wartość nigdy nie wygląda na świeżą."
+          }
+        },
+        "pt": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Os widgets do ecrã principal e do ecrã bloqueado mostram a tua última leitura na cor da sua zona — e dizem exatamente há quanto tempo foi registada, para que um valor antigo nunca pareça recente."
+          }
+        },
+        "ro": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Widgeturile de pe ecranul principal și de pe ecranul de blocare arată ultima ta citire în culoarea zonei sale — și spun exact cât de veche este, astfel încât o valoare veche să nu pară niciodată proaspătă."
+          }
+        },
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Виджеты на экране «Домой» и экране блокировки показывают ваше последнее показание в цвете его зоны — и честно указывают, насколько оно давнее, чтобы устаревшее число никогда не выглядело свежим."
           }
         }
       }
@@ -14452,6 +15337,65 @@
           "stringUnit": {
             "state": "translated",
             "value": "Аналитика"
+          }
+        }
+      }
+    },
+    "Insights that find the patterns": {
+      "extractionState": "manual",
+      "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Einblicke, die Muster finden"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Análisis que encuentran los patrones"
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Des analyses qui repèrent les schémas"
+          }
+        },
+        "it": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Analisi che trovano gli schemi"
+          }
+        },
+        "nl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Inzichten die patronen vinden"
+          }
+        },
+        "pl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Analizy, które znajdują wzorce"
+          }
+        },
+        "pt": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Análises que encontram os padrões"
+          }
+        },
+        "ro": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Analize care găsesc tiparele"
+          }
+        },
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Аналитика, которая находит закономерности"
           }
         }
       }
@@ -16934,6 +17878,65 @@
         }
       }
     },
+    "Log glucose, insulin, meals, activity and notes — they'll appear here as day cards.": {
+      "extractionState": "manual",
+      "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Glukose, Insulin, Mahlzeiten, Aktivität und Notizen erfassen — sie erscheinen hier als Tageskarten."
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Anota glucosa, insulina, comidas, actividad y notas — aparecerán aquí como tarjetas de día."
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Enregistrez glycémie, insuline, repas, activité et notes — ils apparaîtront ici sous forme de cartes de journée."
+          }
+        },
+        "it": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Registra glicemia, insulina, pasti, attività e note — appariranno qui come schede del giorno."
+          }
+        },
+        "nl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Noteer glucose, insuline, maaltijden, activiteit en notities — ze verschijnen hier als dagkaarten."
+          }
+        },
+        "pl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Zapisuj glukozę, insulinę, posiłki, aktywność i notatki — pojawią się tutaj jako karty dni."
+          }
+        },
+        "pt": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Regista glicose, insulina, refeições, atividade e notas — vão aparecer aqui como cartões de dia."
+          }
+        },
+        "ro": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Înregistrează glicemie, insulină, mese, activitate și notițe — vor apărea aici sub formă de carduri de zi."
+          }
+        },
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Записывайте глюкозу, инсулин, приёмы пищи, активность и заметки — они появятся здесь в виде карточек дней."
+          }
+        }
+      }
+    },
     "Log glucose, insulin, meals, activity and notes — they'll appear here on your timeline.": {
       "extractionState": "manual",
       "localizations": {
@@ -16989,6 +17992,65 @@
           "stringUnit": {
             "state": "translated",
             "value": "Записывайте глюкозу, инсулин, приёмы пищи, активность и заметки — они появятся здесь на вашей ленте времени."
+          }
+        }
+      }
+    },
+    "Log it before it's forgotten": {
+      "extractionState": "manual",
+      "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Erfassen, bevor es vergessen ist"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Anótalo antes de que se olvide"
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Enregistrez avant d'oublier"
+          }
+        },
+        "it": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Registralo prima di dimenticarlo"
+          }
+        },
+        "nl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Noteer het voor je het vergeet"
+          }
+        },
+        "pl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Zapisz, zanim umknie"
+          }
+        },
+        "pt": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Regista antes que te esqueças"
+          }
+        },
+        "ro": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Înregistrează înainte să uiți"
+          }
+        },
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Записывайте, пока не забылось"
           }
         }
       }
@@ -17992,6 +19054,65 @@
           "stringUnit": {
             "state": "translated",
             "value": "MODY"
+          }
+        }
+      }
+    },
+    "Make it yours": {
+      "extractionState": "manual",
+      "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Mach es zu deinem"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Hazla tuya"
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Faites-la vôtre"
+          }
+        },
+        "it": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Rendila tua"
+          }
+        },
+        "nl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Maak het je eigen"
+          }
+        },
+        "pl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Dostosuj do siebie"
+          }
+        },
+        "pt": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Torna-a tua"
+          }
+        },
+        "ro": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Fă-o a ta"
+          }
+        },
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Настройте под себя"
           }
         }
       }
@@ -20120,6 +21241,65 @@
         }
       }
     },
+    "No glucose readings this day": {
+      "extractionState": "manual",
+      "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Keine Glukosemesswerte an diesem Tag"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Sin lecturas de glucosa este día"
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Aucune mesure de glycémie ce jour-là"
+          }
+        },
+        "it": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Nessuna lettura di glicemia in questo giorno"
+          }
+        },
+        "nl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Geen glucosemetingen op deze dag"
+          }
+        },
+        "pl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Brak odczytów glukozy tego dnia"
+          }
+        },
+        "pt": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Sem leituras de glicose neste dia"
+          }
+        },
+        "ro": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Nicio citire de glicemie în această zi"
+          }
+        },
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Нет показаний глюкозы в этот день"
+          }
+        }
+      }
+    },
     "No glucose yet": {
       "extractionState": "manual",
       "localizations": {
@@ -21827,6 +23007,65 @@
           "stringUnit": {
             "state": "translated",
             "value": "Открыть калькулятор болюса"
+          }
+        }
+      }
+    },
+    "Open calendar": {
+      "extractionState": "manual",
+      "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Kalender öffnen"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Abrir calendario"
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Ouvrir le calendrier"
+          }
+        },
+        "it": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Apri calendario"
+          }
+        },
+        "nl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Kalender openen"
+          }
+        },
+        "pl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Otwórz kalendarz"
+          }
+        },
+        "pt": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Abrir calendário"
+          }
+        },
+        "ro": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Deschide calendarul"
+          }
+        },
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Открыть календарь"
           }
         }
       }
@@ -25902,6 +27141,65 @@
         }
       }
     },
+    "Safety, three ways": {
+      "extractionState": "manual",
+      "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Sicherheit, dreifach"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Seguridad, de tres formas"
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "La sécurité, de trois façons"
+          }
+        },
+        "it": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Sicurezza, in tre modi"
+          }
+        },
+        "nl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Veiligheid, op drie manieren"
+          }
+        },
+        "pl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Bezpieczeństwo na trzy sposoby"
+          }
+        },
+        "pt": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Segurança, de três formas"
+          }
+        },
+        "ro": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Siguranță, în trei feluri"
+          }
+        },
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Безопасность — тремя способами"
+          }
+        }
+      }
+    },
     "Same as the week before": {
       "extractionState": "manual",
       "localizations": {
@@ -27259,6 +28557,65 @@
         }
       }
     },
+    "Show 1 entry": {
+      "extractionState": "manual",
+      "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "1 Eintrag anzeigen"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Mostrar 1 entrada"
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Afficher 1 entrée"
+          }
+        },
+        "it": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Mostra 1 voce"
+          }
+        },
+        "nl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Toon 1 invoer"
+          }
+        },
+        "pl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Pokaż 1 wpis"
+          }
+        },
+        "pt": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Mostrar 1 registo"
+          }
+        },
+        "ro": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Arată 1 înregistrare"
+          }
+        },
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Показать 1 запись"
+          }
+        }
+      }
+    },
     "Show goals & streak": {
       "extractionState": "manual",
       "localizations": {
@@ -27609,6 +28966,124 @@
           "stringUnit": {
             "state": "translated",
             "value": "Пейте небольшими глотками достаточно жидкости без сахара, чтобы избежать обезвоживания. Если не можете есть привычную еду, перейдите на напитки с углеводами (например, обычный сок или газировку), чтобы углеводы продолжали поступать."
+          }
+        }
+      }
+    },
+    "Six accent themes carried across the app, widgets and watch — plus journal density and appearance options. Calm by default, personal by choice.": {
+      "extractionState": "manual",
+      "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Sechs Akzent-Themes, die sich durch App, Widgets und Watch ziehen — dazu Optionen für Journaldichte und Erscheinungsbild. Ruhig ab Werk, persönlich nach Wahl."
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Seis temas de acento aplicados en la app, los widgets y el reloj — más opciones de densidad del diario y de aspecto. Tranquila por defecto, personal por elección."
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Six thèmes d'accentuation repris dans l'app, les widgets et la montre — plus des options de densité du journal et d'apparence. Apaisée par défaut, personnelle par choix."
+          }
+        },
+        "it": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Sei temi di accento coerenti in app, widget e orologio — più le opzioni di densità del diario e di aspetto. Tranquilla di default, personale per scelta."
+          }
+        },
+        "nl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Zes accentthema's doorgevoerd in de app, widgets en horloge — plus opties voor dagboekdichtheid en weergave. Rustig als standaard, persoonlijk als jij dat kiest."
+          }
+        },
+        "pl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Sześć motywów akcentu spójnych w aplikacji, widżetach i na zegarku — plus opcje gęstości dziennika i wyglądu. Spokojna domyślnie, osobista z wyboru."
+          }
+        },
+        "pt": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Seis temas de destaque aplicados na aplicação, nos widgets e no relógio — além de opções de densidade do diário e de aspeto. Calma por predefinição, pessoal por escolha."
+          }
+        },
+        "ro": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Șase teme de accent purtate prin aplicație, widgeturi și ceas — plus opțiuni pentru densitatea jurnalului și aspect. Calmă implicit, personală prin alegere."
+          }
+        },
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Шесть акцентных тем — в приложении, виджетах и на часах, плюс настройки плотности дневника и оформления. Спокойное по умолчанию, личное по вашему выбору."
+          }
+        }
+      }
+    },
+    "Skip": {
+      "extractionState": "manual",
+      "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Überspringen"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Omitir"
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Passer"
+          }
+        },
+        "it": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Salta"
+          }
+        },
+        "nl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Overslaan"
+          }
+        },
+        "pl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Pomiń"
+          }
+        },
+        "pt": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Ignorar"
+          }
+        },
+        "ro": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Omite"
+          }
+        },
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Пропустить"
           }
         }
       }
@@ -27967,6 +29442,65 @@
         }
       }
     },
+    "Standard": {
+      "extractionState": "manual",
+      "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Standard"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Estándar"
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Standard"
+          }
+        },
+        "it": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Standard"
+          }
+        },
+        "nl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Standaard"
+          }
+        },
+        "pl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Standardowa"
+          }
+        },
+        "pt": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Padrão"
+          }
+        },
+        "ro": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Standard"
+          }
+        },
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Стандартная"
+          }
+        }
+      }
+    },
     "Start": {
       "extractionState": "manual",
       "localizations": {
@@ -28022,6 +29556,65 @@
           "stringUnit": {
             "state": "translated",
             "value": "Начать"
+          }
+        }
+      }
+    },
+    "Start a Live Activity and your latest reading, trend arrow and mini chart stay on the Lock Screen and in the Dynamic Island — no unlocking, no app-switching.": {
+      "extractionState": "manual",
+      "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Starte eine Live-Aktivität, und dein letzter Messwert, der Trendpfeil und das Mini-Diagramm bleiben auf dem Sperrbildschirm und in der Dynamic Island — ohne Entsperren, ohne App-Wechsel."
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Inicia una Actividad en Directo y tu última lectura, la flecha de tendencia y el minigráfico se quedan en la pantalla de bloqueo y en la Dynamic Island — sin desbloquear ni cambiar de app."
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Lancez une activité en direct : votre dernière mesure, la flèche de tendance et le mini-graphique restent sur l'écran verrouillé et dans la Dynamic Island — sans déverrouiller, sans changer d'app."
+          }
+        },
+        "it": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Avvia un'attività in tempo reale e l'ultima lettura, la freccia di tendenza e il mini grafico restano nella schermata di blocco e nella Dynamic Island — senza sbloccare, senza cambiare app."
+          }
+        },
+        "nl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Start een live activiteit en je laatste meting, trendpijl en minigrafiek blijven op het toegangsscherm en in het Dynamic Island — zonder ontgrendelen, zonder van app te wisselen."
+          }
+        },
+        "pl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Uruchom Live Activity, a Twój ostatni odczyt, strzałka trendu i miniwykres pozostaną na ekranie blokady i w Dynamic Island — bez odblokowywania i przełączania aplikacji."
+          }
+        },
+        "pt": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Inicia uma atividade em direto e a tua última leitura, a seta de tendência e o minigráfico ficam no ecrã bloqueado e na Dynamic Island — sem desbloquear, sem mudar de aplicação."
+          }
+        },
+        "ro": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Pornește o activitate Live și ultima ta citire, săgeata de tendință și minigraficul rămân pe ecranul de blocare și în Dynamic Island — fără deblocare, fără schimbat aplicații."
+          }
+        },
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Запустите Live Activity — и ваше последнее показание, стрелка тренда и мини-график останутся на экране блокировки и в Dynamic Island: без разблокировки и переключения приложений."
           }
         }
       }
@@ -29619,6 +31212,65 @@
         }
       }
     },
+    "The Rule of 15 walks you through treating a low, sick-day mode keeps extra guidance close when you're unwell, and the emergency card tells a helper exactly what to do.": {
+      "extractionState": "manual",
+      "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Die 15er-Regel führt dich durch die Behandlung einer Unterzuckerung, der Krankheitsmodus hält zusätzliche Hinweise bereit, wenn es dir nicht gut geht, und die Notfallkarte sagt Helfenden genau, was zu tun ist."
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "La regla del 15 te guía para tratar una hipoglucemia, el modo de días de enfermedad mantiene a mano indicaciones extra cuando no te encuentras bien, y la tarjeta de emergencia le dice a quien te ayude exactamente qué hacer."
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "La règle des 15 vous guide pour traiter une hypo, le mode jours de maladie garde des conseils supplémentaires à portée de main quand vous êtes souffrant, et la carte d'urgence dit à la personne qui vous aide exactement quoi faire."
+          }
+        },
+        "it": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "La regola del 15 ti guida nel trattare un'ipoglicemia, la modalità giorni di malattia tiene a portata di mano indicazioni extra quando non stai bene, e la scheda di emergenza dice a chi ti aiuta esattamente cosa fare."
+          }
+        },
+        "nl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "De 15-regel loodst je door het behandelen van een hypo, de ziektedagmodus houdt extra richtlijnen binnen handbereik als je ziek bent, en de noodkaart vertelt een helper precies wat te doen."
+          }
+        },
+        "pl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Zasada 15 prowadzi Cię przez leczenie niedocukrzenia, tryb chorobowy trzyma dodatkowe wskazówki pod ręką, gdy źle się czujesz, a karta ratunkowa mówi pomagającemu dokładnie, co robić."
+          }
+        },
+        "pt": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "A regra dos 15 guia-te no tratamento de uma hipoglicemia, o modo de dias de doença mantém orientações extra à mão quando estás doente, e o cartão de emergência diz a quem te ajuda exatamente o que fazer."
+          }
+        },
+        "ro": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Regula de 15 te ghidează în tratarea unei hipoglicemii, modul zile de boală ține sfaturi suplimentare la îndemână când nu te simți bine, iar cardul de urgență îi spune exact ce să facă persoanei care te ajută."
+          }
+        },
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Правило 15 шаг за шагом помогает купировать гипогликемию, режим болезни держит под рукой дополнительные рекомендации, когда вам нездоровится, а экстренная карточка точно объясняет помощнику, что делать."
+          }
+        }
+      }
+    },
     "The accent tints buttons, icons and highlights across the app. Glucose zone colours never change, so readings always mean the same thing. Widgets and the Watch app pick up the new colour the next time they refresh.": {
       "extractionState": "manual",
       "localizations": {
@@ -30972,6 +32624,65 @@
           "stringUnit": {
             "state": "translated",
             "value": "Тренд времени в целевом диапазоне"
+          }
+        }
+      }
+    },
+    "Time in range, meal impact, overnight stability, rebounds — Prvital studies your data and can hand you a Monday-morning digest of how your week really went.": {
+      "extractionState": "manual",
+      "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Zeit im Zielbereich, Wirkung von Mahlzeiten, nächtliche Stabilität, Rebound-Effekte — Prvital wertet deine Daten aus und kann dir am Montagmorgen einen Überblick geben, wie deine Woche wirklich gelaufen ist."
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Tiempo en rango, impacto de las comidas, estabilidad nocturna, rebotes — Prvital estudia tus datos y puede entregarte el lunes por la mañana un resumen de cómo fue realmente tu semana."
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Temps dans la cible, impact des repas, stabilité nocturne, rebonds — Prvital étudie vos données et peut vous remettre le lundi matin un bilan de votre semaine telle qu'elle s'est vraiment passée."
+          }
+        },
+        "it": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Tempo nell'intervallo, impatto dei pasti, stabilità notturna, rimbalzi — Prvital studia i tuoi dati e può consegnarti il lunedì mattina una sintesi di com'è andata davvero la tua settimana."
+          }
+        },
+        "nl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Tijd binnen bereik, effect van maaltijden, nachtelijke stabiliteit, rebounds — Prvital bestudeert je gegevens en kan je op maandagochtend een overzicht geven van hoe je week echt is verlopen."
+          }
+        },
+        "pl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Czas w zakresie, wpływ posiłków, stabilność w nocy, odbicia — Prvital analizuje Twoje dane i może w poniedziałek rano wręczyć Ci podsumowanie tego, jak naprawdę minął Twój tydzień."
+          }
+        },
+        "pt": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Tempo dentro do intervalo, impacto das refeições, estabilidade noturna, efeitos rebote — o Prvital estuda os teus dados e pode entregar-te na segunda de manhã um resumo de como correu realmente a tua semana."
+          }
+        },
+        "ro": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Timp în interval, impactul meselor, stabilitatea peste noapte, reveniri bruște — Prvital îți studiază datele și îți poate oferi luni dimineața un rezumat despre cum a fost cu adevărat săptămâna ta."
+          }
+        },
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Время в целевом диапазоне, влияние приёмов пищи, ночная стабильность, рикошетные скачки — Prvital изучает ваши данные и может в понедельник утром выдать сводку о том, как на самом деле прошла ваша неделя."
           }
         }
       }
@@ -33749,6 +35460,65 @@
         }
       }
     },
+    "What's new": {
+      "extractionState": "manual",
+      "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Neue Funktionen"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Novedades"
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Nouveautés"
+          }
+        },
+        "it": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Novità"
+          }
+        },
+        "nl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Wat is er nieuw"
+          }
+        },
+        "pl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Co nowego"
+          }
+        },
+        "pt": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Novidades"
+          }
+        },
+        "ro": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Noutăți"
+          }
+        },
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Что нового"
+          }
+        }
+      }
+    },
     "When an urgent low alert isn't acknowledged, it repeats on this schedule until you tap the alert or its \"I'm on it\" button, until a newer synced reading shows you back at or above the urgent-low threshold, or until the maximum number of repeats. Standing down automatically relies on the app syncing a newer reading. In Focus or silent mode, delivery follows the system's Time Sensitive notification rules.": {
       "extractionState": "manual",
       "localizations": {
@@ -34044,6 +35814,65 @@
         }
       }
     },
+    "Widgets that tell the truth": {
+      "extractionState": "manual",
+      "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Widgets, die die Wahrheit sagen"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Widgets que dicen la verdad"
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Des widgets qui disent la vérité"
+          }
+        },
+        "it": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Widget che dicono la verità"
+          }
+        },
+        "nl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Widgets die de waarheid vertellen"
+          }
+        },
+        "pl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Widżety, które mówią prawdę"
+          }
+        },
+        "pt": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Widgets que dizem a verdade"
+          }
+        },
+        "ro": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Widgeturi care spun adevărul"
+          }
+        },
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Виджеты, которые говорят правду"
+          }
+        }
+      }
+    },
     "Within 15/15": {
       "extractionState": "manual",
       "localizations": {
@@ -34099,6 +35928,65 @@
           "stringUnit": {
             "state": "translated",
             "value": "В пределах 15/15"
+          }
+        }
+      }
+    },
+    "Yesterday": {
+      "extractionState": "manual",
+      "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Gestern"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Ayer"
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Hier"
+          }
+        },
+        "it": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Ieri"
+          }
+        },
+        "nl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Gisteren"
+          }
+        },
+        "pl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Wczoraj"
+          }
+        },
+        "pt": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Ontem"
+          }
+        },
+        "ro": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Ieri"
+          }
+        },
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Вчера"
           }
         }
       }
@@ -35397,6 +37285,183 @@
           "stringUnit": {
             "state": "translated",
             "value": "чистые углеводы"
+          }
+        }
+      }
+    },
+    "no glucose readings": {
+      "extractionState": "manual",
+      "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "keine Glukosemesswerte"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "sin lecturas de glucosa"
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "aucune mesure de glycémie"
+          }
+        },
+        "it": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "nessuna lettura di glicemia"
+          }
+        },
+        "nl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "geen glucosemetingen"
+          }
+        },
+        "pl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "brak odczytów glukozy"
+          }
+        },
+        "pt": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "sem leituras de glicose"
+          }
+        },
+        "ro": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "nicio citire de glicemie"
+          }
+        },
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "нет показаний глюкозы"
+          }
+        }
+      }
+    },
+    "note": {
+      "extractionState": "manual",
+      "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Notiz"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "nota"
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "note"
+          }
+        },
+        "it": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "nota"
+          }
+        },
+        "nl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "notitie"
+          }
+        },
+        "pl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "notatka"
+          }
+        },
+        "pt": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "nota"
+          }
+        },
+        "ro": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "notiță"
+          }
+        },
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "заметка"
+          }
+        }
+      }
+    },
+    "notes": {
+      "extractionState": "manual",
+      "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Notizen"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "notas"
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "notes"
+          }
+        },
+        "it": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "note"
+          }
+        },
+        "nl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "notities"
+          }
+        },
+        "pl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "notatki"
+          }
+        },
+        "pt": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "notas"
+          }
+        },
+        "ro": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "notițe"
+          }
+        },
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "заметки"
           }
         }
       }
