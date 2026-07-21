@@ -19,6 +19,7 @@ enum AppSchema {
         ActivityEntry.self,
         ObservationEntry.self,
         FoodItem.self,
+        FavoriteMeal.self,
         SensorSession.self,
         LabResult.self,
         UserProfile.self,

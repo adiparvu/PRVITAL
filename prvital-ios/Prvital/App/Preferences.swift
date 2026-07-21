@@ -21,6 +21,11 @@ final class Preferences {
         self.liveSyncSeconds = (self.defaults.object(forKey: Keys.liveSync) as? Int) ?? 60
         self.sickDayEnabled = self.defaults.bool(forKey: Keys.sickDayEnabled)
         self.sickDayStartedAt = self.defaults.object(forKey: Keys.sickDayStartedAt) as? Date
+        self.emergencyInfo = Self.readEmergencyInfo(self.defaults)
+        self.criticalAlarm = Self.readCriticalAlarm(self.defaults)
+        self.weeklyDigestEnabled = self.defaults.bool(forKey: Keys.weeklyDigest)
+        self.nightscoutUploadEnabled = self.defaults.bool(forKey: Keys.nightscoutUpload)
+        self.accentThemeRaw = self.defaults.string(forKey: Keys.accentTheme) ?? "default"
     }
 
     var glucoseUnit: GlucoseUnit {
@@ -88,6 +93,34 @@ final class Preferences {
         }
     }
 
+    /// The emergency card: contacts, where the glucagon is kept, and any note a
+    /// helper should read. Empty by default; stored under its own key.
+    var emergencyInfo: EmergencyInfo {
+        didSet { if let data = try? JSONEncoder().encode(emergencyInfo) { defaults.set(data, forKey: Keys.emergencyInfo) } }
+    }
+
+    /// Critical-low alarm escalation (repeat-until-acknowledged). Off by default.
+    var criticalAlarm: CriticalAlarmPreferences {
+        didSet { if let data = try? JSONEncoder().encode(criticalAlarm) { defaults.set(data, forKey: Keys.criticalAlarm) } }
+    }
+
+    /// Monday-morning "your week in review" summary. Off by default.
+    var weeklyDigestEnabled: Bool {
+        didSet { defaults.set(weeklyDigestEnabled, forKey: Keys.weeklyDigest) }
+    }
+
+    /// Mirror the user's entries up to their own Nightscout site. Off by default.
+    /// A separate key (not a field on `NightscoutConfig`) so enabling it can
+    /// never invalidate an already-stored connection config.
+    var nightscoutUploadEnabled: Bool {
+        didSet { defaults.set(nightscoutUploadEnabled, forKey: Keys.nightscoutUpload) }
+    }
+
+    /// The chosen accent theme's raw identifier ("default" = the teal brand).
+    var accentThemeRaw: String {
+        didSet { defaults.set(accentThemeRaw, forKey: Keys.accentTheme) }
+    }
+
     /// Quick-add presets (the +1U … +10U row and 20g … 100g row).
     let insulinPresets: [Double] = [1, 2, 4, 6, 8, 10]
     let carbPresets: [Double] = [20, 40, 60, 80, 100]
@@ -107,6 +140,11 @@ final class Preferences {
         static let liveSync = "pref.liveSyncSeconds"
         static let sickDayEnabled = "pref.sickDayEnabled"
         static let sickDayStartedAt = "pref.sickDayStartedAt"
+        static let emergencyInfo = "pref.emergencyInfo"
+        static let criticalAlarm = "pref.criticalAlarm"
+        static let weeklyDigest = "pref.weeklyDigestEnabled"
+        static let nightscoutUpload = "pref.nightscoutUploadEnabled"
+        static let accentTheme = "pref.accentTheme"
     }
 
     private static func readUnit(_ d: UserDefaults) -> GlucoseUnit {
@@ -154,6 +192,51 @@ final class Preferences {
         else { return .default }
         return value
     }
+    private static func readEmergencyInfo(_ d: UserDefaults) -> EmergencyInfo {
+        guard let data = d.data(forKey: Keys.emergencyInfo),
+              let value = try? JSONDecoder().decode(EmergencyInfo.self, from: data)
+        else { return .default }
+        return value
+    }
+    private static func readCriticalAlarm(_ d: UserDefaults) -> CriticalAlarmPreferences {
+        guard let data = d.data(forKey: Keys.criticalAlarm),
+              let value = try? JSONDecoder().decode(CriticalAlarmPreferences.self, from: data)
+        else { return .default }
+        return value
+    }
+}
+
+/// One person to call in an emergency.
+struct EmergencyContact: Codable, Equatable, Sendable, Identifiable {
+    var id: UUID = UUID()
+    var name: String = ""
+    var phone: String = ""
+}
+
+/// What the emergency card shows a helper: who to call, where the glucagon is,
+/// and anything else they should know. All empty by default.
+struct EmergencyInfo: Codable, Equatable, Sendable {
+    var contacts: [EmergencyContact] = []
+    var glucagonLocation: String = ""
+    var notes: String = ""
+
+    static let `default` = EmergencyInfo()
+
+    /// True once the user has filled in anything worth showing.
+    var hasContent: Bool {
+        !contacts.isEmpty || !glucagonLocation.isEmpty || !notes.isEmpty
+    }
+}
+
+/// Repeat-until-acknowledged escalation for urgent-low alerts. Off by default;
+/// when on, the urgent-low notification re-fires every `repeatMinutes` until the
+/// user acknowledges it or `maxRepeats` is reached.
+struct CriticalAlarmPreferences: Codable, Equatable, Sendable {
+    var escalationEnabled: Bool = false
+    var repeatMinutes: Int = 5
+    var maxRepeats: Int = 6
+
+    static let `default` = CriticalAlarmPreferences()
 }
 
 /// Opt-in glucose goals: a target Time-in-Range percentage and target A1c, with
