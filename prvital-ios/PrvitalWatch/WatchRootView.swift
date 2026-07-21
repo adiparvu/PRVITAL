@@ -4,8 +4,11 @@ import Foundation
 /// Root of the watch experience: a vertically-paged glance stack.
 ///
 ///   1. **Now** — the current glucose value, trend, zone and freshness.
-///   2. **Insulin** — one-tap quick doses, confirmed before they are sent.
-///   3. **Carbs** — one-tap quick carb amounts, confirmed before they are sent.
+///   2. **Glucose** — dial in and log a reading with the Digital Crown.
+///   3. **Treat a low** — one confirmed tap logs 15 g of fast carbs.
+///   4. **Insulin** — one-tap quick doses, confirmed before they are sent.
+///   5. **Carbs** — one-tap quick carb amounts, confirmed before they are sent.
+///   6. **Emergency** — static "I have diabetes" bystander guidance.
 ///
 /// Everything renders from `model.snapshot`; quick entries are handed to the
 /// phone through `WatchSessionManager`, which logs them via the normal audited
@@ -39,6 +42,8 @@ struct WatchRootView: View {
                 values: [20, 40, 60],
                 tint: Theme.zoneHigh
             )
+
+            WatchEmergencyPage()
         }
         .tabViewStyle(.verticalPage)
         .background(Theme.background.ignoresSafeArea())
@@ -394,6 +399,68 @@ private struct WatchTreatLowPage: View {
     }
 }
 
+// MARK: - Emergency card (static)
+
+/// A compact, always-available emergency page a bystander can read off the
+/// wrist: "I have diabetes" plus the three standard helper steps.
+///
+/// Deliberately static. The watch target has no `Preferences` — it renders only
+/// from the `GlucoseSnapshot` the phone pushes over WatchConnectivity, and that
+/// snapshot carries no emergency contacts or glucagon location (the iPhone's
+/// App Group container is not shared across devices). Syncing the personal
+/// details here would need new snapshot fields and phone-side plumbing; until
+/// then the page points helpers at the full card on the phone.
+private struct WatchEmergencyPage: View {
+    var body: some View {
+        ScrollView {
+            VStack(alignment: .leading, spacing: 8) {
+                Label("Emergency", systemImage: "staroflife.fill")
+                    .font(.headline)
+                    .foregroundStyle(Theme.zoneCritical)
+                    .frame(maxWidth: .infinity, alignment: .leading)
+
+                Text("I have diabetes")
+                    .font(.system(.title3, design: .rounded, weight: .bold))
+                    .foregroundStyle(Theme.textPrimary)
+                    .fixedSize(horizontal: false, vertical: true)
+
+                Text("Confused, shaky or unconscious? This may be severe LOW blood sugar.")
+                    .font(.caption2)
+                    .foregroundStyle(Theme.textSecondary)
+                    .fixedSize(horizontal: false, vertical: true)
+
+                emergencyStep(1, "If I can swallow: give sugar — juice, regular soda or glucose tablets.")
+                emergencyStep(2, "If I can't swallow or am unconscious: do NOT give food or drink. Call 112 / 911.")
+                emergencyStep(3, "Stay with me until help arrives.")
+
+                Text("Full card — glucagon spot & contacts — is on my phone: Prvital → Settings → Emergency card.")
+                    .font(.system(size: 11))
+                    .foregroundStyle(Theme.textTertiary)
+                    .fixedSize(horizontal: false, vertical: true)
+                    .padding(.top, 2)
+            }
+            .padding(.horizontal, 4)
+        }
+    }
+
+    private func emergencyStep(_ number: Int, _ text: LocalizedStringKey) -> some View {
+        HStack(alignment: .top, spacing: 6) {
+            Text("\(number)")
+                .font(.caption2.weight(.bold))
+                .foregroundStyle(.white)
+                .frame(width: 16, height: 16)
+                .background(Theme.zoneCritical, in: Circle())
+                .accessibilityHidden(true)
+
+            Text(text)
+                .font(.caption2)
+                .foregroundStyle(Theme.textPrimary)
+                .fixedSize(horizontal: false, vertical: true)
+        }
+        .accessibilityElement(children: .combine)
+    }
+}
+
 // MARK: - Formatting helpers
 
 /// Small formatting helpers shared by the watch pages. Kept in one place so the
@@ -462,6 +529,10 @@ private enum WatchSnapshotFormat {
         title: "Carbs", systemImage: "fork.knife", kind: "carbs",
         unit: "g", values: [20, 40, 60], tint: Theme.zoneHigh
     )
+}
+
+#Preview("Emergency") {
+    WatchEmergencyPage()
 }
 
 #Preview("Full app") {

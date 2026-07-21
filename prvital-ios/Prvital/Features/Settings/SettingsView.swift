@@ -87,6 +87,19 @@ struct SettingsView: View {
                     }
 
                     NavigationLink {
+                        EmergencyCardView()
+                    } label: {
+                        SettingsRow(
+                            title: "Emergency card",
+                            subtitle: env.preferences.emergencyInfo.hasContent
+                                ? "Ready to show a helper"
+                                : "Not set up yet",
+                            systemImage: "staroflife.fill",
+                            tint: Theme.zoneCritical
+                        )
+                    }
+
+                    NavigationLink {
                         SensorView()
                     } label: {
                         SettingsRow(
