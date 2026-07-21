@@ -144,11 +144,14 @@ struct GlucoseTrendChart: View {
 
     var body: some View {
         Chart {
+            // Threshold lines carry the colour of the zone they border, so the
+            // top dashed line reads as the high limit and the bottom one as the
+            // low limit at a glance (matching how readings are tinted).
             RuleMark(y: .value("Target upper", thresholds.targetUpper))
-                .foregroundStyle(Theme.zoneInRange.opacity(0.35))
+                .foregroundStyle(Theme.zoneHigh.opacity(0.55))
                 .lineStyle(StrokeStyle(lineWidth: 1, dash: [4, 4]))
             RuleMark(y: .value("Target lower", thresholds.targetLower))
-                .foregroundStyle(Theme.zoneInRange.opacity(0.35))
+                .foregroundStyle(Theme.zoneWarning.opacity(0.55))
                 .lineStyle(StrokeStyle(lineWidth: 1, dash: [4, 4]))
 
             ForEach(sorted) { reading in
