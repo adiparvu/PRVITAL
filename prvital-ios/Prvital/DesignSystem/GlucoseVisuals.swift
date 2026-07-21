@@ -67,9 +67,15 @@ struct GlucoseGaugeRing: View {
 }
 
 /// A line chart of glucose over time with the target range shaded, built on
-/// Swift Charts. Values are plotted in mg/dL and the axis is formatted to the
-/// display unit. The full-size variant fills the curve with a gradient, lets
-/// you scrub with a finger to read any point, and fades in on appear.
+/// Swift Charts. Values are plotted in mg/dL and formatted to the display unit.
+///
+/// The full-size variant is styled like a tide chart: the y-axis is hidden and
+/// the numbers live on the curve instead — peaks and valleys are marked with a
+/// dot plus a small value-and-time label (above crests, below troughs), and the
+/// latest reading is a background-filled dot ringed in its zone's colour. It
+/// also fills the curve with a gradient, lets you scrub with a finger to read
+/// any point, and fades in on appear. The compact variant keeps a tiny y-axis
+/// and a simple dot, with no annotations.
 struct GlucoseTrendChart: View {
     let readings: [GlucoseReading]
     let thresholds: GlucoseThresholds
@@ -91,6 +97,27 @@ struct GlucoseTrendChart: View {
         return sorted.min {
             abs($0.timestamp.timeIntervalSince(selectedDate)) < abs($1.timestamp.timeIntervalSince(selectedDate))
         }
+    }
+
+    /// Tide-chart-style callouts: the window's high and low plus up to two
+    /// other prominent local extremes, labeled directly on the curve. Skipped
+    /// for compact charts and for windows too small to have meaningful shape.
+    private var extremes: [ChartExtreme] {
+        guard interactive, sorted.count >= 5,
+              let first = sorted.first?.timestamp, let last = sorted.last?.timestamp
+        else { return [] }
+        // Labels need horizontal room proportional to the window: keep the
+        // annotated extremes at least an eighth of the window apart, and never
+        // closer than 45 minutes.
+        let separation = max(45 * 60, last.timeIntervalSince(first) / 8)
+        return ChartExtremes.find(
+            in: sorted.map { (date: $0.timestamp, value: $0.valueMgdL) },
+            minimumSeparation: separation
+        )
+    }
+
+    private func zoneColor(_ mgdL: Double) -> Color {
+        thresholds.zone(forMgdL: mgdL).color
     }
 
     private var areaGradient: LinearGradient {
@@ -139,24 +166,48 @@ struct GlucoseTrendChart: View {
                 .interpolationMethod(.catmullRom)
                 .foregroundStyle(Theme.accent)
                 .lineStyle(StrokeStyle(lineWidth: 2.5, lineCap: .round, lineJoin: .round))
+            }
 
-                if interactive {
-                    PointMark(
-                        x: .value("Time", reading.timestamp),
-                        y: .value("Glucose", reading.valueMgdL)
-                    )
-                    .symbolSize(20)
-                    .foregroundStyle(thresholds.zone(forMgdL: reading.valueMgdL).color)
+            // Tide-style extreme callouts: a dot on the curve with the value
+            // and time stacked beside it — above crests, below troughs. Hidden
+            // while scrubbing so they don't fight the scrub callout.
+            if selectedDate == nil {
+                ForEach(extremes) { extreme in
+                    PointMark(x: .value("Time", extreme.date), y: .value("Glucose", extreme.value))
+                        .symbolSize(36)
+                        .foregroundStyle(zoneColor(extreme.value))
+                        .annotation(
+                            position: extreme.kind == .peak ? .top : .bottom,
+                            spacing: 2,
+                            overflowResolution: .init(x: .fit(to: .chart), y: .disabled)
+                        ) {
+                            extremeLabel(extreme)
+                        }
                 }
             }
 
             if let last = sorted.last {
-                PointMark(x: .value("Time", last.timestamp), y: .value("Glucose", last.valueMgdL))
-                    .symbolSize(compact ? 60 : 140)
-                    .foregroundStyle(thresholds.zone(forMgdL: last.valueMgdL).color.opacity(0.18))
-                PointMark(x: .value("Time", last.timestamp), y: .value("Glucose", last.valueMgdL))
-                    .symbolSize(compact ? 24 : 44)
-                    .foregroundStyle(thresholds.zone(forMgdL: last.valueMgdL).color)
+                if compact {
+                    PointMark(x: .value("Time", last.timestamp), y: .value("Glucose", last.valueMgdL))
+                        .symbolSize(60)
+                        .foregroundStyle(zoneColor(last.valueMgdL).opacity(0.18))
+                    PointMark(x: .value("Time", last.timestamp), y: .value("Glucose", last.valueMgdL))
+                        .symbolSize(24)
+                        .foregroundStyle(zoneColor(last.valueMgdL))
+                } else {
+                    // Tide-style "now" marker: a soft glow, a bold zone-colored
+                    // ring, and a background-filled core so it reads as a ring
+                    // sitting on the curve.
+                    PointMark(x: .value("Time", last.timestamp), y: .value("Glucose", last.valueMgdL))
+                        .symbolSize(170)
+                        .foregroundStyle(zoneColor(last.valueMgdL).opacity(0.18))
+                    PointMark(x: .value("Time", last.timestamp), y: .value("Glucose", last.valueMgdL))
+                        .symbolSize(92)
+                        .foregroundStyle(zoneColor(last.valueMgdL))
+                    PointMark(x: .value("Time", last.timestamp), y: .value("Glucose", last.valueMgdL))
+                        .symbolSize(38)
+                        .foregroundStyle(Theme.background)
+                }
             }
 
             if let sel = selectedReading {
@@ -174,8 +225,12 @@ struct GlucoseTrendChart: View {
         }
         .chartXSelection(value: interactive ? $selectedDate : .constant(nil))
         .chartYScale(domain: yDomain)
+        // The full-size chart hides the y-axis entirely — the on-curve extreme
+        // labels carry the values, tide-chart style. Only the compact variant
+        // (no annotations) keeps a small axis.
+        .chartYAxis(compact ? .automatic : .hidden)
         .chartYAxis {
-            AxisMarks(values: .automatic(desiredCount: compact ? 3 : 5)) { value in
+            AxisMarks(values: .automatic(desiredCount: 3)) { value in
                 AxisGridLine().foregroundStyle(Theme.hairline)
                 AxisValueLabel {
                     if let mgdL = value.as(Double.self) {
@@ -209,6 +264,19 @@ struct GlucoseTrendChart: View {
         .accessibilityLabel(accessibilitySummary)
     }
 
+    /// The two-line label attached to an annotated extreme: the value in the
+    /// zone's colour with the time beneath, like a tide chart's crest labels.
+    private func extremeLabel(_ extreme: ChartExtreme) -> some View {
+        VStack(spacing: 0) {
+            Text(GlucoseFormatting.string(mgdL: extreme.value, unit: unit))
+                .font(.caption2.weight(.semibold))
+                .foregroundStyle(zoneColor(extreme.value))
+            Text(extreme.date, format: .dateTime.hour().minute())
+                .font(.system(size: 9))
+                .foregroundStyle(Theme.textSecondary)
+        }
+    }
+
     private func scrubCallout(_ reading: GlucoseReading) -> some View {
         VStack(alignment: .leading, spacing: 1) {
             Text(GlucoseFormatting.labeled(mgdL: reading.valueMgdL, unit: unit))
@@ -225,9 +293,12 @@ struct GlucoseTrendChart: View {
     }
 
     private var yDomain: ClosedRange<Double> {
+        // The full-size chart pads a little extra so the extreme labels
+        // (drawn above peaks and below valleys) have head- and foot-room.
+        let pad: Double = compact ? 20 : 30
         let values = sorted.map(\.valueMgdL)
-        let low = min(values.min() ?? thresholds.targetLower, thresholds.targetLower) - 20
-        let high = max(values.max() ?? thresholds.targetUpper, thresholds.targetUpper) + 20
+        let low = min(values.min() ?? thresholds.targetLower, thresholds.targetLower) - pad
+        let high = max(values.max() ?? thresholds.targetUpper, thresholds.targetUpper) + pad
         return max(0, low)...high
     }
 
@@ -277,4 +348,30 @@ extension View {
     func appearTransition(delay: Double = 0) -> some View {
         modifier(AppearTransition(delay: delay))
     }
+}
+
+#Preview("Trend chart — annotated extremes") {
+    // Twelve hours of 15-minute readings shaped like a tide curve: a deep
+    // early-morning valley, a tall post-breakfast peak, then a smaller dip and
+    // rise — so the preview shows all four annotated extremes plus the ringed
+    // "now" dot on the full-size chart, and the plain compact variant below.
+    let wave: [Double] = [
+        118, 112, 105, 96, 88, 79, 72, 68, 64, 62, 65, 74,
+        88, 104, 122, 141, 158, 172, 183, 191, 196, 198, 195, 188,
+        178, 166, 152, 138, 124, 112, 103, 98, 96, 99, 106, 116,
+        128, 141, 152, 161, 167, 170, 168, 162, 153, 143, 134, 127, 122,
+    ]
+    let now = Date()
+    let readings = wave.enumerated().map { index, value in
+        GlucoseReading(
+            valueMgdL: value,
+            timestamp: now.addingTimeInterval(Double(index) * 15 * 60 - 12 * 3600)
+        )
+    }
+    return VStack(spacing: 24) {
+        GlucoseTrendChart(readings: readings, thresholds: .standard, unit: .mgdL)
+        GlucoseTrendChart(readings: readings, thresholds: .standard, unit: .mgdL, compact: true)
+    }
+    .padding()
+    .background(Theme.background)
 }
