@@ -69,6 +69,23 @@ struct StatisticsView: View {
         labResults.filter { range.contains($0.timestamp) }
     }
 
+    /// Least-squares trajectory of the weekly GMI series, kept only when the
+    /// fit is confident (enough weeks, small residuals) — a shaky trend line
+    /// is worse than none.
+    private var a1cProjection: A1cProjectionResult? {
+        guard let projection = A1cProjection.project(gmiTrend),
+              projection.confidence == .ok else { return nil }
+        return projection
+    }
+
+    /// Personal sensor-vs-meter agreement for the window. Fed *all* readings in
+    /// range — including conflict-superseded ones — because a finger stick that
+    /// lost conflict resolution to a near-simultaneous sensor value is exactly
+    /// the comparison pair the analyzer needs.
+    private var sensorAccuracy: SensorAccuracyResult? {
+        SensorAccuracyAnalyzer.analyze(glucose.filter { range.contains($0.timestamp) })
+    }
+
     private var tirTrend: [TIRPoint] {
         TIRTrend.weekly(activeReadings, thresholds: thresholds)
     }
@@ -121,6 +138,9 @@ struct StatisticsView: View {
                     if tirTrend.count >= 2 { tirTrendCard.appearTransition(delay: 0.36) }
                     if gmiTrend.count >= 2 || !labResultsInRange.isEmpty {
                         gmiTrendCard.appearTransition(delay: 0.42)
+                    }
+                    if let accuracy = sensorAccuracy {
+                        sensorAccuracyCard(accuracy).appearTransition(delay: 0.48)
                     }
                 } else {
                     EmptyStateView(
@@ -327,12 +347,30 @@ struct StatisticsView: View {
             VStack(alignment: .leading, spacing: 12) {
                 Chart {
                     ForEach(gmiTrend) { point in
-                        LineMark(x: .value("Week", point.weekStart), y: .value("A1c", point.gmi))
+                        LineMark(x: .value("Week", point.weekStart), y: .value("A1c", point.gmi),
+                                 series: .value("Series", "Estimated"))
                             .interpolationMethod(.catmullRom)
                             .foregroundStyle(Theme.accent)
                         PointMark(x: .value("Week", point.weekStart), y: .value("A1c", point.gmi))
                             .foregroundStyle(Theme.accent)
                             .symbolSize(50)
+                    }
+                    if let projection = a1cProjection, let last = gmiTrend.last {
+                        let projectionDate = last.weekStart
+                            .addingTimeInterval(A1cProjection.projectionDays * 86_400)
+                        LineMark(x: .value("Week", last.weekStart), y: .value("A1c", last.gmi),
+                                 series: .value("Series", "Projection"))
+                            .foregroundStyle(Theme.textTertiary)
+                            .lineStyle(StrokeStyle(lineWidth: 1.5, dash: [5, 4]))
+                        LineMark(x: .value("Week", projectionDate),
+                                 y: .value("A1c", projection.projectedA1cPercent),
+                                 series: .value("Series", "Projection"))
+                            .foregroundStyle(Theme.textTertiary)
+                            .lineStyle(StrokeStyle(lineWidth: 1.5, dash: [5, 4]))
+                        PointMark(x: .value("Week", projectionDate),
+                                  y: .value("A1c", projection.projectedA1cPercent))
+                            .foregroundStyle(Theme.textTertiary)
+                            .symbolSize(40)
                     }
                     ForEach(labResultsInRange) { lab in
                         PointMark(x: .value("Lab date", lab.timestamp), y: .value("A1c", lab.value))
@@ -371,10 +409,29 @@ struct StatisticsView: View {
                 HStack(spacing: 16) {
                     trendLegend("Estimated (GMI)", color: Theme.accent)
                     trendLegend("Lab A1c", color: Theme.zoneWarning)
+                    if a1cProjection != nil {
+                        trendLegend("Projection", color: Theme.textTertiary)
+                    }
                     Spacer()
+                }
+
+                if let projection = a1cProjection {
+                    VStack(alignment: .leading, spacing: 3) {
+                        Text("If this trend holds, estimated A1c in ~3 months: \(projectedA1cText(projection.projectedA1cPercent))")
+                            .font(.caption)
+                            .foregroundStyle(Theme.textSecondary)
+                        Text("A projection, not a prediction — talk to your care team before changing therapy.")
+                            .font(.caption2)
+                            .foregroundStyle(Theme.textTertiary)
+                    }
+                    .accessibilityElement(children: .combine)
                 }
             }
         }
+    }
+
+    private func projectedA1cText(_ value: Double) -> String {
+        value.formatted(.number.precision(.fractionLength(1))) + "%"
     }
 
     private func trendLegend(_ label: String, color: Color) -> some View {
@@ -387,6 +444,67 @@ struct StatisticsView: View {
 
     private func labA1cText(_ value: Double) -> String {
         value.formatted(.number.precision(.fractionLength(1))) + "%"
+    }
+
+    // MARK: Sensor accuracy
+
+    private func sensorAccuracyCard(_ accuracy: SensorAccuracyResult) -> some View {
+        let mard = accuracy.meanAbsoluteRelativeDifferencePercent
+        return SectionCard("Sensor accuracy", systemImage: "target") {
+            VStack(alignment: .leading, spacing: 10) {
+                HStack(alignment: .firstTextBaseline, spacing: 6) {
+                    Text(mard.formatted(.number.precision(.fractionLength(1))) + "%")
+                        .font(.system(size: 28, weight: .semibold, design: .rounded))
+                        .foregroundStyle(mardTint(mard))
+                    Text("MARD")
+                        .font(.caption)
+                        .foregroundStyle(Theme.textSecondary)
+                }
+                .accessibilityElement(children: .combine)
+
+                HStack(spacing: 16) {
+                    accuracyMetric("Pairs", "\(accuracy.pairCount)")
+                    Divider().frame(height: 40).overlay(Theme.hairline)
+                    accuracyMetric("Avg difference",
+                                   GlucoseFormatting.labeled(mgdL: accuracy.meanAbsoluteDifferenceMgdL, unit: unit))
+                    Divider().frame(height: 40).overlay(Theme.hairline)
+                    accuracyMetric("Within 15/15", percent(accuracy.withinISO15197Fraction))
+                    Spacer()
+                }
+
+                Text(mardInterpretation(mard))
+                    .font(.footnote.weight(.medium))
+                    .foregroundStyle(mardTint(mard))
+
+                Text("Compares your own finger-stick and manual meter entries with the nearest sensor reading within 15 minutes. Informational only — not a clinical accuracy rating.")
+                    .font(.caption2)
+                    .foregroundStyle(Theme.textTertiary)
+            }
+        }
+    }
+
+    private func accuracyMetric(_ title: LocalizedStringKey, _ value: String) -> some View {
+        VStack(alignment: .leading, spacing: 3) {
+            Text(value)
+                .font(.headline)
+                .foregroundStyle(Theme.textPrimary)
+            Text(title)
+                .font(.caption2)
+                .foregroundStyle(Theme.textSecondary)
+        }
+        .accessibilityElement(children: .combine)
+    }
+
+    private func mardInterpretation(_ mard: Double) -> String {
+        if mard < 10 { return "Excellent agreement between sensor and meter." }
+        if mard <= 15 { return "Good agreement between sensor and meter." }
+        return "Larger differences than typical — check sensor placement or calibrate per the manufacturer's instructions."
+    }
+
+    private func mardTint(_ mard: Double) -> Color {
+        if mard < 10 { return Theme.zoneInRange }
+        if mard <= 15 { return Theme.zoneWarning }
+        return Theme.zoneHigh
     }
 
     // MARK: Time-in-range bar
