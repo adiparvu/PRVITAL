@@ -83,7 +83,7 @@ struct DataControlsView: View {
                     showingImporter = true
                 } label: {
                     Label {
-                        Text("Import from CSV").foregroundStyle(Theme.textPrimary)
+                        Text("Import from file").foregroundStyle(Theme.textPrimary)
                     } icon: {
                         Image(systemName: "square.and.arrow.down").foregroundStyle(Theme.accent)
                     }
@@ -91,7 +91,7 @@ struct DataControlsView: View {
             } header: {
                 Text("Import")
             } footer: {
-                Text("Add records from a CSV file you exported from Prvital. Imported rows are added as manual entries, and duplicate glucose readings are resolved automatically.")
+                Text("Add records from a CSV file exported from Prvital, Dexcom Clarity or LibreView. The format is detected automatically, imported rows are added as manual entries, and duplicate glucose readings are resolved automatically.")
                     .font(.footnote)
                     .foregroundStyle(Theme.textTertiary)
             }
@@ -155,28 +155,43 @@ struct DataControlsView: View {
     private func handleImport(_ result: Result<URL, Error>) {
         switch result {
         case .failure:
-            importResultMessage = String(localized: "Couldn't open that file.")
+            importResultMessage = "Couldn't open that file."
             showingImportResult = true
         case .success(let url):
             let scoped = url.startAccessingSecurityScopedResource()
             defer { if scoped { url.stopAccessingSecurityScopedResource() } }
             guard let data = try? Data(contentsOf: url),
                   let text = String(data: data, encoding: .utf8) else {
-                importResultMessage = String(localized: "Couldn't read that file.")
+                importResultMessage = "Couldn't read that file."
                 showingImportResult = true
                 return
             }
-            let summary = CSVGlucoseImporter.importCSV(text, into: env.entryStore)
+            // One flow for every supported layout: detect the format from the
+            // header, decode with the matching parser, and write everything
+            // through the same EntryStore path (which already resolves
+            // duplicate glucose readings).
+            guard let (format, parsed) = ExternalCSVImporter.parse(text) else {
+                Haptics.play(.warning)
+                importResultMessage = "This file doesn't look like a Prvital, Dexcom Clarity or LibreView CSV export."
+                showingImportResult = true
+                return
+            }
+            let summary = CSVGlucoseImporter.importRows(parsed.rows, into: env.entryStore,
+                                                        alreadySkipped: parsed.skipped)
             Haptics.play(summary.imported > 0 ? .success : .warning)
-            importResultMessage = Self.resultMessage(for: summary)
+            importResultMessage = Self.resultMessage(for: summary, format: format)
             showingImportResult = true
         }
     }
 
-    private static func resultMessage(for summary: ImportSummary) -> String {
-        let imported = String(localized: "Imported \(summary.imported) record(s).")
-        guard summary.skipped > 0 else { return imported }
-        return imported + " " + String(localized: "Skipped \(summary.skipped) row(s).")
+    private static func resultMessage(for summary: ImportSummary, format: ExternalCSVFormat) -> String {
+        let noun = summary.imported == 1 ? "record" : "records"
+        var message = "Imported \(summary.imported.formatted()) \(noun) from \(format.displayName)."
+        if summary.skipped > 0 {
+            let rows = summary.skipped == 1 ? "row" : "rows"
+            message += " Skipped \(summary.skipped.formatted()) \(rows)."
+        }
+        return message
     }
 
     private func deleteEverything() {
