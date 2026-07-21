@@ -325,9 +325,24 @@ jobs:
             echo '</dict></plist>'
           } > ExportOptions.plist
           echo "--- ExportOptions.plist ---"; cat ExportOptions.plist
-          xcodebuild -exportArchive \
+          # Apple's build-delivery service (AppsService) intermittently returns a
+          # spurious 401 NOT_AUTHORIZED or a 5xx even when the same API key just
+          # authenticated for signing-asset creation. Retry the export/upload a
+          # few times with backoff so a transient blip doesn't fail the run.
+          attempt=1
+          max=3
+          until xcodebuild -exportArchive \
             -archivePath build/Prvital.xcarchive \
             -exportOptionsPlist ExportOptions.plist \
             -authenticationKeyID "${{ secrets.ASC_KEY_ID }}" \
             -authenticationKeyIssuerID "${{ secrets.ASC_ISSUER_ID }}" \
-            -authenticationKeyPath "$HOME/private_keys/AuthKey_${{ secrets.ASC_KEY_ID }}.p8"
+            -authenticationKeyPath "$HOME/private_keys/AuthKey_${{ secrets.ASC_KEY_ID }}.p8"; do
+            if [ "$attempt" -ge "$max" ]; then
+              echo "Upload failed after $attempt attempt(s)."
+              exit 1
+            fi
+            wait=$((attempt * 45))
+            echo "Upload attempt $attempt failed; retrying in ${wait}s…"
+            sleep "$wait"
+            attempt=$((attempt + 1))
+          done
