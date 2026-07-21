@@ -13,8 +13,10 @@ struct StatisticsView: View {
     @Query(sort: \InsulinDose.timestamp, order: .reverse) private var insulin: [InsulinDose]
     @Query(sort: \CarbEntry.timestamp, order: .reverse) private var carbs: [CarbEntry]
     @Query(sort: \ActivityEntry.startTimestamp, order: .reverse) private var activity: [ActivityEntry]
+    @Query(sort: \LabResult.timestamp, order: .reverse) private var labResults: [LabResult]
 
     @State private var interval: InsightsInterval = .week
+    @State private var showingLogLab = false
 
     private var unit: GlucoseUnit { env.preferences.glucoseUnit }
     private var thresholds: GlucoseThresholds { env.preferences.thresholds }
@@ -59,6 +61,12 @@ struct StatisticsView: View {
 
     private var gmiTrend: [GMIPoint] {
         GMITrend.weekly(activeReadings)
+    }
+
+    /// Real clinic HbA1c results dated within the selected window — plotted over
+    /// the estimated-A1c trend for comparison.
+    private var labResultsInRange: [LabResult] {
+        labResults.filter { range.contains($0.timestamp) }
     }
 
     private var tirTrend: [TIRPoint] {
@@ -111,7 +119,9 @@ struct StatisticsView: View {
                     if let overnight = overnightStats, overnight.hasGlucose { overnightCard(overnight).appearTransition(delay: 0.24) }
                     if dailyDays.count >= 2 { bestWorstDayCard.appearTransition(delay: 0.30) }
                     if tirTrend.count >= 2 { tirTrendCard.appearTransition(delay: 0.36) }
-                    if gmiTrend.count >= 2 { gmiTrendCard.appearTransition(delay: 0.42) }
+                    if gmiTrend.count >= 2 || !labResultsInRange.isEmpty {
+                        gmiTrendCard.appearTransition(delay: 0.42)
+                    }
                 } else {
                     EmptyStateView(
                         systemImage: "chart.pie",
@@ -125,6 +135,7 @@ struct StatisticsView: View {
             .animation(.smooth, value: interval)
         }
         .background(Theme.background)
+        .sheet(isPresented: $showingLogLab) { LogLabA1cSheet() }
     }
 
     // MARK: Carbs by meal
@@ -293,39 +304,89 @@ struct StatisticsView: View {
         }
     }
 
-    // MARK: Estimated A1c trend
+    // MARK: Estimated A1c trend (with lab A1c overlay)
+
+    /// A small "＋ Log lab A1c" affordance shown in the trend card's header.
+    private var logLabButton: some View {
+        Button {
+            Haptics.play(.selection)
+            showingLogLab = true
+        } label: {
+            Label("Log lab A1c", systemImage: "plus.circle.fill")
+                .font(.footnote.weight(.semibold))
+                .labelStyle(.titleAndIcon)
+        }
+        .buttonStyle(.plain)
+        .foregroundStyle(Theme.accent)
+        .accessibilityHint("Record a clinic HbA1c result to compare against the estimate.")
+    }
 
     private var gmiTrendCard: some View {
-        SectionCard("Estimated A1c trend", systemImage: "chart.xyaxis.line") {
-            Chart(gmiTrend) { point in
-                LineMark(x: .value("Week", point.weekStart), y: .value("GMI", point.gmi))
-                    .interpolationMethod(.catmullRom)
-                    .foregroundStyle(Theme.accent)
-                PointMark(x: .value("Week", point.weekStart), y: .value("GMI", point.gmi))
-                    .foregroundStyle(Theme.accent)
-            }
-            .chartYAxis {
-                AxisMarks(values: .automatic(desiredCount: 4)) { value in
-                    AxisGridLine().foregroundStyle(Theme.hairline)
-                    AxisValueLabel {
-                        if let gmi = value.as(Double.self) {
-                            Text(gmi.formatted(.number.precision(.fractionLength(1))) + "%")
+        SectionCard("Estimated A1c trend", systemImage: "chart.xyaxis.line",
+                    accessory: AnyView(logLabButton)) {
+            VStack(alignment: .leading, spacing: 12) {
+                Chart {
+                    ForEach(gmiTrend) { point in
+                        LineMark(x: .value("Week", point.weekStart), y: .value("A1c", point.gmi))
+                            .interpolationMethod(.catmullRom)
+                            .foregroundStyle(Theme.accent)
+                        PointMark(x: .value("Week", point.weekStart), y: .value("A1c", point.gmi))
+                            .foregroundStyle(Theme.accent)
+                            .symbolSize(50)
+                    }
+                    ForEach(labResultsInRange) { lab in
+                        PointMark(x: .value("Lab date", lab.timestamp), y: .value("A1c", lab.value))
+                            .foregroundStyle(Theme.zoneWarning)
+                            .symbol(.diamond)
+                            .symbolSize(150)
+                            .annotation(position: .top, spacing: 1) {
+                                Text(labA1cText(lab.value))
+                                    .font(.caption2.weight(.semibold))
+                                    .foregroundStyle(Theme.zoneWarning)
+                            }
+                    }
+                }
+                .chartYAxis {
+                    AxisMarks(values: .automatic(desiredCount: 4)) { value in
+                        AxisGridLine().foregroundStyle(Theme.hairline)
+                        AxisValueLabel {
+                            if let gmi = value.as(Double.self) {
+                                Text(gmi.formatted(.number.precision(.fractionLength(1))) + "%")
+                            }
                         }
                     }
                 }
-            }
-            .chartXAxis {
-                AxisMarks(values: .stride(by: .weekOfYear)) { value in
-                    AxisGridLine().foregroundStyle(Theme.hairline)
-                    AxisValueLabel {
-                        if let date = value.as(Date.self) {
-                            Text(date.formatted(.dateTime.month(.abbreviated).day()))
+                .chartXAxis {
+                    AxisMarks(values: .stride(by: .weekOfYear)) { value in
+                        AxisGridLine().foregroundStyle(Theme.hairline)
+                        AxisValueLabel {
+                            if let date = value.as(Date.self) {
+                                Text(date.formatted(.dateTime.month(.abbreviated).day()))
+                            }
                         }
                     }
                 }
+                .frame(height: 150)
+
+                HStack(spacing: 16) {
+                    trendLegend("Estimated (GMI)", color: Theme.accent)
+                    trendLegend("Lab A1c", color: Theme.zoneWarning)
+                    Spacer()
+                }
             }
-            .frame(height: 150)
         }
+    }
+
+    private func trendLegend(_ label: String, color: Color) -> some View {
+        HStack(spacing: 6) {
+            Circle().fill(color).frame(width: 9, height: 9)
+            Text(label).font(.caption2).foregroundStyle(Theme.textSecondary)
+        }
+        .accessibilityElement(children: .combine)
+    }
+
+    private func labA1cText(_ value: Double) -> String {
+        value.formatted(.number.precision(.fractionLength(1))) + "%"
     }
 
     // MARK: Time-in-range bar
@@ -467,4 +528,72 @@ struct StatisticsView: View {
     return StatisticsView()
         .environment(env)
         .modelContainer(env.modelContainer)
+}
+
+/// Records a real clinic HbA1c result, saved straight into the SwiftData store
+/// via the view's `modelContext` (no dedicated store), so it appears on the
+/// estimated-A1c trend for comparison.
+struct LogLabA1cSheet: View {
+    @Environment(\.modelContext) private var modelContext
+    @Environment(\.dismiss) private var dismiss
+
+    /// Sensible starting point within the plausible HbA1c range.
+    @State private var value: Double = 7.0
+    @State private var date = Date()
+    @State private var note = ""
+
+    private var valueText: String {
+        value.formatted(.number.precision(.fractionLength(1))) + "%"
+    }
+
+    var body: some View {
+        NavigationStack {
+            Form {
+                Section {
+                    HStack {
+                        Text(valueText)
+                            .font(.system(size: 30, weight: .bold, design: .rounded))
+                            .foregroundStyle(Theme.accent)
+                            .contentTransition(.numericText())
+                            .animation(.snappy, value: value)
+                        Spacer()
+                        Stepper("A1c", value: $value, in: 4.0...15.0, step: 0.1)
+                            .labelsHidden()
+                    }
+                } header: {
+                    Text("Lab HbA1c")
+                } footer: {
+                    Text("Enter the HbA1c from your clinic lab report. Prvital plots it on your estimated-A1c trend so you can see how the CGM estimate compares to the blood test.")
+                }
+                Section {
+                    DatePicker("Test date", selection: $date,
+                               in: ...Date(), displayedComponents: .date)
+                }
+                Section("Note") {
+                    TextField("Optional (e.g. clinic, fasting)", text: $note, axis: .vertical)
+                }
+            }
+            .navigationTitle("Log lab A1c")
+            .navigationBarTitleDisplayMode(.inline)
+            .toolbar {
+                ToolbarItem(placement: .cancellationAction) { Button("Cancel") { dismiss() } }
+                ToolbarItem(placement: .confirmationAction) {
+                    Button("Save", action: save).disabled(value <= 0)
+                }
+            }
+        }
+    }
+
+    private func save() {
+        let result = LabResult(value: value, timestamp: date, note: note.isEmpty ? nil : note)
+        modelContext.insert(result)
+        try? modelContext.save()
+        Haptics.play(.success)
+        dismiss()
+    }
+}
+
+#Preview("Log lab A1c") {
+    LogLabA1cSheet()
+        .modelContainer(AppEnvironment.preview().modelContainer)
 }
