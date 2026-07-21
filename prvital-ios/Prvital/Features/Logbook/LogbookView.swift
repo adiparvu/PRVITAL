@@ -22,6 +22,14 @@ struct LogbookView: View {
     @State private var errorMessage: String?
     @State private var showingError = false
 
+    // The built register, cached in state and rebuilt only when the window or the
+    // underlying data changes — never on every body pass. Building can touch up
+    // to a year of readings, so doing it inline in `body` (re-run on scroll and
+    // sheet animation) risked stalling the main thread; deferring it behind a
+    // `.task` lets the sheet present first, then fills the table in.
+    @State private var rows: [LogbookRow] = []
+    @State private var isBuilding = false
+
     // Fixed metrics keep the pinned date column and the scrolling grid aligned.
     private static let rowHeight: CGFloat = 44
     private static let headerHeight: CGFloat = 48
@@ -42,8 +50,19 @@ struct LogbookView: View {
         return DateInterval(start: calendar.startOfDay(for: start), end: now)
     }
 
-    private var rows: [LogbookRow] {
-        LogbookBuilder.rows(
+    /// Changes whenever the window or the underlying data does, so `.task(id:)`
+    /// rebuilds exactly then — not on every scroll or animation frame.
+    private var rebuildKey: String {
+        "\(range.rawValue)|\(glucose.count)|\(insulin.count)|\(carbs.count)|\(observations.count)"
+    }
+
+    /// Rebuilds the register. Yields first so the sheet finishes presenting, then
+    /// runs the pure builder once. Cheap for a day/week; the year window is the
+    /// only heavy case and it no longer blocks the sheet from opening.
+    private func rebuild() async {
+        isBuilding = true
+        await Task.yield()
+        rows = LogbookBuilder.rows(
             readings: glucose,
             insulin: insulin,
             carbs: carbs,
@@ -52,14 +71,16 @@ struct LogbookView: View {
             calendar: calendar,
             anchors: LogbookAnchors(scheduleSlots: env.preferences.glucoseSchedule.slots)
         )
+        isBuilding = false
     }
 
     var body: some View {
-        let rows = self.rows
-
-        return NavigationStack {
+        NavigationStack {
             Group {
-                if rows.isEmpty {
+                if isBuilding && rows.isEmpty {
+                    ProgressView("Building the register…")
+                        .frame(maxWidth: .infinity, maxHeight: .infinity)
+                } else if rows.isEmpty {
                     ScrollView {
                         EmptyStateView(
                             systemImage: "tablecells",
@@ -78,6 +99,7 @@ struct LogbookView: View {
                     }
                 }
             }
+            .task(id: rebuildKey) { await rebuild() }
             .background(Theme.background)
             .navigationTitle("Logbook")
             .navigationBarTitleDisplayMode(.inline)
