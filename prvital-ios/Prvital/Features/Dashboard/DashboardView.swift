@@ -1,5 +1,6 @@
 import SwiftUI
 import SwiftData
+import StoreKit
 
 /// The Dashboard — the app's first screen. Shows the current glucose value as a
 /// hero gauge, the last three hours as a trend chart, and the most recent
@@ -8,6 +9,7 @@ import SwiftData
 /// the shared entry editors.
 struct DashboardView: View {
     @Environment(AppEnvironment.self) private var env
+    @Environment(\.requestReview) private var requestReview
 
     @Query(sort: \GlucoseReading.timestamp, order: .reverse) private var readings: [GlucoseReading]
     @Query(sort: \InsulinDose.timestamp, order: .reverse) private var insulin: [InsulinDose]
@@ -144,6 +146,16 @@ struct DashboardView: View {
             }
             .sheet(isPresented: $showRuleOf15) {
                 RuleOf15Sheet()
+            }
+            .task {
+                // A day with data is a good moment: count it, and — sparingly,
+                // at most once per app version after enough such moments — ask
+                // for a rating. StoreKit may still choose to suppress the prompt.
+                guard todayStats.hasGlucose else { return }
+                RatingPrompter.registerPositiveMoment()
+                if RatingPrompter.consumePromptOpportunity() {
+                    requestReview()
+                }
             }
         }
     }

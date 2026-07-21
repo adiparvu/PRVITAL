@@ -1,4 +1,5 @@
 import SwiftUI
+import StoreKit
 
 /// Settings hub. A grouped list of destinations for sources, units, reminders,
 /// privacy, data controls and the audit trail. Two rows surface live state as
@@ -6,7 +7,9 @@ import SwiftUI
 /// most important choices are visible without drilling in.
 struct SettingsView: View {
     @Environment(AppEnvironment.self) private var env
+    @Environment(\.requestReview) private var requestReview
     @State private var showWhatsNew = false
+    @State private var showFeedback = false
 
     private var scheduleSubtitle: String {
         let count = env.preferences.glucoseSchedule.activeSlots.count
@@ -206,11 +209,44 @@ struct SettingsView: View {
                     }
                 }
                 .listRowBackground(Theme.surface)
+
+                Section {
+                    Button {
+                        Haptics.play(.light)
+                        showFeedback = true
+                    } label: {
+                        SettingsRow(
+                            title: "Send feedback",
+                            subtitle: String(localized: "Ideas, problems or a kind word"),
+                            systemImage: "envelope",
+                            tint: Theme.accent
+                        )
+                    }
+                    Button {
+                        Haptics.play(.selection)
+                        requestReview()
+                    } label: {
+                        SettingsRow(
+                            title: "Rate Prvital",
+                            subtitle: String(localized: "A rating helps others find us"),
+                            systemImage: "star",
+                            tint: Theme.zoneHigh
+                        )
+                    }
+                } header: {
+                    Text("Help & feedback")
+                } footer: {
+                    Text("Prvital \(AppInfo.versionBuild)")
+                        .font(.footnote)
+                        .foregroundStyle(Theme.textTertiary)
+                }
+                .listRowBackground(Theme.surface)
             }
             .scrollContentBackground(.hidden)
             .prvitalTabBackground()
             .navigationTitle("Settings")
             .sheet(isPresented: $showWhatsNew) { WhatsNewView() }
+            .sheet(isPresented: $showFeedback) { FeedbackView() }
         }
     }
 }
