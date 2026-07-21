@@ -120,6 +120,17 @@ struct SettingsView: View {
                             tint: Theme.zoneWarning
                         )
                     }
+
+                    NavigationLink {
+                        AppearanceSettingsView()
+                    } label: {
+                        SettingsRow(
+                            title: "Appearance",
+                            subtitle: (AccentTheme(rawValue: env.preferences.accentThemeRaw) ?? .default).displayName,
+                            systemImage: "paintpalette.fill",
+                            tint: Theme.accent
+                        )
+                    }
                 }
                 .listRowBackground(Theme.surface)
 
