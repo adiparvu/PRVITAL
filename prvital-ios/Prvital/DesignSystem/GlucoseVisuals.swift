@@ -275,8 +275,8 @@ struct GlucoseTrendChart: View {
 
     /// The two-line label attached to an annotated extreme: the value in the
     /// zone's colour with the time beneath, like a tide chart's crest labels.
-    /// Sits on a small material chip (same treatment as the scrub callout) so it
-    /// stays readable over the curve and the gradient fill.
+    /// No frame or box — plain text sitting on the curve; a soft halo in the
+    /// page-background colour keeps it legible over the line and gradient fill.
     private func extremeLabel(_ extreme: ChartExtreme) -> some View {
         VStack(spacing: 0) {
             Text(GlucoseFormatting.string(mgdL: extreme.value, unit: unit))
@@ -286,10 +286,8 @@ struct GlucoseTrendChart: View {
                 .font(.system(size: 9, weight: .medium))
                 .foregroundStyle(Theme.textSecondary)
         }
-        .padding(.horizontal, 6)
-        .padding(.vertical, 3)
-        .background(.ultraThinMaterial, in: RoundedRectangle(cornerRadius: 7))
-        .overlay(RoundedRectangle(cornerRadius: 7).stroke(Theme.hairline))
+        .shadow(color: Theme.background, radius: 2.5)
+        .shadow(color: Theme.background.opacity(0.8), radius: 1)
     }
 
     private func scrubCallout(_ reading: GlucoseReading) -> some View {
@@ -301,10 +299,11 @@ struct GlucoseTrendChart: View {
                 .font(.caption2)
                 .foregroundStyle(Theme.textSecondary)
         }
-        .padding(.horizontal, 8)
-        .padding(.vertical, 5)
-        .background(.ultraThinMaterial, in: RoundedRectangle(cornerRadius: 8))
-        .overlay(RoundedRectangle(cornerRadius: 8).stroke(Theme.hairline))
+        // No frame: a clean floating label. The soft page-coloured halo (rather
+        // than a boxed material chip with a border) keeps it readable as it
+        // tracks the finger across the curve.
+        .shadow(color: Theme.background, radius: 3)
+        .shadow(color: Theme.background.opacity(0.85), radius: 1.5)
     }
 
     /// The x-range with a little trailing headroom (3% of the window, at least
