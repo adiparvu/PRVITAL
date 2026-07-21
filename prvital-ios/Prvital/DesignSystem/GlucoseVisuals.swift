@@ -227,14 +227,16 @@ struct GlucoseTrendChart: View {
         .chartYScale(domain: yDomain)
         // The full-size chart hides the y-axis entirely — the on-curve extreme
         // labels carry the values, tide-chart style. Only the compact variant
-        // (no annotations) keeps a small axis.
-        .chartYAxis(compact ? .automatic : .hidden)
+        // (no annotations) keeps a small axis. Conditional CONTENT rather than a
+        // stacked visibility modifier, so exactly one axis definition applies.
         .chartYAxis {
-            AxisMarks(values: .automatic(desiredCount: 3)) { value in
-                AxisGridLine().foregroundStyle(Theme.hairline)
-                AxisValueLabel {
-                    if let mgdL = value.as(Double.self) {
-                        Text(GlucoseFormatting.string(mgdL: mgdL, unit: unit))
+            if compact {
+                AxisMarks(values: .automatic(desiredCount: 3)) { value in
+                    AxisGridLine().foregroundStyle(Theme.hairline)
+                    AxisValueLabel {
+                        if let mgdL = value.as(Double.self) {
+                            Text(GlucoseFormatting.string(mgdL: mgdL, unit: unit))
+                        }
                     }
                 }
             }
