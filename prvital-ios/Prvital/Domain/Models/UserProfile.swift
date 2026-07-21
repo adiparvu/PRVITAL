@@ -24,8 +24,13 @@ final class UserProfile {
     /// A free-text note (care team, clinic, anything the user wants on hand).
     var careTeamNote: String?
     /// The avatar tint as a 6-digit "RRGGBB" hex string (e.g. "8B6FE8").
-    /// `nil` means "follow the app accent colour".
+    /// `nil` means "follow the app accent colour". Doubles as the ring colour
+    /// around a photo avatar.
     var avatarColorHex: String?
+    /// An optional profile photo (downscaled JPEG data). When present it takes
+    /// the place of the initials/symbol avatar. Kept small so it's CloudKit- and
+    /// widget-friendly.
+    var avatarImageData: Data?
     /// Year of birth, if the user chooses to record it.
     var birthYear: Int?
     /// Body weight in kilograms — the user's own record only, never used for dosing.
@@ -156,11 +161,12 @@ enum ProfileFormatting {
     }
 
     /// The header's duration phrase for a diagnosis, e.g. "7 years with diabetes".
+    /// Localized so it never shows English on a translated device.
     static func durationLine(yearsWithDiabetes years: Int) -> String {
         switch years {
-        case ..<1: return "Diagnosed this year"
-        case 1: return "1 year with diabetes"
-        default: return "\(years) years with diabetes"
+        case ..<1: return String(localized: "Diagnosed this year")
+        case 1: return String(localized: "1 year with diabetes")
+        default: return String(localized: "\(years) years with diabetes")
         }
     }
 
@@ -210,9 +216,9 @@ enum ProfileFormatting {
     /// today through 30 days away — nil for past dates or the further future.
     static func appointmentCountdown(daysAway: Int) -> String? {
         switch daysAway {
-        case 0: return "Appointment today"
-        case 1: return "Appointment tomorrow"
-        case 2...30: return "Appointment in \(daysAway) days"
+        case 0: return String(localized: "Appointment today")
+        case 1: return String(localized: "Appointment tomorrow")
+        case 2...30: return String(localized: "Appointment in \(daysAway) days")
         default: return nil
         }
     }

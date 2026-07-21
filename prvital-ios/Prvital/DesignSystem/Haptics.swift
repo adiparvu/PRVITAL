@@ -8,9 +8,19 @@ import UIKit
 enum Haptics {
     enum Style { case light, medium, success, warning, selection }
 
+    /// Reads the whole-app haptics switch (Settings → Appearance) from the shared
+    /// defaults. Defaults to on when unset, so haptics work before the user ever
+    /// opens the setting. Reading here — rather than at every call site — keeps
+    /// the single toggle authoritative without threading `Preferences` through.
+    private static var isEnabled: Bool {
+        (UserDefaults(suiteName: SharedStore.appGroupIdentifier)?
+            .object(forKey: "pref.hapticsEnabled") as? Bool) ?? true
+    }
+
     @MainActor
     static func play(_ style: Style) {
         #if os(iOS)
+        guard isEnabled else { return }
         switch style {
         case .light: UIImpactFeedbackGenerator(style: .light).impactOccurred()
         case .medium: UIImpactFeedbackGenerator(style: .medium).impactOccurred()

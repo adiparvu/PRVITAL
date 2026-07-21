@@ -84,7 +84,7 @@ struct DashboardView: View {
                 }
                 .padding()
             }
-            .background(Theme.background)
+            .prvitalTabBackground()
             .navigationTitle("Today")
             .toolbar {
                 ToolbarItem(placement: .topBarLeading) {

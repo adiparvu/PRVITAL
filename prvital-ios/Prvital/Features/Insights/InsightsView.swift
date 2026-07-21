@@ -63,7 +63,7 @@ struct InsightsView: View {
                 case .agp: AGPReportView()
                 }
             }
-            .background(Theme.background)
+            .prvitalTabBackground()
             .navigationTitle("Insights")
             .toolbar {
                 ToolbarItem(placement: .topBarLeading) {

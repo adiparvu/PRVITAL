@@ -147,6 +147,17 @@ extension Color {
 }
 
 #if canImport(UIKit)
+extension Color {
+    /// The colour as an uppercase "RRGGBB" hex string (alpha dropped), for
+    /// persisting a user-picked colour. Nil if the components can't be read.
+    var hexString: String? {
+        var r: CGFloat = 0, g: CGFloat = 0, b: CGFloat = 0, a: CGFloat = 0
+        guard UIColor(self).getRed(&r, green: &g, blue: &b, alpha: &a) else { return nil }
+        let clamp: (CGFloat) -> Int = { Swift.max(0, Swift.min(255, Int(($0 * 255).rounded()))) }
+        return String(format: "%02X%02X%02X", clamp(r), clamp(g), clamp(b))
+    }
+}
+
 extension UIColor {
     convenience init(hex: UInt, alpha: CGFloat = 1) {
         self.init(

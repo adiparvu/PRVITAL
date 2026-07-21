@@ -28,6 +28,13 @@ final class Preferences {
         self.accentThemeRaw = self.defaults.string(forKey: Keys.accentTheme) ?? "default"
         self.journalCardDensityRaw = self.defaults.string(forKey: Keys.journalCardDensity) ?? "standard"
         self.lastSeenWhatsNewVersion = self.defaults.string(forKey: Keys.lastSeenWhatsNew) ?? ""
+        self.themeModeRaw = self.defaults.string(forKey: Keys.themeMode) ?? ThemeMode.system.rawValue
+        self.useSystemTextSize = (self.defaults.object(forKey: Keys.useSystemTextSize) as? Bool) ?? true
+        self.textSizeRaw = self.defaults.string(forKey: Keys.textSize) ?? AppTextSize.large.rawValue
+        self.hapticsEnabled = (self.defaults.object(forKey: Keys.hapticsEnabled) as? Bool) ?? true
+        self.backgroundKindRaw = self.defaults.string(forKey: Keys.backgroundKind) ?? AppBackgroundKind.standard.rawValue
+        self.backgroundGradientRaw = self.defaults.string(forKey: Keys.backgroundGradient) ?? BackgroundGradient.aurora.rawValue
+        self.backgroundPhotoData = self.defaults.data(forKey: Keys.backgroundPhoto)
     }
 
     /// How much detail the journal's day cards show ("compact" / "standard" /
@@ -136,6 +143,64 @@ final class Preferences {
         didSet { defaults.set(accentThemeRaw, forKey: Keys.accentTheme) }
     }
 
+    // MARK: Appearance (theme mode, text size, haptics, background)
+
+    /// Light / dark / system. Stored raw so `ThemeMode` (a DesignSystem type)
+    /// stays the single source of truth for the mapping.
+    var themeModeRaw: String {
+        didSet { defaults.set(themeModeRaw, forKey: Keys.themeMode) }
+    }
+    var themeMode: ThemeMode {
+        get { ThemeMode(rawValue: themeModeRaw) ?? .system }
+        set { themeModeRaw = newValue.rawValue }
+    }
+
+    /// When true, Prvital follows the system Dynamic Type size; when false, it
+    /// uses `textSize` as a fixed override for the app only.
+    var useSystemTextSize: Bool {
+        didSet { defaults.set(useSystemTextSize, forKey: Keys.useSystemTextSize) }
+    }
+    var textSizeRaw: String {
+        didSet { defaults.set(textSizeRaw, forKey: Keys.textSize) }
+    }
+    var textSize: AppTextSize {
+        get { AppTextSize(rawValue: textSizeRaw) ?? .large }
+        set { textSizeRaw = newValue.rawValue }
+    }
+
+    /// The whole-app haptics switch. `Haptics.play` reads the same key, so
+    /// turning this off silences every haptic without touching call sites.
+    var hapticsEnabled: Bool {
+        didSet { defaults.set(hapticsEnabled, forKey: Keys.hapticsEnabled) }
+    }
+
+    /// Background: standard surface, a gradient preset, or the user's photo.
+    var backgroundKindRaw: String {
+        didSet { defaults.set(backgroundKindRaw, forKey: Keys.backgroundKind) }
+    }
+    var backgroundKind: AppBackgroundKind {
+        get { AppBackgroundKind(rawValue: backgroundKindRaw) ?? .standard }
+        set { backgroundKindRaw = newValue.rawValue }
+    }
+    var backgroundGradientRaw: String {
+        didSet { defaults.set(backgroundGradientRaw, forKey: Keys.backgroundGradient) }
+    }
+    var backgroundGradient: BackgroundGradient {
+        get { BackgroundGradient(rawValue: backgroundGradientRaw) ?? .aurora }
+        set { backgroundGradientRaw = newValue.rawValue }
+    }
+    /// The chosen background photo, if any (JPEG/PNG data). Stored in the shared
+    /// defaults so it survives relaunches; nil clears it.
+    var backgroundPhotoData: Data? {
+        didSet {
+            if let backgroundPhotoData {
+                defaults.set(backgroundPhotoData, forKey: Keys.backgroundPhoto)
+            } else {
+                defaults.removeObject(forKey: Keys.backgroundPhoto)
+            }
+        }
+    }
+
     /// Quick-add presets (the +1U … +10U row and 20g … 100g row).
     let insulinPresets: [Double] = [1, 2, 4, 6, 8, 10]
     let carbPresets: [Double] = [20, 40, 60, 80, 100]
@@ -162,6 +227,13 @@ final class Preferences {
         static let accentTheme = "pref.accentTheme"
         static let journalCardDensity = "pref.journalCardDensity"
         static let lastSeenWhatsNew = "pref.lastSeenWhatsNewVersion"
+        static let themeMode = ThemeMode.preferenceKey
+        static let useSystemTextSize = "pref.useSystemTextSize"
+        static let textSize = AppTextSize.preferenceKey
+        static let hapticsEnabled = "pref.hapticsEnabled"
+        static let backgroundKind = AppBackgroundKind.preferenceKey
+        static let backgroundGradient = BackgroundGradient.preferenceKey
+        static let backgroundPhoto = AppBackgroundKind.photoKey
     }
 
     private static func readUnit(_ d: UserDefaults) -> GlucoseUnit {

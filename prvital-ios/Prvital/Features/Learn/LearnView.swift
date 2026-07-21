@@ -19,7 +19,7 @@ struct LearnView: View {
                 }
                 .padding()
             }
-            .background(Theme.background)
+            .prvitalTabBackground()
             .navigationTitle("Learn")
         }
     }

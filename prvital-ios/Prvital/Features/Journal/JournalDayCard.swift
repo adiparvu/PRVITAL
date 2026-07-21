@@ -536,8 +536,9 @@ struct JournalDayDetailView: View {
 
 // MARK: - Stat chip
 
-/// A small Tide Guide-style stat chip: a rounded-square tinted icon beside a
-/// value with a tiny caption. Four of these make one card row.
+/// A small Tide Guide-style stat chip: a bare tinted icon beside a value with a
+/// tiny caption. Four of these make one card row. Per device feedback the icon
+/// carries the colour on its own — no tinted box behind it.
 struct JournalStatChip: View {
     let systemImage: String
     let tint: Color
@@ -547,10 +548,9 @@ struct JournalStatChip: View {
     var body: some View {
         HStack(spacing: 7) {
             Image(systemName: systemImage)
-                .font(.system(size: 11, weight: .bold))
+                .font(.system(size: 14, weight: .semibold))
                 .foregroundStyle(tint)
-                .frame(width: 24, height: 24)
-                .background(tint.opacity(0.15), in: RoundedRectangle(cornerRadius: 7, style: .continuous))
+                .frame(width: 20)
             VStack(alignment: .leading, spacing: 1) {
                 Text(value)
                     .font(.system(size: 13, weight: .semibold, design: .rounded))

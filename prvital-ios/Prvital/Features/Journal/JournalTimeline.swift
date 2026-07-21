@@ -141,11 +141,12 @@ struct JournalEntryRow: View {
     }
 
     private var icon: some View {
+        // Per device feedback: the tinted icon stands on its own — no colour
+        // chip behind it. The fixed frame keeps every row's text aligned.
         Image(systemName: symbolName)
-            .font(.system(size: 15, weight: .semibold))
+            .font(.system(size: 17, weight: .semibold))
             .foregroundStyle(tint)
             .frame(width: 36, height: 36)
-            .background(tint.opacity(0.15), in: .circle)
     }
 
     private var symbolName: String {

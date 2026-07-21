@@ -66,7 +66,7 @@ struct WhatsNewView: View {
 
                     TourPage(
                         title: String(localized: "Make it yours"),
-                        description: String(localized: "Six accent themes carried across the app, widgets and watch — plus journal density and appearance options. Calm by default, personal by choice.")
+                        description: String(localized: "Six accent themes across the app, widgets and watch — plus light or dark mode, text size, a gradient or photo background, a profile photo, and haptics. Calm by default, personal by choice.")
                     ) { ThemesHero() }
                     .tag(5)
                 }

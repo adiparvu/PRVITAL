@@ -86,7 +86,7 @@ struct JournalView: View {
                     }
                 }
             }
-            .background(Theme.background)
+            .prvitalTabBackground()
             .navigationTitle("Journal")
             .toolbar {
                 // One filters menu on the left (density + calendar united, per

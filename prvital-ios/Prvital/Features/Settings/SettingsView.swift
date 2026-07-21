@@ -208,7 +208,7 @@ struct SettingsView: View {
                 .listRowBackground(Theme.surface)
             }
             .scrollContentBackground(.hidden)
-            .background(Theme.background)
+            .prvitalTabBackground()
             .navigationTitle("Settings")
             .sheet(isPresented: $showWhatsNew) { WhatsNewView() }
         }
@@ -217,35 +217,37 @@ struct SettingsView: View {
 
 // MARK: - Private helpers
 
-/// The profile row at the top of Settings: avatar (initials or glyph), name and a
-/// one-line clinical summary.
+/// The profile row at the top of Settings: a larger, card-like avatar and name
+/// (per device feedback: make the profile block bigger). The medical summary
+/// stays inside the profile, not on the settings list. The avatar shows the
+/// user's photo when set, otherwise their initials on the ring colour.
 private struct ProfileSettingsRow: View {
     @Bindable var profile: UserProfile
 
-    var body: some View {
-        HStack(spacing: 14) {
-            ZStack {
-                Circle().fill(Theme.accentSoft).frame(width: 44, height: 44)
-                if let initials = profile.initials {
-                    Text(initials)
-                        .font(.system(size: 17, weight: .semibold, design: .rounded))
-                        .foregroundStyle(Theme.accent)
-                } else {
-                    Image(systemName: profile.avatarSymbol)
-                        .font(.system(size: 20))
-                        .foregroundStyle(Theme.accent)
-                }
-            }
-            .accessibilityHidden(true)
+    private var ring: Color {
+        profile.avatarColorValue.map { Color(hex: $0) } ?? Theme.accent
+    }
 
-            // Just the avatar and the name (per device feedback) — the medical
-            // summary stays inside the profile, not on the settings list.
+    var body: some View {
+        HStack(spacing: 16) {
+            AvatarView(
+                imageData: profile.avatarImageData,
+                initials: profile.initials,
+                symbol: profile.avatarSymbol,
+                tint: ring,
+                ring: ring,
+                diameter: 60
+            )
+
             Text(profile.displayName.isEmpty ? "Your profile" : profile.displayName)
-                .font(.body.weight(.semibold))
+                .font(.title3.weight(.semibold))
                 .foregroundStyle(Theme.textPrimary)
+
+            Spacer(minLength: 0)
         }
-        .padding(.vertical, 4)
+        .padding(.vertical, 10)
         .accessibilityElement(children: .combine)
+        .accessibilityLabel(profile.displayName.isEmpty ? Text("Your profile") : Text(profile.displayName))
     }
 }
 

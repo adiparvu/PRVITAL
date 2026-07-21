@@ -34,8 +34,18 @@ struct RootView: View {
     @State private var showQuickEntry = false
     @State private var showWhatsNew = false
 
+    /// Follows the system Dynamic Type when the user leaves "Use system size" on;
+    /// otherwise clamps the app to their chosen size with a degenerate range.
+    private var typeRange: ClosedRange<DynamicTypeSize> {
+        if env.preferences.useSystemTextSize { return .xSmall ... .accessibility5 }
+        let size = env.preferences.textSize.dynamicTypeSize
+        return size ... size
+    }
+
     var body: some View {
         MainTabView()
+            .preferredColorScheme(env.preferences.themeMode.colorScheme)
+            .dynamicTypeSize(typeRange)
             .onAppear {
                 showOnboarding = !env.consent.hasCompletedOnboarding
                 if showOnboarding {
@@ -77,6 +87,30 @@ struct RootView: View {
                 }
             }
     }
+}
+
+/// Applies the user's chosen app background (Settings → Appearance → Background)
+/// behind a tab screen. Reads the live preference through the environment, so
+/// switching gradient/photo updates every tab at once. Lives in the app target
+/// (it depends on `AppEnvironment`), unlike the target-safe `AppBackgroundView`.
+struct PrvitalTabBackground: ViewModifier {
+    @Environment(AppEnvironment.self) private var env
+
+    func body(content: Content) -> some View {
+        content.background {
+            AppBackgroundView(
+                kind: env.preferences.backgroundKind,
+                gradient: env.preferences.backgroundGradient,
+                photoData: env.preferences.backgroundPhotoData
+            )
+            .ignoresSafeArea()
+        }
+    }
+}
+
+extension View {
+    /// Paints the chosen app background behind a primary tab screen.
+    func prvitalTabBackground() -> some View { modifier(PrvitalTabBackground()) }
 }
 
 /// The five primary destinations. History, Charts, Statistics and Export are

@@ -1,6 +1,10 @@
 import SwiftUI
+import PhotosUI
+#if canImport(UIKit)
+import UIKit
+#endif
 
-/// The person's profile: their name, an avatar (symbol + colour), and their
+/// The person's profile: their name, an avatar (photo, or initials on a colour), and their
 /// clinical context — diabetes type, therapy, the insulins and devices they use,
 /// their care team, and optional personal details (birth year, weight, height).
 /// Local and private — it personalises the app and is the identity attached when
@@ -13,21 +17,8 @@ struct ProfileView: View {
     @State private var weightText = ""
     @State private var heightText = ""
     @State private var showGoalsEditor = false
-
-    /// A curated set of avatar glyphs.
-    private let avatarOptions = [
-        "person.crop.circle.fill", "figure.wave", "heart.circle.fill",
-        "drop.circle.fill", "leaf.circle.fill", "star.circle.fill",
-        "bolt.heart.fill", "face.smiling.inverse"
-    ]
-
-    /// Fixed avatar tints ("RRGGBB"), chosen to read well on both light and dark
-    /// surfaces. A `nil` `avatarColorHex` means "follow the app accent".
-    private let avatarTints: [(name: String, hex: String)] = [
-        ("Ocean", "3E8DE3"), ("Violet", "8B6FE8"), ("Rose", "D6568E"),
-        ("Sunset", "E1793A"), ("Amber", "C99A2E"), ("Green", "3FA968"),
-        ("Slate", "8A93A6")
-    ]
+    @State private var photoItem: PhotosPickerItem?
+    @State private var showRingPicker = false
 
     private var years: [Int] {
         let thisYear = Calendar.current.component(.year, from: Date())
@@ -39,20 +30,10 @@ struct ProfileView: View {
         return Array((thisYear - 110)...thisYear).reversed()
     }
 
-    /// The chosen avatar tint, falling back to the app accent.
-    private var avatarTint: Color {
-        profile.avatarColorValue.map { Color(hex: $0) } ?? Theme.accent
-    }
-
-    /// A soft wash of the avatar tint for chip and circle backgrounds.
-    private var avatarTintSoft: Color {
-        profile.avatarColorValue.map { Color(hex: $0, alpha: 0.16) } ?? Theme.accentSoft
-    }
-
     var body: some View {
         Form {
             Section {
-                ProfileHeaderCard(profile: profile)
+                ProfileHeaderCard(profile: profile, photoItem: $photoItem)
                     .listRowInsets(EdgeInsets())
                     .listRowBackground(Color.clear)
             }
@@ -74,6 +55,21 @@ struct ProfileView: View {
         .navigationBarTitleDisplayMode(.inline)
         .sheet(isPresented: $showGoalsEditor) {
             GoalsEditorSheet()
+        }
+        .sheet(isPresented: $showRingPicker) {
+            AvatarRingPickerSheet(selectedHex: $profile.avatarColorHex)
+                .presentationDetents([.medium])
+        }
+        .onChange(of: photoItem) { _, newItem in
+            guard let newItem else { return }
+            Task {
+                guard let data = try? await newItem.loadTransferable(type: Data.self) else { return }
+                #if canImport(UIKit)
+                profile.avatarImageData = AvatarImage.downscaledJPEG(from: data) ?? data
+                #else
+                profile.avatarImageData = data
+                #endif
+            }
         }
         .onAppear {
             weightText = ProfileFormatting.measurementText(profile.weightKg)
@@ -106,80 +102,61 @@ struct ProfileView: View {
 
     // MARK: - Avatar
 
+    /// Photo picker + ring colour. Tapping the big avatar in the header also
+    /// opens the photo picker; this section makes the same actions explicit and
+    /// adds "remove photo" and the ring-colour sheet.
     private var avatarSection: some View {
         Section {
-            LazyVGrid(columns: Array(repeating: GridItem(.flexible()), count: 4), spacing: 12) {
-                ForEach(avatarOptions, id: \.self) { symbol in
-                    Button {
-                        Haptics.play(.light)
-                        profile.avatarSymbol = symbol
-                    } label: {
-                        Image(systemName: symbol)
-                            .font(.system(size: 26))
-                            .foregroundStyle(profile.avatarSymbol == symbol ? .white : avatarTint)
-                            .frame(width: 52, height: 52)
-                            .background(
-                                Circle().fill(profile.avatarSymbol == symbol ? avatarTint : avatarTintSoft)
-                            )
-                    }
-                    .buttonStyle(.plain)
+            PhotosPicker(selection: $photoItem, matching: .images, photoLibrary: .shared()) {
+                Label {
+                    Text(profile.avatarImageData == nil ? "Add a photo" : "Change photo")
+                        .foregroundStyle(Theme.textPrimary)
+                } icon: {
+                    Image(systemName: "camera.fill").foregroundStyle(Theme.accent)
                 }
             }
-            .padding(.vertical, 6)
 
-            ScrollView(.horizontal) {
-                HStack(spacing: 12) {
-                    colorSwatch(
-                        color: Theme.accent,
-                        name: "App accent",
-                        isSelected: profile.avatarColorHex == nil
-                    ) {
-                        profile.avatarColorHex = nil
-                    }
-                    ForEach(avatarTints, id: \.hex) { tint in
-                        colorSwatch(
-                            color: Color(hex: ProfileFormatting.hexColorValue(tint.hex) ?? 0),
-                            name: tint.name,
-                            isSelected: profile.avatarColorHex == tint.hex
-                        ) {
-                            profile.avatarColorHex = tint.hex
-                        }
-                    }
+            if profile.avatarImageData != nil {
+                Button(role: .destructive) {
+                    Haptics.play(.light)
+                    profile.avatarImageData = nil
+                    photoItem = nil
+                } label: {
+                    Label("Remove photo", systemImage: "trash")
                 }
-                .padding(.vertical, 6)
             }
-            .scrollIndicators(.hidden)
+
+            Button {
+                Haptics.play(.selection)
+                showRingPicker = true
+            } label: {
+                HStack {
+                    Label {
+                        Text("Ring colour").foregroundStyle(Theme.textPrimary)
+                    } icon: {
+                        Image(systemName: "circle.circle.fill").foregroundStyle(ringColor)
+                    }
+                    Spacer()
+                    Circle().fill(ringColor).frame(width: 22, height: 22)
+                        .overlay(Circle().strokeBorder(Theme.hairline, lineWidth: 1))
+                    Image(systemName: "chevron.right")
+                        .font(.caption.weight(.bold))
+                        .foregroundStyle(Theme.textTertiary)
+                }
+            }
         } header: {
             Text("Avatar")
         } footer: {
-            Text("Pick a symbol and a colour. Once you've added your name, your initials take the symbol's place.")
+            Text("Add a photo, or keep your initials on a colour. The ring colour frames your avatar and tints your initials.")
                 .font(.footnote)
                 .foregroundStyle(Theme.textTertiary)
         }
         .listRowBackground(Theme.surface)
     }
 
-    private func colorSwatch(
-        color: Color, name: String, isSelected: Bool, action: @escaping () -> Void
-    ) -> some View {
-        Button {
-            Haptics.play(.light)
-            action()
-        } label: {
-            ZStack {
-                Circle()
-                    .fill(color)
-                    .frame(width: 36, height: 36)
-                if isSelected {
-                    Image(systemName: "checkmark")
-                        .font(.system(size: 14, weight: .bold))
-                        .foregroundStyle(.white)
-                }
-            }
-        }
-        .buttonStyle(.plain)
-        .accessibilityLabel(Text(name))
-        .accessibilityAddTraits(isSelected ? .isSelected : [])
+    /// The chosen ring/initials colour, falling back to the app accent.
+    private var ringColor: Color {
+        profile.avatarColorValue.map { Color(hex: $0) } ?? Theme.accent
     }
 
     // MARK: - About you
@@ -261,41 +238,39 @@ struct ProfileView: View {
 
     private var therapyDetailsSection: some View {
         Section {
-            LabeledContent("Basal insulin") {
-                TextField("Optional", text: nonOptional($profile.basalInsulinName))
-                    .multilineTextAlignment(.trailing)
-                    .autocorrectionDisabled()
-            }
-            LabeledContent("Bolus insulin") {
-                TextField("Optional", text: nonOptional($profile.bolusInsulinName))
-                    .multilineTextAlignment(.trailing)
-                    .autocorrectionDisabled()
-            }
-            LabeledContent("CGM / sensor") {
-                TextField("Optional", text: nonOptional($profile.cgmModel))
-                    .multilineTextAlignment(.trailing)
-                    .autocorrectionDisabled()
-            }
-            LabeledContent("Meter") {
-                TextField("Optional", text: nonOptional($profile.meterModel))
-                    .multilineTextAlignment(.trailing)
-                    .autocorrectionDisabled()
-            }
+            therapyRow(.basalInsulin, value: $profile.basalInsulinName)
+            therapyRow(.bolusInsulin, value: $profile.bolusInsulinName)
+            therapyRow(.cgm, value: $profile.cgmModel)
+            therapyRow(.meter, value: $profile.meterModel)
             if profile.therapy == .pump {
-                LabeledContent("Pump") {
-                    TextField("Optional", text: nonOptional($profile.pumpModel))
-                        .multilineTextAlignment(.trailing)
-                        .autocorrectionDisabled()
-                }
+                therapyRow(.pump, value: $profile.pumpModel)
             }
         } header: {
             Text("My therapy")
         } footer: {
-            Text("Free-text labels for your own records and shared reports — handy at appointments. Prvital never recommends insulin or doses.")
+            Text("Tap a field to search the device and insulin list, or type your own. Labels for your records and shared reports — Prvital never recommends insulin or doses.")
                 .font(.footnote)
                 .foregroundStyle(Theme.textTertiary)
         }
         .listRowBackground(Theme.surface)
+    }
+
+    /// A therapy field row: the field name, its current value (or "Optional"),
+    /// and a push to the searchable 2026 catalog with free-text fallback.
+    private func therapyRow(_ field: TherapyCatalog.Field, value: Binding<String?>) -> some View {
+        NavigationLink {
+            TherapyCatalogPicker(field: field, selection: value)
+        } label: {
+            HStack {
+                Text(field.title)
+                    .foregroundStyle(Theme.textPrimary)
+                Spacer()
+                Text(value.wrappedValue?.isEmpty == false ? value.wrappedValue! : String(localized: "Optional"))
+                    .foregroundStyle(value.wrappedValue?.isEmpty == false ? Theme.textSecondary : Theme.textTertiary)
+                    .lineLimit(1)
+                    .truncationMode(.tail)
+            }
+        }
     }
 
     private var diagnosisSection: some View {
@@ -453,34 +428,41 @@ struct ProfileView: View {
     }
 }
 
-/// The card at the top of the profile: a large tinted avatar, the name (or a
-/// prompt), the clinical one-liner and — when a diagnosis year is set — how long
-/// the person has lived with diabetes.
+/// The card at the top of the profile: a tappable photo/initials avatar with a
+/// camera badge and coloured ring, the name (or a prompt), the clinical one-liner
+/// and — when a diagnosis year is set — how long the person has lived with
+/// diabetes.
 private struct ProfileHeaderCard: View {
     @Bindable var profile: UserProfile
+    @Binding var photoItem: PhotosPickerItem?
 
-    private var tint: Color {
+    private var ring: Color {
         profile.avatarColorValue.map { Color(hex: $0) } ?? Theme.accent
-    }
-
-    private var tintSoft: Color {
-        profile.avatarColorValue.map { Color(hex: $0, alpha: 0.16) } ?? Theme.accentSoft
     }
 
     var body: some View {
         HStack(spacing: 16) {
-            ZStack {
-                Circle().fill(tintSoft).frame(width: 84, height: 84)
-                if let initials = profile.initials {
-                    Text(initials)
-                        .font(.system(size: 32, weight: .semibold, design: .rounded))
-                        .foregroundStyle(tint)
-                } else {
-                    Image(systemName: profile.avatarSymbol)
-                        .font(.system(size: 38))
-                        .foregroundStyle(tint)
+            PhotosPicker(selection: $photoItem, matching: .images, photoLibrary: .shared()) {
+                ZStack(alignment: .bottomTrailing) {
+                    AvatarView(
+                        imageData: profile.avatarImageData,
+                        initials: profile.initials,
+                        symbol: profile.avatarSymbol,
+                        tint: ring,
+                        ring: ring,
+                        diameter: 84
+                    )
+                    Image(systemName: "camera.fill")
+                        .font(.system(size: 11, weight: .bold))
+                        .foregroundStyle(.white)
+                        .frame(width: 26, height: 26)
+                        .background(Theme.accent, in: .circle)
+                        .overlay(Circle().strokeBorder(Theme.surface, lineWidth: 2))
                 }
             }
+            .buttonStyle(.plain)
+            .accessibilityLabel("Change profile photo")
+
             VStack(alignment: .leading, spacing: 4) {
                 Text(profile.displayName.isEmpty ? "Add your name" : profile.displayName)
                     .font(.title3.weight(.semibold))
@@ -501,6 +483,86 @@ private struct ProfileHeaderCard: View {
         .background(Theme.surface, in: .rect(cornerRadius: 18))
         .padding(.horizontal, 4)
         .padding(.vertical, 2)
+    }
+}
+
+/// The "Ring colour" (Inel avatar) sheet: a grid of preset tints plus a custom
+/// colour well. Sets `avatarColorHex` (nil = follow the app accent).
+private struct AvatarRingPickerSheet: View {
+    @Binding var selectedHex: String?
+    @Environment(\.dismiss) private var dismiss
+
+    /// Fixed avatar tints ("RRGGBB"), chosen to read well on light and dark.
+    private let tints: [(name: String, hex: String)] = [
+        ("Ocean", "3E8DE3"), ("Violet", "8B6FE8"), ("Rose", "D6568E"),
+        ("Sunset", "E1793A"), ("Amber", "C99A2E"), ("Green", "3FA968"),
+        ("Slate", "8A93A6")
+    ]
+
+    private var customBinding: Binding<Color> {
+        Binding(
+            get: { selectedHex.flatMap(ProfileFormatting.hexColorValue).map { Color(hex: $0) } ?? Theme.accent },
+            set: { newColor in selectedHex = newColor.hexString }
+        )
+    }
+
+    var body: some View {
+        NavigationStack {
+            ScrollView {
+                LazyVGrid(columns: Array(repeating: GridItem(.flexible()), count: 4), spacing: 18) {
+                    swatch(color: Theme.accent, name: String(localized: "App accent"), isSelected: selectedHex == nil) {
+                        selectedHex = nil
+                    }
+                    ForEach(tints, id: \.hex) { tint in
+                        swatch(
+                            color: Color(hex: ProfileFormatting.hexColorValue(tint.hex) ?? 0),
+                            name: tint.name,
+                            isSelected: selectedHex?.uppercased() == tint.hex.uppercased()
+                        ) {
+                            selectedHex = tint.hex
+                        }
+                    }
+                }
+                .padding()
+
+                ColorPicker(selection: customBinding, supportsOpacity: false) {
+                    Label("Custom colour", systemImage: "eyedropper.halffull")
+                        .foregroundStyle(Theme.textPrimary)
+                }
+                .padding()
+                .background(Theme.surface, in: .rect(cornerRadius: 16))
+                .padding(.horizontal)
+            }
+            .background(Theme.background)
+            .navigationTitle("Ring colour")
+            .navigationBarTitleDisplayMode(.inline)
+            .toolbar {
+                ToolbarItem(placement: .confirmationAction) {
+                    Button("Done") { dismiss() }
+                }
+            }
+        }
+    }
+
+    private func swatch(color: Color, name: String, isSelected: Bool, action: @escaping () -> Void) -> some View {
+        Button {
+            Haptics.play(.light)
+            action()
+        } label: {
+            ZStack {
+                Circle().fill(color).frame(width: 52, height: 52)
+                if isSelected {
+                    Circle().strokeBorder(Theme.textPrimary.opacity(0.9), lineWidth: 3).frame(width: 62, height: 62)
+                    Image(systemName: "checkmark")
+                        .font(.system(size: 18, weight: .bold))
+                        .foregroundStyle(.white)
+                }
+            }
+            .frame(height: 64)
+        }
+        .buttonStyle(.plain)
+        .accessibilityLabel(Text(name))
+        .accessibilityAddTraits(isSelected ? .isSelected : [])
     }
 }
 
