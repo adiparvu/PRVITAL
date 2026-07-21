@@ -84,7 +84,8 @@ final class JournalDayCardTests: XCTestCase {
         XCTAssertEqual(stats.activityMinutes, 40)
         XCTAssertEqual(stats.activityCount, 2)
         XCTAssertEqual(stats.noteCount, 1)
-        XCTAssertEqual(stats.entryCount, 6)
+        // 2 doses + 2 meals + 2 activities + 1 note, no readings.
+        XCTAssertEqual(stats.entryCount, 7)
     }
 
     func testStatsEmptyDay() {
