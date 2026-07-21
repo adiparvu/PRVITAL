@@ -90,10 +90,17 @@ struct AppearanceSettingsView: View {
                     // shouldn't itself buzz.
                     if isOn { Haptics.play(.selection) }
                 }
+
+                Toggle(isOn: $prefs.showDailyCompanion) {
+                    Text("Daily companion")
+                }
+                .onChange(of: prefs.showDailyCompanion) { _, isOn in
+                    if isOn { Haptics.play(.selection) }
+                }
             } header: {
                 Text("Display")
             } footer: {
-                Text("Text size and background apply to Prvital only. Haptics add a gentle tap to key actions.")
+                Text("Text size and background apply to Prvital only. Haptics add a gentle tap to key actions. The daily companion is a friendly, encouraging note at the top of your dashboard.")
                     .font(.footnote)
                     .foregroundStyle(Theme.textTertiary)
             }

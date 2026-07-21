@@ -46,6 +46,10 @@ struct DashboardView: View {
                 VStack(spacing: 20) {
                     hero(summary: summary, thresholds: thresholds, unit: unit)
                         .appearTransition(delay: 0)
+                    if env.preferences.showDailyCompanion {
+                        dailyCompanionCard(summary: summary, todayStats: todayStats, thresholds: thresholds)
+                            .appearTransition(delay: 0.02)
+                    }
                     if env.preferences.sickDayEnabled {
                         SickDayBanner()
                             .appearTransition(delay: 0.03)
@@ -442,6 +446,27 @@ struct DashboardView: View {
 
     private func todayBand(_ geo: GeometryProxy, _ fraction: Double, _ color: Color) -> some View {
         color.frame(width: max(geo.size.width * fraction, fraction > 0 ? 2 : 0))
+    }
+
+    // MARK: - Daily companion
+
+    /// The supportive companion card. Composes today's control into a warm,
+    /// non-judgmental message; the current streak is only mentioned when it's a
+    /// real run (≥ 2 days).
+    private func dailyCompanionCard(summary: DashboardSummary, todayStats: PeriodStatistics, thresholds: GlucoseThresholds) -> some View {
+        let goalFraction = env.preferences.glucoseGoals.targetTIRFraction
+        let streak = todayStats.hasGlucose
+            ? StreakCalculator.evaluate(
+                days: DailyBreakdown.perDay(readings, thresholds: thresholds),
+                targetFraction: goalFraction).current
+            : 0
+        let message = DailyCompanion.message(
+            hasGlucose: todayStats.hasGlucose,
+            tirFraction: todayStats.timeInRange,
+            goalFraction: goalFraction,
+            currentZone: summary.isStale ? nil : summary.zone,
+            streakDays: streak)
+        return DailyCompanionCard(message: message)
     }
 
     // MARK: - Daily rings

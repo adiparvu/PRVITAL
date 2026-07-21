@@ -34,6 +34,7 @@ final class Preferences {
         self.useSystemTextSize = (self.defaults.object(forKey: Keys.useSystemTextSize) as? Bool) ?? true
         self.textSizeRaw = self.defaults.string(forKey: Keys.textSize) ?? AppTextSize.large.rawValue
         self.hapticsEnabled = (self.defaults.object(forKey: Keys.hapticsEnabled) as? Bool) ?? true
+        self.showDailyCompanion = (self.defaults.object(forKey: Keys.showDailyCompanion) as? Bool) ?? true
         self.backgroundKindRaw = self.defaults.string(forKey: Keys.backgroundKind) ?? AppBackgroundKind.standard.rawValue
         self.backgroundGradientRaw = self.defaults.string(forKey: Keys.backgroundGradient) ?? BackgroundGradient.aurora.rawValue
         self.backgroundPhotoData = self.defaults.data(forKey: Keys.backgroundPhoto)
@@ -190,6 +191,12 @@ final class Preferences {
         didSet { defaults.set(hapticsEnabled, forKey: Keys.hapticsEnabled) }
     }
 
+    /// Whether the Dashboard shows the supportive daily companion card. On by
+    /// default; users who prefer a plainer dashboard can switch it off.
+    var showDailyCompanion: Bool {
+        didSet { defaults.set(showDailyCompanion, forKey: Keys.showDailyCompanion) }
+    }
+
     /// Background: standard surface, a gradient preset, or the user's photo.
     var backgroundKindRaw: String {
         didSet { defaults.set(backgroundKindRaw, forKey: Keys.backgroundKind) }
@@ -249,6 +256,7 @@ final class Preferences {
         static let useSystemTextSize = "pref.useSystemTextSize"
         static let textSize = AppTextSize.preferenceKey
         static let hapticsEnabled = "pref.hapticsEnabled"
+        static let showDailyCompanion = "pref.showDailyCompanion"
         static let backgroundKind = AppBackgroundKind.preferenceKey
         static let backgroundGradient = BackgroundGradient.preferenceKey
         static let backgroundPhoto = AppBackgroundKind.photoKey
