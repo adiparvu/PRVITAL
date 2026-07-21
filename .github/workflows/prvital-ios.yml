@@ -248,6 +248,38 @@ jobs:
           File.write(File.join(TMP, "profile_map.txt"), map.join("\n") + "\n")
           RUBY
           ruby /tmp/provision.rb
+      - name: Verify App Group entitlement in provisioning profiles
+        # Read-only diagnostic. The App Group container is the only bridge
+        # between the app and its widget/watch extensions; a profile that does
+        # NOT carry `group.com.prvital` produces a binary whose
+        # `UserDefaults(suiteName:)` returns nil at runtime, so the widgets read
+        # nothing and render the honest "No data" state. The App Store Connect
+        # API cannot create or assign an App Group (Apple limitation), so this
+        # step can only report the state — the group must be registered under
+        # Identifiers > App Groups and enabled on each of the four App IDs in
+        # the developer portal. Never fails the build; it just prints the truth.
+        run: |
+          set -uo pipefail
+          PP_DIR="$HOME/Library/MobileDevice/Provisioning Profiles"
+          echo "=== App Group check: is group.com.prvital in each shipping profile? ==="
+          missing=0
+          shopt -s nullglob
+          for f in "$PP_DIR"/*.mobileprovision; do
+            security cms -D -i "$f" -o /tmp/pp.plist 2>/dev/null || continue
+            name=$(/usr/libexec/PlistBuddy -c "Print :Name" /tmp/pp.plist 2>/dev/null || echo "?")
+            groups=$(/usr/libexec/PlistBuddy -c "Print :Entitlements:com.apple.security.application-groups" /tmp/pp.plist 2>/dev/null | tr -d ' \n' || true)
+            if printf '%s' "$groups" | grep -q "group.com.prvital"; then
+              echo "  OK       $name  ->  includes group.com.prvital"
+            else
+              echo "  MISSING  $name  ->  NO app group (widget/watch data sharing will NOT work)"
+              missing=$((missing+1))
+            fi
+          done
+          if [ "$missing" -gt 0 ]; then
+            echo "::warning::$missing profile(s) lack group.com.prvital. Register the App Group under Identifiers > App Groups and enable it on the App IDs (com.prvital.app, com.prvital.app.widgets, com.prvital.app.watchkitapp, com.prvital.app.watchkitapp.widgets), then rebuild."
+          else
+            echo "All profiles carry group.com.prvital — cross-process widget data sharing is provisioned."
+          fi
       - name: Import certificate into keychain
         run: |
           set -euo pipefail
