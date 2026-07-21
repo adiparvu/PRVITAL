@@ -99,7 +99,10 @@ jobs:
     # main it would otherwise re-run this job and re-upload the same build number,
     # which Apple rejects (duplicate) or the daily upload cap blocks — a spurious
     # red on main every merge. The ref guard keeps main pushes build-only.
-    if: ${{ github.ref != 'refs/heads/main' && ((github.event_name == 'workflow_dispatch' && inputs.testflight) || startsWith(github.ref, 'refs/tags/testflight-') || (github.event_name == 'push' && contains(github.event.head_commit.message, '[testflight]'))) }}
+    # Match the marker only at the START of the commit subject, not anywhere in
+    # the message — otherwise a commit that merely *mentions* [testflight] in its
+    # body (e.g. explaining this very job) would trigger a release upload.
+    if: ${{ github.ref != 'refs/heads/main' && ((github.event_name == 'workflow_dispatch' && inputs.testflight) || startsWith(github.ref, 'refs/tags/testflight-') || (github.event_name == 'push' && startsWith(github.event.head_commit.message, '[testflight]'))) }}
     runs-on: macos-latest
     env:
       DEVELOPMENT_TEAM: SU92TVZT8W
