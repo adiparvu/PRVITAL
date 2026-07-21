@@ -148,6 +148,14 @@ struct DashboardView: View {
                 RuleOf15Sheet()
             }
             .task {
+                // Fold any freshly-earned achievements into the (monotonic) store
+                // so the badge count stays current even without opening the gallery.
+                AchievementStore().record(unlocked: AchievementEvaluator.unlocked(
+                    AchievementInputsBuilder.make(
+                        readings: readings, meals: carbs,
+                        thresholds: thresholds,
+                        goalFraction: env.preferences.glucoseGoals.targetTIRFraction)))
+
                 // A day with data is a good moment: count it, and — sparingly,
                 // at most once per app version after enough such moments — ask
                 // for a rating. StoreKit may still choose to suppress the prompt.

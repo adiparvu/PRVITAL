@@ -10,6 +10,16 @@ struct SettingsView: View {
     @Environment(\.requestReview) private var requestReview
     @State private var showWhatsNew = false
     @State private var showFeedback = false
+    @State private var achievementStore = AchievementStore()
+
+    private var achievementsSubtitle: String {
+        let unseen = achievementStore.unseenCount
+        if unseen > 0 { return String(localized: "\(unseen) new to unlock") }
+        let earned = achievementStore.earned.count
+        return earned > 0
+            ? String(localized: "\(earned) earned")
+            : String(localized: "Track your milestones")
+    }
 
     private var scheduleSubtitle: String {
         let count = env.preferences.glucoseSchedule.activeSlots.count
@@ -197,6 +207,16 @@ struct SettingsView: View {
                 .listRowBackground(Theme.surface)
 
                 Section {
+                    NavigationLink {
+                        AchievementsView()
+                    } label: {
+                        SettingsRow(
+                            title: "Achievements",
+                            subtitle: achievementsSubtitle,
+                            systemImage: "rosette",
+                            tint: Theme.zoneHigh
+                        )
+                    }
                     Button {
                         showWhatsNew = true
                     } label: {
