@@ -1,4 +1,8 @@
 import SwiftUI
+import PhotosUI
+#if canImport(UIKit)
+import UIKit
+#endif
 
 /// Create or edit a carbohydrate entry, with the quick-gram chip row.
 struct CarbEntrySheet: View {
@@ -13,6 +17,8 @@ struct CarbEntrySheet: View {
     @State private var food = ""
     @State private var note = ""
     @State private var showingFood = false
+    @State private var photoItem: PhotosPickerItem?
+    @State private var photoData: Data?
 
     var body: some View {
         NavigationStack {
@@ -59,6 +65,29 @@ struct CarbEntrySheet: View {
                     DatePicker("Time", selection: $timestamp)
                 }
                 Section("Note") { TextField("Optional", text: $note, axis: .vertical) }
+                Section("Photo") {
+                    PhotosPicker(selection: $photoItem, matching: .images, photoLibrary: .shared()) {
+                        Label(photoData == nil ? "Add meal photo" : "Change photo", systemImage: "camera")
+                            .foregroundStyle(Theme.accent)
+                    }
+                    #if canImport(UIKit)
+                    if let photoData, let uiImage = UIImage(data: photoData) {
+                        HStack(spacing: 12) {
+                            Image(uiImage: uiImage)
+                                .resizable()
+                                .scaledToFill()
+                                .frame(width: 60, height: 60)
+                                .clipShape(RoundedRectangle(cornerRadius: 10))
+                            Spacer()
+                            Button("Remove", role: .destructive) {
+                                self.photoData = nil
+                                self.photoItem = nil
+                                Haptics.play(.selection)
+                            }
+                        }
+                    }
+                    #endif
+                }
                 if existing != nil {
                     Section {
                         Button("Delete", role: .destructive) {
@@ -75,6 +104,14 @@ struct CarbEntrySheet: View {
                 ToolbarItem(placement: .confirmationAction) { Button("Save", action: save).disabled(grams <= 0) }
             }
             .onAppear(perform: load)
+            .onChange(of: photoItem) { _, newItem in
+                guard let newItem else { return }
+                Task {
+                    if let data = try? await newItem.loadTransferable(type: Data.self) {
+                        photoData = data
+                    }
+                }
+            }
             .sheet(isPresented: $showingFood) {
                 FoodSearchView(mealType: mealType) {
                     showingFood = false
@@ -91,6 +128,7 @@ struct CarbEntrySheet: View {
         mealType = existing.mealType
         food = existing.foodDescription ?? ""
         note = existing.note ?? ""
+        photoData = existing.photo
     }
 
     private func save() {
@@ -100,13 +138,20 @@ struct CarbEntrySheet: View {
             existing.mealType = mealType
             existing.foodDescription = food.isEmpty ? nil : food
             existing.note = note.isEmpty ? nil : note
+            existing.photo = photoData
             env.entryStore.touch(existing)
         } else {
-            env.entryStore.addCarbs(
+            let entry = env.entryStore.addCarbs(
                 grams: grams, timestamp: timestamp, mealType: mealType,
                 foodDescription: food.isEmpty ? nil : food,
                 note: note.isEmpty ? nil : note
             )
+            // `init` doesn't take a photo, so attach it after creation and
+            // re-persist through the store's write path.
+            if let photoData {
+                entry.photo = photoData
+                env.entryStore.touch(entry)
+            }
         }
         Haptics.play(.success)
         dismiss()

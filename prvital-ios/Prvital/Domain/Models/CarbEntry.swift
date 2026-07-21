@@ -21,6 +21,11 @@ final class CarbEntry: MedicalRecord {
     var foodDescription: String?
     var note: String?
 
+    /// An optional photo of the meal. Held on disk via external storage rather
+    /// than inline in the store, and kept out of the initialiser. Optional with a
+    /// nil default keeps the schema CloudKit-safe; assign it after creation.
+    @Attribute(.externalStorage) var photo: Data?
+
     var recordType: RecordType { .carbohydrate }
 
     var source: DataSource {

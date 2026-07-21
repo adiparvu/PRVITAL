@@ -1,5 +1,8 @@
 import SwiftUI
 import Foundation
+#if canImport(UIKit)
+import UIKit
+#endif
 
 // MARK: - Timeline model
 
@@ -109,6 +112,7 @@ struct JournalEntryRow: View {
                 }
             }
             Spacer(minLength: 8)
+            carbThumbnail
             Text(timeText)
                 .font(.footnote)
                 .monospacedDigit()
@@ -121,6 +125,20 @@ struct JournalEntryRow: View {
     }
 
     // MARK: Derived presentation
+
+    /// A small rounded thumbnail for carb rows that carry a meal photo.
+    @ViewBuilder
+    private var carbThumbnail: some View {
+        #if canImport(UIKit)
+        if item.kind == .carbs, let data = item.carbs?.photo, let uiImage = UIImage(data: data) {
+            Image(uiImage: uiImage)
+                .resizable()
+                .scaledToFill()
+                .frame(width: 40, height: 40)
+                .clipShape(RoundedRectangle(cornerRadius: 8))
+        }
+        #endif
+    }
 
     private var icon: some View {
         Image(systemName: symbolName)
