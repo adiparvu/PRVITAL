@@ -1,4 +1,5 @@
 import Foundation
+import SwiftUI
 #if canImport(UIKit)
 import UIKit
 #endif
@@ -108,6 +109,21 @@ final class ExportService {
             y = draw(input.periodLabel, at: y + 2, margin: margin, width: width, font: .systemFont(ofSize: 13), color: .secondaryLabel)
             y += 12
 
+            // Visual charts, rasterised from SwiftUI via ImageRenderer, near the top.
+            let chartSize = CGSize(width: 500, height: 180)
+            if let agp = renderChartImage(
+                ExportAGPChart(glucose: input.glucose, thresholds: input.thresholds, unit: input.unit),
+                size: chartSize) {
+                agp.draw(in: CGRect(x: margin, y: y, width: chartSize.width, height: chartSize.height))
+                y += chartSize.height + 6
+            }
+            if let tir = renderChartImage(
+                ExportTimeInRangeBar(statistics: input.statistics),
+                size: chartSize) {
+                tir.draw(in: CGRect(x: margin, y: y, width: chartSize.width, height: chartSize.height))
+                y += chartSize.height + 12
+            }
+
             y = draw("Summary", at: y, margin: margin, width: width, font: .boldSystemFont(ofSize: 16))
             for row in summaryRows(input) {
                 y = draw(row, at: y + 2, margin: margin, width: width, font: .systemFont(ofSize: 12))
@@ -132,6 +148,21 @@ final class ExportService {
         }
         audit?.log(.export, userConfirmation: true, detail: "PDF · \(input.periodLabel)")
         return url
+    }
+
+    /// Rasterises a fixed-size, environment-free SwiftUI chart into a `UIImage`
+    /// for embedding in the PDF. `ImageRenderer` is main-actor; `writePDF` runs
+    /// on the main actor, so this is safe. The light colour scheme is forced so
+    /// the chart's ink and zone colours resolve for a printed white page.
+    private func renderChartImage<V: View>(_ view: V, size: CGSize) -> UIImage? {
+        let renderer = ImageRenderer(content:
+            view
+                .frame(width: size.width, height: size.height)
+                .environment(\.colorScheme, .light)
+        )
+        renderer.scale = 3
+        renderer.proposedSize = ProposedViewSize(size)
+        return renderer.uiImage
     }
 
     private func summaryRows(_ input: ExportInput) -> [String] {
