@@ -63,10 +63,17 @@ final class AppEnvironment {
                                           profileStore: self.profile, audit: audit)
 
         // Any write — a manual entry or a completed sync — republishes the
-        // widget/watch snapshot and re-evaluates glucose alerts.
+        // widget/watch snapshot, re-evaluates glucose alerts, and refreshes the
+        // data-driven contextual reminders.
         let publisher = snapshots
-        entryStore.onChange = { publisher.refresh() }
-        sync.onChange = { publisher.refresh() }
+        entryStore.onChange = { [weak self] in
+            publisher.refresh()
+            self?.rescheduleContextualReminders()
+        }
+        sync.onChange = { [weak self] in
+            publisher.refresh()
+            self?.rescheduleContextualReminders()
+        }
 
         // Every sync also pulls insulin, meals and activity from Apple Health so
         // the journal is the full picture, not only the glucose curve.
@@ -96,6 +103,7 @@ final class AppEnvironment {
         _ = profile.current()   // create the single profile on first launch
         snapshots.refresh()
         notifications.reschedule(from: preferences.reminders, glucoseSchedule: preferences.glucoseSchedule)
+        rescheduleContextualReminders()
         scheduleBackgroundRefresh()
         startHealthKitBackgroundDelivery()
     }
@@ -122,6 +130,56 @@ final class AppEnvironment {
     /// re-evaluates alerts, without rescheduling the BG app-refresh task.
     func handleHealthKitBackgroundDelivery() async {
         _ = await sync.refreshLatest(window: 3 * 60 * 60)
+    }
+
+    // MARK: Contextual reminders
+
+    /// Rebuilds the data-driven contextual reminders from the most recent reading,
+    /// meal and dose, then hands them to the scheduler (which cancels the previous
+    /// batch by identifier). Cheap — three `fetchLimit == 1` queries — so it's fine
+    /// to run on every data change.
+    ///
+    /// The feature stays opt-in without a new preference by reusing the user's
+    /// existing reminder switches: the reading-gap nudge follows the glucose-check
+    /// reminder opt-in, and the meal-driven nudges follow the meal reminder opt-in.
+    /// Both default off, so nothing fires unprompted.
+    func rescheduleContextualReminders(now: Date = Date()) {
+        let context = modelContainer.mainContext
+        let meal = Self.latestMeal(in: context)
+        let input = ContextualReminderInput(
+            lastReadingAt: Self.latestActiveReadingTimestamp(in: context),
+            lastMealAt: meal?.timestamp,
+            lastMealCarbs: meal?.grams,
+            lastInsulinAt: Self.latestInsulinTimestamp(in: context)
+        )
+        let settings = ContextualReminderSettings(
+            readingGapEnabled: preferences.reminders.glucoseCheckEnabled,
+            mealContextEnabled: preferences.reminders.mealsEnabled
+        )
+        let due = ContextualReminderEvaluator.evaluate(input: input, settings: settings, now: now)
+        notifications.rescheduleContextual(due)
+    }
+
+    private static func latestActiveReadingTimestamp(in context: ModelContext) -> Date? {
+        var descriptor = FetchDescriptor<GlucoseReading>(
+            predicate: #Predicate { $0.isActive },
+            sortBy: [SortDescriptor(\.timestamp, order: .reverse)])
+        descriptor.fetchLimit = 1
+        return (try? context.fetch(descriptor))?.first?.timestamp
+    }
+
+    private static func latestMeal(in context: ModelContext) -> CarbEntry? {
+        var descriptor = FetchDescriptor<CarbEntry>(
+            sortBy: [SortDescriptor(\.timestamp, order: .reverse)])
+        descriptor.fetchLimit = 1
+        return (try? context.fetch(descriptor))?.first
+    }
+
+    private static func latestInsulinTimestamp(in context: ModelContext) -> Date? {
+        var descriptor = FetchDescriptor<InsulinDose>(
+            sortBy: [SortDescriptor(\.timestamp, order: .reverse)])
+        descriptor.fetchLimit = 1
+        return (try? context.fetch(descriptor))?.first?.timestamp
     }
 
     // MARK: Background refresh

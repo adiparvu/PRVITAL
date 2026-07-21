@@ -56,7 +56,51 @@ final class NotificationScheduler {
         #endif
     }
 
+    // MARK: Contextual (data-driven) reminders
+
+    /// Shared identifier prefix for every contextual reminder, so a reschedule can
+    /// cancel the previous batch without touching the fixed-clock reminders above.
+    static let contextualIdentifierPrefix = "contextual-"
+
+    static func contextualIdentifier(for kind: ContextualReminderKind) -> String {
+        contextualIdentifierPrefix + kind.rawValue
+    }
+
+    /// Cancels the previous contextual reminders (every stable identifier under the
+    /// shared prefix) and schedules the currently-due ones. Safe to call on every
+    /// data change: identifiers are stable per kind, so a reminder replaces rather
+    /// than stacks, and a kind absent from `reminders` is simply cancelled — which
+    /// is how a nudge that's no longer warranted (e.g. once a bolus is logged) goes
+    /// away. Authorization is handled by `requestAuthorization()`; the system drops
+    /// scheduled notifications when permission isn't granted.
+    func rescheduleContextual(_ reminders: [ContextualReminder]) {
+        #if canImport(UserNotifications)
+        let staleIdentifiers = ContextualReminderKind.allCases.map(Self.contextualIdentifier(for:))
+        center.removePendingNotificationRequests(withIdentifiers: staleIdentifiers)
+
+        for reminder in reminders {
+            let trigger = UNTimeIntervalNotificationTrigger(
+                timeInterval: max(1, reminder.fireDelay), repeats: false)
+            let request = UNNotificationRequest(
+                identifier: Self.contextualIdentifier(for: reminder.kind),
+                content: contextualContent(reminder),
+                trigger: trigger)
+            center.add(request)
+        }
+        #endif
+    }
+
     #if canImport(UserNotifications)
+    private func contextualContent(_ reminder: ContextualReminder) -> UNMutableNotificationContent {
+        let content = UNMutableNotificationContent()
+        // The evaluator already returns localized, presentation-ready strings.
+        content.title = reminder.title
+        content.body = reminder.body
+        content.sound = .default
+        content.relevanceScore = 0.5
+        return content
+    }
+
     private func daily(_ title: String, _ body: String, _ minutesFromMidnight: Int, _ prefix: String) -> UNNotificationRequest {
         var components = DateComponents()
         components.hour = minutesFromMidnight / 60
