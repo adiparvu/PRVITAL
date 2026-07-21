@@ -1,13 +1,16 @@
 import SwiftUI
 import SwiftData
 
-/// The Journal: a reverse-chronological, day-grouped timeline of every entry.
+/// The Journal: a vertical feed of Tide Guide-style day cards, newest first.
 ///
-/// Reads all five record types reactively via `@Query`, projects them into a
-/// single `JournalTimelineItem` list, groups them by day with friendly
-/// ("Today" / "Yesterday") headers, and lets any row be tapped to open the
-/// matching editor pre-loaded with that record. The toolbar "+" opens the
-/// quick-entry hub.
+/// Reads all five record types reactively via `@Query`, buckets them per local
+/// day (capped at the most recent 14 days with data), and renders each day as a
+/// glass card: big day header with a TIR ring glyph, the day's compact glucose
+/// curve, icon-chip stat rows, and — depending on the chosen density — the
+/// day's entry list. Every entry row still opens its matching editor, the
+/// toolbar "+" opens the quick-entry hub, and the calendar button reaches any
+/// older day. A toolbar presets menu switches Compact / Standard / Detailed,
+/// persisted via `Preferences.journalCardDensityRaw`.
 struct JournalView: View {
     @Environment(AppEnvironment.self) private var env
 
@@ -24,62 +27,61 @@ struct JournalView: View {
     private var unit: GlucoseUnit { env.preferences.glucoseUnit }
     private var thresholds: GlucoseThresholds { env.preferences.thresholds }
 
-    private var items: [JournalTimelineItem] {
-        JournalTimelineItem.build(
-            glucose: glucose, insulin: insulin, carbs: carbs,
-            activity: activity, observations: observations
-        )
-        .sorted { $0.date > $1.date }
+    private var density: JournalCardDensity {
+        JournalCardDensity(rawValue: env.preferences.journalCardDensityRaw) ?? .standard
     }
 
-    private var sections: [JournalDaySection] {
-        let calendar = Calendar.current
-        let grouped = Dictionary(grouping: items) { calendar.startOfDay(for: $0.date) }
-        return grouped.keys.sorted(by: >).map { day in
-            JournalDaySection(day: day, items: grouped[day] ?? [])
-        }
+    private var densityBinding: Binding<JournalCardDensity> {
+        Binding(
+            get: { JournalCardDensity(rawValue: env.preferences.journalCardDensityRaw) ?? .standard },
+            set: { newValue in
+                Haptics.play(.selection)
+                env.preferences.journalCardDensityRaw = newValue.rawValue
+            }
+        )
+    }
+
+    private var buckets: [JournalDayBucket] {
+        JournalDayBucket.build(
+            glucose: glucose, insulin: insulin, carbs: carbs,
+            activity: activity, observations: observations,
+            thresholds: thresholds
+        )
     }
 
     var body: some View {
-        NavigationStack {
+        let density = self.density
+        let buckets = self.buckets
+
+        return NavigationStack {
             Group {
-                if items.isEmpty {
+                if buckets.isEmpty {
                     ScrollView {
                         EmptyStateView(
                             systemImage: "book.closed",
                             title: "No entries yet",
-                            message: "Log glucose, insulin, meals, activity and notes — they'll appear here on your timeline."
+                            message: "Log glucose, insulin, meals, activity and notes — they'll appear here as day cards."
                         )
                         .padding(.top, 72)
                     }
                 } else {
                     ScrollView {
                         LazyVStack(alignment: .leading, spacing: 20) {
-                            ForEach(Array(sections.enumerated()), id: \.element.id) { sectionIndex, section in
-                                Section {
-                                    VStack(spacing: 0) {
-                                        ForEach(Array(section.items.enumerated()), id: \.element.id) { index, item in
-                                            Button {
-                                                Haptics.play(.selection)
-                                                editTarget = JournalEditTarget(item: item)
-                                            } label: {
-                                                JournalEntryRow(item: item, unit: unit, thresholds: thresholds)
-                                            }
-                                            .buttonStyle(PressableCardStyle())
-                                            if index < section.items.count - 1 {
-                                                Divider().overlay(Theme.hairline)
-                                                    .padding(.leading, 48)
-                                            }
-                                        }
-                                    }
-                                    .glassCard()
-                                } header: {
-                                    JournalSectionHeader(day: section.day)
+                            ForEach(Array(buckets.enumerated()), id: \.element.id) { index, bucket in
+                                JournalDayCard(
+                                    bucket: bucket,
+                                    density: density,
+                                    unit: unit,
+                                    thresholds: thresholds
+                                ) { item in
+                                    Haptics.play(.selection)
+                                    editTarget = JournalEditTarget(item: item)
                                 }
-                                .appearTransition(delay: Double(min(sectionIndex, 6)) * 0.05)
+                                .appearTransition(delay: Double(min(index, 6)) * 0.05)
                             }
                         }
                         .padding()
+                        .animation(.snappy, value: density)
                     }
                 }
             }
@@ -95,7 +97,8 @@ struct JournalView: View {
                     }
                     .accessibilityLabel("Open calendar")
                 }
-                ToolbarItem(placement: .primaryAction) {
+                ToolbarItemGroup(placement: .primaryAction) {
+                    densityMenu
                     Button {
                         Haptics.play(.light)
                         showingQuickEntry = true
@@ -117,6 +120,21 @@ struct JournalView: View {
         }
     }
 
+    /// The "presets"-style density picker: three options with density icons and
+    /// a checkmark on the current choice, persisted through `Preferences`.
+    private var densityMenu: some View {
+        Menu {
+            Picker("Card density", selection: densityBinding) {
+                ForEach(JournalCardDensity.allCases) { option in
+                    Label(option.title, systemImage: option.symbol).tag(option)
+                }
+            }
+        } label: {
+            Image(systemName: "slider.horizontal.3")
+        }
+        .accessibilityLabel("Card density")
+    }
+
     @ViewBuilder
     private func editorSheet(for item: JournalTimelineItem) -> some View {
         switch item.kind {
@@ -136,35 +154,15 @@ struct JournalView: View {
 
 // MARK: - Private helpers
 
-/// One day's worth of timeline items.
-private struct JournalDaySection: Identifiable {
-    let day: Date
-    let items: [JournalTimelineItem]
-    var id: Date { day }
-}
-
 /// Identifiable wrapper so a tapped row can drive `.sheet(item:)`.
 private struct JournalEditTarget: Identifiable {
     let id = UUID()
     let item: JournalTimelineItem
 }
 
-/// A day header: "Today" / "Yesterday" / a formatted weekday-and-date.
-private struct JournalSectionHeader: View {
-    let day: Date
-
-    var body: some View {
-        Text(title)
-            .font(.subheadline.weight(.semibold))
-            .foregroundStyle(Theme.textSecondary)
-            .frame(maxWidth: .infinity, alignment: .leading)
-            .accessibilityAddTraits(.isHeader)
-    }
-
-    private var title: String {
-        let calendar = Calendar.current
-        if calendar.isDateInToday(day) { return "Today" }
-        if calendar.isDateInYesterday(day) { return "Yesterday" }
-        return day.formatted(.dateTime.weekday(.wide).month(.abbreviated).day())
-    }
+#Preview {
+    let env = AppEnvironment.preview()
+    return JournalView()
+        .environment(env)
+        .modelContainer(env.modelContainer)
 }
