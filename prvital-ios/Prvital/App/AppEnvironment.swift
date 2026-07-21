@@ -152,9 +152,13 @@ final class AppEnvironment {
             lastMealCarbs: meal?.grams,
             lastInsulinAt: Self.latestInsulinTimestamp(in: context)
         )
+        // Sick-day mode tightens the reading-gap cadence (2h instead of 4h) while
+        // it's on — but only for the already-opt-in glucose-check reminder, so it
+        // never introduces a notification the user didn't ask for.
         let settings = ContextualReminderSettings(
             readingGapEnabled: preferences.reminders.glucoseCheckEnabled,
-            mealContextEnabled: preferences.reminders.mealsEnabled
+            mealContextEnabled: preferences.reminders.mealsEnabled,
+            readingGapHours: preferences.sickDayEnabled ? 2 : 4
         )
         let due = ContextualReminderEvaluator.evaluate(input: input, settings: settings, now: now)
         notifications.rescheduleContextual(due)

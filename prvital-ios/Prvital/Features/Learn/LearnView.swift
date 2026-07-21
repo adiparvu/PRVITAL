@@ -12,9 +12,10 @@ struct LearnView: View {
             ScrollView {
                 VStack(spacing: 20) {
                     rulesSection.appearTransition(delay: 0)
-                    articlesSection.appearTransition(delay: 0.06)
-                    recipesSection.appearTransition(delay: 0.12)
-                    LearnDisclaimerCard().appearTransition(delay: 0.18)
+                    sickDaySection.appearTransition(delay: 0.06)
+                    articlesSection.appearTransition(delay: 0.12)
+                    recipesSection.appearTransition(delay: 0.18)
+                    LearnDisclaimerCard().appearTransition(delay: 0.24)
                 }
                 .padding()
             }
@@ -50,6 +51,28 @@ struct LearnView: View {
         }
         .padding(.vertical, 10)
         .contentShape(.rect)
+    }
+
+    private var sickDaySection: some View {
+        SectionCard("When you're unwell", systemImage: "cross.case.fill") {
+            NavigationLink { SickDayView() } label: {
+                HStack(spacing: 12) {
+                    Image(systemName: "bandage.fill")
+                        .font(.title3)
+                        .foregroundStyle(Theme.zoneWarning)
+                        .frame(width: 32)
+                    VStack(alignment: .leading, spacing: 2) {
+                        Text("Sick-day mode").font(.subheadline.weight(.semibold)).foregroundStyle(Theme.textPrimary)
+                        Text("The rules for managing diabetes through illness").font(.caption).foregroundStyle(Theme.textSecondary)
+                    }
+                    Spacer()
+                    Image(systemName: "chevron.right").font(.caption).foregroundStyle(Theme.textTertiary)
+                }
+                .padding(.vertical, 10)
+                .contentShape(.rect)
+            }
+            .buttonStyle(PressableCardStyle())
+        }
     }
 
     private var articlesSection: some View {

@@ -18,6 +18,7 @@ struct DashboardView: View {
     @State private var showQuickEntry = false
     @State private var showGlucoseEntry = false
     @State private var showGoalsEditor = false
+    @State private var showRuleOf15 = false
     @State private var syncFailure: String?
     @State private var trendRange: DashboardTrendRange = .threeHours
     @State private var showCustomRange = false
@@ -43,6 +44,10 @@ struct DashboardView: View {
                 VStack(spacing: 20) {
                     hero(summary: summary, thresholds: thresholds, unit: unit)
                         .appearTransition(delay: 0)
+                    if env.preferences.sickDayEnabled {
+                        SickDayBanner()
+                            .appearTransition(delay: 0.03)
+                    }
                     trendSection(summary: summary, thresholds: thresholds, unit: unit)
                         .appearTransition(delay: 0.06)
                     if todayStats.hasGlucose {
@@ -133,6 +138,9 @@ struct DashboardView: View {
             .sheet(isPresented: $showGoalsEditor) {
                 GoalsEditorSheet()
             }
+            .sheet(isPresented: $showRuleOf15) {
+                RuleOf15Sheet()
+            }
         }
     }
 
@@ -178,6 +186,22 @@ struct DashboardView: View {
 
                 if let warning = projectionWarning(summary: summary, thresholds: thresholds) {
                     warningChip(warning)
+                }
+
+                if zone.isHypo {
+                    Button {
+                        Haptics.play(.warning)
+                        showRuleOf15 = true
+                    } label: {
+                        Label("Treat low (Rule of 15)", systemImage: "cross.case.fill")
+                            .font(.headline)
+                            .frame(maxWidth: .infinity)
+                            .padding(.vertical, 6)
+                    }
+                    .buttonStyle(.borderedProminent)
+                    .tint(zone.color)
+                    .accessibilityHint("Opens a guided low-glucose treatment")
+                    .transition(.move(edge: .bottom).combined(with: .opacity))
                 }
             } else {
                 Button {

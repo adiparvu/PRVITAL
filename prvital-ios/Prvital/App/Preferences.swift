@@ -19,6 +19,8 @@ final class Preferences {
         self.glucoseSchedule = Self.readGlucoseSchedule(self.defaults)
         self.glucoseGoals = Self.readGlucoseGoals(self.defaults)
         self.liveSyncSeconds = (self.defaults.object(forKey: Keys.liveSync) as? Int) ?? 60
+        self.sickDayEnabled = self.defaults.bool(forKey: Keys.sickDayEnabled)
+        self.sickDayStartedAt = self.defaults.object(forKey: Keys.sickDayStartedAt) as? Date
     }
 
     var glucoseUnit: GlucoseUnit {
@@ -69,6 +71,23 @@ final class Preferences {
         didSet { defaults.set(liveSyncSeconds, forKey: Keys.liveSync) }
     }
 
+    /// Whether the user has turned on sick-day mode. When on, the dashboard shows
+    /// a sick-day guidance banner. Off by default and stored under its own key, so
+    /// adding it is a purely additive, migration-safe change (like `glucoseGoals`).
+    var sickDayEnabled: Bool {
+        didSet { defaults.set(sickDayEnabled, forKey: Keys.sickDayEnabled) }
+    }
+
+    /// When the current sick-day episode began, set the moment sick-day mode is
+    /// turned on and cleared when it's turned off. Optional so "not in a sick day"
+    /// is simply absent.
+    var sickDayStartedAt: Date? {
+        didSet {
+            if let sickDayStartedAt { defaults.set(sickDayStartedAt, forKey: Keys.sickDayStartedAt) }
+            else { defaults.removeObject(forKey: Keys.sickDayStartedAt) }
+        }
+    }
+
     /// Quick-add presets (the +1U … +10U row and 20g … 100g row).
     let insulinPresets: [Double] = [1, 2, 4, 6, 8, 10]
     let carbPresets: [Double] = [20, 40, 60, 80, 100]
@@ -86,6 +105,8 @@ final class Preferences {
         static let glucoseSchedule = "pref.glucoseSchedule"
         static let glucoseGoals = "pref.glucoseGoals"
         static let liveSync = "pref.liveSyncSeconds"
+        static let sickDayEnabled = "pref.sickDayEnabled"
+        static let sickDayStartedAt = "pref.sickDayStartedAt"
     }
 
     private static func readUnit(_ d: UserDefaults) -> GlucoseUnit {
