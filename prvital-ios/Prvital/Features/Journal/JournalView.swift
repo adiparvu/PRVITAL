@@ -23,6 +23,7 @@ struct JournalView: View {
     @State private var editTarget: JournalEditTarget?
     @State private var showingQuickEntry = false
     @State private var showingCalendar = false
+    @State private var showingLogbook = false
 
     private var unit: GlucoseUnit { env.preferences.glucoseUnit }
     private var thresholds: GlucoseThresholds { env.preferences.thresholds }
@@ -88,17 +89,19 @@ struct JournalView: View {
             .background(Theme.background)
             .navigationTitle("Journal")
             .toolbar {
+                // One filters menu on the left (density + calendar united, per
+                // device feedback), the logbook and "+" on the right.
                 ToolbarItem(placement: .topBarLeading) {
-                    Button {
-                        Haptics.play(.selection)
-                        showingCalendar = true
-                    } label: {
-                        Image(systemName: "calendar")
-                    }
-                    .accessibilityLabel("Open calendar")
+                    filtersMenu
                 }
                 ToolbarItemGroup(placement: .primaryAction) {
-                    densityMenu
+                    Button {
+                        Haptics.play(.selection)
+                        showingLogbook = true
+                    } label: {
+                        Image(systemName: "tablecells")
+                    }
+                    .accessibilityLabel("Open logbook")
                     Button {
                         Haptics.play(.light)
                         showingQuickEntry = true
@@ -114,25 +117,36 @@ struct JournalView: View {
             .sheet(isPresented: $showingCalendar) {
                 CalendarView()
             }
+            .sheet(isPresented: $showingLogbook) {
+                LogbookView()
+            }
             .sheet(item: $editTarget) { target in
                 editorSheet(for: target.item)
             }
         }
     }
 
-    /// The "presets"-style density picker: three options with density icons and
-    /// a checkmark on the current choice, persisted through `Preferences`.
-    private var densityMenu: some View {
+    /// One united filters menu: the "presets"-style density picker (three
+    /// options with density icons, checkmark on the current choice, persisted
+    /// through `Preferences`) plus the calendar jump.
+    private var filtersMenu: some View {
         Menu {
             Picker("Card density", selection: densityBinding) {
                 ForEach(JournalCardDensity.allCases) { option in
                     Label(option.title, systemImage: option.symbol).tag(option)
                 }
             }
+            Divider()
+            Button {
+                Haptics.play(.selection)
+                showingCalendar = true
+            } label: {
+                Label("Open calendar", systemImage: "calendar")
+            }
         } label: {
-            Image(systemName: "slider.horizontal.3")
+            Image(systemName: "line.3.horizontal.decrease.circle")
         }
-        .accessibilityLabel("Card density")
+        .accessibilityLabel("Filters")
     }
 
     @ViewBuilder
