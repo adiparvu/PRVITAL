@@ -59,6 +59,11 @@ struct DashboardView: View {
                     if todayStats.hasGlucose {
                         todayCard(todayStats)
                             .appearTransition(delay: 0.12)
+                        let forecast = tirForecast(thresholds: thresholds)
+                        if forecast.hasData {
+                            forecastCard(forecast, goalFraction: env.preferences.glucoseGoals.targetTIRFraction)
+                                .appearTransition(delay: 0.13)
+                        }
                     }
                     if env.preferences.glucoseGoals.enabled {
                         goalsCard(todayStats, thresholds: thresholds)
@@ -456,6 +461,92 @@ struct DashboardView: View {
 
     private func todayBand(_ geo: GeometryProxy, _ fraction: Double, _ color: Color) -> some View {
         color.frame(width: max(geo.size.width * fraction, fraction > 0 ? 2 : 0))
+    }
+
+    // MARK: - Today's outlook (TIR forecast)
+
+    /// Blends today's readings with the prior week to project how today's
+    /// time-in-range is likely to finish.
+    private func tirForecast(thresholds: GlucoseThresholds) -> TIRForecast {
+        let cal = Calendar.current
+        let now = Date()
+        let startOfToday = cal.startOfDay(for: now)
+        let baselineStart = cal.date(byAdding: .day, value: -7, to: startOfToday) ?? startOfToday
+        let today = readings.filter { $0.timestamp >= startOfToday && $0.timestamp <= now }
+        let baseline = readings.filter { $0.timestamp >= baselineStart && $0.timestamp < startOfToday }
+        return TIRForecastEngine.forecast(
+            today: today, baseline: baseline, thresholds: thresholds, now: now)
+    }
+
+    /// A gentle projection of today's end-of-day time-in-range: where it stands
+    /// now, where it's heading, and how confident that estimate is. Supportive,
+    /// never alarming.
+    private func forecastCard(_ forecast: TIRForecast, goalFraction: Double) -> some View {
+        let nowPct = (forecast.currentFraction * 100).formatted(.number.precision(.fractionLength(0)))
+        let projPct = (forecast.projectedFraction * 100).formatted(.number.precision(.fractionLength(0)))
+        let onTrack = goalFraction > 0 && forecast.projectedFraction >= goalFraction
+        let note: String = goalFraction <= 0
+            ? String(localized: "Based on today so far and your recent days.")
+            : (onTrack
+                ? String(localized: "On track to reach your goal today.")
+                : String(localized: "A steady rest of the day can still lift this."))
+        return SectionCard("Today's outlook", systemImage: "chart.line.uptrend.xyaxis") {
+            VStack(alignment: .leading, spacing: 12) {
+                HStack(spacing: 16) {
+                    forecastFigure(title: "Now", value: "\(nowPct)%", tint: Theme.textPrimary)
+                    Image(systemName: "arrow.right")
+                        .font(.caption.weight(.bold))
+                        .foregroundStyle(Theme.textTertiary)
+                        .accessibilityHidden(true)
+                    forecastFigure(title: "Projected", value: "\(projPct)%",
+                                   tint: onTrack ? Theme.zoneInRange : Theme.accent)
+                    Spacer()
+                    confidenceBadge(forecast.confidence)
+                }
+                Text(note)
+                    .font(.caption)
+                    .foregroundStyle(Theme.textSecondary)
+                    .fixedSize(horizontal: false, vertical: true)
+            }
+            .accessibilityElement(children: .combine)
+            .accessibilityLabel("Today's outlook. Now \(nowPct) percent in range, projected \(projPct) percent by end of day. \(confidenceLabel(forecast.confidence)) confidence. \(note)")
+        }
+    }
+
+    private func forecastFigure(title: LocalizedStringKey, value: String, tint: Color) -> some View {
+        VStack(alignment: .leading, spacing: 2) {
+            Text(title)
+                .font(.caption2)
+                .foregroundStyle(Theme.textTertiary)
+            Text(value)
+                .font(.title3.weight(.bold))
+                .foregroundStyle(tint)
+                .monospacedDigit()
+        }
+    }
+
+    private func confidenceBadge(_ confidence: TIRForecast.Confidence) -> some View {
+        let label: LocalizedStringKey
+        let color: Color
+        switch confidence {
+        case .high: label = "High confidence"; color = Theme.zoneInRange
+        case .medium: label = "Medium confidence"; color = Theme.accent
+        case .low: label = "Early estimate"; color = Theme.textTertiary
+        }
+        return Text(label)
+            .font(.caption2.weight(.semibold))
+            .foregroundStyle(color)
+            .padding(.horizontal, 8)
+            .padding(.vertical, 4)
+            .background(color.opacity(0.14), in: Capsule())
+    }
+
+    private func confidenceLabel(_ confidence: TIRForecast.Confidence) -> String {
+        switch confidence {
+        case .high: return String(localized: "High")
+        case .medium: return String(localized: "Medium")
+        case .low: return String(localized: "Low")
+        }
     }
 
     // MARK: - Daily companion
