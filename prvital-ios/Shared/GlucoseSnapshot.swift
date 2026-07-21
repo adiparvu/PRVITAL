@@ -34,6 +34,19 @@ struct GlucoseSnapshot: Codable, Equatable, Sendable {
     var predictionText: String?
     var recentEntries: [String] = []
 
+    /// The honest "no data" state: an em-dash, neutral grey, already stale. This is
+    /// what widgets render when no snapshot has ever been published or the shared
+    /// store can't be read. It must be visibly *not a reading* — a frozen widget
+    /// showing a realistic-looking number is dangerous in a glucose app.
+    static let empty = GlucoseSnapshot(
+        valueText: "—", unitText: "mg/dL", mgdL: 0,
+        trendSymbol: "minus", trendLabel: "No data",
+        zoneLabel: "No data", zoneColorHex: 0x8E8E93,
+        sourceName: "—", updatedAt: .distantPast, isStale: true
+    )
+
+    /// Rich sample data for the widget-gallery preview ONLY (`context.isPreview`).
+    /// Never use this as a runtime fallback: it looks exactly like a real reading.
     static let placeholder = GlucoseSnapshot(
         valueText: "124", unitText: "mg/dL", mgdL: 124,
         trendSymbol: "arrow.right", trendLabel: "Stable",

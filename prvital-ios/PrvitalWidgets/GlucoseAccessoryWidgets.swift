@@ -50,17 +50,26 @@ private struct WidgetAccessoryCircular: View {
 
     var body: some View {
         Gauge(value: fraction) {
-            Text(snapshot.unitText)
+            // When the reading is stale, swap the unit for a clock so a frozen
+            // number is visibly out of date even in this tiny family.
+            if snapshot.isStale {
+                Image(systemName: "clock")
+            } else {
+                Text(snapshot.unitText)
+            }
         } currentValueLabel: {
             Text(snapshot.valueText)
                 .font(.system(.body, design: .rounded).weight(.semibold))
                 .minimumScaleFactor(0.5)
                 .lineLimit(1)
+                .opacity(snapshot.isStale ? 0.55 : 1)
         }
         .gaugeStyle(.accessoryCircular)
-        .tint(Color(hex: snapshot.zoneColorHex))
+        .tint(snapshot.isStale ? Color.gray : Color(hex: snapshot.zoneColorHex))
         .containerBackground(.clear, for: .widget)
-        .accessibilityLabel("Glucose \(snapshot.valueText) \(snapshot.unitText), \(snapshot.zoneLabel)")
+        .accessibilityLabel(snapshot.isStale
+            ? "Glucose \(snapshot.valueText) \(snapshot.unitText), outdated"
+            : "Glucose \(snapshot.valueText) \(snapshot.unitText), \(snapshot.zoneLabel)")
     }
 }
 
@@ -83,15 +92,30 @@ private struct WidgetAccessoryRectangular: View {
                     .font(.footnote.weight(.bold))
                     .imageScale(.small)
             }
-            Text(snapshot.sourceName)
-                .font(.caption2)
+            // When stale, show how old the value is (self-advancing relative
+            // text) instead of the source — a frozen number must say so.
+            if snapshot.isStale, snapshot.updatedAt > .distantPast {
+                HStack(spacing: 3) {
+                    Image(systemName: "clock")
+                        .font(.caption2)
+                    Text(snapshot.updatedAt, style: .relative)
+                        .font(.caption2)
+                }
                 .foregroundStyle(.secondary)
                 .lineLimit(1)
+            } else {
+                Text(snapshot.sourceName)
+                    .font(.caption2)
+                    .foregroundStyle(.secondary)
+                    .lineLimit(1)
+            }
         }
         .frame(maxWidth: .infinity, alignment: .leading)
         .containerBackground(.clear, for: .widget)
         .accessibilityElement(children: .ignore)
-        .accessibilityLabel("Glucose \(snapshot.valueText) \(snapshot.unitText), \(snapshot.trendLabel), from \(snapshot.sourceName)")
+        .accessibilityLabel(snapshot.isStale
+            ? "Glucose \(snapshot.valueText) \(snapshot.unitText), outdated"
+            : "Glucose \(snapshot.valueText) \(snapshot.unitText), \(snapshot.trendLabel), from \(snapshot.sourceName)")
     }
 }
 
@@ -102,12 +126,15 @@ private struct WidgetAccessoryInline: View {
 
     var body: some View {
         // Inline widgets render as a single Label beside the clock; the system
-        // ignores custom backgrounds here.
+        // ignores custom backgrounds here. A stale value swaps the trend arrow
+        // for a clock so it can't pass for a live reading.
         Label {
             Text("\(snapshot.valueText) \(snapshot.unitText)")
         } icon: {
-            Image(systemName: snapshot.trendSymbol)
+            Image(systemName: snapshot.isStale ? "clock" : snapshot.trendSymbol)
         }
-        .accessibilityLabel("Glucose \(snapshot.valueText) \(snapshot.unitText), \(snapshot.trendLabel)")
+        .accessibilityLabel(snapshot.isStale
+            ? "Glucose \(snapshot.valueText) \(snapshot.unitText), outdated"
+            : "Glucose \(snapshot.valueText) \(snapshot.unitText), \(snapshot.trendLabel)")
     }
 }

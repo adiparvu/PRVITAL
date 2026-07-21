@@ -10,19 +10,24 @@ struct GlucoseEntry: TimelineEntry {
 
 /// Feeds every glucose widget from the shared App Group snapshot.
 ///
-/// All three callbacks read `SharedStore.load()` (which falls back to
-/// `GlucoseSnapshot.placeholder` when nothing has been published yet). The
-/// timeline is a single entry for "now" with a 15-minute refresh window — the
-/// app also nudges `WidgetCenter` whenever it saves a fresher snapshot, so this
-/// interval is just a backstop.
+/// Runtime callbacks read `SharedStore.load()`, which falls back to the honest
+/// `.empty` ("—") snapshot — the realistic-looking `.placeholder` sample is
+/// reserved for the widget-gallery preview, so a widget that can't load data
+/// can never show a number that looks like a real reading. The app nudges
+/// `WidgetCenter` whenever it saves a meaningfully fresher snapshot; the
+/// timeline's own refresh policy is a low-frequency backstop chosen to stay
+/// inside WidgetKit's ~40–70 reloads/day budget (a 10-minute backstop alone
+/// would request 144/day and starve the widget — the "frozen widget" bug).
 struct GlucoseProvider: TimelineProvider {
     /// Minutes between backstop refreshes when the app is idle.
-    private static let refreshMinutes = 10
+    private static let refreshMinutes = 30
     /// After this long with no fresh reading, the widget shows itself as stale.
     private static let staleAfterMinutes = 20.0
 
     func placeholder(in context: Context) -> GlucoseEntry {
-        GlucoseEntry(date: Date(), snapshot: .placeholder)
+        // The redacted/loading shape. Uses the honest empty snapshot: if a widget
+        // ever gets stuck here, it shows "—", not a plausible fake value.
+        GlucoseEntry(date: Date(), snapshot: .empty)
     }
 
     func getSnapshot(in context: Context, completion: @escaping (GlucoseEntry) -> Void) {

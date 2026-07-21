@@ -11,12 +11,18 @@ enum SharedStore {
     private static let key = "glucose.snapshot"
     private static let signatureKey = "glucose.snapshot.signature"
     private static let reloadAtKey = "glucose.snapshot.reloadedAt"
+    private static let reloadedDataAtKey = "glucose.snapshot.reloadedDataAt"
 
-    /// Minimum spacing between app-triggered widget reloads. WidgetKit only funds
-    /// ~40–70 timeline reloads per day; reloading on every CGM reading (every ~5
-    /// min) blows that budget and freezes the widget. Routine same-zone value ticks
-    /// are instead picked up by the widget's own timeline refresh policy.
-    private static let minReloadInterval: TimeInterval = 10 * 60
+    /// Minimum spacing between reloads triggered by an *important* change — the
+    /// glucose zone flipping, staleness, the target band, a prediction appearing.
+    /// These are rare in practice, so they get the faster lane.
+    private static let importantReloadInterval: TimeInterval = 10 * 60
+
+    /// Minimum spacing between reloads triggered by a routine fresher reading in
+    /// the same zone. WidgetKit only funds ~40–70 timeline reloads per day;
+    /// reloading on every CGM reading (every ~5 min) blows that budget and
+    /// freezes the widget — the exact bug this throttle fixes.
+    private static let routineReloadInterval: TimeInterval = 20 * 60
 
     private static var defaults: UserDefaults {
         UserDefaults(suiteName: appGroupIdentifier) ?? .standard
@@ -28,19 +34,27 @@ enum SharedStore {
         // widget's next scheduled refresh) read current values.
         defaults.set(data, forKey: key)
 
-        // Only *nudge* an immediate widget reload when something worth spending the
-        // scarce reload budget on changed — the zone, staleness, target band, or a
-        // new prediction — and never more than once per `minReloadInterval`. This is
-        // the fix for widgets freezing: the old code reloaded on every reading, so
-        // the daily budget was exhausted within an hour and no refresh (app-nudged
-        // OR policy-scheduled) could get through afterwards.
+        // Spend the scarce reload budget on two lanes:
+        //  - important lane: the zone-based signature changed (zone, staleness,
+        //    target band, prediction) — at most every 10 minutes;
+        //  - routine lane: a genuinely newer reading in the same zone — at most
+        //    every 20 minutes, so the shown value tracks reality at a sustainable
+        //    cadence while the widget's own timeline policy backstops the rest.
         let signature = reloadSignature(snapshot)
         let lastSignature = defaults.string(forKey: signatureKey)
         let lastReload = defaults.double(forKey: reloadAtKey)
+        let lastDataAt = defaults.double(forKey: reloadedDataAtKey)
         let now = Date().timeIntervalSince1970
-        guard signature != lastSignature, now - lastReload > minReloadInterval else { return }
+        let elapsed = now - lastReload
+
+        let importantChange = signature != lastSignature && elapsed > importantReloadInterval
+        let fresherData = snapshot.updatedAt.timeIntervalSince1970 > lastDataAt
+            && elapsed > routineReloadInterval
+        guard importantChange || fresherData else { return }
+
         defaults.set(signature, forKey: signatureKey)
         defaults.set(now, forKey: reloadAtKey)
+        defaults.set(snapshot.updatedAt.timeIntervalSince1970, forKey: reloadedDataAtKey)
         #if canImport(WidgetKit)
         WidgetCenter.shared.reloadAllTimelines()
         #endif
@@ -48,10 +62,9 @@ enum SharedStore {
 
     /// A signature of only the snapshot's *important* state — zone, staleness,
     /// target band and whether a prediction is present. It deliberately EXCLUDES
-    /// the value, timestamp and history, which change on every reading: reloading
-    /// for those would exhaust WidgetKit's budget. The widget's timeline refresh
-    /// policy handles routine value updates; the relative "updated" caption advances
-    /// on its own via `Text(_, style: .relative)`.
+    /// the value, timestamp and history, which change on every reading: those go
+    /// through the slower routine lane instead. The relative "updated" caption
+    /// advances on its own via `Text(_, style: .relative)`.
     private static func reloadSignature(_ s: GlucoseSnapshot) -> String {
         [
             s.zoneLabel, String(s.zoneColorHex), s.isStale ? "1" : "0",
@@ -60,10 +73,13 @@ enum SharedStore {
         ].joined(separator: "|")
     }
 
+    /// Falls back to the honest `.empty` ("—", grey, stale) — never to the
+    /// realistic-looking gallery placeholder, which a user could mistake for a
+    /// real reading if the widget can't load data.
     static func load() -> GlucoseSnapshot {
         guard let data = defaults.data(forKey: key),
               let snapshot = try? JSONDecoder().decode(GlucoseSnapshot.self, from: data)
-        else { return .placeholder }
+        else { return .empty }
         return snapshot
     }
 }
