@@ -185,11 +185,20 @@ struct GlucoseTrendChart: View {
             }
         }
         .chartXAxis {
-            AxisMarks { _ in
+            // Whole-hour ticks with a window-dependent stride: automatic marks can
+            // land at sub-hour points, which an hour-only format renders as
+            // duplicates ("5:00, 5:00, 6:00, 6:00"). A tick separates the plot
+            // floor from the labels.
+            AxisMarks(values: .stride(by: .hour, count: xStrideHours)) { _ in
                 AxisGridLine().foregroundStyle(Theme.hairline.opacity(0.5))
-                AxisValueLabel(format: .dateTime.hour())
+                AxisTick(length: 4).foregroundStyle(Theme.hairline)
+                AxisValueLabel(format: xLabelFormat)
             }
         }
+        // Keep every mark inside the plot area: the area fill and the smoothed
+        // (Catmull-Rom) curve must end above the hour labels, never bleed past
+        // the plot's floor into the axis strip or the card below it.
+        .chartPlotStyle { plot in plot.clipped() }
         .frame(height: compact ? 120 : 220)
         .opacity(appeared ? 1 : 0)
         .scaleEffect(y: appeared ? 1 : 0.94, anchor: .bottom)
@@ -220,6 +229,29 @@ struct GlucoseTrendChart: View {
         let low = min(values.min() ?? thresholds.targetLower, thresholds.targetLower) - 20
         let high = max(values.max() ?? thresholds.targetUpper, thresholds.targetUpper) + 20
         return max(0, low)...high
+    }
+
+    /// Hours between hour-aligned x-axis ticks, keeping ~4–6 unique labels for
+    /// any window (3h→1, 6h→2, 12h→3, 24h→6, multi-day custom→12).
+    private var xStrideHours: Int {
+        guard let first = sorted.first?.timestamp, let last = sorted.last?.timestamp else { return 1 }
+        let hours = last.timeIntervalSince(first) / 3600
+        switch hours {
+        case ..<4: return 1
+        case ..<9: return 2
+        case ..<15: return 3
+        case ..<27: return 6
+        default: return 12
+        }
+    }
+
+    /// Hour-only labels within a day; day + hour once a custom window spans more,
+    /// so two ticks a day apart can't read identically.
+    private var xLabelFormat: Date.FormatStyle {
+        guard let first = sorted.first?.timestamp, let last = sorted.last?.timestamp,
+              last.timeIntervalSince(first) > 27 * 3600
+        else { return .dateTime.hour() }
+        return .dateTime.day().hour()
     }
 }
 
