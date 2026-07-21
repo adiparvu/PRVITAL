@@ -9,8 +9,16 @@ struct AchievementsView: View {
 
     @Query private var readings: [GlucoseReading]
     @Query private var meals: [CarbEntry]
+    @Query private var activity: [ActivityEntry]
 
     @State private var store = AchievementStore()
+
+    private var challengeInputs: ChallengeInputs {
+        ChallengeInputsBuilder.make(
+            readings: readings, meals: meals, activity: activity,
+            thresholds: env.preferences.thresholds,
+            goalFraction: env.preferences.glucoseGoals.targetTIRFraction)
+    }
 
     private var inputs: AchievementInputs {
         AchievementInputsBuilder.make(
@@ -31,6 +39,7 @@ struct AchievementsView: View {
         return ScrollView {
             VStack(spacing: 18) {
                 header(earned: earnedCount, total: AchievementID.allCases.count)
+                challengesCard(challengeInputs)
                 LazyVGrid(columns: columns, spacing: 14) {
                     ForEach(AchievementCatalog.all) { achievement in
                         AchievementCard(
@@ -49,6 +58,27 @@ struct AchievementsView: View {
         .onAppear {
             store.record(unlocked: AchievementEvaluator.unlocked(inputs))
             store.markAllSeen()
+        }
+    }
+
+    private func challengesCard(_ inputs: ChallengeInputs) -> some View {
+        let done = WeeklyChallengeEngine.completedCount(inputs)
+        let total = WeeklyChallengeID.allCases.count
+        let accessory = AnyView(
+            Text("\(done)/\(total)")
+                .font(.subheadline.weight(.bold))
+                .foregroundStyle(done == total ? Theme.zoneInRange : Theme.textSecondary)
+                .contentTransition(.numericText())
+        )
+        return SectionCard("This week's challenges", systemImage: "flag.checkered", accessory: accessory) {
+            VStack(spacing: 14) {
+                ForEach(WeeklyChallengeEngine.catalog) { challenge in
+                    ChallengeRow(
+                        challenge: challenge,
+                        progress: WeeklyChallengeEngine.progress(challenge.id, inputs),
+                        complete: WeeklyChallengeEngine.isComplete(challenge.id, inputs))
+                }
+            }
         }
     }
 
@@ -166,6 +196,44 @@ private struct AchievementCard: View {
             return String(localized: "\(achievement.title), \(progress.current) of \(progress.target). \(achievement.detail)")
         }
         return String(localized: "\(achievement.title), locked. \(achievement.detail)")
+    }
+}
+
+/// One weekly-challenge row: icon, title, a progress bar and current/target.
+private struct ChallengeRow: View {
+    let challenge: WeeklyChallenge
+    let progress: (current: Int, target: Int)
+    let complete: Bool
+
+    private var tint: Color { complete ? Theme.zoneInRange : Theme.accent }
+
+    var body: some View {
+        HStack(spacing: 12) {
+            Image(systemName: complete ? "checkmark.circle.fill" : challenge.symbol)
+                .font(.system(size: 16, weight: .semibold))
+                .foregroundStyle(tint)
+                .frame(width: 26)
+                .accessibilityHidden(true)
+            VStack(alignment: .leading, spacing: 5) {
+                HStack {
+                    Text(challenge.title)
+                        .font(.subheadline.weight(.semibold))
+                        .foregroundStyle(Theme.textPrimary)
+                    Spacer()
+                    Text("\(progress.current)/\(progress.target)")
+                        .font(.caption.weight(.semibold))
+                        .foregroundStyle(tint)
+                        .monospacedDigit()
+                }
+                ProgressView(value: Double(progress.current), total: Double(max(progress.target, 1)))
+                    .tint(tint)
+                Text(challenge.detail)
+                    .font(.caption2)
+                    .foregroundStyle(Theme.textSecondary)
+            }
+        }
+        .accessibilityElement(children: .combine)
+        .accessibilityLabel("\(challenge.title), \(progress.current) of \(progress.target)\(complete ? String(localized: ", complete") : "")")
     }
 }
 
