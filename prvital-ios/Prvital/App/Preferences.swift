@@ -17,6 +17,7 @@ final class Preferences {
         self.bolusParameters = Self.readBolus(self.defaults)
         self.alerts = Self.readAlerts(self.defaults)
         self.glucoseSchedule = Self.readGlucoseSchedule(self.defaults)
+        self.glucoseGoals = Self.readGlucoseGoals(self.defaults)
         self.liveSyncSeconds = (self.defaults.object(forKey: Keys.liveSync) as? Int) ?? 60
     }
 
@@ -54,6 +55,13 @@ final class Preferences {
         didSet { if let data = try? JSONEncoder().encode(glucoseSchedule) { defaults.set(data, forKey: Keys.glucoseSchedule) } }
     }
 
+    /// Opt-in Time-in-Range and A1c goals with a motivational streak (off by
+    /// default). Stored under its own key so enabling it never disturbs any
+    /// existing preference.
+    var glucoseGoals: GlucoseGoals {
+        didSet { if let data = try? JSONEncoder().encode(glucoseGoals) { defaults.set(data, forKey: Keys.glucoseGoals) } }
+    }
+
     /// How often (seconds) to poll connected CGM sources while the app is open.
     /// 0 disables live polling. Default 60s, which matches a Libre's per-minute
     /// cadence; Dexcom publishes every 5 minutes so extra polls simply no-op.
@@ -76,6 +84,7 @@ final class Preferences {
         static let bolus = "pref.bolusParameters"
         static let alerts = "pref.alerts"
         static let glucoseSchedule = "pref.glucoseSchedule"
+        static let glucoseGoals = "pref.glucoseGoals"
         static let liveSync = "pref.liveSyncSeconds"
     }
 
@@ -118,6 +127,30 @@ final class Preferences {
         else { return .default }
         return value
     }
+    private static func readGlucoseGoals(_ d: UserDefaults) -> GlucoseGoals {
+        guard let data = d.data(forKey: Keys.glucoseGoals),
+              let value = try? JSONDecoder().decode(GlucoseGoals.self, from: data)
+        else { return .default }
+        return value
+    }
+}
+
+/// Opt-in glucose goals: a target Time-in-Range percentage and target A1c, with
+/// a streak of days meeting the TIR goal. Off by default and stored under its own
+/// preference key, so adding it is a purely additive, migration-safe change.
+struct GlucoseGoals: Codable, Equatable, Sendable {
+    /// Target time-in-range, as a percentage (e.g. 70 for 70%).
+    var targetTIRPercent: Double = 70
+    /// Target estimated A1c (%).
+    var targetA1c: Double = 7.0
+    /// Whether the goals card and streak are shown.
+    var enabled: Bool = false
+
+    static let `default` = GlucoseGoals()
+
+    /// The TIR target as a 0…1 fraction, matching `PeriodStatistics.timeInRange`
+    /// and the fraction `StreakCalculator` expects.
+    var targetTIRFraction: Double { targetTIRPercent / 100 }
 }
 
 /// The connection details for a self-hosted Nightscout site. The URL and token

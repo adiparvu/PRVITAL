@@ -17,6 +17,7 @@ struct DashboardView: View {
 
     @State private var showQuickEntry = false
     @State private var showGlucoseEntry = false
+    @State private var showGoalsEditor = false
     @State private var syncFailure: String?
     @State private var trendRange: DashboardTrendRange = .threeHours
     @State private var showCustomRange = false
@@ -48,6 +49,10 @@ struct DashboardView: View {
                         todayCard(todayStats)
                             .appearTransition(delay: 0.12)
                     }
+                    if env.preferences.glucoseGoals.enabled {
+                        goalsCard(todayStats, thresholds: thresholds)
+                            .appearTransition(delay: 0.14)
+                    }
                     if let session = sensorSessions.first {
                         let sensorStatus = SensorSessionEvaluator.status(
                             start: session.startDate, kind: session.kind, now: Date())
@@ -77,6 +82,16 @@ struct DashboardView: View {
             .background(Theme.background)
             .navigationTitle("Today")
             .toolbar {
+                ToolbarItem(placement: .topBarLeading) {
+                    Button {
+                        Haptics.play(.selection)
+                        showGoalsEditor = true
+                    } label: {
+                        Image(systemName: "target")
+                    }
+                    .accessibilityLabel("Goals")
+                    .accessibilityHint("Set your time-in-range and A1c goals")
+                }
                 ToolbarItem(placement: .primaryAction) {
                     Button {
                         Haptics.play(.selection)
@@ -114,6 +129,9 @@ struct DashboardView: View {
             }
             .sheet(isPresented: $showGlucoseEntry) {
                 GlucoseEntrySheet()
+            }
+            .sheet(isPresented: $showGoalsEditor) {
+                GoalsEditorSheet()
             }
         }
     }
@@ -376,6 +394,103 @@ struct DashboardView: View {
 
     private func todayBand(_ geo: GeometryProxy, _ fraction: Double, _ color: Color) -> some View {
         color.frame(width: max(geo.size.width * fraction, fraction > 0 ? 2 : 0))
+    }
+
+    // MARK: - Goals & streak
+
+    /// A compact goals card: a ring for today's progress toward the target
+    /// time-in-range, the current "days meeting your TIR goal" streak, and the
+    /// target A1c against today's estimate. Shown only when goals are enabled.
+    private func goalsCard(_ stats: PeriodStatistics, thresholds: GlucoseThresholds) -> some View {
+        let goals = env.preferences.glucoseGoals
+        let targetFraction = goals.targetTIRFraction
+        let streak = StreakCalculator.evaluate(
+            days: DailyBreakdown.perDay(readings, thresholds: thresholds),
+            targetFraction: targetFraction
+        )
+        let todayTIR = stats.timeInRange
+        let progress = targetFraction > 0 ? min(todayTIR / targetFraction, 1) : 0
+        let metToday = stats.hasGlucose && todayTIR >= targetFraction
+        let tirPct = (todayTIR * 100).formatted(.number.precision(.fractionLength(0)))
+        let targetPct = goals.targetTIRPercent.formatted(.number.precision(.fractionLength(0)))
+        let estA1c = stats.glucoseManagementIndicator
+
+        let editButton = AnyView(
+            Button {
+                Haptics.play(.selection)
+                showGoalsEditor = true
+            } label: {
+                Image(systemName: "slider.horizontal.3")
+                    .font(.subheadline.weight(.semibold))
+                    .foregroundStyle(Theme.accent)
+            }
+            .accessibilityLabel("Edit goals")
+        )
+
+        return SectionCard("Goals", systemImage: "target", accessory: editButton) {
+            HStack(spacing: 18) {
+                GoalProgressRing(
+                    progress: progress,
+                    centerText: "\(tirPct)%",
+                    met: metToday
+                )
+                VStack(alignment: .leading, spacing: 10) {
+                    HStack(spacing: 8) {
+                        Image(systemName: "flame.fill")
+                            .font(.title3)
+                            .foregroundStyle(streak.current > 0 ? Theme.zoneWarning : Theme.textTertiary)
+                        VStack(alignment: .leading, spacing: 1) {
+                            Text(streakText(streak.current))
+                                .font(.subheadline.weight(.semibold))
+                                .foregroundStyle(Theme.textPrimary)
+                                .contentTransition(.numericText())
+                            Text(streak.best > 0 ? "Best \(streak.best) · Goal \(targetPct)% TIR" : "Goal \(targetPct)% in range")
+                                .font(.caption2)
+                                .foregroundStyle(Theme.textSecondary)
+                        }
+                    }
+                    HStack(spacing: 8) {
+                        Image(systemName: "cross.case")
+                            .font(.subheadline)
+                            .foregroundStyle(Theme.accent)
+                        Text(a1cText(target: goals.targetA1c, estimate: estA1c, hasGlucose: stats.hasGlucose))
+                            .font(.caption)
+                            .foregroundStyle(Theme.textSecondary)
+                    }
+                }
+                Spacer(minLength: 0)
+            }
+            .accessibilityElement(children: .combine)
+            .accessibilityLabel(goalsAccessibilityLabel(
+                tirPct: tirPct, targetPct: targetPct, streak: streak,
+                target: goals.targetA1c, estimate: estA1c, hasGlucose: stats.hasGlucose
+            ))
+        }
+    }
+
+    private func streakText(_ current: Int) -> String {
+        switch current {
+        case 0: return "Start your streak today"
+        case 1: return "1 day streak"
+        default: return "\(current) day streak"
+        }
+    }
+
+    private func a1cText(target: Double, estimate: Double, hasGlucose: Bool) -> String {
+        let targetStr = target.formatted(.number.precision(.fractionLength(1)))
+        guard hasGlucose else { return "A1c goal \(targetStr)%" }
+        let estStr = estimate.formatted(.number.precision(.fractionLength(1)))
+        return "A1c goal \(targetStr)% · est. \(estStr)% today"
+    }
+
+    private func goalsAccessibilityLabel(
+        tirPct: String, targetPct: String, streak: StreakCalculator.StreakResult,
+        target: Double, estimate: Double, hasGlucose: Bool
+    ) -> String {
+        var parts = ["Goals. Today \(tirPct) percent in range, target \(targetPct) percent."]
+        parts.append(streak.current > 0 ? "\(streak.current) day streak, best \(streak.best)." : "No active streak.")
+        parts.append(a1cText(target: target, estimate: estimate, hasGlucose: hasGlucose) + ".")
+        return parts.joined(separator: " ")
     }
 
     // MARK: - On board (insulin + carbs)
@@ -663,6 +778,120 @@ private func dashboardRelativeText(_ date: Date, relativeTo now: Date = Date()) 
     let formatter = RelativeDateTimeFormatter()
     formatter.unitsStyle = .abbreviated
     return formatter.localizedString(for: date, relativeTo: now)
+}
+
+/// A small Apple-rings-style progress ring for the goals card. `progress` is
+/// clamped to 0…1; the ring turns green and shows a check once the goal is met.
+private struct GoalProgressRing: View {
+    let progress: Double
+    let centerText: String
+    let met: Bool
+    var diameter: CGFloat = 78
+
+    @State private var appeared = false
+    @Environment(\.accessibilityReduceMotion) private var reduceMotion
+
+    private var clamped: Double { min(max(progress, 0), 1) }
+    private var tint: Color { met ? Theme.zoneInRange : Theme.accent }
+
+    var body: some View {
+        ZStack {
+            Circle()
+                .stroke(Theme.hairline, style: StrokeStyle(lineWidth: 9, lineCap: .round))
+            Circle()
+                .trim(from: 0, to: appeared ? clamped : 0)
+                .stroke(tint.gradient, style: StrokeStyle(lineWidth: 9, lineCap: .round))
+                .rotationEffect(.degrees(-90))
+                .animation(.smooth, value: clamped)
+            VStack(spacing: 1) {
+                Text(centerText)
+                    .font(.system(size: 18, weight: .bold, design: .rounded))
+                    .foregroundStyle(Theme.textPrimary)
+                    .contentTransition(.numericText())
+                if met {
+                    Image(systemName: "checkmark")
+                        .font(.caption2.weight(.bold))
+                        .foregroundStyle(Theme.zoneInRange)
+                }
+            }
+        }
+        .frame(width: diameter, height: diameter)
+        .onAppear {
+            if reduceMotion { appeared = true }
+            else { withAnimation(.spring(response: 0.6, dampingFraction: 0.8)) { appeared = true } }
+        }
+        .accessibilityHidden(true)
+    }
+}
+
+/// A small editor for the opt-in Time-in-Range and A1c goals. Writes straight
+/// through to `Preferences.glucoseGoals`, which persists on each change. This is
+/// the reachable entry point for enabling goals, since the goals card itself is
+/// hidden while they're off.
+struct GoalsEditorSheet: View {
+    @Environment(AppEnvironment.self) private var env
+    @Environment(\.dismiss) private var dismiss
+
+    var body: some View {
+        @Bindable var preferences = env.preferences
+        NavigationStack {
+            Form {
+                Section {
+                    Toggle("Show goals & streak", isOn: $preferences.glucoseGoals.enabled)
+                } footer: {
+                    Text("Track a target time-in-range and A1c, with a streak of days that meet your TIR goal.")
+                }
+
+                Section("Time in range") {
+                    Stepper(value: $preferences.glucoseGoals.targetTIRPercent, in: 40...95, step: 5) {
+                        HStack {
+                            Text("Target")
+                            Spacer()
+                            Text("\(preferences.glucoseGoals.targetTIRPercent.formatted(.number.precision(.fractionLength(0))))%")
+                                .foregroundStyle(Theme.accent)
+                                .monospacedDigit()
+                        }
+                    }
+                }
+
+                Section("A1c") {
+                    Stepper(value: $preferences.glucoseGoals.targetA1c, in: 5.0...9.0, step: 0.1) {
+                        HStack {
+                            Text("Target")
+                            Spacer()
+                            Text("\(preferences.glucoseGoals.targetA1c.formatted(.number.precision(.fractionLength(1))))%")
+                                .foregroundStyle(Theme.accent)
+                                .monospacedDigit()
+                        }
+                    }
+                }
+            }
+            .navigationTitle("Goals")
+            .navigationBarTitleDisplayMode(.inline)
+            .toolbar {
+                ToolbarItem(placement: .confirmationAction) {
+                    Button("Done") { dismiss() }
+                }
+            }
+        }
+        .presentationDetents([.medium])
+    }
+}
+
+#Preview("Goal ring") {
+    HStack(spacing: 24) {
+        GoalProgressRing(progress: 0.6, centerText: "42%", met: false)
+        GoalProgressRing(progress: 1, centerText: "78%", met: true)
+    }
+    .padding()
+    .background(Theme.background)
+}
+
+#Preview("Goals editor") {
+    let env = AppEnvironment.preview()
+    return GoalsEditorSheet()
+        .environment(env)
+        .modelContainer(env.modelContainer)
 }
 
 #Preview {
