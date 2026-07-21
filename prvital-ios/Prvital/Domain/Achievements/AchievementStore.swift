@@ -4,8 +4,8 @@ import Foundation
 /// **seen**. Earned is monotonic — once won, an achievement never disappears,
 /// even if recent data dips — so the store unions new unlocks in rather than
 /// recomputing membership from scratch. Backed by the shared App Group defaults,
-/// like the other lightweight stores.
-@MainActor
+/// like the other lightweight stores. Not actor-isolated — it only touches
+/// thread-safe `UserDefaults` — so it's safe to create in a `@State` default.
 final class AchievementStore {
     private let defaults: UserDefaults
     private static let earnedKey = "achievements.earned"

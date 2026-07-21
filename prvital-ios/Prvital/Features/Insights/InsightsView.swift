@@ -74,6 +74,14 @@ struct InsightsView: View {
                     }
                     .accessibilityLabel("History")
                 }
+                ToolbarItem(placement: .topBarLeading) {
+                    NavigationLink {
+                        PlainLanguageSummaryView()
+                    } label: {
+                        Image(systemName: "text.quote")
+                    }
+                    .accessibilityLabel("In plain words")
+                }
                 ToolbarItem(placement: .topBarTrailing) {
                     Button {
                         Haptics.play(.selection)
