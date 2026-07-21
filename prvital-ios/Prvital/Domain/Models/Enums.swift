@@ -28,10 +28,10 @@ enum SensorKind: String, Codable, CaseIterable, Sendable, Identifiable {
 
     var displayName: String {
         switch self {
-        case .dexcomG7: return "Dexcom G7"
-        case .dexcomG6: return "Dexcom G6"
-        case .freeStyleLibre3: return "FreeStyle Libre 3"
-        case .other: return "Other sensor"
+        case .dexcomG7: return String(localized: "Dexcom G7")
+        case .dexcomG6: return String(localized: "Dexcom G6")
+        case .freeStyleLibre3: return String(localized: "FreeStyle Libre 3")
+        case .other: return String(localized: "Other sensor")
         }
     }
 
@@ -66,8 +66,8 @@ enum FoodSource: String, Codable, CaseIterable, Sendable, Identifiable {
 
     var displayName: String {
         switch self {
-        case .manual: return "Entered by hand"
-        case .openFoodFacts: return "Open Food Facts"
+        case .manual: return String(localized: "Entered by hand")
+        case .openFoodFacts: return String(localized: "Open Food Facts")
         }
     }
 
@@ -155,11 +155,11 @@ enum GlucoseTrend: String, Codable, CaseIterable, Sendable {
 
     var label: String {
         switch self {
-        case .risingFast: return "Rising fast"
-        case .rising: return "Rising"
-        case .stable: return "Stable"
-        case .falling: return "Falling"
-        case .fallingFast: return "Falling fast"
+        case .risingFast: return String(localized: "Rising fast")
+        case .rising: return String(localized: "Rising")
+        case .stable: return String(localized: "Stable")
+        case .falling: return String(localized: "Falling")
+        case .fallingFast: return String(localized: "Falling fast")
         }
     }
 }
@@ -235,11 +235,11 @@ enum GlucoseZone: String, Codable, CaseIterable, Sendable {
 
     var label: String {
         switch self {
-        case .veryLow: return "Very low"
-        case .low: return "Low"
-        case .inRange: return "In range"
-        case .high: return "High"
-        case .veryHigh: return "Very high"
+        case .veryLow: return String(localized: "Very low")
+        case .low: return String(localized: "Low")
+        case .inRange: return String(localized: "In range")
+        case .high: return String(localized: "High")
+        case .veryHigh: return String(localized: "Very high")
         }
     }
 
@@ -257,10 +257,10 @@ enum InsulinType: String, Codable, CaseIterable, Sendable {
 
     var label: String {
         switch self {
-        case .rapidActing: return "Rapid-acting"
-        case .longActing: return "Long-acting (basal)"
-        case .intermediate: return "Intermediate"
-        case .premixed: return "Pre-mixed"
+        case .rapidActing: return String(localized: "Rapid-acting")
+        case .longActing: return String(localized: "Long-acting (basal)")
+        case .intermediate: return String(localized: "Intermediate")
+        case .premixed: return String(localized: "Pre-mixed")
         }
     }
 
@@ -287,10 +287,10 @@ enum InsulinDoseContext: String, Codable, CaseIterable, Sendable {
 
     var label: String {
         switch self {
-        case .mealBolus: return "Meal"
-        case .correction: return "Correction"
-        case .basal: return "Basal"
-        case .other: return "Other"
+        case .mealBolus: return String(localized: "Meal")
+        case .correction: return String(localized: "Correction")
+        case .basal: return String(localized: "Basal")
+        case .other: return String(localized: "Other")
         }
     }
 }
@@ -307,11 +307,11 @@ enum MealType: String, Codable, CaseIterable, Sendable, Identifiable {
 
     var label: String {
         switch self {
-        case .breakfast: return "Breakfast"
-        case .morningSnack: return "Snack"
-        case .lunch: return "Lunch"
-        case .dinner: return "Dinner"
-        case .eveningSnack: return "Evening snack"
+        case .breakfast: return String(localized: "Breakfast")
+        case .morningSnack: return String(localized: "Snack")
+        case .lunch: return String(localized: "Lunch")
+        case .dinner: return String(localized: "Dinner")
+        case .eveningSnack: return String(localized: "Evening snack")
         }
     }
 
@@ -339,13 +339,13 @@ enum ActivityType: String, Codable, CaseIterable, Sendable, Identifiable {
 
     var label: String {
         switch self {
-        case .walking: return "Walking"
-        case .running: return "Running"
-        case .gym: return "Gym"
-        case .cycling: return "Cycling"
-        case .swimming: return "Swimming"
-        case .physicalWork: return "Physical work"
-        case .rest: return "Rest"
+        case .walking: return String(localized: "Walking")
+        case .running: return String(localized: "Running")
+        case .gym: return String(localized: "Gym")
+        case .cycling: return String(localized: "Cycling")
+        case .swimming: return String(localized: "Swimming")
+        case .physicalWork: return String(localized: "Physical work")
+        case .rest: return String(localized: "Rest")
         }
     }
 
@@ -385,13 +385,13 @@ enum ObservationTag: String, Codable, CaseIterable, Sendable, Identifiable {
 
     var label: String {
         switch self {
-        case .illness: return "Illness"
-        case .stress: return "Stress"
-        case .lackOfSleep: return "Lack of sleep"
-        case .dehydration: return "Dehydration"
-        case .fever: return "Fever"
-        case .menstruation: return "Menstruation"
-        case .other: return "Other"
+        case .illness: return String(localized: "Illness")
+        case .stress: return String(localized: "Stress")
+        case .lackOfSleep: return String(localized: "Lack of sleep")
+        case .dehydration: return String(localized: "Dehydration")
+        case .fever: return String(localized: "Fever")
+        case .menstruation: return String(localized: "Menstruation")
+        case .other: return String(localized: "Other")
         }
     }
 
@@ -427,28 +427,28 @@ enum DiabetesType: String, Codable, CaseIterable, Sendable, Identifiable {
 
     var displayName: String {
         switch self {
-        case .type1: return "Type 1"
-        case .type2: return "Type 2"
-        case .lada: return "LADA"
-        case .mody: return "MODY"
-        case .gestational: return "Gestational"
-        case .prediabetes: return "Prediabetes"
-        case .caregiver: return "Caregiver"
-        case .other: return "Other"
+        case .type1: return String(localized: "Type 1")
+        case .type2: return String(localized: "Type 2")
+        case .lada: return String(localized: "LADA")
+        case .mody: return String(localized: "MODY")
+        case .gestational: return String(localized: "Gestational")
+        case .prediabetes: return String(localized: "Prediabetes")
+        case .caregiver: return String(localized: "Caregiver")
+        case .other: return String(localized: "Other")
         }
     }
 
     /// A one-line description shown under the picker.
     var detail: String {
         switch self {
-        case .type1: return "Autoimmune — the body makes little or no insulin."
-        case .type2: return "The body doesn't use insulin well, and may not make enough."
-        case .lada: return "Latent autoimmune diabetes in adults."
-        case .mody: return "A rare inherited form of diabetes."
-        case .gestational: return "Diabetes that develops during pregnancy."
-        case .prediabetes: return "Higher-than-normal glucose, not yet type 2."
-        case .caregiver: return "You're managing diabetes for someone you care for."
-        case .other: return "Another form, or you'd rather not say."
+        case .type1: return String(localized: "Autoimmune — the body makes little or no insulin.")
+        case .type2: return String(localized: "The body doesn't use insulin well, and may not make enough.")
+        case .lada: return String(localized: "Latent autoimmune diabetes in adults.")
+        case .mody: return String(localized: "A rare inherited form of diabetes.")
+        case .gestational: return String(localized: "Diabetes that develops during pregnancy.")
+        case .prediabetes: return String(localized: "Higher-than-normal glucose, not yet type 2.")
+        case .caregiver: return String(localized: "You're managing diabetes for someone you care for.")
+        case .other: return String(localized: "Another form, or you'd rather not say.")
         }
     }
 }
@@ -467,12 +467,12 @@ enum TherapyApproach: String, Codable, CaseIterable, Sendable, Identifiable {
 
     var displayName: String {
         switch self {
-        case .mdi: return "Injections (MDI)"
-        case .pump: return "Insulin pump"
-        case .basalOnly: return "Basal only"
-        case .lifestyle: return "Diet & exercise"
-        case .notOnInsulin: return "Not on insulin"
-        case .other: return "Other"
+        case .mdi: return String(localized: "Injections (MDI)")
+        case .pump: return String(localized: "Insulin pump")
+        case .basalOnly: return String(localized: "Basal only")
+        case .lifestyle: return String(localized: "Diet & exercise")
+        case .notOnInsulin: return String(localized: "Not on insulin")
+        case .other: return String(localized: "Other")
         }
     }
 

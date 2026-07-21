@@ -18,6 +18,10 @@ struct DashboardView: View {
     @State private var showQuickEntry = false
     @State private var showGlucoseEntry = false
     @State private var syncFailure: String?
+    @State private var trendRange: DashboardTrendRange = .threeHours
+    @State private var showCustomRange = false
+    @State private var customStart = Date().addingTimeInterval(-6 * 3600)
+    @State private var customEnd = Date()
 
     var body: some View {
         let thresholds = env.preferences.thresholds
@@ -230,25 +234,89 @@ struct DashboardView: View {
 
     @ViewBuilder
     private func trendSection(summary: DashboardSummary, thresholds: GlucoseThresholds, unit: GlucoseUnit) -> some View {
-        SectionCard("Last 3 hours", systemImage: "waveform.path.ecg") {
+        let windowReadings = trendReadings()
+        return SectionCard(
+            trendRange.titleKey,
+            systemImage: "waveform.path.ecg",
+            accessory: AnyView(trendRangeMenu)
+        ) {
             if let velocity = summary.velocity, let current = summary.current {
                 velocityLine(velocity, currentMgdL: current.valueMgdL, unit: unit)
             }
-            if summary.recent.isEmpty {
+            if windowReadings.isEmpty {
                 EmptyStateView(
                     systemImage: "chart.xyaxis.line",
-                    title: "No recent readings",
-                    message: "Readings from the last three hours appear here."
+                    title: "No readings in range",
+                    message: "Readings for the selected range appear here."
                 )
             } else {
                 GlucoseTrendChart(
-                    readings: summary.recent,
+                    readings: windowReadings,
                     thresholds: thresholds,
                     unit: unit,
                     compact: false
                 )
             }
         }
+        .sheet(isPresented: $showCustomRange) { trendCustomRangeSheet }
+    }
+
+    /// The active readings within the currently selected trend window.
+    private func trendReadings() -> [GlucoseReading] {
+        let active = readings.filter(\.isActive)
+        switch trendRange {
+        case .custom:
+            let lo = min(customStart, customEnd)
+            let hi = max(customStart, customEnd)
+            return active.filter { $0.timestamp >= lo && $0.timestamp <= hi }
+        default:
+            let start = Date().addingTimeInterval(-trendRange.hours * 3600)
+            return active.filter { $0.timestamp >= start }
+        }
+    }
+
+    /// The top-right range picker (3h / 6h / 12h / 24h / custom).
+    private var trendRangeMenu: some View {
+        Menu {
+            ForEach(DashboardTrendRange.allCases) { range in
+                Button {
+                    trendRange = range
+                    if range == .custom { showCustomRange = true }
+                } label: {
+                    if range == trendRange {
+                        Label(range.menuLabel, systemImage: "checkmark")
+                    } else {
+                        Text(range.menuLabel)
+                    }
+                }
+            }
+        } label: {
+            HStack(spacing: 2) {
+                Text(trendRange.shortLabel)
+                Image(systemName: "chevron.down").font(.caption2)
+            }
+            .font(.subheadline.weight(.semibold))
+            .foregroundStyle(Theme.accent)
+        }
+        .accessibilityLabel("Time range")
+        .accessibilityValue(trendRange.shortLabel)
+    }
+
+    private var trendCustomRangeSheet: some View {
+        NavigationStack {
+            Form {
+                DatePicker("From", selection: $customStart, in: ...customEnd)
+                DatePicker("To", selection: $customEnd, in: customStart...Date())
+            }
+            .navigationTitle("Custom range")
+            .navigationBarTitleDisplayMode(.inline)
+            .toolbar {
+                ToolbarItem(placement: .confirmationAction) {
+                    Button("Done") { showCustomRange = false }
+                }
+            }
+        }
+        .presentationDetents([.medium])
     }
 
     private func velocityLine(_ velocity: GlucoseVelocity, currentMgdL: Double, unit: GlucoseUnit) -> some View {
@@ -511,6 +579,46 @@ struct DashboardView: View {
             systemImage: "figure.walk"
         )
     }
+}
+
+/// The selectable window for the dashboard trend chart.
+private enum DashboardTrendRange: String, CaseIterable, Identifiable {
+    case threeHours, sixHours, twelveHours, twentyFourHours, custom
+    var id: String { rawValue }
+
+    /// Window length in hours (custom is handled separately).
+    var hours: Double {
+        switch self {
+        case .threeHours: return 3
+        case .sixHours: return 6
+        case .twelveHours: return 12
+        case .twentyFourHours: return 24
+        case .custom: return 0
+        }
+    }
+
+    /// The compact label shown on the picker button.
+    var shortLabel: String {
+        switch self {
+        case .threeHours: return "3h"
+        case .sixHours: return "6h"
+        case .twelveHours: return "12h"
+        case .twentyFourHours: return "24h"
+        case .custom: return "Custom"
+        }
+    }
+
+    var menuLabel: LocalizedStringKey {
+        switch self {
+        case .threeHours: return "Last 3 hours"
+        case .sixHours: return "Last 6 hours"
+        case .twelveHours: return "Last 12 hours"
+        case .twentyFourHours: return "Last 24 hours"
+        case .custom: return "Custom range"
+        }
+    }
+
+    var titleKey: LocalizedStringKey { menuLabel }
 }
 
 /// A non-blocking, dismissible banner shown at the top of the Dashboard when a

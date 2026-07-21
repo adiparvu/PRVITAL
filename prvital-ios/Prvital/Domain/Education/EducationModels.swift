@@ -22,11 +22,11 @@ enum LearnCategory: String, Codable, CaseIterable, Sendable, Identifiable {
 
     var title: String {
         switch self {
-        case .rules: return "Rules"
-        case .basics: return "Basics"
-        case .food: return "Food & carbs"
-        case .highsAndLows: return "Highs & lows"
-        case .technology: return "Technology"
+        case .rules: return String(localized: "Rules")
+        case .basics: return String(localized: "Basics")
+        case .food: return String(localized: "Food & carbs")
+        case .highsAndLows: return String(localized: "Highs & lows")
+        case .technology: return String(localized: "Technology")
         }
     }
 
