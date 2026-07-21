@@ -253,8 +253,8 @@ struct BackgroundSettingsView: View {
             guard let newItem else { return }
             Task {
                 if let data = try? await newItem.loadTransferable(type: Data.self) {
-                    prefs.backgroundPhotoData = data
-                    prefs.backgroundKind = .photo
+                    env.preferences.backgroundPhotoData = data
+                    env.preferences.backgroundKind = .photo
                 }
             }
         }

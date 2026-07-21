@@ -21,7 +21,7 @@ struct TherapyCatalogPicker: View {
     /// Offer a "use what I typed" row unless the text already matches an option.
     private var showFreeText: Bool {
         !trimmedQuery.isEmpty
-            && !field.options.contains { $0.compare(trimmedQuery, options: .caseInsensitive) == .orderedSame }
+            && !field.options.contains { $0.lowercased() == trimmedQuery.lowercased() }
     }
 
     var body: some View {
@@ -83,7 +83,7 @@ struct TherapyCatalogPicker: View {
     }
 
     private func isSelected(_ name: String) -> Bool {
-        selection?.compare(name, options: .caseInsensitive) == .orderedSame
+        selection?.lowercased() == name.lowercased()
     }
 
     private func choose(_ value: String) {

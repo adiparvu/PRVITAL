@@ -188,7 +188,7 @@ extension AppBackgroundKind {
 /// surface, so it is always safe to place behind any screen.
 struct AppBackgroundView: View {
     var kind: AppBackgroundKind = .current
-    var gradient: BackgroundGradient = .currentGradient
+    var gradient: BackgroundGradient = AppBackgroundKind.currentGradient
     var photoData: Data? = AppBackgroundKind.currentPhotoData
 
     var body: some View {

@@ -501,7 +501,10 @@ private struct AvatarRingPickerSheet: View {
 
     private var customBinding: Binding<Color> {
         Binding(
-            get: { selectedHex.flatMap(ProfileFormatting.hexColorValue).map { Color(hex: $0) } ?? Theme.accent },
+            get: {
+                guard let value = ProfileFormatting.hexColorValue(selectedHex) else { return Theme.accent }
+                return Color(hex: value)
+            },
             set: { newColor in selectedHex = newColor.hexString }
         )
     }
