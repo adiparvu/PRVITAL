@@ -141,6 +141,36 @@ final class ExternalCSVImporterTests: XCTestCase {
         XCTAssertEqual(result.skipped, 2, "'Low' and 'High' clamp rows count as skipped")
     }
 
+    // MARK: Clarity exercise
+
+    private let clarityExercise = """
+    Index,Timestamp (YYYY-MM-DDThh:mm:ss),Event Type,Event Subtype,Patient Info,Device Info,Source Device ID,Glucose Value (mg/dL),Insulin Value (u),Carb Value (grams),Duration (hh:mm:ss),Glucose Rate of Change (mg/dL/min),Transmitter Time (Long Integer),Transmitter ID
+    1,2024-06-01T07:00:00,Exercise,Medium,,,,,,,00:30:00
+    2,2024-06-01T18:00:00,Exercise,Heavy,,,,,,,01:00:00
+    3,2024-06-01T20:00:00,Exercise,Light,,,,,,,
+    """
+
+    func testClarityExerciseRowsDecodeToActivity() throws {
+        let (_, result) = try XCTUnwrap(ExternalCSVImporter.parse(clarityExercise))
+        XCTAssertEqual(result.rows.count, 2, "the duration-less exercise row is skipped")
+        XCTAssertEqual(result.skipped, 1)
+        XCTAssertEqual(result.rows[0].record,
+                       .activity(type: .walking, minutes: 30, intensity: .moderate))
+        XCTAssertEqual(result.rows[0].source, .dexcom)
+        XCTAssertEqual(result.rows[1].record,
+                       .activity(type: .walking, minutes: 60, intensity: .high))
+    }
+
+    func testClarityDurationParsing() {
+        XCTAssertEqual(ExternalCSVImporter.clarityDurationMinutes("00:30:00"), 30)
+        XCTAssertEqual(ExternalCSVImporter.clarityDurationMinutes("01:15:00"), 75)
+        XCTAssertEqual(ExternalCSVImporter.clarityDurationMinutes("45:00"), 45)
+        XCTAssertEqual(ExternalCSVImporter.clarityDurationMinutes("0:00:30"), 1) // 30s rounds up to 1 min
+        XCTAssertNil(ExternalCSVImporter.clarityDurationMinutes("00:00:00"))
+        XCTAssertNil(ExternalCSVImporter.clarityDurationMinutes(""))
+        XCTAssertNil(ExternalCSVImporter.clarityDurationMinutes("abc"))
+    }
+
     // MARK: LibreView
 
     func testLibreViewUSDocumentDecodesEveryRecordKind() throws {

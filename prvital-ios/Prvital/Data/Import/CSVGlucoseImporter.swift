@@ -4,7 +4,7 @@ import Foundation
 
 /// One record decoded from a Prvital CSV row, in a SwiftData-free form so the
 /// parser can be exercised in isolation by unit tests.
-enum ParsedRecord: Equatable {
+enum ParsedRecord: Equatable, Sendable {
     /// Glucose is normalised to **mg/dL** on the way in, regardless of the unit
     /// column, so the rest of the app stays unit-independent.
     case glucose(mgdL: Double, measurement: GlucoseMeasurementType, trend: GlucoseTrend?)
@@ -15,7 +15,7 @@ enum ParsedRecord: Equatable {
 }
 
 /// A single row ready to be written through `EntryStore`.
-struct ParsedRow: Equatable {
+struct ParsedRow: Equatable, Sendable {
     var timestamp: Date
     /// The source named in the CSV. Imports are written as `.manual` regardless
     /// (see `CSVGlucoseImporter`); this is retained for provenance / testing.
@@ -24,7 +24,7 @@ struct ParsedRow: Equatable {
 }
 
 /// The outcome of parsing a whole CSV document.
-struct CSVParseResult: Equatable {
+struct CSVParseResult: Equatable, Sendable {
     var rows: [ParsedRow]
     /// Data rows that could not be understood (bad timestamp, unknown type,
     /// non-numeric value, too few columns). Header / blank / comment lines are
@@ -32,11 +32,15 @@ struct CSVParseResult: Equatable {
     var skipped: Int
 }
 
-/// What an import did: how many records were written and how many rows skipped.
-struct ImportSummary: Equatable {
+/// What an import did: how many records were written, how many rows the parser
+/// couldn't decode, and how many were dropped as already-present duplicates.
+struct ImportSummary: Equatable, Sendable {
     var imported: Int
     var skipped: Int
-    var total: Int { imported + skipped }
+    /// Rows that decoded fine but matched a record already in the store (or a
+    /// duplicate earlier in the same file), so they were not inserted again.
+    var duplicates: Int = 0
+    var total: Int { imported + skipped + duplicates }
 }
 
 // MARK: - Pure parser
@@ -161,19 +165,22 @@ enum CSVImportParser {
     static func tokenize(_ text: String) -> [[String]] {
         var rows: [[String]] = []
         var row: [String] = []
-        var field = ""
+        var field = String.UnicodeScalarView()
         var inQuotes = false
-        let chars = Array(text)
+        // Iterate Unicode scalars (4 bytes each) rather than `Array(text)` of
+        // graphemes (16 bytes each): a multi-year CGM export is tens of MB, so
+        // this roughly quarters the transient memory of tokenising it.
+        let scalars = Array(text.unicodeScalars)
         var i = 0
 
-        func endField() { row.append(field); field = "" }
+        func endField() { row.append(String(field)); field = String.UnicodeScalarView() }
         func endRow() { endField(); rows.append(row); row = [] }
 
-        while i < chars.count {
-            let c = chars[i]
+        while i < scalars.count {
+            let c = scalars[i]
             if inQuotes {
                 if c == "\"" {
-                    if i + 1 < chars.count, chars[i + 1] == "\"" {
+                    if i + 1 < scalars.count, scalars[i + 1] == "\"" {
                         field.append("\"")
                         i += 2
                     } else {
@@ -197,7 +204,7 @@ enum CSVImportParser {
                     i += 1
                 case "\r":
                     endRow()
-                    i += (i + 1 < chars.count && chars[i + 1] == "\n") ? 2 : 1
+                    i += (i + 1 < scalars.count && scalars[i + 1] == "\n") ? 2 : 1
                 default:
                     field.append(c)
                     i += 1

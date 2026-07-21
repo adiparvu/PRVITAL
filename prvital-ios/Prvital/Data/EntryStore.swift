@@ -149,6 +149,140 @@ final class EntryStore {
         return dose
     }
 
+    // MARK: Bulk import
+
+    private static let importedNote = "Imported"
+    /// How many records to insert between `save()`s during a large import, so a
+    /// multi-year CGM history (100k+ rows) never does one giant blocking save.
+    private static let importChunkSize = 2_000
+
+    /// Imports many parsed rows efficiently and idempotently — the write path for
+    /// CSV / Clarity / LibreView files, sized for a full multi-year export.
+    ///
+    /// Unlike the per-entry `add…` methods (which `save()`, audit and mirror to
+    /// Health on every record), this:
+    ///   • skips rows whose stable `externalID` already exists, so re-importing
+    ///     the same file inserts nothing (glucose **and** insulin/carbs/activity),
+    ///   • inserts in chunks with a single `save()` per chunk, yielding between
+    ///     chunks so the UI stays responsive,
+    ///   • resolves cross-source glucose duplicates once, over the recent window,
+    ///   • writes a single summarising audit row.
+    @discardableResult
+    func bulkImport(
+        _ rows: [ParsedRow],
+        alreadySkipped: Int = 0,
+        progress: (@MainActor (Int, Int) -> Void)? = nil
+    ) async -> ImportSummary {
+        guard !rows.isEmpty else {
+            return ImportSummary(imported: 0, skipped: alreadySkipped, duplicates: 0)
+        }
+
+        let timestamps = rows.map(\.timestamp)
+        let minTS = timestamps.min() ?? .distantPast
+        let maxTS = timestamps.max() ?? .distantFuture
+        let existing = existingImportKeys(from: minTS, to: maxTS)
+        let plan = BulkImportPlanner.plan(rows: rows, existing: existing)
+
+        var inserted = 0
+        var sinceSave = 0
+        var didInsertGlucose = false
+
+        for keyed in plan.toInsert {
+            insertImported(keyed)
+            if case .glucose = keyed.row.record { didInsertGlucose = true }
+            inserted += 1
+            sinceSave += 1
+            if sinceSave >= Self.importChunkSize {
+                try? context.save()
+                sinceSave = 0
+                progress?(inserted, plan.toInsert.count)
+                await Task.yield()
+            }
+        }
+        try? context.save()
+
+        // Only the recent window can hold cross-source duplicates (Share /
+        // Nightscout / HealthKit live data spans a few days); older imported
+        // history has no other-source counterparts, so a full pass is wasted.
+        if didInsertGlucose {
+            resolveConflicts(since: Date().addingTimeInterval(-7 * 86_400))
+        }
+
+        audit.log(.manualEdit, source: nil, userConfirmation: true,
+                  detail: "Imported \(inserted) record(s), \(plan.duplicates) duplicate(s) skipped")
+        onChange()
+        return ImportSummary(imported: inserted, skipped: alreadySkipped, duplicates: plan.duplicates)
+    }
+
+    private func insertImported(_ keyed: KeyedImportRow) {
+        let ts = keyed.row.timestamp
+        let src = keyed.row.source
+        switch keyed.row.record {
+        case let .glucose(mgdL, measurement, trend):
+            context.insert(GlucoseReading(
+                valueMgdL: mgdL, timestamp: ts, source: src,
+                measurementType: measurement, trend: trend, externalID: keyed.externalID))
+        case let .insulin(units, type, doseContext, name):
+            let dose = InsulinDose(
+                units: units, timestamp: ts, insulinType: type, insulinName: name,
+                doseContext: doseContext, source: src, note: Self.importedNote)
+            dose.externalID = keyed.externalID
+            context.insert(dose)
+        case let .carbs(grams, meal, food):
+            let entry = CarbEntry(
+                grams: grams, timestamp: ts, mealType: meal,
+                foodDescription: food, source: src, note: Self.importedNote)
+            entry.externalID = keyed.externalID
+            context.insert(entry)
+        case let .activity(type, minutes, intensity):
+            let entry = ActivityEntry(
+                activityType: type, startTimestamp: ts, durationSeconds: minutes * 60,
+                intensity: intensity, source: src, note: Self.importedNote)
+            entry.externalID = keyed.externalID
+            context.insert(entry)
+        case let .observation(tags, text):
+            let entry = ObservationEntry(tags: tags, text: text, timestamp: ts, source: src)
+            entry.externalID = keyed.externalID
+            context.insert(entry)
+        }
+    }
+
+    /// Collects the import-minted `externalID`s already stored across every
+    /// record type within the incoming file's time range, so the planner can
+    /// skip anything previously imported.
+    private func existingImportKeys(from minTS: Date, to maxTS: Date) -> Set<String> {
+        var keys = Set<String>()
+        func add(_ ids: [String?]) {
+            for case let id? in ids where id.hasPrefix(ImportKeys.prefix) { keys.insert(id) }
+        }
+        let g = FetchDescriptor<GlucoseReading>(predicate: #Predicate {
+            $0.timestamp >= minTS && $0.timestamp <= maxTS && $0.externalID != nil })
+        add(((try? context.fetch(g)) ?? []).map(\.externalID))
+        let i = FetchDescriptor<InsulinDose>(predicate: #Predicate {
+            $0.timestamp >= minTS && $0.timestamp <= maxTS && $0.externalID != nil })
+        add(((try? context.fetch(i)) ?? []).map(\.externalID))
+        let c = FetchDescriptor<CarbEntry>(predicate: #Predicate {
+            $0.timestamp >= minTS && $0.timestamp <= maxTS && $0.externalID != nil })
+        add(((try? context.fetch(c)) ?? []).map(\.externalID))
+        let a = FetchDescriptor<ActivityEntry>(predicate: #Predicate {
+            $0.timestamp >= minTS && $0.timestamp <= maxTS && $0.externalID != nil })
+        add(((try? context.fetch(a)) ?? []).map(\.externalID))
+        let o = FetchDescriptor<ObservationEntry>(predicate: #Predicate {
+            $0.timestamp >= minTS && $0.timestamp <= maxTS && $0.externalID != nil })
+        add(((try? context.fetch(o)) ?? []).map(\.externalID))
+        return keys
+    }
+
+    /// Re-runs conflict resolution over every reading since `date` (one pass).
+    private func resolveConflicts(since date: Date) {
+        let descriptor = FetchDescriptor<GlucoseReading>(
+            predicate: #Predicate { $0.timestamp >= date },
+            sortBy: [SortDescriptor(\.timestamp)]
+        )
+        guard let readings = try? context.fetch(descriptor) else { return }
+        ConflictResolver(sourcePriority: registry.sourcePriority).resolve(readings)
+    }
+
     // MARK: Food library
 
     /// Inserts a food into the local library if it isn't already there (matched

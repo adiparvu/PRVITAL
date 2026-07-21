@@ -19,6 +19,7 @@ struct DataControlsView: View {
     @State private var showingImporter = false
     @State private var showingImportResult = false
     @State private var importResultMessage = ""
+    @State private var isImporting = false
 
     private var totalCount: Int {
         glucose.count + insulin.count + carbs.count + activity.count + observations.count
@@ -82,16 +83,23 @@ struct DataControlsView: View {
                     Haptics.play(.selection)
                     showingImporter = true
                 } label: {
-                    Label {
-                        Text("Import from file").foregroundStyle(Theme.textPrimary)
-                    } icon: {
-                        Image(systemName: "square.and.arrow.down").foregroundStyle(Theme.accent)
+                    HStack {
+                        Label {
+                            Text("Import from file").foregroundStyle(Theme.textPrimary)
+                        } icon: {
+                            Image(systemName: "square.and.arrow.down").foregroundStyle(Theme.accent)
+                        }
+                        if isImporting {
+                            Spacer()
+                            ProgressView()
+                        }
                     }
                 }
+                .disabled(isImporting)
             } header: {
                 Text("Import")
             } footer: {
-                Text("Add records from a CSV file exported from Prvital, Dexcom Clarity or LibreView. The format is detected automatically, imported rows are added as manual entries, and duplicate glucose readings are resolved automatically.")
+                Text("Add records from a CSV file exported from Prvital, Dexcom Clarity or LibreView — including your full history. The format is detected automatically, and re-importing the same file won't create duplicates.")
                     .font(.footnote)
                     .foregroundStyle(Theme.textTertiary)
             }
@@ -155,32 +163,39 @@ struct DataControlsView: View {
     private func handleImport(_ result: Result<URL, Error>) {
         switch result {
         case .failure:
-            importResultMessage = "Couldn't open that file."
+            importResultMessage = String(localized: "Couldn't open that file.")
             showingImportResult = true
         case .success(let url):
+            // Read the whole file into memory, then release the security-scoped
+            // handle before the (potentially long) parse + import runs.
             let scoped = url.startAccessingSecurityScopedResource()
-            defer { if scoped { url.stopAccessingSecurityScopedResource() } }
-            guard let data = try? Data(contentsOf: url),
-                  let text = String(data: data, encoding: .utf8) else {
-                importResultMessage = "Couldn't read that file."
+            let data = try? Data(contentsOf: url)
+            if scoped { url.stopAccessingSecurityScopedResource() }
+            guard let data, let text = String(data: data, encoding: .utf8) else {
+                importResultMessage = String(localized: "Couldn't read that file.")
                 showingImportResult = true
                 return
             }
-            // One flow for every supported layout: detect the format from the
-            // header, decode with the matching parser, and write everything
-            // through the same EntryStore path (which already resolves
-            // duplicate glucose readings).
-            guard let (format, parsed) = ExternalCSVImporter.parse(text) else {
-                Haptics.play(.warning)
-                importResultMessage = "This file doesn't look like a Prvital, Dexcom Clarity or LibreView CSV export."
+            isImporting = true
+            Task {
+                // Parse off the main actor — a full-history export is large — then
+                // write through the batched, idempotent bulk-import path (which
+                // dedups and resolves duplicate glucose readings).
+                let parsed = await Task.detached { ExternalCSVImporter.parse(text) }.value
+                guard let (format, result) = parsed else {
+                    isImporting = false
+                    Haptics.play(.warning)
+                    importResultMessage = String(localized: "This file doesn't look like a Prvital, Dexcom Clarity or LibreView CSV export.")
+                    showingImportResult = true
+                    return
+                }
+                let summary = await env.entryStore.bulkImport(
+                    result.rows, alreadySkipped: result.skipped)
+                isImporting = false
+                Haptics.play(summary.imported > 0 ? .success : .warning)
+                importResultMessage = Self.resultMessage(for: summary, format: format)
                 showingImportResult = true
-                return
             }
-            let summary = CSVGlucoseImporter.importRows(parsed.rows, into: env.entryStore,
-                                                        alreadySkipped: parsed.skipped)
-            Haptics.play(summary.imported > 0 ? .success : .warning)
-            importResultMessage = Self.resultMessage(for: summary, format: format)
-            showingImportResult = true
         }
     }
 
@@ -188,6 +203,9 @@ struct DataControlsView: View {
         var message = summary.imported == 1
             ? String(localized: "Imported \(summary.imported.formatted()) record from \(format.displayName).")
             : String(localized: "Imported \(summary.imported.formatted()) records from \(format.displayName).")
+        if summary.duplicates > 0 {
+            message += " " + String(localized: "\(summary.duplicates.formatted()) already imported.")
+        }
         if summary.skipped > 0 {
             message += " " + (summary.skipped == 1
                 ? String(localized: "Skipped \(summary.skipped.formatted()) row.")

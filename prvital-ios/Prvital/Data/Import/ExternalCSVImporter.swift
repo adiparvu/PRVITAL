@@ -118,6 +118,7 @@ enum ExternalCSVImporter {
         let subtypeCol = header.firstIndex(of: "Event Subtype")
         let insulinCol = column(prefixed: "Insulin Value")
         let carbCol = column(prefixed: "Carb")
+        let durationCol = column(prefixed: "Duration")
         let unit: GlucoseUnit = header[glucoseCol].contains("mmol") ? .mmolL : .mgdL
 
         // Clarity timestamps ("2024-06-01T08:03:12") carry no timezone: the
@@ -188,13 +189,52 @@ enum ExternalCSVImporter {
                                    food: nil)
                 ))
 
+            case "exercise":
+                // Clarity logs exercise with the intensity in Event Subtype
+                // (Light/Medium/Heavy) and a "hh:mm:ss" Duration. Without a
+                // usable duration there's nothing to record, so it's skipped.
+                guard let timestamp = formatter.date(from: field(timestampCol)),
+                      let minutes = clarityDurationMinutes(field(durationCol)), minutes > 0 else {
+                    skipped += 1
+                    continue
+                }
+                parsed.append(ParsedRow(
+                    timestamp: timestamp, source: .dexcom,
+                    record: .activity(type: .walking, minutes: minutes,
+                                      intensity: clarityIntensity(field(subtypeCol)))
+                ))
+
             default:
-                // FirstName / LastName / Device / Alert / Exercise / Health…
+                // FirstName / LastName / Device / Alert / Health…
                 // — account metadata or record kinds Prvital doesn't model.
                 continue
             }
         }
         return CSVParseResult(rows: parsed, skipped: skipped)
+    }
+
+    /// Parses a Clarity "hh:mm:ss" (or "mm:ss") duration into whole minutes.
+    static func clarityDurationMinutes(_ text: String) -> Int? {
+        let parts = text.split(separator: ":").map { Int($0.trimmingCharacters(in: .whitespaces)) }
+        guard !parts.isEmpty, parts.allSatisfy({ $0 != nil }) else { return nil }
+        let nums = parts.compactMap { $0 }
+        let seconds: Int
+        switch nums.count {
+        case 3: seconds = nums[0] * 3600 + nums[1] * 60 + nums[2]
+        case 2: seconds = nums[0] * 60 + nums[1]
+        case 1: seconds = nums[0] * 60          // a bare number is taken as minutes
+        default: return nil
+        }
+        return seconds > 0 ? max(1, Int((Double(seconds) / 60).rounded())) : nil
+    }
+
+    /// Maps a Clarity exercise subtype (Light / Medium / Heavy) to intensity.
+    private static func clarityIntensity(_ subtype: String) -> ActivityIntensity {
+        switch subtype.lowercased() {
+        case let s where s.contains("light"): return .low
+        case let s where s.contains("heav") || s.contains("intens") || s.contains("high"): return .high
+        default: return .moderate
+        }
     }
 
     // MARK: LibreView
