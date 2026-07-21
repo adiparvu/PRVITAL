@@ -107,14 +107,17 @@ private struct InsightsFeedSection: View {
 
     var body: some View {
         SectionCard("Insights", systemImage: "sparkles") {
-            ScrollView(.horizontal, showsIndicators: false) {
-                HStack(alignment: .top, spacing: 12) {
-                    ForEach(cards) { card in
-                        InsightCardView(card: card)
-                    }
+            // Paged slides with index dots (per device feedback) instead of a
+            // horizontal scroll that cropped the next tile mid-word.
+            TabView {
+                ForEach(cards) { card in
+                    InsightCardView(card: card)
+                        .padding(.bottom, 26)   // keep the dots off the tile
                 }
-                .padding(.vertical, 2)
             }
+            .tabViewStyle(.page(indexDisplayMode: .automatic))
+            .indexViewStyle(.page(backgroundDisplayMode: .always))
+            .frame(height: 182)
             .accessibilityLabel("Top insights")
         }
     }
@@ -150,7 +153,7 @@ private struct InsightCardView: View {
                     .multilineTextAlignment(.leading)
                 Spacer(minLength: 0)
             }
-            .frame(width: 210, alignment: .leading)
+            .frame(maxWidth: .infinity, alignment: .leading)
             .frame(maxHeight: .infinity, alignment: .top)
             .padding(14)
             .frame(height: 148)

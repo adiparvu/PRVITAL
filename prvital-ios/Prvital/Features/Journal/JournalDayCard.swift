@@ -203,20 +203,33 @@ struct JournalDayCard: View {
 
     var body: some View {
         VStack(alignment: .leading, spacing: 14) {
-            header
-            if !bucket.readings.isEmpty {
-                GlucoseTrendChart(readings: bucket.readings, thresholds: thresholds, unit: unit, compact: true)
+            // The header, curve, ring and chips are one tap target: pressing any
+            // of them opens the day's own page (per device feedback — "when you
+            // press them, something should happen").
+            NavigationLink {
+                JournalDayDetailView(bucket: bucket, unit: unit, thresholds: thresholds, onSelect: onSelect)
+            } label: {
+                VStack(alignment: .leading, spacing: 14) {
+                    header
+                    if !bucket.readings.isEmpty {
+                        GlucoseTrendChart(readings: bucket.readings, thresholds: thresholds, unit: unit, compact: true)
+                    }
+                    if stats.hasGlucose {
+                        glucoseChipRow
+                    } else {
+                        Text("No glucose readings this day")
+                            .font(.footnote)
+                            .foregroundStyle(Theme.textTertiary)
+                    }
+                    if density.showsTherapyRow && stats.hasTherapyData {
+                        therapyChipRow
+                    }
+                }
+                .contentShape(.rect)
             }
-            if stats.hasGlucose {
-                glucoseChipRow
-            } else {
-                Text("No glucose readings this day")
-                    .font(.footnote)
-                    .foregroundStyle(Theme.textTertiary)
-            }
-            if density.showsTherapyRow && stats.hasTherapyData {
-                therapyChipRow
-            }
+            .buttonStyle(.plain)
+            .accessibilityHint("Opens this day on its own page")
+
             if density.showsEntryList && !bucket.items.isEmpty {
                 Divider().overlay(Theme.hairline)
                 entryList(Array(bucket.items.prefix(Self.previewEntryCount)))

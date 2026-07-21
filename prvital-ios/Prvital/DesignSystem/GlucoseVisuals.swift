@@ -230,6 +230,7 @@ struct GlucoseTrendChart: View {
             }
         }
         .chartXSelection(value: interactive ? $selectedDate : .constant(nil))
+        .chartXScale(domain: xDomain)
         .chartYScale(domain: yDomain)
         // The full-size chart hides the y-axis entirely — the on-curve extreme
         // labels carry the values, tide-chart style. Only the compact variant
@@ -274,15 +275,21 @@ struct GlucoseTrendChart: View {
 
     /// The two-line label attached to an annotated extreme: the value in the
     /// zone's colour with the time beneath, like a tide chart's crest labels.
+    /// Sits on a small material chip (same treatment as the scrub callout) so it
+    /// stays readable over the curve and the gradient fill.
     private func extremeLabel(_ extreme: ChartExtreme) -> some View {
         VStack(spacing: 0) {
             Text(GlucoseFormatting.string(mgdL: extreme.value, unit: unit))
-                .font(.caption2.weight(.semibold))
+                .font(.caption.weight(.bold))
                 .foregroundStyle(zoneColor(extreme.value))
             Text(extreme.date, format: .dateTime.hour().minute())
-                .font(.system(size: 9))
+                .font(.system(size: 9, weight: .medium))
                 .foregroundStyle(Theme.textSecondary)
         }
+        .padding(.horizontal, 6)
+        .padding(.vertical, 3)
+        .background(.ultraThinMaterial, in: RoundedRectangle(cornerRadius: 7))
+        .overlay(RoundedRectangle(cornerRadius: 7).stroke(Theme.hairline))
     }
 
     private func scrubCallout(_ reading: GlucoseReading) -> some View {
@@ -298,6 +305,18 @@ struct GlucoseTrendChart: View {
         .padding(.vertical, 5)
         .background(.ultraThinMaterial, in: RoundedRectangle(cornerRadius: 8))
         .overlay(RoundedRectangle(cornerRadius: 8).stroke(Theme.hairline))
+    }
+
+    /// The x-range with a little trailing headroom (3% of the window, at least
+    /// two minutes), so the "now" marker sits inside the plot instead of being
+    /// halved by the clip at the right edge.
+    private var xDomain: ClosedRange<Date> {
+        guard let first = sorted.first?.timestamp, let last = sorted.last?.timestamp else {
+            let now = Date()
+            return now.addingTimeInterval(-3600)...now
+        }
+        let pad = max(120, last.timeIntervalSince(first) * 0.03)
+        return first...last.addingTimeInterval(pad)
     }
 
     private var yDomain: ClosedRange<Double> {
