@@ -325,24 +325,41 @@ jobs:
             echo '</dict></plist>'
           } > ExportOptions.plist
           echo "--- ExportOptions.plist ---"; cat ExportOptions.plist
-          # Apple's build-delivery service (AppsService) intermittently returns a
-          # spurious 401 NOT_AUTHORIZED or a 5xx even when the same API key just
-          # authenticated for signing-asset creation. Retry the export/upload a
-          # few times with backoff so a transient blip doesn't fail the run.
+          # Upload with two kinds of tolerance:
+          #  1. Transient: Apple's build-delivery service (AppsService) sometimes
+          #     returns a spurious 401 NOT_AUTHORIZED or a 5xx even when the same
+          #     API key just authenticated for signing-asset creation — retry with
+          #     backoff so a blip doesn't fail the run.
+          #  2. Idempotent: when this exact build number is already on TestFlight
+          #     (e.g. the same commit is re-pushed to another branch, like a
+          #     merge to main), re-uploading is a no-op success, not a failure.
+          log="$RUNNER_TEMP/tf_upload.log"
           attempt=1
           max=3
-          until xcodebuild -exportArchive \
-            -archivePath build/Prvital.xcarchive \
-            -exportOptionsPlist ExportOptions.plist \
-            -authenticationKeyID "${{ secrets.ASC_KEY_ID }}" \
-            -authenticationKeyIssuerID "${{ secrets.ASC_ISSUER_ID }}" \
-            -authenticationKeyPath "$HOME/private_keys/AuthKey_${{ secrets.ASC_KEY_ID }}.p8"; do
+          while true; do
+            set +e
+            xcodebuild -exportArchive \
+              -archivePath build/Prvital.xcarchive \
+              -exportOptionsPlist ExportOptions.plist \
+              -authenticationKeyID "${{ secrets.ASC_KEY_ID }}" \
+              -authenticationKeyIssuerID "${{ secrets.ASC_ISSUER_ID }}" \
+              -authenticationKeyPath "$HOME/private_keys/AuthKey_${{ secrets.ASC_KEY_ID }}.p8" 2>&1 | tee "$log"
+            rc=${PIPESTATUS[0]}
+            set -e
+            if [ "$rc" -eq 0 ]; then
+              echo "Upload succeeded."
+              break
+            fi
+            if grep -qiE 'already been used|already exists|redundant|bundle version .* (must be|has already)|The build .* already|previously been submitted' "$log"; then
+              echo "This build is already on TestFlight — treating the redundant upload as success."
+              break
+            fi
             if [ "$attempt" -ge "$max" ]; then
               echo "Upload failed after $attempt attempt(s)."
               exit 1
             fi
             wait=$((attempt * 45))
-            echo "Upload attempt $attempt failed; retrying in ${wait}s…"
+            echo "Upload attempt $attempt failed (transient); retrying in ${wait}s…"
             sleep "$wait"
             attempt=$((attempt + 1))
           done
