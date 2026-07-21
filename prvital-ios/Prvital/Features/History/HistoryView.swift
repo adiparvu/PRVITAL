@@ -25,6 +25,13 @@ struct HistoryView: View {
     private var unit: GlucoseUnit { env.preferences.glucoseUnit }
     private var thresholds: GlucoseThresholds { env.preferences.thresholds }
 
+    /// The most rows we ever hand to the `List`. A CGM logs ~288 readings/day, so
+    /// "This month" (or a full-history import) can be tens of thousands of items;
+    /// binding all of them into `List { ForEach }` makes SwiftUI hash and lay out
+    /// every id on the main thread, which watchdog-kills the app. We render the
+    /// most recent `renderCap` and tell the user to narrow the range for more.
+    private static let renderCap = 500
+
     private var filteredItems: [JournalTimelineItem] {
         let interval = dateInterval
         return JournalTimelineItem.build(
@@ -33,6 +40,11 @@ struct HistoryView: View {
         )
         .filter { interval?.contains($0.date) ?? true }
         .sorted { sortNewestFirst ? $0.date > $1.date : $0.date < $1.date }
+    }
+
+    /// The capped slice actually rendered, plus whether more were withheld.
+    private var visibleItems: ArraySlice<JournalTimelineItem> {
+        filteredItems.prefix(Self.renderCap)
     }
 
     /// The half-open date interval selected by the current filter.
@@ -86,7 +98,7 @@ struct HistoryView: View {
                 } else {
                     List {
                         Section {
-                            ForEach(filteredItems) { item in
+                            ForEach(visibleItems) { item in
                                 JournalEntryRow(item: item, unit: unit, thresholds: thresholds)
                                     .listRowBackground(Theme.surface)
                                     .listRowSeparatorTint(Theme.hairline)
@@ -108,6 +120,12 @@ struct HistoryView: View {
                                 .font(.footnote)
                                 .foregroundStyle(Theme.textSecondary)
                                 .textCase(nil)
+                        } footer: {
+                            if filteredItems.count > Self.renderCap {
+                                Text("Showing the most recent \(Self.renderCap.formatted()). Narrow the range to see the rest.")
+                                    .font(.footnote)
+                                    .foregroundStyle(Theme.textSecondary)
+                            }
                         }
                     }
                     .listStyle(.insetGrouped)
