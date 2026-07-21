@@ -6,6 +6,7 @@ import SwiftUI
 /// most important choices are visible without drilling in.
 struct SettingsView: View {
     @Environment(AppEnvironment.self) private var env
+    @State private var showWhatsNew = false
 
     private var scheduleSubtitle: String {
         let count = env.preferences.glucoseSchedule.activeSlots.count
@@ -185,10 +186,25 @@ struct SettingsView: View {
                         .padding(.top, 4)
                 }
                 .listRowBackground(Theme.surface)
+
+                Section {
+                    Button {
+                        showWhatsNew = true
+                    } label: {
+                        SettingsRow(
+                            title: "What's new",
+                            subtitle: "A tour of Prvital's best features",
+                            systemImage: "sparkles",
+                            tint: Theme.accent
+                        )
+                    }
+                }
+                .listRowBackground(Theme.surface)
             }
             .scrollContentBackground(.hidden)
             .background(Theme.background)
             .navigationTitle("Settings")
+            .sheet(isPresented: $showWhatsNew) { WhatsNewView() }
         }
     }
 }

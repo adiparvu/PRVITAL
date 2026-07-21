@@ -32,12 +32,30 @@ struct RootView: View {
     @Environment(\.scenePhase) private var scenePhase
     @State private var showOnboarding = false
     @State private var showQuickEntry = false
+    @State private var showWhatsNew = false
 
     var body: some View {
         MainTabView()
-            .onAppear { showOnboarding = !env.consent.hasCompletedOnboarding }
+            .onAppear {
+                showOnboarding = !env.consent.hasCompletedOnboarding
+                if showOnboarding {
+                    // A brand-new install is meeting every feature for the first
+                    // time, so the "What's new" tour would be noise on top of
+                    // onboarding. Stamp the current version; the tour first
+                    // auto-presents after an update.
+                    env.preferences.lastSeenWhatsNewVersion = WhatsNewTour.currentVersion
+                } else if env.preferences.lastSeenWhatsNewVersion != WhatsNewTour.currentVersion {
+                    showWhatsNew = true
+                }
+            }
             .fullScreenCover(isPresented: $showOnboarding) {
                 OnboardingView()
+            }
+            .sheet(isPresented: $showWhatsNew, onDismiss: {
+                // Swiping the sheet away counts as seen too, so it never nags.
+                env.preferences.lastSeenWhatsNewVersion = WhatsNewTour.currentVersion
+            }) {
+                WhatsNewView()
             }
             .sheet(isPresented: $showQuickEntry) { QuickEntrySheet() }
             .onOpenURL { url in
