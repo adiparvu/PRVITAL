@@ -157,7 +157,9 @@ struct JournalView: View {
         case .insulin:
             if let dose = item.insulin { InsulinEntrySheet(existing: dose) }
         case .carbs:
-            if let entry = item.carbs { CarbEntrySheet(existing: entry) }
+            // A meal opens its postprandial response page (with an Edit action
+            // inside) rather than the bare editor — the richer default.
+            if let entry = item.carbs { MealResponseView(meal: entry) }
         case .activity:
             if let entry = item.activity { ActivityEntrySheet(existing: entry) }
         case .observation:

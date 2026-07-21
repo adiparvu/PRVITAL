@@ -147,12 +147,33 @@ struct GlucoseTrendChart: View {
             // Threshold lines carry the colour of the zone they border, so the
             // top dashed line reads as the high limit and the bottom one as the
             // low limit at a glance (matching how readings are tinted).
-            RuleMark(y: .value("Target upper", thresholds.targetUpper))
-                .foregroundStyle(Theme.zoneHigh.opacity(0.55))
-                .lineStyle(StrokeStyle(lineWidth: 1, dash: [4, 4]))
-            RuleMark(y: .value("Target lower", thresholds.targetLower))
-                .foregroundStyle(Theme.zoneWarning.opacity(0.55))
-                .lineStyle(StrokeStyle(lineWidth: 1, dash: [4, 4]))
+            //
+            // With a night target set, the two limits become stepped lines that
+            // follow the effective band at each reading's time — so the target
+            // visibly narrows/shifts across the night window.
+            if thresholds.nightModeEnabled {
+                ForEach(sorted) { reading in
+                    LineMark(x: .value("Time", reading.timestamp),
+                             y: .value("High limit", thresholds.targetUpper(at: reading.timestamp)),
+                             series: .value("Band", "upper"))
+                        .foregroundStyle(Theme.zoneHigh.opacity(0.55))
+                        .lineStyle(StrokeStyle(lineWidth: 1, dash: [4, 4]))
+                        .interpolationMethod(.stepEnd)
+                    LineMark(x: .value("Time", reading.timestamp),
+                             y: .value("Low limit", thresholds.targetLower(at: reading.timestamp)),
+                             series: .value("Band", "lower"))
+                        .foregroundStyle(Theme.zoneWarning.opacity(0.55))
+                        .lineStyle(StrokeStyle(lineWidth: 1, dash: [4, 4]))
+                        .interpolationMethod(.stepEnd)
+                }
+            } else {
+                RuleMark(y: .value("Target upper", thresholds.targetUpper))
+                    .foregroundStyle(Theme.zoneHigh.opacity(0.55))
+                    .lineStyle(StrokeStyle(lineWidth: 1, dash: [4, 4]))
+                RuleMark(y: .value("Target lower", thresholds.targetLower))
+                    .foregroundStyle(Theme.zoneWarning.opacity(0.55))
+                    .lineStyle(StrokeStyle(lineWidth: 1, dash: [4, 4]))
+            }
 
             ForEach(sorted) { reading in
                 AreaMark(

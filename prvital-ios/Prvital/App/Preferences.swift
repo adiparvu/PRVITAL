@@ -19,6 +19,7 @@ final class Preferences {
         self.glucoseSchedule = Self.readGlucoseSchedule(self.defaults)
         self.glucoseGoals = Self.readGlucoseGoals(self.defaults)
         self.liveSyncSeconds = (self.defaults.object(forKey: Keys.liveSync) as? Int) ?? 60
+        self.postprandialWindowHours = (self.defaults.object(forKey: Keys.postprandialWindow) as? Int) ?? 3
         self.sickDayEnabled = self.defaults.bool(forKey: Keys.sickDayEnabled)
         self.sickDayStartedAt = self.defaults.object(forKey: Keys.sickDayStartedAt) as? Date
         self.emergencyInfo = Self.readEmergencyInfo(self.defaults)
@@ -96,6 +97,13 @@ final class Preferences {
     /// cadence; Dexcom publishes every 5 minutes so extra polls simply no-op.
     var liveSyncSeconds: Int {
         didSet { defaults.set(liveSyncSeconds, forKey: Keys.liveSync) }
+    }
+
+    /// How many hours after a meal the post-meal response page and markers span
+    /// (1–4, mirroring the classic "postprandial comparison" setting). Clamped
+    /// on read so a stray value can't produce an empty window.
+    var postprandialWindowHours: Int {
+        didSet { defaults.set(min(4, max(1, postprandialWindowHours)), forKey: Keys.postprandialWindow) }
     }
 
     /// Whether the user has turned on sick-day mode. When on, the dashboard shows
@@ -218,6 +226,7 @@ final class Preferences {
         static let glucoseSchedule = "pref.glucoseSchedule"
         static let glucoseGoals = "pref.glucoseGoals"
         static let liveSync = "pref.liveSyncSeconds"
+        static let postprandialWindow = "pref.postprandialWindowHours"
         static let sickDayEnabled = "pref.sickDayEnabled"
         static let sickDayStartedAt = "pref.sickDayStartedAt"
         static let emergencyInfo = "pref.emergencyInfo"

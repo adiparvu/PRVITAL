@@ -69,10 +69,13 @@ enum StatisticsEngine {
             ? stats.standardDeviation / stats.average : 0
         stats.glucoseManagementIndicator = 3.31 + 0.02392 * stats.average
 
-        // Banded time fractions.
+        // Banded time fractions. Zoned per reading *and its time*, so a night
+        // target range narrows Time-in-Range only during the night window. With
+        // night mode off, `zone(forMgdL:at:)` is identical to the flat zone, so
+        // this is behaviour-preserving.
         var inRange = 0, below = 0, above = 0, veryLow = 0, veryHigh = 0
-        for v in values {
-            switch thresholds.zone(forMgdL: v) {
+        for reading in active {
+            switch thresholds.zone(forMgdL: reading.valueMgdL, at: reading.timestamp) {
             case .veryLow: below += 1; veryLow += 1
             case .low: below += 1
             case .inRange: inRange += 1

@@ -23,6 +23,23 @@ struct UnitsSettingsView: View {
         )
     }
 
+    /// Bridges a "minutes from midnight" Int to the `DatePicker`'s `Date` (the
+    /// date part is irrelevant — only `.hourAndMinute` is shown).
+    private func timeBinding(_ minutes: Binding<Int>) -> Binding<Date> {
+        Binding(
+            get: {
+                var c = DateComponents()
+                c.hour = minutes.wrappedValue / 60
+                c.minute = minutes.wrappedValue % 60
+                return Calendar.current.date(from: c) ?? Date()
+            },
+            set: { date in
+                let c = Calendar.current.dateComponents([.hour, .minute], from: date)
+                minutes.wrappedValue = (c.hour ?? 0) * 60 + (c.minute ?? 0)
+            }
+        )
+    }
+
     var body: some View {
         Form {
             Section {
@@ -84,6 +101,51 @@ struct UnitsSettingsView: View {
                 Text("Target range")
             } footer: {
                 Text("Readings from \(GlucoseFormatting.labeled(mgdL: thresholds.targetLower, unit: unit)) to \(GlucoseFormatting.labeled(mgdL: thresholds.targetUpper, unit: unit)) count as in range. These thresholds set the green / yellow / orange / red zones and your Time-in-Range statistics.")
+                    .font(.footnote)
+                    .foregroundStyle(Theme.textTertiary)
+            }
+            .listRowBackground(Theme.surface)
+
+            Section {
+                Toggle(isOn: $thresholds.nightModeEnabled) {
+                    Label {
+                        Text("Different target at night").foregroundStyle(Theme.textPrimary)
+                    } icon: {
+                        Image(systemName: "moon.stars.fill").foregroundStyle(Theme.accent)
+                    }
+                }
+                .onChange(of: thresholds.nightModeEnabled) { _, on in
+                    if on { Haptics.play(.selection) }
+                }
+
+                if thresholds.nightModeEnabled {
+                    DatePicker("Starts", selection: timeBinding($thresholds.nightStartMinute),
+                               displayedComponents: .hourAndMinute)
+                    DatePicker("Ends", selection: timeBinding($thresholds.nightEndMinute),
+                               displayedComponents: .hourAndMinute)
+                    UnitsThresholdStepper(
+                        title: "Night target low",
+                        systemImage: "arrow.up.to.line.compact",
+                        tint: Theme.zoneWarning,
+                        mgdL: $thresholds.nightTargetLower,
+                        lowerBoundMgdL: thresholds.veryLow + 5,
+                        upperBoundMgdL: thresholds.nightTargetUpper - 5,
+                        unit: unit
+                    )
+                    UnitsThresholdStepper(
+                        title: "Night target high",
+                        systemImage: "arrow.down.to.line.compact",
+                        tint: Theme.zoneInRange,
+                        mgdL: $thresholds.nightTargetUpper,
+                        lowerBoundMgdL: thresholds.nightTargetLower + 5,
+                        upperBoundMgdL: thresholds.high - 5,
+                        unit: unit
+                    )
+                }
+            } header: {
+                Text("Night target range")
+            } footer: {
+                Text("Aim for a different — often tighter — range while you sleep. It applies to the chart's target band and your Time-in-Range during those hours.")
                     .font(.footnote)
                     .foregroundStyle(Theme.textTertiary)
             }
