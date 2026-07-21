@@ -21,6 +21,24 @@ struct AlertPreferences: Codable, Equatable, Sendable {
     /// Minimum minutes between repeat alerts for the *same* level.
     var snoozeMinutes = 20
 
+    // MARK: Rate-of-change (Wave 7 alerts hub)
+    //
+    // Opt-in "glucose is moving fast" alerts, independent of the value being in
+    // or out of range — a steep rise or fall is worth catching early.
+
+    /// Alert when glucose is climbing faster than `rateThresholdPerMinute`.
+    var riseRateEnabled = false
+    /// Alert when glucose is dropping faster than `rateThresholdPerMinute`.
+    var fallRateEnabled = false
+    /// Rate threshold in mg/dL per minute (≈ 3 is a "rising/falling fast" trend).
+    var rateThresholdPerMinute = 3.0
+
+    // MARK: Signal loss
+
+    /// Alert when no new reading has arrived for `signalLossMinutes`.
+    var signalLossEnabled = false
+    var signalLossMinutes = 25
+
     static let `default` = AlertPreferences()
 
     func isEnabled(_ level: GlucoseAlertLevel) -> Bool {
@@ -30,6 +48,39 @@ struct AlertPreferences: Codable, Equatable, Sendable {
         case .high: return high
         case .urgentHigh: return urgentHigh
         }
+    }
+
+    /// Whether any alert category is switched on (drives the hub's summary).
+    var anyCategoryEnabled: Bool {
+        enabled && (urgentLow || low || high || urgentHigh || riseRateEnabled || fallRateEnabled || signalLossEnabled)
+    }
+
+    // A tolerant decoder so settings saved before the rate-of-change and
+    // signal-loss fields existed still decode with the user's out-of-range
+    // choices intact. Without this the missing keys would throw, `try?` would
+    // fall back to `.default`, and an app update would silently switch a user's
+    // alerts *off* — a safety regression. `encode(to:)` stays synthesized.
+    private enum CodingKeys: String, CodingKey {
+        case enabled, urgentLow, low, high, urgentHigh, snoozeMinutes
+        case riseRateEnabled, fallRateEnabled, rateThresholdPerMinute
+        case signalLossEnabled, signalLossMinutes
+    }
+
+    init() {}
+
+    init(from decoder: Decoder) throws {
+        let c = try decoder.container(keyedBy: CodingKeys.self)
+        enabled = try c.decodeIfPresent(Bool.self, forKey: .enabled) ?? false
+        urgentLow = try c.decodeIfPresent(Bool.self, forKey: .urgentLow) ?? true
+        low = try c.decodeIfPresent(Bool.self, forKey: .low) ?? true
+        high = try c.decodeIfPresent(Bool.self, forKey: .high) ?? true
+        urgentHigh = try c.decodeIfPresent(Bool.self, forKey: .urgentHigh) ?? true
+        snoozeMinutes = try c.decodeIfPresent(Int.self, forKey: .snoozeMinutes) ?? 20
+        riseRateEnabled = try c.decodeIfPresent(Bool.self, forKey: .riseRateEnabled) ?? false
+        fallRateEnabled = try c.decodeIfPresent(Bool.self, forKey: .fallRateEnabled) ?? false
+        rateThresholdPerMinute = try c.decodeIfPresent(Double.self, forKey: .rateThresholdPerMinute) ?? 3.0
+        signalLossEnabled = try c.decodeIfPresent(Bool.self, forKey: .signalLossEnabled) ?? false
+        signalLossMinutes = try c.decodeIfPresent(Int.self, forKey: .signalLossMinutes) ?? 25
     }
 }
 

@@ -80,9 +80,66 @@ final class GlucoseAlertService {
         firePredictiveLow(minutes: projection.minutes)
     }
 
+    /// Fires a rate-of-change alert when glucose is rising or falling faster than
+    /// the user's threshold. Uses its own persisted state and snooze so a
+    /// sustained fast trend doesn't alert every poll.
+    func evaluateRateOfChange(
+        current: GlucoseAlertEvaluator.Reading?,
+        perMinute: Double?,
+        preferences: AlertPreferences,
+        unit: GlucoseUnit,
+        now: Date = Date()
+    ) {
+        guard preferences.enabled, (preferences.riseRateEnabled || preferences.fallRateEnabled),
+              let current, let perMinute else { return }
+        let decision = RateOfChangeAlertEvaluator.decide(
+            mgdL: current.mgdL, perMinute: perMinute, timestamp: current.timestamp,
+            thresholdPerMinute: preferences.rateThresholdPerMinute,
+            preferences: preferences, unit: unit, last: loadRateState(), now: now
+        )
+        if let alert = decision.alert { fireRate(alert) }
+        saveRateState(decision.state)
+    }
+
+    /// Fires a "no recent readings" alert once per data gap.
+    func evaluateSignalLoss(
+        lastReadingAt: Date?,
+        preferences: AlertPreferences,
+        now: Date = Date()
+    ) {
+        guard preferences.enabled, preferences.signalLossEnabled else { return }
+        let decision = SignalLossAlertEvaluator.decide(
+            lastReadingAt: lastReadingAt, preferences: preferences,
+            last: loadSignalState(), now: now
+        )
+        if let alert = decision.alert { fireSignalLoss(alert) }
+        saveSignalState(decision.state)
+    }
+
     // MARK: State
 
     private static let predictiveKey = "glucose.predictiveLowFiredAt"
+    private static let rateStateKey = "glucose.rateAlertState"
+    private static let signalStateKey = "glucose.signalLossState"
+
+    private func loadRateState() -> RateAlertState {
+        guard let data = defaults.data(forKey: Self.rateStateKey),
+              let state = try? JSONDecoder().decode(RateAlertState.self, from: data)
+        else { return .empty }
+        return state
+    }
+    private func saveRateState(_ state: RateAlertState) {
+        if let data = try? JSONEncoder().encode(state) { defaults.set(data, forKey: Self.rateStateKey) }
+    }
+    private func loadSignalState() -> SignalLossState {
+        guard let data = defaults.data(forKey: Self.signalStateKey),
+              let state = try? JSONDecoder().decode(SignalLossState.self, from: data)
+        else { return .empty }
+        return state
+    }
+    private func saveSignalState(_ state: SignalLossState) {
+        if let data = try? JSONEncoder().encode(state) { defaults.set(data, forKey: Self.signalStateKey) }
+    }
 
     private func loadState() -> GlucoseAlertState {
         guard let data = defaults.data(forKey: Self.stateKey),
@@ -130,6 +187,47 @@ final class GlucoseAlertService {
         // updates rather than stacks.
         let request = UNNotificationRequest(
             identifier: "glucose-alert-\(alert.level.rawValue)",
+            content: content,
+            trigger: nil
+        )
+        center.add(request)
+        #endif
+    }
+
+    private func fireRate(_ alert: RateAlert) {
+        #if canImport(UserNotifications)
+        let content = UNMutableNotificationContent()
+        content.title = alert.title
+        content.body = alert.body
+        content.sound = .default
+        // A fast fall is treated as time-sensitive so it can break through Focus;
+        // a fast rise stays at the default level.
+        if alert.kind == .falling {
+            content.interruptionLevel = .timeSensitive
+            content.relevanceScore = 0.85
+        } else {
+            content.relevanceScore = 0.5
+        }
+        // One pending notification per direction: a fresh alert updates rather
+        // than stacks.
+        let request = UNNotificationRequest(
+            identifier: "glucose-rate-\(alert.kind.rawValue)",
+            content: content,
+            trigger: nil
+        )
+        center.add(request)
+        #endif
+    }
+
+    private func fireSignalLoss(_ alert: SignalLossAlert) {
+        #if canImport(UserNotifications)
+        let content = UNMutableNotificationContent()
+        content.title = alert.title
+        content.body = alert.body
+        content.sound = .default
+        content.relevanceScore = 0.4
+        let request = UNNotificationRequest(
+            identifier: "glucose-signal-loss",
             content: content,
             trigger: nil
         )

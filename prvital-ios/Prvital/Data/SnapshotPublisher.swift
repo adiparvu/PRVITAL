@@ -92,6 +92,25 @@ final class SnapshotPublisher {
             preferences: preferences.alerts,
             now: now
         )
+
+        // Rate-of-change alert on a fresh reading with a measured trend.
+        alerts.evaluateRateOfChange(
+            current: (summary.isStale ? nil : summary.current).map {
+                GlucoseAlertEvaluator.Reading(mgdL: $0.valueMgdL, timestamp: $0.timestamp)
+            },
+            perMinute: summary.isStale ? nil : summary.velocity?.mgdLPerMinute,
+            preferences: preferences.alerts,
+            unit: unit,
+            now: now
+        )
+
+        // Signal-loss alert — measured from the most recent reading's age, even
+        // when that reading is now stale (that's exactly the dropout case).
+        alerts.evaluateSignalLoss(
+            lastReadingAt: summary.current?.timestamp,
+            preferences: preferences.alerts,
+            now: now
+        )
     }
 
     private func fetch<T: PersistentModel>(_ type: T.Type) -> [T] {

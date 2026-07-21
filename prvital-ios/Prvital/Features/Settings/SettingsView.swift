@@ -81,11 +81,11 @@ struct SettingsView: View {
                     }
 
                     NavigationLink {
-                        AlertsSettingsView()
+                        AlertsHubView()
                     } label: {
                         SettingsRow(
                             title: "Glucose alerts",
-                            subtitle: env.preferences.alerts.enabled ? String(localized: "On") : String(localized: "Off"),
+                            subtitle: env.preferences.alerts.anyCategoryEnabled ? String(localized: "On") : String(localized: "Off"),
                             systemImage: "exclamationmark.triangle.fill",
                             tint: Theme.zoneCritical
                         )
