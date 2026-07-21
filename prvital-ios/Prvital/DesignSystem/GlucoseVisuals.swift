@@ -179,7 +179,10 @@ struct GlucoseTrendChart: View {
                         .annotation(
                             position: extreme.kind == .peak ? .top : .bottom,
                             spacing: 2,
-                            overflowResolution: .init(x: .fit(to: .chart), y: .disabled)
+                            // Fit INSIDE the plot: the plot is clipped (so the
+                            // fill can't bleed under the hour labels), and a
+                            // label allowed to overflow it would be cut off.
+                            overflowResolution: .init(x: .fit(to: .plot), y: .fit(to: .plot))
                         ) {
                             extremeLabel(extreme)
                         }
@@ -214,8 +217,11 @@ struct GlucoseTrendChart: View {
                 RuleMark(x: .value("Selected", sel.timestamp))
                     .foregroundStyle(Theme.textTertiary.opacity(0.45))
                     .lineStyle(StrokeStyle(lineWidth: 1))
+                    // Fit inside the clipped plot — with the old y: .disabled the
+                    // callout sat above the plot's top edge and the clip swallowed
+                    // it, so scrubbing showed the line but no value.
                     .annotation(position: .top, spacing: 6,
-                                overflowResolution: .init(x: .fit(to: .chart), y: .disabled)) {
+                                overflowResolution: .init(x: .fit(to: .plot), y: .fit(to: .plot))) {
                         scrubCallout(sel)
                     }
                 PointMark(x: .value("Selected", sel.timestamp), y: .value("Glucose", sel.valueMgdL))
