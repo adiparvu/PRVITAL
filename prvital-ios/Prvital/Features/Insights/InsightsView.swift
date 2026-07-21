@@ -12,6 +12,7 @@ import SwiftData
 struct InsightsView: View {
     @Environment(AppEnvironment.self) private var env
     @State private var section: InsightsSection = .charts
+    @State private var showingWeeklyDigest = false
 
     // Records feeding the ranked feed. Plain `@Query`s, filtered to a recent
     // window in `insightCards` so the surfaced patterns stay current.
@@ -74,6 +75,15 @@ struct InsightsView: View {
                     .accessibilityLabel("History")
                 }
                 ToolbarItem(placement: .topBarTrailing) {
+                    Button {
+                        Haptics.play(.selection)
+                        showingWeeklyDigest = true
+                    } label: {
+                        Image(systemName: "calendar.badge.clock")
+                    }
+                    .accessibilityLabel("Week in review")
+                }
+                ToolbarItem(placement: .topBarTrailing) {
                     NavigationLink {
                         ExportView()
                     } label: {
@@ -82,6 +92,7 @@ struct InsightsView: View {
                     .accessibilityLabel("Export a report")
                 }
             }
+            .sheet(isPresented: $showingWeeklyDigest) { WeeklyDigestView() }
         }
     }
 }

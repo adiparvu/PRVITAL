@@ -78,6 +78,10 @@ final class AppEnvironment {
         // Every sync also pulls insulin, meals and activity from Apple Health so
         // the journal is the full picture, not only the glucose curve.
         sync.healthImporter = HealthDataImporter(context: context, healthKit: healthKit, consent: consent)
+
+        // And, when the user opts in, mirrors their own manual entries up to
+        // their Nightscout site after each successful sync pass.
+        sync.nightscoutUploader = NightscoutUploader(preferences: prefs, audit: audit)
     }
 
     /// One-time launch work: prune the audit trail, clean up any sample data an
@@ -104,6 +108,7 @@ final class AppEnvironment {
         snapshots.refresh()
         notifications.reschedule(from: preferences.reminders, glucoseSchedule: preferences.glucoseSchedule)
         rescheduleContextualReminders()
+        WeeklyDigestScheduler().update(enabled: preferences.weeklyDigestEnabled)
         scheduleBackgroundRefresh()
         startHealthKitBackgroundDelivery()
     }
