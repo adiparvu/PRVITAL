@@ -85,6 +85,11 @@ final class SyncCoordinator {
                 // trail on every poll. Only genuine fetch errors (network, server)
                 // are reported.
                 if (error as? SourceError)?.isConfigurationState == true { continue }
+                // A cancelled request is not a failure: it happens when a newer
+                // refresh supersedes this one, or the foreground poll loop is
+                // cancelled as the app changes scene phase. Surfacing it as
+                // "Dexcom: cancelled" is noise — skip it entirely.
+                if error.isCancellation { continue }
                 report.failures.append("\(source.displayName): \(error.localizedDescription)")
                 audit.log(.sync, source: source.source, result: .failure,
                           detail: error.localizedDescription)
@@ -170,5 +175,17 @@ final class SyncCoordinator {
         )
         let existing = (try? context.fetch(descriptor)) ?? []
         return Set(existing.compactMap(\.externalID)).intersection(ids)
+    }
+}
+
+extension Error {
+    /// True when this error is a cancellation — a Swift `CancellationError`, or a
+    /// URL request aborted with `NSURLErrorCancelled` (−999). These happen when a
+    /// newer refresh supersedes an in-flight one, or a poll task is cancelled;
+    /// they are expected control flow, never a failure worth reporting.
+    var isCancellation: Bool {
+        if self is CancellationError { return true }
+        let nsError = self as NSError
+        return nsError.domain == NSURLErrorDomain && nsError.code == NSURLErrorCancelled
     }
 }
