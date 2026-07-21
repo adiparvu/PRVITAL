@@ -35,8 +35,8 @@ final class WeeklyDigestScheduler {
         guard enabled else { return }
 
         let content = UNMutableNotificationContent()
-        content.title = "Your week in review is ready"
-        content.body = "See last week's time in range, best day and more."
+        content.title = String(localized: "Your week in review is ready")
+        content.body = String(localized: "See last week's time in range, best day and more.")
         content.sound = .default
 
         var components = DateComponents()

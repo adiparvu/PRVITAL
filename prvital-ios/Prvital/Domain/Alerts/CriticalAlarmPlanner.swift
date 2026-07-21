@@ -120,7 +120,7 @@ enum CriticalAlarmPlanner {
     /// mislead — the message asks for a fresh check instead.
     static func repeatContent(index: Int, total: Int) -> (title: String, body: String) {
         (
-            title: "Urgent low — still unacknowledged",
+            title: String(localized: "Urgent low — still unacknowledged"),
             body: "Your urgent low alert hasn't been acknowledged. Check your glucose and treat if needed. (Reminder \(index) of \(total))"
         )
     }

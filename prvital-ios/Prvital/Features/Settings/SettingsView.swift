@@ -93,8 +93,8 @@ struct SettingsView: View {
                         SettingsRow(
                             title: "Emergency card",
                             subtitle: env.preferences.emergencyInfo.hasContent
-                                ? "Ready to show a helper"
-                                : "Not set up yet",
+                                ? String(localized: "Ready to show a helper")
+                                : String(localized: "Not set up yet"),
                             systemImage: "staroflife.fill",
                             tint: Theme.zoneCritical
                         )
