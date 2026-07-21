@@ -21,6 +21,7 @@ enum AppSchema {
         FoodItem.self,
         FavoriteMeal.self,
         SensorSession.self,
+        MedicationDose.self,
         LabResult.self,
         UserProfile.self,
         PrivacyAuditRecord.self,

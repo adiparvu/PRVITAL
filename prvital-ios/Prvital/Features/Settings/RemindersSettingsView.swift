@@ -136,7 +136,8 @@ struct RemindersSettingsView: View {
         }
         .onChange(of: reminders) { _, newValue in
             env.preferences.reminders = newValue
-            env.notifications.reschedule(from: newValue, glucoseSchedule: env.preferences.glucoseSchedule)
+            env.notifications.reschedule(from: newValue, glucoseSchedule: env.preferences.glucoseSchedule,
+                                         medicationPlan: env.preferences.medicationPlan)
         }
     }
 

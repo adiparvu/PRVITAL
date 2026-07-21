@@ -38,7 +38,8 @@ final class NotificationScheduler {
     }
 
     /// Clears existing reminders and reschedules from the current preferences.
-    func reschedule(from reminders: ReminderPreferences, glucoseSchedule: GlucoseSchedule = .default) {
+    func reschedule(from reminders: ReminderPreferences, glucoseSchedule: GlucoseSchedule = .default,
+                    medicationPlan: MedicationPlan = .empty) {
         #if canImport(UserNotifications)
         center.removeAllPendingNotificationRequests()
         var requests: [UNNotificationRequest] = []
@@ -71,6 +72,19 @@ final class NotificationScheduler {
         if reminders.hydrationEnabled {
             requests.append(interval("Stay hydrated", "Have some water.",
                                      hours: reminders.hydrationIntervalHours, "hydration"))
+        }
+
+        // Medication reminders — one daily notification per scheduled time. The
+        // med name is dynamic, so the title/body are localized here (content()
+        // re-localizing an already-resolved string is a harmless no-op).
+        for schedule in medicationPlan.activeSchedules where schedule.remindersEnabled && !schedule.name.isEmpty {
+            let title = String(localized: "Take \(schedule.name)")
+            let body = (schedule.doseText.isEmpty || schedule.doseText == schedule.name)
+                ? String(localized: "Time for your medication.")
+                : String(localized: "Time for your \(schedule.doseText) dose.")
+            for minute in schedule.sortedTimes {
+                requests.append(daily(title, body, minute, "med-\(schedule.id.uuidString)"))
+            }
         }
 
         for request in requests { center.add(request) }

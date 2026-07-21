@@ -125,6 +125,10 @@ enum CSVImportParser {
                 }
             }
             record = .observation(tags: tags, text: textParts.isEmpty ? nil : textParts.joined(separator: detailSeparator))
+
+        case .medication:
+            // This legacy CSV format predates medication logging; skip such rows.
+            return nil
         }
 
         return ParsedRow(timestamp: timestamp, source: source, record: record)

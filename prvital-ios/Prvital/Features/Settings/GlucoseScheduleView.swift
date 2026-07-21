@@ -50,7 +50,8 @@ struct GlucoseScheduleView: View {
         }
         .onChange(of: schedule) { oldValue, newValue in
             env.preferences.glucoseSchedule = newValue
-            env.notifications.reschedule(from: env.preferences.reminders, glucoseSchedule: newValue)
+            env.notifications.reschedule(from: env.preferences.reminders, glucoseSchedule: newValue,
+                                         medicationPlan: env.preferences.medicationPlan)
             if newValue.remindersEnabled, !oldValue.remindersEnabled {
                 Task { _ = await env.notifications.requestAuthorization() }
             }

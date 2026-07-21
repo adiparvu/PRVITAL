@@ -106,7 +106,8 @@ final class AppEnvironment {
 
         _ = profile.current()   // create the single profile on first launch
         snapshots.refresh()
-        notifications.reschedule(from: preferences.reminders, glucoseSchedule: preferences.glucoseSchedule)
+        notifications.reschedule(from: preferences.reminders, glucoseSchedule: preferences.glucoseSchedule,
+                                 medicationPlan: preferences.medicationPlan)
         rescheduleContextualReminders()
         WeeklyDigestScheduler().update(enabled: preferences.weeklyDigestEnabled)
         scheduleBackgroundRefresh()

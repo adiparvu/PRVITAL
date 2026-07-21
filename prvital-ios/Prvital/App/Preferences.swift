@@ -19,6 +19,7 @@ final class Preferences {
         self.glucoseSchedule = Self.readGlucoseSchedule(self.defaults)
         self.glucoseGoals = Self.readGlucoseGoals(self.defaults)
         self.ringGoals = Self.readRingGoals(self.defaults)
+        self.medicationPlan = Self.readMedicationPlan(self.defaults)
         self.liveSyncSeconds = (self.defaults.object(forKey: Keys.liveSync) as? Int) ?? 60
         self.postprandialWindowHours = (self.defaults.object(forKey: Keys.postprandialWindow) as? Int) ?? 3
         self.sickDayEnabled = self.defaults.bool(forKey: Keys.sickDayEnabled)
@@ -99,6 +100,12 @@ final class Preferences {
     /// so this only owns the two ring-specific numbers.
     var ringGoals: RingGoals {
         didSet { if let data = try? JSONEncoder().encode(ringGoals) { defaults.set(data, forKey: Keys.ringGoals) } }
+    }
+
+    /// The user's non-insulin medication schedule (names, doses, times). Drives
+    /// reminders and the adherence view; empty until the user adds a medication.
+    var medicationPlan: MedicationPlan {
+        didSet { if let data = try? JSONEncoder().encode(medicationPlan) { defaults.set(data, forKey: Keys.medicationPlan) } }
     }
 
     /// How often (seconds) to poll connected CGM sources while the app is open.
@@ -241,6 +248,7 @@ final class Preferences {
         static let glucoseSchedule = "pref.glucoseSchedule"
         static let glucoseGoals = "pref.glucoseGoals"
         static let ringGoals = "pref.ringGoals"
+        static let medicationPlan = "pref.medicationPlan"
         static let liveSync = "pref.liveSyncSeconds"
         static let postprandialWindow = "pref.postprandialWindowHours"
         static let sickDayEnabled = "pref.sickDayEnabled"
@@ -311,6 +319,12 @@ final class Preferences {
         guard let data = d.data(forKey: Keys.ringGoals),
               let value = try? JSONDecoder().decode(RingGoals.self, from: data)
         else { return .default }
+        return value
+    }
+    private static func readMedicationPlan(_ d: UserDefaults) -> MedicationPlan {
+        guard let data = d.data(forKey: Keys.medicationPlan),
+              let value = try? JSONDecoder().decode(MedicationPlan.self, from: data)
+        else { return .empty }
         return value
     }
     private static func readEmergencyInfo(_ d: UserDefaults) -> EmergencyInfo {

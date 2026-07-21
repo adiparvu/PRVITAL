@@ -15,6 +15,7 @@ enum RecordType: String, Codable, CaseIterable, Sendable {
     case carbohydrate
     case activity
     case observation
+    case medication
 }
 
 /// A continuous glucose sensor model, with its wear time and warm-up period.

@@ -131,6 +131,24 @@ final class EntryStore {
         return entry
     }
 
+    @discardableResult
+    func addMedication(
+        name: String,
+        kind: MedicationKind = .other,
+        amount: Double = 0,
+        unitText: String = "",
+        timestamp: Date = Date(),
+        scheduleID: String? = nil,
+        note: String? = nil
+    ) -> MedicationDose {
+        let dose = MedicationDose(
+            name: name, kind: kind, amount: amount, unitText: unitText,
+            timestamp: timestamp, scheduleID: scheduleID, note: note)
+        context.insert(dose)
+        finish(.manualEdit, detail: "Medication logged")
+        return dose
+    }
+
     // MARK: Food library
 
     /// Inserts a food into the local library if it isn't already there (matched

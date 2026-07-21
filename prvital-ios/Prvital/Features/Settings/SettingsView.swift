@@ -12,6 +12,15 @@ struct SettingsView: View {
     @State private var showFeedback = false
     @State private var achievementStore = AchievementStore()
 
+    private var medicationsSubtitle: String {
+        let count = env.preferences.medicationPlan.activeSchedules.count
+        switch count {
+        case 0: return String(localized: "Track pills & injectables")
+        case 1: return String(localized: "1 medication")
+        default: return String(localized: "\(count) medications")
+        }
+    }
+
     private var achievementsSubtitle: String {
         let unseen = achievementStore.unseenCount
         if unseen > 0 { return String(localized: "\(unseen) new to unlock") }
@@ -138,6 +147,17 @@ struct SettingsView: View {
                                 : String(localized: "Calculator off"),
                             systemImage: "syringe",
                             tint: Theme.zoneWarning
+                        )
+                    }
+
+                    NavigationLink {
+                        MedicationsView()
+                    } label: {
+                        SettingsRow(
+                            title: "Medications",
+                            subtitle: medicationsSubtitle,
+                            systemImage: "pills.fill",
+                            tint: Theme.accent
                         )
                     }
 
