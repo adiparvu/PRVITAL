@@ -26,6 +26,21 @@ final class Preferences {
         self.weeklyDigestEnabled = self.defaults.bool(forKey: Keys.weeklyDigest)
         self.nightscoutUploadEnabled = self.defaults.bool(forKey: Keys.nightscoutUpload)
         self.accentThemeRaw = self.defaults.string(forKey: Keys.accentTheme) ?? "default"
+        self.journalCardDensityRaw = self.defaults.string(forKey: Keys.journalCardDensity) ?? "standard"
+        self.lastSeenWhatsNewVersion = self.defaults.string(forKey: Keys.lastSeenWhatsNew) ?? ""
+    }
+
+    /// How much detail the journal's day cards show ("compact" / "standard" /
+    /// "detailed"), in the spirit of a presets picker. Raw string so the enum can
+    /// live beside the view that owns it.
+    var journalCardDensityRaw: String {
+        didSet { defaults.set(journalCardDensityRaw, forKey: Keys.journalCardDensity) }
+    }
+
+    /// The last app version whose "What's new" tour the user has seen. Empty
+    /// until the first tour is shown.
+    var lastSeenWhatsNewVersion: String {
+        didSet { defaults.set(lastSeenWhatsNewVersion, forKey: Keys.lastSeenWhatsNew) }
     }
 
     var glucoseUnit: GlucoseUnit {
@@ -145,6 +160,8 @@ final class Preferences {
         static let weeklyDigest = "pref.weeklyDigestEnabled"
         static let nightscoutUpload = "pref.nightscoutUploadEnabled"
         static let accentTheme = "pref.accentTheme"
+        static let journalCardDensity = "pref.journalCardDensity"
+        static let lastSeenWhatsNew = "pref.lastSeenWhatsNewVersion"
     }
 
     private static func readUnit(_ d: UserDefaults) -> GlucoseUnit {
