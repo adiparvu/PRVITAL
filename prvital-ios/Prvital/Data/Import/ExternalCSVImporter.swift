@@ -204,13 +204,14 @@ enum ExternalCSVImporter {
                                       intensity: clarityIntensity(field(subtypeCol)))
                 ))
 
-            } else if !glucoseText.isEmpty {
-                // A non-numeric glucose cell is a "Low"/"High" sensor clamp —
-                // count it as skipped, by design.
+            } else {
+                // A timestamped row we couldn't decode into any record — a
+                // "Low"/"High" glucose clamp, or an event missing its value (e.g.
+                // an exercise row with no duration). Count it as skipped. Account
+                // metadata rows never reach here: they have no timestamp and were
+                // dropped by the guard above.
                 skipped += 1
             }
-            // Otherwise the row is account metadata or a record kind Prvital
-            // doesn't model — ignored without counting.
         }
         return CSVParseResult(rows: parsed, skipped: skipped)
     }
