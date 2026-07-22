@@ -10,12 +10,12 @@ import UniformTypeIdentifiers
 /// Source access is revoked under Sources.
 struct DataControlsView: View {
     @Environment(AppEnvironment.self) private var env
+    @Environment(\.modelContext) private var modelContext
 
-    @Query private var glucose: [GlucoseReading]
-    @Query private var insulin: [InsulinDose]
-    @Query private var carbs: [CarbEntry]
-    @Query private var activity: [ActivityEntry]
-    @Query private var observations: [ObservationEntry]
+    // Counts come from `fetchCount` (a SQL COUNT) refreshed on appear and after
+    // an import/delete — not an @Query that materialises every row — so opening
+    // this screen right after a full-history import stays instant.
+    @State private var counts = RecordCounts()
 
     @State private var showingDeleteConfirm = false
     @State private var showingImporter = false
@@ -23,8 +23,22 @@ struct DataControlsView: View {
     @State private var importResultMessage = ""
     @State private var isImporting = false
 
-    private var totalCount: Int {
-        glucose.count + insulin.count + carbs.count + activity.count + observations.count
+    private var totalCount: Int { counts.total }
+
+    /// Per-type record counts, fetched cheaply without loading the rows.
+    struct RecordCounts: Equatable {
+        var glucose = 0, insulin = 0, carbs = 0, activity = 0, observations = 0
+        var total: Int { glucose + insulin + carbs + activity + observations }
+    }
+
+    private func refreshCounts() {
+        counts = RecordCounts(
+            glucose: (try? modelContext.fetchCount(FetchDescriptor<GlucoseReading>())) ?? 0,
+            insulin: (try? modelContext.fetchCount(FetchDescriptor<InsulinDose>())) ?? 0,
+            carbs: (try? modelContext.fetchCount(FetchDescriptor<CarbEntry>())) ?? 0,
+            activity: (try? modelContext.fetchCount(FetchDescriptor<ActivityEntry>())) ?? 0,
+            observations: (try? modelContext.fetchCount(FetchDescriptor<ObservationEntry>())) ?? 0
+        )
     }
 
     private var cloudSyncBinding: Binding<Bool> {
@@ -48,11 +62,11 @@ struct DataControlsView: View {
                     )
                     .listRowBackground(Color.clear)
                 } else {
-                    DataCountRow(title: "Glucose readings", systemImage: "drop.fill", tint: Theme.zoneInRange, count: glucose.count)
-                    DataCountRow(title: "Insulin doses", systemImage: "syringe.fill", tint: Theme.accent, count: insulin.count)
-                    DataCountRow(title: "Carb entries", systemImage: "fork.knife", tint: Theme.zoneHigh, count: carbs.count)
-                    DataCountRow(title: "Activities", systemImage: "figure.walk", tint: Theme.zoneWarning, count: activity.count)
-                    DataCountRow(title: "Observations", systemImage: "note.text", tint: Theme.textSecondary, count: observations.count)
+                    DataCountRow(title: "Glucose readings", systemImage: "drop.fill", tint: Theme.zoneInRange, count: counts.glucose)
+                    DataCountRow(title: "Insulin doses", systemImage: "syringe.fill", tint: Theme.accent, count: counts.insulin)
+                    DataCountRow(title: "Carb entries", systemImage: "fork.knife", tint: Theme.zoneHigh, count: counts.carbs)
+                    DataCountRow(title: "Activities", systemImage: "figure.walk", tint: Theme.zoneWarning, count: counts.activity)
+                    DataCountRow(title: "Observations", systemImage: "note.text", tint: Theme.textSecondary, count: counts.observations)
                 }
             } header: {
                 Text("On this device")
@@ -156,6 +170,7 @@ struct DataControlsView: View {
         .background(Theme.background)
         .navigationTitle("Your data")
         .navigationBarTitleDisplayMode(.inline)
+        .task { refreshCounts() }
         .confirmationDialog(
             "Delete all local data?",
             isPresented: $showingDeleteConfirm,
@@ -216,6 +231,7 @@ struct DataControlsView: View {
                 Haptics.play(summary.imported > 0 ? .success : .warning)
                 importResultMessage = Self.resultMessage(for: summary, format: format)
                 showingImportResult = true
+                refreshCounts()
             }
         }
     }
@@ -237,11 +253,12 @@ struct DataControlsView: View {
 
     private func deleteEverything() {
         Haptics.play(.warning)
-        for record in glucose { env.entryStore.delete(record) }
-        for record in insulin { env.entryStore.delete(record) }
-        for record in carbs { env.entryStore.delete(record) }
-        for record in activity { env.entryStore.delete(record) }
-        for record in observations { env.entryStore.delete(record) }
+        for record in (try? modelContext.fetch(FetchDescriptor<GlucoseReading>())) ?? [] { env.entryStore.delete(record) }
+        for record in (try? modelContext.fetch(FetchDescriptor<InsulinDose>())) ?? [] { env.entryStore.delete(record) }
+        for record in (try? modelContext.fetch(FetchDescriptor<CarbEntry>())) ?? [] { env.entryStore.delete(record) }
+        for record in (try? modelContext.fetch(FetchDescriptor<ActivityEntry>())) ?? [] { env.entryStore.delete(record) }
+        for record in (try? modelContext.fetch(FetchDescriptor<ObservationEntry>())) ?? [] { env.entryStore.delete(record) }
+        refreshCounts()
     }
 }
 
