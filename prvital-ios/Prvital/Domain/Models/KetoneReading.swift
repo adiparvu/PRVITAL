@@ -10,6 +10,9 @@ import SwiftData
 /// there are no unique constraints.
 @Model
 final class KetoneReading {
+    /// Time index so windowed queries skip a full-table scan after a big import.
+    #Index<KetoneReading>([\.timestamp])
+
     var id: UUID = UUID()
     /// Blood ketone concentration in mmol/L (e.g. `0.4`, `1.8`).
     var value: Double = 0

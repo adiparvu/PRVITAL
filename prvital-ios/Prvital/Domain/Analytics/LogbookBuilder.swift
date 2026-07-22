@@ -386,10 +386,13 @@ enum LogbookBuilder {
         for episode in episodes.prefix(maxLowMarkers) {
             let hour = calendar.component(.hour, from: episode.nadirAt)
             let minute = calendar.component(.minute, from: episode.nadirAt)
-            parts.append("Low \(Int(episode.nadir.rounded())) at \(String(format: "%02d:%02d", hour, minute))")
+            let time = String(format: "%02d:%02d", hour, minute)
+            // Localized through the in-app language bundle so the auto-generated
+            // register comments follow the chosen language, not just the device.
+            parts.append(String(format: PrvitalString("Low %lld at %@"), Int(episode.nadir.rounded()), time))
         }
         if episodes.count > maxLowMarkers {
-            parts.append("+\(episodes.count - maxLowMarkers) more lows")
+            parts.append(String(format: PrvitalString("+%lld more lows"), episodes.count - maxLowMarkers))
         }
         return parts.joined(separator: "; ")
     }

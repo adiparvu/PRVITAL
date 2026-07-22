@@ -24,12 +24,19 @@ final class SnapshotPublisher {
         let unit = preferences.glucoseUnit
         let thresholds = preferences.thresholds
 
-        let readings = fetch(GlucoseReading.self).filter(\.isActive)
-        let summary = DashboardSummary.make(
-            readings: readings,
-            insulin: fetch(InsulinDose.self),
-            carbs: fetch(CarbEntry.self),
-            activity: fetch(ActivityEntry.self),
+        // The live tile / widget needs only the latest reading plus a few hours of
+        // recent points — never the whole (possibly 100k-row) history. Bounded,
+        // indexed fetches keep this off the main-thread hot path even right after a
+        // multi-year import, which is exactly when the old full-store fetch stalled
+        // the app and tripped the background watchdog.
+        let seriesWindow: TimeInterval = 6 * 60 * 60
+        let cutoff = now.addingTimeInterval(-seriesWindow)
+        let summary = DashboardSummary(
+            current: latestActiveReading(),
+            recent: recentActiveReadings(since: cutoff),
+            lastInsulin: latestInsulin(),
+            lastMeal: latestMeal(),
+            lastActivity: latestActivity(),
             thresholds: thresholds,
             now: now
         )
@@ -129,8 +136,54 @@ final class SnapshotPublisher {
         )
     }
 
-    private func fetch<T: PersistentModel>(_ type: T.Type) -> [T] {
-        (try? context.fetch(FetchDescriptor<T>())) ?? []
+    /// Forces a widget timeline reload, bypassing the save throttle. Called once on
+    /// launch so an upgrading install repopulates its widgets from the new App
+    /// Group file store right away instead of waiting on the reload budget.
+    func reloadWidgets() {
+        #if canImport(WidgetKit)
+        WidgetCenter.shared.reloadAllTimelines()
+        #endif
+    }
+
+    /// The single most recent *active* reading, regardless of age — so the widget
+    /// keeps showing the last known value (dimmed when stale) after an import of
+    /// historical data, instead of falling back to "—".
+    private func latestActiveReading() -> GlucoseReading? {
+        var descriptor = FetchDescriptor<GlucoseReading>(
+            predicate: #Predicate { $0.isActive },
+            sortBy: [SortDescriptor(\.timestamp, order: .reverse)])
+        descriptor.fetchLimit = 1
+        return (try? context.fetch(descriptor))?.first
+    }
+
+    /// Active readings within the recent window, ascending — the mini-series and
+    /// velocity input. Bounded by the indexed timestamp, so it stays cheap.
+    private func recentActiveReadings(since cutoff: Date) -> [GlucoseReading] {
+        let descriptor = FetchDescriptor<GlucoseReading>(
+            predicate: #Predicate { $0.isActive && $0.timestamp >= cutoff },
+            sortBy: [SortDescriptor(\.timestamp, order: .forward)])
+        return (try? context.fetch(descriptor)) ?? []
+    }
+
+    private func latestInsulin() -> InsulinDose? {
+        var descriptor = FetchDescriptor<InsulinDose>(
+            sortBy: [SortDescriptor(\.timestamp, order: .reverse)])
+        descriptor.fetchLimit = 1
+        return (try? context.fetch(descriptor))?.first
+    }
+
+    private func latestMeal() -> CarbEntry? {
+        var descriptor = FetchDescriptor<CarbEntry>(
+            sortBy: [SortDescriptor(\.timestamp, order: .reverse)])
+        descriptor.fetchLimit = 1
+        return (try? context.fetch(descriptor))?.first
+    }
+
+    private func latestActivity() -> ActivityEntry? {
+        var descriptor = FetchDescriptor<ActivityEntry>(
+            sortBy: [SortDescriptor(\.startTimestamp, order: .reverse)])
+        descriptor.fetchLimit = 1
+        return (try? context.fetch(descriptor))?.first
     }
 
     /// Localized imminent-projection text, reusing the dashboard's catalog keys.

@@ -31,9 +31,20 @@ final class HealthKitGlucoseSource: GlucoseSource {
             try await service.requestAuthorization()
             connectionState = .connected
         } catch {
-            connectionState = .failed(error.localizedDescription)
+            connectionState = .failed(Self.friendlyMessage(for: error))
             throw error
         }
+    }
+
+    /// The raw system error is English and can be an opaque provisioning message
+    /// ("Missing com.apple.developer.healthkit entitlement."). Show a clear,
+    /// localized line instead — the specific entitlement case gets its own copy so
+    /// the user isn't staring at an internal identifier.
+    private static func friendlyMessage(for error: Error) -> String {
+        if error.localizedDescription.localizedCaseInsensitiveContains("entitlement") {
+            return PrvitalString("Apple Health isn't available on this build yet.")
+        }
+        return PrvitalString("Couldn't connect to Apple Health.")
     }
 
     func fetchLatest() async throws -> NormalizedGlucoseSample? {

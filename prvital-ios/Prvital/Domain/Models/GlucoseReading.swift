@@ -9,6 +9,13 @@ import SwiftData
 /// so the model is safe to back with a CloudKit private database.
 @Model
 final class GlucoseReading: MedicalRecord {
+    // A time index turns every windowed query (Dashboard, Insights, Logbook,
+    // widgets) from a full scan of the whole CGM history into a range lookup —
+    // the difference between smooth and a watchdog kill once a multi-year import
+    // lands. The compound `[isActive, timestamp]` serves the very common
+    // "active readings in a window" path directly.
+    #Index<GlucoseReading>([\.timestamp], [\.isActive, \.timestamp])
+
     // Identity & provenance
     var id: UUID = UUID()
     var userID: String?

@@ -12,6 +12,10 @@ import SwiftData
 struct LogbookContent: View {
     @Environment(AppEnvironment.self) private var env
     @Environment(\.modelContext) private var modelContext
+    // Declared so the view re-renders when the in-app language changes: the
+    // headers and range labels resolve through `PrvitalString` (runtime strings,
+    // which SwiftUI's `\.locale` does not re-resolve on its own).
+    @Environment(\.locale) private var locale
 
     @Query private var glucose: [GlucoseReading]
     @Query private var insulin: [InsulinDose]
@@ -72,7 +76,7 @@ struct LogbookContent: View {
     /// Changes whenever the window or the underlying data does, so `.task(id:)`
     /// rebuilds exactly then — not on every scroll or animation frame.
     private var rebuildKey: String {
-        "\(range.rawValue)|\(glucose.count)|\(insulin.count)|\(carbs.count)|\(observations.count)"
+        "\(range.rawValue)|\(glucose.count)|\(insulin.count)|\(carbs.count)|\(observations.count)|\(locale.identifier)"
     }
 
     /// Rebuilds the register. Yields first so the sheet finishes presenting, then
@@ -151,12 +155,12 @@ struct LogbookContent: View {
         Menu {
             Picker("Period", selection: $range) {
                 ForEach(LogbookRange.allCases) { option in
-                    Text(option.title).tag(option)
+                    Text(verbatim: PrvitalString(option.title)).tag(option)
                 }
             }
         } label: {
             HStack(spacing: 4) {
-                Text(range.title).font(.system(size: 15, weight: .semibold))
+                Text(verbatim: PrvitalString(range.title)).font(.system(size: 15, weight: .semibold))
                 Image(systemName: "chevron.up.chevron.down").font(.caption2.weight(.bold))
             }
         }
@@ -212,7 +216,7 @@ struct LogbookContent: View {
     }
 
     private func headerCell(_ title: String, width: CGFloat) -> some View {
-        Text(LocalizedStringKey(title))
+        Text(verbatim: PrvitalString(title))
             .font(.caption2.weight(.semibold))
             .foregroundStyle(Theme.textSecondary)
             .multilineTextAlignment(.center)

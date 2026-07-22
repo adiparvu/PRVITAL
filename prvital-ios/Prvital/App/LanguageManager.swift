@@ -76,3 +76,26 @@ private final class PrvitalLanguageBundle: Bundle, @unchecked Sendable {
         return super.localizedString(forKey: key, value: value, table: tableName)
     }
 }
+
+extension Bundle {
+    /// The bundle string lookups should read for the in-app language override, or
+    /// `.main` when following the device. Safe to read from any thread — the
+    /// override is a plain reference set on the main actor and only read here.
+    static var prvitalLocalization: Bundle {
+        PrvitalLanguageBundle.override ?? .main
+    }
+}
+
+/// Localizes `key` through the app's forced-language bundle.
+///
+/// Use this for any string that is *displayed* but resolved from a runtime value
+/// — enum `label`s, table headers built from arrays, values passed as `String`
+/// through `Text(_:)`. Those bypass SwiftUI's `\.locale` (only compile-time
+/// `Text("literal")` honours it) and Foundation's `String(localized:)` does not
+/// follow the in-app override reliably, so they would otherwise stay in the
+/// device language. Reading the override `.lproj` directly always resolves to the
+/// chosen language. When `key` is already localized (e.g. it came back from
+/// `String(localized:)`), it simply isn't found and is returned unchanged.
+func PrvitalString(_ key: String, table: String? = nil) -> String {
+    Bundle.prvitalLocalization.localizedString(forKey: key, value: key, table: table)
+}

@@ -5,6 +5,9 @@ import SwiftData
 /// user reviews alongside glucose to explain out-of-range patterns.
 @Model
 final class ObservationEntry: MedicalRecord {
+    /// Time index so windowed queries skip a full-table scan after a big import.
+    #Index<ObservationEntry>([\.timestamp])
+
     var id: UUID = UUID()
     var userID: String?
     var sourceRaw: String = DataSource.manual.rawValue

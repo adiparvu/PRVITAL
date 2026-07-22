@@ -4,6 +4,9 @@ import SwiftData
 /// A single insulin administration (bolus or basal), in international units.
 @Model
 final class InsulinDose: MedicalRecord {
+    /// Time index so windowed queries skip a full-table scan after a big import.
+    #Index<InsulinDose>([\.timestamp])
+
     var id: UUID = UUID()
     var userID: String?
     var sourceRaw: String = DataSource.manual.rawValue

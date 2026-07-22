@@ -4,6 +4,9 @@ import SwiftData
 /// A carbohydrate intake, in grams, tied to a meal.
 @Model
 final class CarbEntry: MedicalRecord {
+    /// Time index so windowed queries skip a full-table scan after a big import.
+    #Index<CarbEntry>([\.timestamp])
+
     var id: UUID = UUID()
     var userID: String?
     var sourceRaw: String = DataSource.manual.rawValue

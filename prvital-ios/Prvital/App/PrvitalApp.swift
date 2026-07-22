@@ -20,16 +20,19 @@ struct PrvitalApp: App {
                 .modelContainer(environment.modelContainer)
                 .tint(Theme.accent)
                 .task { environment.bootstrap() }
-                // Instant in-app language switch: the locale re-resolves every
-                // `Text`, and keying on the language rebuilds the tree so
-                // `String(localized:)` values refresh too — no restart.
-                //
-                // The accent theme is in the key too: `Theme.accent` is a global
-                // read (not observed), so bumping identity when it changes is what
-                // repaints the tab bar tint and every `Theme.accent` glyph at once
-                // — the colour applies instantly instead of at the next launch.
+                // Instant in-app language switch: changing `\.locale` re-resolves
+                // every `Text` in place — no restart, and crucially no tree rebuild,
+                // so the user stays on whatever screen they're on (picking a
+                // language no longer bounces them back to the first tab). Strings
+                // that resolve from runtime values instead of compile-time `Text`
+                // literals go through `PrvitalString`, which reads the chosen
+                // language directly.
                 .environment(\.locale, language.locale)
-                .id("\(language.renderID)|\(environment.preferences.accentThemeRaw)")
+                // Only the accent theme keys the root identity: `Theme.accent` is a
+                // global read (not observed), so bumping identity when it changes is
+                // what repaints the tab-bar tint and every `Theme.accent` glyph at
+                // once. Language is deliberately NOT in the key — see above.
+                .id(environment.preferences.accentThemeRaw)
         }
         .backgroundTask(.appRefresh(AppEnvironment.backgroundRefreshIdentifier)) { [environment] in
             await environment.performBackgroundRefresh()

@@ -4,6 +4,9 @@ import SwiftData
 /// A physical-activity session.
 @Model
 final class ActivityEntry: MedicalRecord {
+    /// Time indexes so windowed queries skip a full-table scan after a big import.
+    #Index<ActivityEntry>([\.startTimestamp], [\.timestamp])
+
     var id: UUID = UUID()
     var userID: String?
     var sourceRaw: String = DataSource.manual.rawValue

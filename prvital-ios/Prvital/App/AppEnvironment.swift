@@ -106,6 +106,11 @@ final class AppEnvironment {
 
         _ = profile.current()   // create the single profile on first launch
         snapshots.refresh()
+        // Repopulate the widgets from the (now file-backed) snapshot immediately on
+        // launch — upgrading installs move from the unreadable UserDefaults plist to
+        // the App Group file, and this makes that switch visible without waiting on
+        // the reload budget.
+        snapshots.reloadWidgets()
         notifications.reschedule(from: preferences.reminders, glucoseSchedule: preferences.glucoseSchedule,
                                  medicationPlan: preferences.medicationPlan)
         rescheduleContextualReminders()

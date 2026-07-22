@@ -28,10 +28,27 @@ enum SharedStore {
         UserDefaults(suiteName: appGroupIdentifier) ?? .standard
     }
 
+    /// The primary snapshot store: a plain file in the shared App Group container.
+    /// A widget/watch process reads this instead of the `UserDefaults` plist, whose
+    /// backing file inherited `NSFileProtectionComplete` on upgrading installs and
+    /// so was unreadable exactly when Lock Screen / background widgets refresh — the
+    /// "widgets show nothing" bug. This file is written with the relaxed protection
+    /// class explicitly, so it stays readable after the first post-reboot unlock.
+    private static var fileURL: URL? {
+        FileManager.default
+            .containerURL(forSecurityApplicationGroupIdentifier: appGroupIdentifier)?
+            .appending(path: "glucose-snapshot.json")
+    }
+
     static func save(_ snapshot: GlucoseSnapshot) {
         guard let data = try? JSONEncoder().encode(snapshot) else { return }
-        // Always keep the freshest snapshot on disk so the app/extension (and the
-        // widget's next scheduled refresh) read current values.
+        // Primary: the App Group file, written atomically with
+        // CompleteUntilFirstUserAuthentication so the extensions can read it.
+        if let fileURL {
+            try? data.write(to: fileURL, options: [.atomic, .completeFileProtectionUntilFirstUserAuthentication])
+        }
+        // Mirror into UserDefaults too, as a fallback reader for older extension
+        // builds and to back the reload bookkeeping below.
         defaults.set(data, forKey: key)
 
         // Spend the scarce reload budget on two lanes:
@@ -77,9 +94,16 @@ enum SharedStore {
     /// realistic-looking gallery placeholder, which a user could mistake for a
     /// real reading if the widget can't load data.
     static func load() -> GlucoseSnapshot {
-        guard let data = defaults.data(forKey: key),
-              let snapshot = try? JSONDecoder().decode(GlucoseSnapshot.self, from: data)
-        else { return .empty }
-        return snapshot
+        // Prefer the App Group file (readable after first unlock); fall back to the
+        // UserDefaults mirror, then to the honest empty snapshot.
+        if let fileURL, let data = try? Data(contentsOf: fileURL),
+           let snapshot = try? JSONDecoder().decode(GlucoseSnapshot.self, from: data) {
+            return snapshot
+        }
+        if let data = defaults.data(forKey: key),
+           let snapshot = try? JSONDecoder().decode(GlucoseSnapshot.self, from: data) {
+            return snapshot
+        }
+        return .empty
     }
 }
