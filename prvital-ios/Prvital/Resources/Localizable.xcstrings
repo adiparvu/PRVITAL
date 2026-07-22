@@ -85622,6 +85622,714 @@
           }
         }
       }
+    },
+    "CGM sensors": {
+      "extractionState": "manual",
+      "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "CGM-Sensoren"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Sensores CGM"
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Capteurs CGM"
+          }
+        },
+        "it": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Sensori CGM"
+          }
+        },
+        "nl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "CGM-sensoren"
+          }
+        },
+        "pl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Sensory CGM"
+          }
+        },
+        "pt": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Sensores CGM"
+          }
+        },
+        "ro": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Senzori CGM"
+          }
+        },
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Датчики CGM"
+          }
+        }
+      }
+    },
+    "Glucose meters": {
+      "extractionState": "manual",
+      "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Blutzuckermessgeräte"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Medidores de glucosa"
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Lecteurs de glycémie"
+          }
+        },
+        "it": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Glucometri"
+          }
+        },
+        "nl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Bloedglucosemeters"
+          }
+        },
+        "pl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Glukometry"
+          }
+        },
+        "pt": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Medidores de glicose"
+          }
+        },
+        "ro": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Glucometre"
+          }
+        },
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Глюкометры"
+          }
+        }
+      }
+    },
+    "Data export": {
+      "extractionState": "manual",
+      "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Datenexport"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Exportación de datos"
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Exportation des données"
+          }
+        },
+        "it": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Esportazione dei dati"
+          }
+        },
+        "nl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Gegevensexport"
+          }
+        },
+        "pl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Eksport danych"
+          }
+        },
+        "pt": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Exportação de dados"
+          }
+        },
+        "ro": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Export de date"
+          }
+        },
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Экспорт данных"
+          }
+        }
+      }
+    },
+    "Intelligent features": {
+      "extractionState": "manual",
+      "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Intelligente Funktionen"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Funciones inteligentes"
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Fonctionnalités intelligentes"
+          }
+        },
+        "it": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Funzioni intelligenti"
+          }
+        },
+        "nl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Intelligente functies"
+          }
+        },
+        "pl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Funkcje inteligentne"
+          }
+        },
+        "pt": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Funcionalidades inteligentes"
+          }
+        },
+        "ro": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Funcții inteligente"
+          }
+        },
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Интеллектуальные функции"
+          }
+        }
+      }
+    },
+    "Read glucose, insulin, carbohydrate and workout samples already in Apple Health, and write the entries you log here back to it. Data stays on your device and in your private Health store.": {
+      "extractionState": "manual",
+      "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Lies Glukose-, Insulin-, Kohlenhydrat- und Trainingswerte, die bereits in Apple Health gespeichert sind, und schreibe die Einträge, die du hier erfasst, dorthin zurück. Deine Daten bleiben auf deinem Gerät und in deinem privaten Health-Speicher."
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Lee los datos de glucosa, insulina, carbohidratos y entrenamiento que ya están en Apple Health, y escribe en ella las entradas que registras aquí. Tus datos permanecen en tu dispositivo y en tu almacén privado de Health."
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Lisez les données de glucose, d'insuline, de glucides et d'entraînement déjà présentes dans Apple Health, et réécrivez-y les entrées que vous enregistrez ici. Vos données restent sur votre appareil et dans votre espace Health privé."
+          }
+        },
+        "it": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Leggi i dati di glucosio, insulina, carboidrati e allenamento già presenti in Apple Health e riscrivi al suo interno le voci che registri qui. I tuoi dati restano sul tuo dispositivo e nel tuo archivio Health privato."
+          }
+        },
+        "nl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Lees glucose-, insuline-, koolhydraat- en trainingsgegevens die al in Apple Health staan, en schrijf de items die je hier vastlegt daarnaar terug. Je gegevens blijven op je apparaat en in je privé Health-opslag."
+          }
+        },
+        "pl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Odczytuj dane o glukozie, insulinie, węglowodanach i treningach, które są już w Apple Health, i zapisuj w niej wpisy, które tu dodajesz. Twoje dane pozostają na Twoim urządzeniu i w Twoim prywatnym magazynie Health."
+          }
+        },
+        "pt": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Lê os dados de glicose, insulina, hidratos de carbono e treino que já estão no Apple Health e escreve nele os registos que introduzes aqui. Os teus dados permanecem no teu dispositivo e no teu arquivo privado do Health."
+          }
+        },
+        "ro": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Citește datele despre glucoză, insulină, carbohidrați și antrenamente deja existente în Apple Health și scrie în el intrările pe care le înregistrezi aici. Datele tale rămân pe dispozitivul tău și în spațiul tău privat Health."
+          }
+        },
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Читайте данные о глюкозе, инсулине, углеводах и тренировках, уже имеющиеся в Apple Health, и сохраняйте в нём записи, которые вы вносите здесь. Ваши данные остаются на вашем устройстве и в вашем личном хранилище Health."
+          }
+        }
+      }
+    },
+    "Show your glucose and let you log insulin and carbs from your wrist. Nothing leaves your paired devices.": {
+      "extractionState": "manual",
+      "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Zeigt deine Glukosewerte an und lässt dich Insulin und Kohlenhydrate direkt vom Handgelenk aus erfassen. Nichts verlässt deine gekoppelten Geräte."
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Muestra tu glucosa y te permite registrar insulina y carbohidratos desde la muñeca. Nada sale de tus dispositivos vinculados."
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Affiche votre glycémie et vous permet d'enregistrer l'insuline et les glucides depuis votre poignet. Rien ne quitte vos appareils associés."
+          }
+        },
+        "it": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Mostra il tuo glucosio e ti permette di registrare insulina e carboidrati dal polso. Niente esce dai tuoi dispositivi associati."
+          }
+        },
+        "nl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Toont je glucose en laat je insuline en koolhydraten vanaf je pols vastleggen. Er verlaat niets je gekoppelde apparaten."
+          }
+        },
+        "pl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Pokazuje Twój poziom glukozy i pozwala zapisywać insulinę oraz węglowodany prosto z nadgarstka. Nic nie opuszcza Twoich sparowanych urządzeń."
+          }
+        },
+        "pt": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Mostra a tua glicose e permite-te registar insulina e hidratos de carbono a partir do pulso. Nada sai dos teus dispositivos emparelhados."
+          }
+        },
+        "ro": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Îți afișează glicemia și îți permite să înregistrezi insulina și carbohidrații direct de la încheietură. Nimic nu părăsește dispozitivele tale asociate."
+          }
+        },
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Показывает уровень глюкозы и позволяет вносить данные об инсулине и углеводах прямо с запястья. Ничего не покидает ваши сопряжённые устройства."
+          }
+        }
+      }
+    },
+    "Connect a Dexcom or FreeStyle Libre sensor so readings arrive automatically. You choose which sensor is your primary source.": {
+      "extractionState": "manual",
+      "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Verbinde einen Dexcom- oder FreeStyle Libre-Sensor, damit die Messwerte automatisch ankommen. Du entscheidest, welcher Sensor deine primäre Quelle ist."
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Conecta un sensor Dexcom o FreeStyle Libre para que las lecturas lleguen automáticamente. Tú eliges qué sensor es tu fuente principal."
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Connectez un capteur Dexcom ou FreeStyle Libre pour recevoir les mesures automatiquement. Vous choisissez le capteur qui sera votre source principale."
+          }
+        },
+        "it": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Collega un sensore Dexcom o FreeStyle Libre per ricevere le letture automaticamente. Scegli tu quale sensore è la tua fonte principale."
+          }
+        },
+        "nl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Verbind een Dexcom- of FreeStyle Libre-sensor zodat metingen automatisch binnenkomen. Jij kiest welke sensor je primaire bron is."
+          }
+        },
+        "pl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Połącz sensor Dexcom lub FreeStyle Libre, aby odczyty pojawiały się automatycznie. To Ty wybierasz, który sensor jest Twoim głównym źródłem."
+          }
+        },
+        "pt": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Liga um sensor Dexcom ou FreeStyle Libre para que as leituras cheguem automaticamente. És tu que escolhes qual o sensor que é a tua fonte principal."
+          }
+        },
+        "ro": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Conectează un senzor Dexcom sau FreeStyle Libre pentru ca valorile să sosească automat. Tu alegi care senzor este sursa ta principală."
+          }
+        },
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Подключите датчик Dexcom или FreeStyle Libre, чтобы показания поступали автоматически. Вы сами выбираете, какой датчик станет основным источником."
+          }
+        }
+      }
+    },
+    "Fetch glucose readings from your own Nightscout site over the internet. The site address and access token you enter are stored on your device and sent only to your server — never to us.": {
+      "extractionState": "manual",
+      "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Ruft Glukosewerte über das Internet von deiner eigenen Nightscout-Website ab. Die Website-Adresse und das Zugriffstoken, die du eingibst, werden auf deinem Gerät gespeichert und nur an deinen Server gesendet — niemals an uns."
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Obtén las lecturas de glucosa desde tu propio sitio de Nightscout a través de internet. La dirección del sitio y el token de acceso que introduces se guardan en tu dispositivo y se envían solo a tu servidor — nunca a nosotros."
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Récupérez les mesures de glucose depuis votre propre site Nightscout via Internet. L'adresse du site et le jeton d'accès que vous saisissez sont stockés sur votre appareil et envoyés uniquement à votre serveur — jamais à nous."
+          }
+        },
+        "it": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Recupera le letture del glucosio dal tuo sito Nightscout tramite internet. L'indirizzo del sito e il token di accesso che inserisci vengono memorizzati sul tuo dispositivo e inviati solo al tuo server — mai a noi."
+          }
+        },
+        "nl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Haalt glucosemetingen op van je eigen Nightscout-site via internet. Het siteadres en de toegangstoken die je invoert, worden op je apparaat bewaard en alleen naar je eigen server verstuurd — nooit naar ons."
+          }
+        },
+        "pl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Pobiera odczyty glukozy z Twojej własnej witryny Nightscout przez internet. Adres witryny i token dostępu, które wprowadzasz, są przechowywane na Twoim urządzeniu i wysyłane wyłącznie na Twój serwer — nigdy do nas."
+          }
+        },
+        "pt": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Obtém as leituras de glicose a partir do teu próprio site Nightscout através da internet. O endereço do site e o token de acesso que introduzes são guardados no teu dispositivo e enviados apenas para o teu servidor — nunca para nós."
+          }
+        },
+        "ro": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Preia valorile glicemiei de pe propriul tău site Nightscout prin internet. Adresa site-ului și tokenul de acces pe care le introduci sunt stocate pe dispozitivul tău și trimise doar către serverul tău — niciodată către noi."
+          }
+        },
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Получает показания глюкозы с вашего собственного сайта Nightscout через интернет. Адрес сайта и токен доступа, которые вы вводите, хранятся на вашем устройстве и отправляются только на ваш сервер — никогда нам."
+          }
+        }
+      }
+    },
+    "Pair a Bluetooth blood-glucose meter — such as Contour or Accu-Chek — over Bluetooth to import its stored finger-stick readings. Nothing leaves your device.": {
+      "extractionState": "manual",
+      "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Koppele ein Bluetooth-Blutzuckermessgerät — etwa Contour oder Accu-Chek — über Bluetooth, um seine gespeicherten Fingerstich-Messwerte zu importieren. Nichts verlässt dein Gerät."
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Vincula un medidor de glucosa Bluetooth — como Contour o Accu-Chek — mediante Bluetooth para importar sus lecturas de punción digital guardadas. Nada sale de tu dispositivo."
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Associez un lecteur de glycémie Bluetooth — comme Contour ou Accu-Chek — via Bluetooth pour importer ses mesures capillaires enregistrées. Rien ne quitte votre appareil."
+          }
+        },
+        "it": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Associa un glucometro Bluetooth — come Contour o Accu-Chek — tramite Bluetooth per importare le letture capillari salvate. Niente esce dal tuo dispositivo."
+          }
+        },
+        "nl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Koppel een Bluetooth-bloedglucosemeter — zoals Contour of Accu-Chek — via Bluetooth om de opgeslagen vingerprikmetingen te importeren. Er verlaat niets je apparaat."
+          }
+        },
+        "pl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Sparuj glukometr Bluetooth — na przykład Contour lub Accu-Chek — przez Bluetooth, aby zaimportować zapisane odczyty z nakłucia palca. Nic nie opuszcza Twojego urządzenia."
+          }
+        },
+        "pt": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Emparelha um medidor de glicose Bluetooth — como o Contour ou o Accu-Chek — através de Bluetooth para importar as leituras de picada no dedo guardadas. Nada sai do teu dispositivo."
+          }
+        },
+        "ro": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Asociază un glucometru Bluetooth — precum Contour sau Accu-Chek — prin Bluetooth pentru a importa valorile din înțeparea degetului stocate. Nimic nu părăsește dispozitivul tău."
+          }
+        },
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Подключите Bluetooth-глюкометр — например Contour или Accu-Chek — по Bluetooth, чтобы импортировать сохранённые показания из проколов пальца. Ничего не покидает ваше устройство."
+          }
+        }
+      }
+    },
+    "Keep your journal in sync across your devices through your private iCloud database. Apple cannot read the contents; only your devices can.": {
+      "extractionState": "manual",
+      "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Halte dein Tagebuch über deine private iCloud-Datenbank auf all deinen Geräten synchron. Apple kann die Inhalte nicht lesen; nur deine Geräte können es."
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Mantén tu diario sincronizado entre tus dispositivos a través de tu base de datos privada de iCloud. Apple no puede leer el contenido; solo tus dispositivos pueden."
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Gardez votre journal synchronisé sur tous vos appareils grâce à votre base de données iCloud privée. Apple ne peut pas en lire le contenu ; seuls vos appareils le peuvent."
+          }
+        },
+        "it": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Mantieni il tuo diario sincronizzato su tutti i tuoi dispositivi tramite il tuo database iCloud privato. Apple non può leggerne i contenuti; solo i tuoi dispositivi possono farlo."
+          }
+        },
+        "nl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Houd je dagboek gesynchroniseerd op al je apparaten via je privé iCloud-database. Apple kan de inhoud niet lezen; alleen jouw apparaten kunnen dat."
+          }
+        },
+        "pl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Utrzymuj swój dziennik zsynchronizowany na wszystkich urządzeniach dzięki prywatnej bazie danych iCloud. Apple nie może odczytać zawartości; mogą to zrobić tylko Twoje urządzenia."
+          }
+        },
+        "pt": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Mantém o teu diário sincronizado entre os teus dispositivos através da tua base de dados privada do iCloud. A Apple não consegue ler o conteúdo; apenas os teus dispositivos conseguem."
+          }
+        },
+        "ro": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Păstrează-ți jurnalul sincronizat pe toate dispozitivele prin baza ta de date iCloud privată. Apple nu poate citi conținutul; doar dispozitivele tale pot."
+          }
+        },
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Синхронизируйте свой дневник между устройствами через вашу личную базу данных iCloud. Apple не может прочитать содержимое; это доступно только вашим устройствам."
+          }
+        }
+      }
+    },
+    "Generate PDF and CSV reports for your care team. Files are created on-device and shared only through the system share sheet.": {
+      "extractionState": "manual",
+      "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Erstelle PDF- und CSV-Berichte für dein Behandlungsteam. Die Dateien werden auf dem Gerät erstellt und nur über das Teilen-Menü des Systems geteilt."
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Genera informes en PDF y CSV para tu equipo médico. Los archivos se crean en el dispositivo y se comparten únicamente a través de la hoja de compartir del sistema."
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Générez des rapports PDF et CSV pour votre équipe soignante. Les fichiers sont créés sur l'appareil et partagés uniquement via la feuille de partage du système."
+          }
+        },
+        "it": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Genera report in PDF e CSV per il tuo team di cura. I file vengono creati sul dispositivo e condivisi solo tramite il pannello di condivisione del sistema."
+          }
+        },
+        "nl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Genereer PDF- en CSV-rapporten voor je zorgteam. Bestanden worden op het apparaat gemaakt en alleen gedeeld via het deelmenu van het systeem."
+          }
+        },
+        "pl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Twórz raporty PDF i CSV dla swojego zespołu medycznego. Pliki powstają na urządzeniu i są udostępniane wyłącznie przez systemowy panel udostępniania."
+          }
+        },
+        "pt": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Gera relatórios em PDF e CSV para a tua equipa de cuidados. Os ficheiros são criados no dispositivo e partilhados apenas através da folha de partilha do sistema."
+          }
+        },
+        "ro": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Generează rapoarte PDF și CSV pentru echipa ta medicală. Fișierele sunt create pe dispozitiv și partajate doar prin fereastra de partajare a sistemului."
+          }
+        },
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Создавайте отчёты в форматах PDF и CSV для вашей медицинской команды. Файлы создаются на устройстве и передаются только через системное меню «Поделиться»."
+          }
+        }
+      }
+    },
+    "Let on-device intelligence highlight patterns and summarise your day. Suggestions are never medical decisions, and your data is never used to train models.": {
+      "extractionState": "manual",
+      "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Lass die geräteinterne Intelligenz Muster hervorheben und deinen Tag zusammenfassen. Vorschläge sind niemals medizinische Entscheidungen, und deine Daten werden niemals zum Trainieren von Modellen verwendet."
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Deja que la inteligencia en el dispositivo destaque patrones y resuma tu día. Las sugerencias nunca son decisiones médicas, y tus datos nunca se usan para entrenar modelos."
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Laissez l'intelligence embarquée mettre en évidence des tendances et résumer votre journée. Les suggestions ne sont jamais des décisions médicales, et vos données ne servent jamais à entraîner des modèles."
+          }
+        },
+        "it": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Lascia che l'intelligenza sul dispositivo evidenzi gli andamenti e riassuma la tua giornata. I suggerimenti non sono mai decisioni mediche e i tuoi dati non vengono mai usati per addestrare modelli."
+          }
+        },
+        "nl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Laat de intelligentie op het apparaat patronen aanwijzen en je dag samenvatten. Suggesties zijn nooit medische beslissingen en je gegevens worden nooit gebruikt om modellen te trainen."
+          }
+        },
+        "pl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Pozwól, aby inteligencja działająca na urządzeniu wyróżniała wzorce i podsumowywała Twój dzień. Sugestie nigdy nie są decyzjami medycznymi, a Twoje dane nigdy nie służą do trenowania modeli."
+          }
+        },
+        "pt": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Deixa a inteligência no dispositivo destacar padrões e resumir o teu dia. As sugestões nunca são decisões médicas e os teus dados nunca são usados para treinar modelos."
+          }
+        },
+        "ro": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Lasă inteligența de pe dispozitiv să evidențieze tiparele și să îți rezume ziua. Sugestiile nu sunt niciodată decizii medicale, iar datele tale nu sunt niciodată folosite pentru a antrena modele."
+          }
+        },
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Позвольте интеллектуальным функциям на устройстве выделять закономерности и подводить итоги вашего дня. Предложения никогда не являются медицинскими решениями, а ваши данные никогда не используются для обучения моделей."
+          }
+        }
+      }
     }
   },
   "version": "1.0"
