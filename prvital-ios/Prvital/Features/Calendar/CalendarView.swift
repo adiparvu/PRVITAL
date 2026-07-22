@@ -6,7 +6,21 @@ import SwiftData
 /// carry non-glucose entries). Reads are reactive `@Query`s that are bucketed by
 /// `CalendarAggregator`; tapping a day with data opens a detail sheet with that
 /// day's glucose statistics and a compact, self-rendered list of its entries.
+/// Standalone Calendar screen — a thin `NavigationStack` wrapper so existing
+/// callers keep working. The reusable body lives in `CalendarContent` so the
+/// Journal tab can embed it as a mode (Faza 1).
 struct CalendarView: View {
+    var body: some View {
+        NavigationStack {
+            CalendarContent()
+                .navigationTitle("Calendar")
+        }
+    }
+}
+
+/// The month-grid calendar's content, without its own `NavigationStack`/title,
+/// so it can be shown standalone (via `CalendarView`) or embedded as a Journal mode.
+struct CalendarContent: View {
     @Environment(AppEnvironment.self) private var env
 
     @Query(sort: \GlucoseReading.timestamp, order: .reverse) private var readings: [GlucoseReading]
@@ -35,8 +49,7 @@ struct CalendarView: View {
         )
         let cells = calendarGridCells(for: visibleMonth, calendar: calendar)
 
-        return NavigationStack {
-            ScrollView {
+        return ScrollView {
                 VStack(spacing: 20) {
                     monthCard(cells: cells, summaries: summaries, unit: unit)
                     legend
@@ -44,7 +57,6 @@ struct CalendarView: View {
                 .padding()
             }
             .background(Theme.background)
-            .navigationTitle("Calendar")
             .toolbar {
                 ToolbarItem(placement: .primaryAction) {
                     Button {
@@ -69,7 +81,6 @@ struct CalendarView: View {
                     calendar: calendar
                 )
             }
-        }
     }
 
     // MARK: - Month card

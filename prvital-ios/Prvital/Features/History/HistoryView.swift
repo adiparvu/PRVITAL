@@ -6,7 +6,21 @@ import SwiftData
 /// A range filter (Today / Yesterday / This week / This month / Custom) and a
 /// newest⇄oldest sort toggle drive a flat list. Rows swipe to delete through
 /// `env.entryStore` and tap to edit, exactly like the Journal.
+/// Standalone History screen — a thin `NavigationStack` wrapper so existing
+/// callers keep working. The reusable body lives in `HistoryContent` so the
+/// Journal tab can embed it as a mode (Faza 1).
 struct HistoryView: View {
+    var body: some View {
+        NavigationStack {
+            HistoryContent()
+                .navigationTitle("History")
+        }
+    }
+}
+
+/// The History ledger's content, without its own `NavigationStack`/title, so it
+/// can be shown standalone (via `HistoryView`) or embedded as a Journal mode.
+struct HistoryContent: View {
     @Environment(AppEnvironment.self) private var env
 
     @Query(sort: \GlucoseReading.timestamp, order: .reverse) private var glucose: [GlucoseReading]
@@ -77,8 +91,7 @@ struct HistoryView: View {
     }
 
     var body: some View {
-        NavigationStack {
-            Group {
+        Group {
                 if filteredItems.isEmpty {
                     ScrollView {
                         VStack(spacing: 8) {
@@ -135,7 +148,6 @@ struct HistoryView: View {
             .animation(.snappy, value: sortNewestFirst)
             .animation(.default, value: range)
             .background(Theme.background)
-            .navigationTitle("History")
             .toolbar {
                 ToolbarItem(placement: .topBarLeading) {
                     Button {
@@ -174,7 +186,6 @@ struct HistoryView: View {
             .sheet(item: $editTarget) { target in
                 editorSheet(for: target.item)
             }
-        }
     }
 
     private var customRangeSheet: some View {

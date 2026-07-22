@@ -7,7 +7,22 @@ import SwiftData
 /// insulin per meal, and comments. Tapping a cell opens the matching editor;
 /// the toolbar share button renders the register as an A4-landscape PDF and
 /// offers it through the system share sheet (which includes Print).
+/// Standalone Registru screen — a thin `NavigationStack` wrapper so existing
+/// callers keep working. The reusable body lives in `LogbookContent` so the
+/// Journal tab can embed it as a mode (Faza 1).
 struct LogbookView: View {
+    var body: some View {
+        NavigationStack {
+            LogbookContent()
+                .navigationTitle("Logbook")
+                .navigationBarTitleDisplayMode(.inline)
+        }
+    }
+}
+
+/// The register table's content, without its own `NavigationStack`/title, so it
+/// can be shown standalone (via `LogbookView`) or embedded as a Journal mode.
+struct LogbookContent: View {
     @Environment(AppEnvironment.self) private var env
     @Environment(\.modelContext) private var modelContext
 
@@ -92,8 +107,7 @@ struct LogbookView: View {
     }
 
     var body: some View {
-        NavigationStack {
-            Group {
+        Group {
                 if isBuilding && rows.isEmpty {
                     ProgressView("Building the register…")
                         .frame(maxWidth: .infinity, maxHeight: .infinity)
@@ -118,8 +132,6 @@ struct LogbookView: View {
             }
             .task(id: rebuildKey) { await rebuild() }
             .background(Theme.background)
-            .navigationTitle("Logbook")
-            .navigationBarTitleDisplayMode(.inline)
             .toolbar {
                 ToolbarItem(placement: .topBarLeading) { rangeMenu }
                 ToolbarItem(placement: .primaryAction) {
@@ -143,7 +155,6 @@ struct LogbookView: View {
             } message: { message in
                 Text(message)
             }
-        }
     }
 
     // MARK: - Range picker
