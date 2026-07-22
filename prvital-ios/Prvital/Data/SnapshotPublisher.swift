@@ -153,7 +153,15 @@ final class SnapshotPublisher {
             predicate: #Predicate { $0.isActive },
             sortBy: [SortDescriptor(\.timestamp, order: .reverse)])
         descriptor.fetchLimit = 1
-        return (try? context.fetch(descriptor))?.first
+        if let active = (try? context.fetch(descriptor))?.first { return active }
+        // Fallback: nothing is flagged active (e.g. every reading in the store was
+        // marked superseded by conflict resolution). The journal clearly has data,
+        // so show the most recent reading anyway instead of publishing a blank
+        // snapshot that leaves the widget on "No data".
+        var any = FetchDescriptor<GlucoseReading>(
+            sortBy: [SortDescriptor(\.timestamp, order: .reverse)])
+        any.fetchLimit = 1
+        return (try? context.fetch(any))?.first
     }
 
     /// Active readings within the recent window, ascending — the mini-series and

@@ -42,10 +42,20 @@ enum SharedStore {
 
     static func save(_ snapshot: GlucoseSnapshot) {
         guard let data = try? JSONEncoder().encode(snapshot) else { return }
-        // Primary: the App Group file, written atomically with
-        // CompleteUntilFirstUserAuthentication so the extensions can read it.
+        // Primary: the App Group file. Write atomically FIRST, then relax the
+        // protection class as a separate step. Combining `.atomic` with a file
+        // protection option in one write can fail on some iOS versions — and the
+        // failure was silent (`try?`), leaving the extensions with no file to read
+        // and the widget stuck on "No data". Splitting the two makes the write
+        // succeed, then best-effort marks it readable after first unlock.
         if let fileURL {
-            try? data.write(to: fileURL, options: [.atomic, .completeFileProtectionUntilFirstUserAuthentication])
+            if (try? data.write(to: fileURL, options: .atomic)) != nil {
+                #if os(iOS)
+                try? FileManager.default.setAttributes(
+                    [.protectionKey: FileProtectionType.completeUntilFirstUserAuthentication],
+                    ofItemAtPath: fileURL.path)
+                #endif
+            }
         }
         // Mirror into UserDefaults too, as a fallback reader for older extension
         // builds and to back the reload bookkeeping below.

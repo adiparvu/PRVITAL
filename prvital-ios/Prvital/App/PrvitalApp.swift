@@ -100,6 +100,17 @@ struct RootView: View {
                     try? await Task.sleep(for: .seconds(seconds))
                 }
             }
+            // Republish the widget snapshot from the current store every time the
+            // app is foregrounded, and force a timeline reload. This is the
+            // reliable cure for a widget stuck on "No data" after an update or a
+            // CSV import: the shared snapshot file is rewritten with real data and
+            // the widgets refresh — without depending on a cold launch or on a
+            // live CGM source being connected (a CSV-only user never syncs).
+            .onChange(of: scenePhase) { _, phase in
+                guard phase == .active else { return }
+                env.snapshots.refresh()
+                env.snapshots.reloadWidgets()
+            }
     }
 }
 
