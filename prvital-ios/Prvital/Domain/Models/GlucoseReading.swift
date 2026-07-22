@@ -24,6 +24,9 @@ final class GlucoseReading: MedicalRecord {
     /// A source-native identifier (e.g. a Dexcom record id) used to deduplicate
     /// repeated imports of the same physical reading.
     var externalID: String?
+    /// The CSV import batch this record came from, if any — lets a wrong import
+    /// be undone as a unit.
+    var importBatchID: UUID?
 
     // Time
     var timestamp: Date = Date()

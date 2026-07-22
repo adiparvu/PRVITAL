@@ -23,6 +23,10 @@ struct DataControlsView: View {
     @State private var importResultMessage = ""
     @State private var isImporting = false
 
+    // Past imports, newest first — each removable as a unit (undo a wrong file).
+    @Query(sort: \ImportBatch.importedAt, order: .reverse) private var importBatches: [ImportBatch]
+    @State private var batchToDelete: ImportBatch?
+
     private var totalCount: Int { counts.total }
 
     /// Per-type record counts, fetched cheaply without loading the rows.
@@ -121,6 +125,29 @@ struct DataControlsView: View {
             }
             .glassListRow()
 
+            if !importBatches.isEmpty {
+                Section {
+                    ForEach(importBatches) { batch in
+                        importBatchRow(batch)
+                            .swipeActions {
+                                Button(role: .destructive) {
+                                    Haptics.play(.warning)
+                                    batchToDelete = batch
+                                } label: {
+                                    Label("Remove", systemImage: "trash")
+                                }
+                            }
+                    }
+                } header: {
+                    Text("Imported files")
+                } footer: {
+                    Text("Everything a file added is grouped here. Tap ✕ to remove that import completely — use it if you loaded the wrong file. Entries you logged by hand, or that synced live, are never touched.")
+                        .font(.footnote)
+                        .foregroundStyle(Theme.textTertiary)
+                }
+                .glassListRow()
+            }
+
             Section {
                 NavigationLink {
                     ExportView()
@@ -194,6 +221,76 @@ struct DataControlsView: View {
         } message: {
             Text(importResultMessage)
         }
+        .confirmationDialog(
+            "Remove this import?",
+            isPresented: Binding(get: { batchToDelete != nil }, set: { if !$0 { batchToDelete = nil } }),
+            titleVisibility: .visible,
+            presenting: batchToDelete
+        ) { batch in
+            Button("Remove \(batch.totalCount) records", role: .destructive) {
+                env.entryStore.deleteImportBatch(batch)
+                refreshCounts()
+                batchToDelete = nil
+            }
+            Button("Cancel", role: .cancel) { batchToDelete = nil }
+        } message: { batch in
+            Text("This removes everything this file added. It can't be undone, but you can import the file again.")
+        }
+    }
+
+    // MARK: - Imported files
+
+    @ViewBuilder
+    private func importBatchRow(_ batch: ImportBatch) -> some View {
+        HStack(spacing: 12) {
+            Image(systemName: "doc.text.fill")
+                .font(.system(size: 15, weight: .semibold))
+                .foregroundStyle(Theme.accent)
+                .frame(width: 32, height: 32)
+                .background(Theme.accent.opacity(0.14), in: .circle)
+
+            VStack(alignment: .leading, spacing: 3) {
+                Text(batch.filename ?? batch.formatName)
+                    .font(.subheadline.weight(.semibold))
+                    .foregroundStyle(Theme.textPrimary)
+                    .lineLimit(1)
+                Text(batch.importedAt.formatted(date: .abbreviated, time: .shortened))
+                    .font(.caption)
+                    .foregroundStyle(Theme.textTertiary)
+                // Language-neutral per-type counts (icons + numbers), so you can
+                // see how much glucose / insulin / meals / activity the file added.
+                HStack(spacing: 10) {
+                    if batch.glucoseCount > 0 { countChip("drop.fill", batch.glucoseCount, Theme.zoneInRange) }
+                    if batch.insulinCount > 0 { countChip("syringe.fill", batch.insulinCount, Theme.accent) }
+                    if batch.carbCount > 0 { countChip("fork.knife", batch.carbCount, Theme.zoneHigh) }
+                    if batch.activityCount > 0 { countChip("figure.walk", batch.activityCount, Theme.zoneWarning) }
+                }
+                .font(.caption2.weight(.semibold))
+            }
+
+            Spacer(minLength: 8)
+
+            Button {
+                Haptics.play(.warning)
+                batchToDelete = batch
+            } label: {
+                Image(systemName: "xmark.circle.fill")
+                    .font(.title3)
+                    .foregroundStyle(Theme.textTertiary)
+                    .symbolRenderingMode(.hierarchical)
+            }
+            .buttonStyle(.plain)
+            .accessibilityLabel("Remove this import")
+        }
+        .padding(.vertical, 2)
+    }
+
+    private func countChip(_ symbol: String, _ count: Int, _ tint: Color) -> some View {
+        HStack(spacing: 3) {
+            Image(systemName: symbol)
+            Text(count.formatted())
+        }
+        .foregroundStyle(tint)
     }
 
     private func handleImport(_ result: Result<URL, Error>) {
@@ -226,7 +323,8 @@ struct DataControlsView: View {
                     return
                 }
                 let summary = await env.entryStore.bulkImport(
-                    result.rows, alreadySkipped: result.skipped)
+                    result.rows, alreadySkipped: result.skipped,
+                    filename: url.lastPathComponent, formatName: format.displayName)
                 isImporting = false
                 Haptics.play(summary.imported > 0 ? .success : .warning)
                 importResultMessage = Self.resultMessage(for: summary, format: format)

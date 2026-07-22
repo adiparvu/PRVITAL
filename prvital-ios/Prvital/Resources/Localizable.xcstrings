@@ -89162,6 +89162,419 @@
           }
         }
       }
+    },
+    "Imported files": {
+      "extractionState": "manual",
+      "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Importierte Dateien"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Archivos importados"
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Fichiers importés"
+          }
+        },
+        "it": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "File importati"
+          }
+        },
+        "nl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Geïmporteerde bestanden"
+          }
+        },
+        "pl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Zaimportowane pliki"
+          }
+        },
+        "pt": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Ficheiros importados"
+          }
+        },
+        "ro": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Fișiere importate"
+          }
+        },
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Импортированные файлы"
+          }
+        }
+      }
+    },
+    "Remove this import?": {
+      "extractionState": "manual",
+      "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Diesen Import entfernen?"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "¿Eliminar esta importación?"
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Supprimer cet import ?"
+          }
+        },
+        "it": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Rimuovere questa importazione?"
+          }
+        },
+        "nl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Deze import verwijderen?"
+          }
+        },
+        "pl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Usunąć ten import?"
+          }
+        },
+        "pt": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Remover esta importação?"
+          }
+        },
+        "ro": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Elimini acest import?"
+          }
+        },
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Удалить этот импорт?"
+          }
+        }
+      }
+    },
+    "Remove this import": {
+      "extractionState": "manual",
+      "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Diesen Import entfernen"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Eliminar esta importación"
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Supprimer cet import"
+          }
+        },
+        "it": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Rimuovi questa importazione"
+          }
+        },
+        "nl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Deze import verwijderen"
+          }
+        },
+        "pl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Usuń ten import"
+          }
+        },
+        "pt": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Remover esta importação"
+          }
+        },
+        "ro": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Elimină acest import"
+          }
+        },
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Удалить этот импорт"
+          }
+        }
+      }
+    },
+    "Remove %lld records": {
+      "extractionState": "manual",
+      "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%lld Einträge entfernen"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Eliminar %lld registros"
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Supprimer %lld enregistrements"
+          }
+        },
+        "it": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Rimuovi %lld record"
+          }
+        },
+        "nl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%lld records verwijderen"
+          }
+        },
+        "pl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Usuń %lld rekordów"
+          }
+        },
+        "pt": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Remover %lld registos"
+          }
+        },
+        "ro": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Elimină %lld înregistrări"
+          }
+        },
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Удалить %lld записей"
+          }
+        }
+      }
+    },
+    "This removes everything this file added. It can't be undone, but you can import the file again.": {
+      "extractionState": "manual",
+      "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Dies entfernt alles, was diese Datei hinzugefügt hat. Es kann nicht rückgängig gemacht werden, aber du kannst die Datei erneut importieren."
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Esto elimina todo lo que añadió este archivo. No se puede deshacer, pero puedes volver a importar el archivo."
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Cela supprime tout ce que ce fichier a ajouté. C'est irréversible, mais vous pouvez réimporter le fichier."
+          }
+        },
+        "it": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Questo rimuove tutto ciò che questo file ha aggiunto. Non è reversibile, ma puoi importare di nuovo il file."
+          }
+        },
+        "nl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Dit verwijdert alles wat dit bestand heeft toegevoegd. Dit kan niet ongedaan worden gemaakt, maar je kunt het bestand opnieuw importeren."
+          }
+        },
+        "pl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "To usuwa wszystko, co dodał ten plik. Nie można tego cofnąć, ale możesz zaimportować plik ponownie."
+          }
+        },
+        "pt": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Isto remove tudo o que este ficheiro adicionou. Não pode ser anulado, mas podes importar o ficheiro novamente."
+          }
+        },
+        "ro": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Asta elimină tot ce a adăugat acest fișier. Nu se poate anula, dar poți importa fișierul din nou."
+          }
+        },
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Это удалит всё, что добавил этот файл. Отменить нельзя, но вы можете импортировать файл снова."
+          }
+        }
+      }
+    },
+    "Everything a file added is grouped here. Tap ✕ to remove that import completely — use it if you loaded the wrong file. Entries you logged by hand, or that synced live, are never touched.": {
+      "extractionState": "manual",
+      "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Alles, was eine Datei hinzugefügt hat, ist hier gruppiert. Tippe auf ✕, um diesen Import vollständig zu entfernen – nützlich, wenn du die falsche Datei geladen hast. Manuell erfasste oder live synchronisierte Einträge bleiben unberührt."
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Todo lo que añadió un archivo se agrupa aquí. Toca ✕ para eliminar esa importación por completo: útil si cargaste el archivo equivocado. Las entradas que registraste a mano o que se sincronizaron en vivo nunca se tocan."
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Tout ce qu'un fichier a ajouté est regroupé ici. Touchez ✕ pour supprimer complètement cet import — utile si vous avez chargé le mauvais fichier. Les entrées saisies à la main ou synchronisées en direct ne sont jamais touchées."
+          }
+        },
+        "it": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Tutto ciò che un file ha aggiunto è raggruppato qui. Tocca ✕ per rimuovere completamente quell'importazione — utile se hai caricato il file sbagliato. Le voci inserite a mano o sincronizzate in tempo reale non vengono mai toccate."
+          }
+        },
+        "nl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Alles wat een bestand heeft toegevoegd, staat hier gegroepeerd. Tik op ✕ om die import volledig te verwijderen — handig als je het verkeerde bestand hebt geladen. Handmatig ingevoerde of live gesynchroniseerde items blijven onaangeroerd."
+          }
+        },
+        "pl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Wszystko, co dodał plik, jest tu zgrupowane. Dotknij ✕, aby całkowicie usunąć ten import — przydatne, jeśli wczytałeś zły plik. Wpisy dodane ręcznie lub zsynchronizowane na żywo nie są naruszane."
+          }
+        },
+        "pt": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Tudo o que um ficheiro adicionou está agrupado aqui. Toca em ✕ para remover essa importação por completo — útil se carregaste o ficheiro errado. As entradas que registaste à mão ou sincronizadas em direto nunca são afetadas."
+          }
+        },
+        "ro": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Tot ce a adăugat un fișier e grupat aici. Atinge ✕ pentru a elimina complet acel import — util dacă ai încărcat fișierul greșit. Intrările notate manual sau sincronizate live nu sunt afectate."
+          }
+        },
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Всё, что добавил файл, сгруппировано здесь. Нажмите ✕, чтобы полностью удалить этот импорт — пригодится, если вы загрузили не тот файл. Записи, добавленные вручную или синхронизированные вживую, не затрагиваются."
+          }
+        }
+      }
+    },
+    "%@ %@ at the time": {
+      "extractionState": "manual",
+      "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%@ %@ zu diesem Zeitpunkt"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%@ %@ en ese momento"
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%@ %@ à ce moment-là"
+          }
+        },
+        "it": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%@ %@ in quel momento"
+          }
+        },
+        "nl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%@ %@ op dat moment"
+          }
+        },
+        "pl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%@ %@ w tym momencie"
+          }
+        },
+        "pt": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%@ %@ nesse momento"
+          }
+        },
+        "ro": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%@ %@ în acel moment"
+          }
+        },
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%@ %@ в тот момент"
+          }
+        }
+      }
     }
   },
   "version": "1.0"

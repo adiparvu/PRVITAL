@@ -29,6 +29,7 @@ enum AppSchema {
         UserProfile.self,
         PrivacyAuditRecord.self,
         ConsentRecord.self,
+        ImportBatch.self,
     ]
 
     static var schema: Schema { Schema(models) }

@@ -171,6 +171,8 @@ final class EntryStore {
     func bulkImport(
         _ rows: [ParsedRow],
         alreadySkipped: Int = 0,
+        filename: String? = nil,
+        formatName: String = "",
         progress: (@MainActor (Int, Int) -> Void)? = nil
     ) async -> ImportSummary {
         guard !rows.isEmpty else {
@@ -183,13 +185,25 @@ final class EntryStore {
         let existing = existingImportKeys(from: minTS, to: maxTS)
         let plan = BulkImportPlanner.plan(rows: rows, existing: existing)
 
+        // Record this import as a batch so it can be listed and undone in one tap.
+        // Every inserted record is stamped with the batch id.
+        let batch = ImportBatch(filename: filename, formatName: formatName)
+        context.insert(batch)
+        let batchID = batch.id
+
         var inserted = 0
         var sinceSave = 0
         var didInsertGlucose = false
 
         for keyed in plan.toInsert {
-            insertImported(keyed)
-            if case .glucose = keyed.row.record { didInsertGlucose = true }
+            insertImported(keyed, batchID: batchID)
+            switch keyed.row.record {
+            case .glucose: batch.glucoseCount += 1; didInsertGlucose = true
+            case .insulin: batch.insulinCount += 1
+            case .carbs: batch.carbCount += 1
+            case .activity: batch.activityCount += 1
+            case .observation: batch.observationCount += 1
+            }
             inserted += 1
             sinceSave += 1
             if sinceSave >= Self.importChunkSize {
@@ -199,6 +213,10 @@ final class EntryStore {
                 await Task.yield()
             }
         }
+        batch.duplicateCount = plan.duplicates
+        // An import that added nothing new (a re-import of the same file) leaves no
+        // trace — drop the empty batch so the list only shows imports that landed.
+        if inserted == 0 { context.delete(batch) }
         try? context.save()
 
         // Only the recent window can hold cross-source duplicates (Share /
@@ -214,35 +232,59 @@ final class EntryStore {
         return ImportSummary(imported: inserted, skipped: alreadySkipped, duplicates: plan.duplicates)
     }
 
-    private func insertImported(_ keyed: KeyedImportRow) {
+    /// Undoes an import: deletes every record stamped with the batch's id, then
+    /// the batch itself. Used by the "Imported files" list so a wrong CSV can be
+    /// removed cleanly without touching anything logged by hand or synced live.
+    func deleteImportBatch(_ batch: ImportBatch) {
+        let id = batch.id
+        let total = batch.totalCount
+        for r in (try? context.fetch(FetchDescriptor<GlucoseReading>(predicate: #Predicate { $0.importBatchID == id }))) ?? [] { context.delete(r) }
+        for r in (try? context.fetch(FetchDescriptor<InsulinDose>(predicate: #Predicate { $0.importBatchID == id }))) ?? [] { context.delete(r) }
+        for r in (try? context.fetch(FetchDescriptor<CarbEntry>(predicate: #Predicate { $0.importBatchID == id }))) ?? [] { context.delete(r) }
+        for r in (try? context.fetch(FetchDescriptor<ActivityEntry>(predicate: #Predicate { $0.importBatchID == id }))) ?? [] { context.delete(r) }
+        for r in (try? context.fetch(FetchDescriptor<ObservationEntry>(predicate: #Predicate { $0.importBatchID == id }))) ?? [] { context.delete(r) }
+        context.delete(batch)
+        try? context.save()
+        audit.log(.deletion, source: nil, userConfirmation: true,
+                  detail: "Removed imported file (\(total) record(s))")
+        onChange()
+    }
+
+    private func insertImported(_ keyed: KeyedImportRow, batchID: UUID) {
         let ts = keyed.row.timestamp
         let src = keyed.row.source
         switch keyed.row.record {
         case let .glucose(mgdL, measurement, trend):
-            context.insert(GlucoseReading(
+            let reading = GlucoseReading(
                 valueMgdL: mgdL, timestamp: ts, source: src,
-                measurementType: measurement, trend: trend, externalID: keyed.externalID))
+                measurementType: measurement, trend: trend, externalID: keyed.externalID)
+            reading.importBatchID = batchID
+            context.insert(reading)
         case let .insulin(units, type, doseContext, name):
             let dose = InsulinDose(
                 units: units, timestamp: ts, insulinType: type, insulinName: name,
                 doseContext: doseContext, source: src, note: Self.importedNote)
             dose.externalID = keyed.externalID
+            dose.importBatchID = batchID
             context.insert(dose)
         case let .carbs(grams, meal, food):
             let entry = CarbEntry(
                 grams: grams, timestamp: ts, mealType: meal,
                 foodDescription: food, source: src, note: Self.importedNote)
             entry.externalID = keyed.externalID
+            entry.importBatchID = batchID
             context.insert(entry)
         case let .activity(type, minutes, intensity):
             let entry = ActivityEntry(
                 activityType: type, startTimestamp: ts, durationSeconds: minutes * 60,
                 intensity: intensity, source: src, note: Self.importedNote)
             entry.externalID = keyed.externalID
+            entry.importBatchID = batchID
             context.insert(entry)
         case let .observation(tags, text):
             let entry = ObservationEntry(tags: tags, text: text, timestamp: ts, source: src)
             entry.externalID = keyed.externalID
+            entry.importBatchID = batchID
             context.insert(entry)
         }
     }

@@ -12,6 +12,8 @@ final class InsulinDose: MedicalRecord {
     var sourceRaw: String = DataSource.manual.rawValue
     var deviceID: String?
     var externalID: String?
+    /// The CSV import batch this record came from, if any (for undo).
+    var importBatchID: UUID?
 
     var timestamp: Date = Date()
     var createdAt: Date = Date()

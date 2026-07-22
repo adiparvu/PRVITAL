@@ -12,6 +12,8 @@ final class ActivityEntry: MedicalRecord {
     var sourceRaw: String = DataSource.manual.rawValue
     var deviceID: String?
     var externalID: String?
+    /// The CSV import batch this record came from, if any (for undo).
+    var importBatchID: UUID?
 
     /// `timestamp` mirrors `startTimestamp` to satisfy `MedicalRecord`.
     var timestamp: Date = Date()
