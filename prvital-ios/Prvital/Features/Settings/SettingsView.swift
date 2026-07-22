@@ -181,6 +181,17 @@ struct SettingsView: View {
                             tint: Theme.accent
                         )
                     }
+
+                    NavigationLink {
+                        LanguageSettingsView()
+                    } label: {
+                        SettingsRow(
+                            title: "Language",
+                            subtitle: LanguageSettingsView.currentDisplayName,
+                            systemImage: "globe",
+                            tint: Theme.zoneInRange
+                        )
+                    }
                 } header: {
                     Text("App")
                 }
