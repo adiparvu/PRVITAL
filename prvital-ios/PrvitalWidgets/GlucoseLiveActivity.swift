@@ -93,7 +93,13 @@ struct GlucoseLiveActivity: Widget {
             } compactLeading: {
                 Image(systemName: state.trendSymbol)
                     .foregroundStyle(tint)
+                    // Always alive in the Dynamic Island: a calm, continuous
+                    // "breathe" while in range, escalating to an urgent pulse when
+                    // out of range, plus a little bounce each time a fresh reading
+                    // lands — so the pill visibly moves as glucose updates.
+                    .symbolEffect(.breathe, options: .repeating, isActive: !state.isOutOfRange)
                     .symbolEffect(.pulse, options: .repeating, isActive: state.isOutOfRange)
+                    .symbolEffect(.bounce, value: state.mgdL)
             } compactTrailing: {
                 Text(state.valueText)
                     .fontWeight(.semibold).foregroundStyle(tint)

@@ -3,8 +3,8 @@ import SwiftData
 
 // Dedicated pages behind the dashboard's three "Recent" tiles (Insulin, Meals,
 // Activity). Each is a windowed list of that single entry type — newest first,
-// tap a row to edit, swipe to delete — so the tile is a real doorway into the
-// full log for that kind, not just a static summary.
+// grouped into dated day sections, tap a row to edit, swipe to delete — so the
+// tile is a real doorway into the full log for that kind, not just a summary.
 //
 // Every query is bounded to a recent window and the render is capped, so a
 // full-history import can't materialise thousands of rows on the main thread.
@@ -28,19 +28,23 @@ struct InsulinLogView: View {
     var body: some View {
         EntryLogList(isEmpty: doses.isEmpty, emptyImage: "syringe.fill",
                      emptyTitle: "No doses", capped: doses.count > Self.renderCap) {
-            ForEach(Array(doses.prefix(Self.renderCap))) { dose in
-                Button { Haptics.play(.selection); editing = dose } label: {
-                    EntryLogRow(systemImage: "syringe.fill", tint: Theme.accent,
-                                value: String(localized: "\(dose.units.formatted()) U"),
-                                title: dose.insulinType.label, note: dose.note,
-                                date: dose.timestamp)
-                }
-                .listRowBackground(Theme.surface)
-                .swipeActions {
-                    Button(role: .destructive) { env.entryStore.delete(dose) } label: {
-                        Label("Delete", systemImage: "trash")
+            ForEach(groupedByDay(Array(doses.prefix(Self.renderCap)), date: { $0.timestamp })) { group in
+                Section {
+                    ForEach(group.items) { dose in
+                        Button { Haptics.play(.selection); editing = dose } label: {
+                            EntryLogRow(systemImage: "syringe.fill", tint: Theme.accent,
+                                        value: String(localized: "\(dose.units.formatted()) U"),
+                                        title: dose.insulinType.label, note: dose.note,
+                                        date: dose.timestamp)
+                        }
+                        .listRowBackground(Theme.surface)
+                        .swipeActions {
+                            Button(role: .destructive) { env.entryStore.delete(dose) } label: {
+                                Label("Delete", systemImage: "trash")
+                            }
+                        }
                     }
-                }
+                } header: { DayHeader(group.day) }
             }
         }
         .navigationTitle("Insulin")
@@ -67,20 +71,24 @@ struct MealLogView: View {
     var body: some View {
         EntryLogList(isEmpty: meals.isEmpty, emptyImage: "fork.knife",
                      emptyTitle: "No meals", capped: meals.count > Self.renderCap) {
-            ForEach(Array(meals.prefix(Self.renderCap))) { meal in
-                Button { Haptics.play(.selection); editing = meal } label: {
-                    EntryLogRow(systemImage: "fork.knife", tint: Theme.zoneHigh,
-                                value: String(localized: "\(meal.grams.formatted()) g"),
-                                title: meal.mealType.label,
-                                note: meal.foodDescription ?? meal.note,
-                                date: meal.timestamp)
-                }
-                .listRowBackground(Theme.surface)
-                .swipeActions {
-                    Button(role: .destructive) { env.entryStore.delete(meal) } label: {
-                        Label("Delete", systemImage: "trash")
+            ForEach(groupedByDay(Array(meals.prefix(Self.renderCap)), date: { $0.timestamp })) { group in
+                Section {
+                    ForEach(group.items) { meal in
+                        Button { Haptics.play(.selection); editing = meal } label: {
+                            EntryLogRow(systemImage: "fork.knife", tint: Theme.zoneHigh,
+                                        value: String(localized: "\(meal.grams.formatted()) g"),
+                                        title: meal.mealType.label,
+                                        note: meal.foodDescription ?? meal.note,
+                                        date: meal.timestamp)
+                        }
+                        .listRowBackground(Theme.surface)
+                        .swipeActions {
+                            Button(role: .destructive) { env.entryStore.delete(meal) } label: {
+                                Label("Delete", systemImage: "trash")
+                            }
+                        }
                     }
-                }
+                } header: { DayHeader(group.day) }
             }
         }
         .navigationTitle("Meals")
@@ -107,19 +115,23 @@ struct ActivityLogView: View {
     var body: some View {
         EntryLogList(isEmpty: sessions.isEmpty, emptyImage: "figure.walk",
                      emptyTitle: "No activity", capped: sessions.count > Self.renderCap) {
-            ForEach(Array(sessions.prefix(Self.renderCap))) { session in
-                Button { Haptics.play(.selection); editing = session } label: {
-                    EntryLogRow(systemImage: "figure.walk", tint: Theme.zoneInRange,
-                                value: String(localized: "\(session.durationMinutes) min"),
-                                title: session.activityType.label, note: session.note,
-                                date: session.startTimestamp)
-                }
-                .listRowBackground(Theme.surface)
-                .swipeActions {
-                    Button(role: .destructive) { env.entryStore.delete(session) } label: {
-                        Label("Delete", systemImage: "trash")
+            ForEach(groupedByDay(Array(sessions.prefix(Self.renderCap)), date: { $0.startTimestamp })) { group in
+                Section {
+                    ForEach(group.items) { session in
+                        Button { Haptics.play(.selection); editing = session } label: {
+                            EntryLogRow(systemImage: "figure.walk", tint: Theme.zoneInRange,
+                                        value: String(localized: "\(session.durationMinutes) min"),
+                                        title: session.activityType.label, note: session.note,
+                                        date: session.startTimestamp)
+                        }
+                        .listRowBackground(Theme.surface)
+                        .swipeActions {
+                            Button(role: .destructive) { env.entryStore.delete(session) } label: {
+                                Label("Delete", systemImage: "trash")
+                            }
+                        }
                     }
-                }
+                } header: { DayHeader(group.day) }
             }
         }
         .navigationTitle("Activity")
@@ -127,11 +139,53 @@ struct ActivityLogView: View {
     }
 }
 
+// MARK: - Day grouping
+
+/// One calendar day's worth of entries, newest day first.
+private struct DayGroup<T: Identifiable>: Identifiable {
+    let day: Date
+    let items: [T]
+    var id: Date { day }
+}
+
+/// Buckets already-sorted (newest-first) entries into day groups, newest day
+/// first — the shape the logs render as dated sections. Grouping preserves each
+/// bucket's original order, so entries stay newest-first within a day.
+private func groupedByDay<T: Identifiable>(
+    _ items: [T], date: (T) -> Date, calendar: Calendar = .current
+) -> [DayGroup<T>] {
+    let buckets = Dictionary(grouping: items) { calendar.startOfDay(for: date($0)) }
+    return buckets.keys.sorted(by: >).map { DayGroup(day: $0, items: buckets[$0] ?? []) }
+}
+
+/// A section header showing the day — "Today" / "Yesterday" for the two most
+/// recent, otherwise the weekday and date. Formatted through the environment
+/// locale so it follows the in-app language.
+private struct DayHeader: View {
+    let day: Date
+    init(_ day: Date) { self.day = day }
+
+    var body: some View {
+        Group {
+            if Calendar.current.isDateInToday(day) {
+                Text("Today")
+            } else if Calendar.current.isDateInYesterday(day) {
+                Text("Yesterday")
+            } else {
+                Text(day, format: .dateTime.weekday(.wide).day().month(.wide))
+            }
+        }
+        .font(.footnote.weight(.semibold))
+        .foregroundStyle(Theme.textSecondary)
+        .textCase(nil)
+    }
+}
+
 // MARK: - Shared list + row
 
 /// The shared chrome for a single-type entry log: an empty state, a themed
-/// list, and an optional "showing the most recent" footer when the render was
-/// capped. Content is the caller's `ForEach` of rows.
+/// list of dated day sections, and an optional "showing the most recent" footer
+/// when the render was capped. Content is the caller's day `Section`s.
 private struct EntryLogList<Content: View>: View {
     let isEmpty: Bool
     let emptyImage: String
@@ -146,13 +200,13 @@ private struct EntryLogList<Content: View>: View {
                     .frame(maxWidth: .infinity, maxHeight: .infinity)
             } else {
                 List {
-                    Section {
-                        content
-                    } footer: {
-                        if capped {
+                    content
+                    if capped {
+                        Section {
                             Text("Showing your most recent entries.")
                                 .font(.footnote)
                                 .foregroundStyle(Theme.textTertiary)
+                                .listRowBackground(Color.clear)
                         }
                     }
                 }
@@ -164,8 +218,8 @@ private struct EntryLogList<Content: View>: View {
     }
 }
 
-/// One entry row: a tinted glyph, the value + type on one line, and the
-/// date/time (plus an optional note) beneath.
+/// One entry row: a tinted glyph, the value + type on one line, and the time
+/// (the day lives in the section header) plus an optional note beneath.
 private struct EntryLogRow: View {
     let systemImage: String
     let tint: Color
@@ -189,10 +243,12 @@ private struct EntryLogRow: View {
                     Text(value).font(.body.weight(.semibold)).foregroundStyle(Theme.textPrimary)
                     Text(title).font(.subheadline).foregroundStyle(Theme.textSecondary)
                 }
-                Text(date.formatted(date: .abbreviated, time: .shortened))
+                Text(date.formatted(date: .omitted, time: .shortened))
                     .font(.caption).foregroundStyle(Theme.textTertiary)
                 if let note, !note.isEmpty {
-                    Text(note).font(.caption).foregroundStyle(Theme.textSecondary).lineLimit(2)
+                    // Localized so an imported entry's "Imported" note follows the
+                    // in-app language; free-text notes pass through unchanged.
+                    Text(verbatim: PrvitalString(note)).font(.caption).foregroundStyle(Theme.textSecondary).lineLimit(2)
                 }
             }
             Spacer(minLength: 0)
