@@ -74306,6 +74306,65 @@
           }
         }
       }
+    },
+    "A PDF report for your care team, or a CSV of your records, for a period you choose.": {
+      "extractionState": "manual",
+      "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Ein PDF-Bericht für dein Behandlungsteam oder eine CSV-Datei deiner Aufzeichnungen – für einen Zeitraum deiner Wahl."
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Un informe en PDF para tu equipo médico, o un CSV de tus registros, para el periodo que elijas."
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Un rapport PDF pour ton équipe soignante, ou un CSV de tes données, sur une période de ton choix."
+          }
+        },
+        "it": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Un report PDF per il tuo team medico, o un CSV dei tuoi dati, per un periodo a tua scelta."
+          }
+        },
+        "nl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Een pdf-rapport voor je zorgteam, of een CSV van je gegevens, voor een periode naar keuze."
+          }
+        },
+        "pl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Raport PDF dla Twojego zespołu medycznego lub plik CSV z Twoimi danymi, za wybrany okres."
+          }
+        },
+        "pt": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Um relatório em PDF para a tua equipa médica, ou um CSV dos teus registos, para um período à tua escolha."
+          }
+        },
+        "ro": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Un raport PDF pentru echipa ta medicală sau un CSV cu înregistrările tale, pentru o perioadă aleasă de tine."
+          }
+        },
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "PDF-отчёт для твоей медицинской команды или CSV с твоими записями за выбранный период."
+          }
+        }
+      }
     }
   },
   "version": "1.0"

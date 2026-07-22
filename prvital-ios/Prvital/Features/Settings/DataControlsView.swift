@@ -3,9 +3,11 @@ import SwiftData
 import UniformTypeIdentifiers
 
 /// Your data. Shows how many records of each type live on the device, toggles
-/// private iCloud sync, and offers an irreversible "delete all" that removes
-/// every record through the single write path. Source access is revoked under
-/// Sources; export lives under Insights.
+/// private iCloud sync, imports a CSV, exports a report, and offers an
+/// irreversible "delete all" that removes every record through the single write
+/// path. Export is also reachable from Insights (report beside the charts);
+/// this second entry sits next to Import so the data in/out pair lives together.
+/// Source access is revoked under Sources.
 struct DataControlsView: View {
     @Environment(AppEnvironment.self) private var env
 
@@ -100,6 +102,25 @@ struct DataControlsView: View {
                 Text("Import")
             } footer: {
                 Text("Add records from a CSV file exported from Prvital, Dexcom Clarity or LibreView — including your full history. The format is detected automatically, and re-importing the same file won't create duplicates.")
+                    .font(.footnote)
+                    .foregroundStyle(Theme.textTertiary)
+            }
+            .listRowBackground(Theme.surface)
+
+            Section {
+                NavigationLink {
+                    ExportView()
+                } label: {
+                    Label {
+                        Text("Export a report").foregroundStyle(Theme.textPrimary)
+                    } icon: {
+                        Image(systemName: "square.and.arrow.up").foregroundStyle(Theme.accent)
+                    }
+                }
+            } header: {
+                Text("Export")
+            } footer: {
+                Text("A PDF report for your care team, or a CSV of your records, for a period you choose.")
                     .font(.footnote)
                     .foregroundStyle(Theme.textTertiary)
             }
