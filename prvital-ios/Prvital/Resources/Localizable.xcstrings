@@ -1122,65 +1122,6 @@
         }
       }
     },
-    "%@%": {
-      "extractionState": "manual",
-      "localizations": {
-        "de": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "%@%"
-          }
-        },
-        "es": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "%@%"
-          }
-        },
-        "fr": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "%@%"
-          }
-        },
-        "it": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "%@%"
-          }
-        },
-        "nl": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "%@%"
-          }
-        },
-        "pl": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "%@%"
-          }
-        },
-        "pt": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "%@%"
-          }
-        },
-        "ro": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "%@%"
-          }
-        },
-        "ru": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "%@%"
-          }
-        }
-      }
-    },
     "%@%@ U": {
       "extractionState": "manual",
       "localizations": {
@@ -2652,183 +2593,6 @@
           "stringUnit": {
             "state": "translated",
             "value": "%lld · напоминания вкл."
-          }
-        }
-      }
-    },
-    "%lld%": {
-      "extractionState": "manual",
-      "localizations": {
-        "de": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "%lld%"
-          }
-        },
-        "es": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "%lld%"
-          }
-        },
-        "fr": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "%lld%"
-          }
-        },
-        "it": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "%lld%"
-          }
-        },
-        "nl": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "%lld%"
-          }
-        },
-        "pl": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "%lld%"
-          }
-        },
-        "pt": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "%lld%"
-          }
-        },
-        "ro": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "%lld%"
-          }
-        },
-        "ru": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "%lld%"
-          }
-        }
-      }
-    },
-    "%lld% of %lld readings are above range": {
-      "extractionState": "manual",
-      "localizations": {
-        "de": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "%lld% von %lld Messwerten liegen über dem Zielbereich"
-          }
-        },
-        "es": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "El %lld% de %lld lecturas están por encima del rango"
-          }
-        },
-        "fr": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "%lld% des %lld mesures sont au-dessus de la cible"
-          }
-        },
-        "it": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Il %lld% di %lld letture è sopra l'intervallo"
-          }
-        },
-        "nl": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "%lld% van %lld metingen ligt boven bereik"
-          }
-        },
-        "pl": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "%lld% z %lld odczytów jest powyżej zakresu"
-          }
-        },
-        "pt": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "%lld% de %lld leituras estão acima do intervalo"
-          }
-        },
-        "ro": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "%lld% din %lld valori sunt peste interval"
-          }
-        },
-        "ru": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "%lld% из %lld измерений выше диапазона"
-          }
-        }
-      }
-    },
-    "%lld% of %lld readings are below range": {
-      "extractionState": "manual",
-      "localizations": {
-        "de": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "%lld% von %lld Messwerten liegen unter dem Zielbereich"
-          }
-        },
-        "es": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "El %lld% de %lld lecturas están por debajo del rango"
-          }
-        },
-        "fr": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "%lld% des %lld mesures sont en dessous de la cible"
-          }
-        },
-        "it": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Il %lld% di %lld letture è sotto l'intervallo"
-          }
-        },
-        "nl": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "%lld% van %lld metingen ligt onder bereik"
-          }
-        },
-        "pl": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "%lld% z %lld odczytów jest poniżej zakresu"
-          }
-        },
-        "pt": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "%lld% de %lld leituras estão abaixo do intervalo"
-          }
-        },
-        "ro": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "%lld% din %lld valori sunt sub interval"
-          }
-        },
-        "ru": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "%lld% из %lld измерений ниже диапазона"
           }
         }
       }
@@ -5484,124 +5248,6 @@
           "stringUnit": {
             "state": "translated",
             "value": "A1c"
-          }
-        }
-      }
-    },
-    "A1c goal %@%": {
-      "extractionState": "manual",
-      "localizations": {
-        "de": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "A1c-Ziel %@%"
-          }
-        },
-        "es": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Objetivo de A1c %@%"
-          }
-        },
-        "fr": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Objectif A1c %@%"
-          }
-        },
-        "it": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Obiettivo A1c %@%"
-          }
-        },
-        "nl": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "A1c-doel %@%"
-          }
-        },
-        "pl": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Cel A1c %@%"
-          }
-        },
-        "pt": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Objetivo de A1c %@%"
-          }
-        },
-        "ro": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Țintă A1c %@%"
-          }
-        },
-        "ru": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Цель A1c %@%"
-          }
-        }
-      }
-    },
-    "A1c goal %@% · est. %@% today": {
-      "extractionState": "manual",
-      "localizations": {
-        "de": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "A1c-Ziel %@% · geschätzt %@% heute"
-          }
-        },
-        "es": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Objetivo de A1c %@% · est. %@% hoy"
-          }
-        },
-        "fr": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Objectif A1c %@% · est. %@% aujourd'hui"
-          }
-        },
-        "it": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Obiettivo A1c %@% · stim. %@% oggi"
-          }
-        },
-        "nl": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "A1c-doel %@% · gesch. %@% vandaag"
-          }
-        },
-        "pl": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Cel A1c %@% · szac. %@% dziś"
-          }
-        },
-        "pt": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Objetivo de A1c %@% · est. %@% hoje"
-          }
-        },
-        "ro": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Țintă A1c %@% · est. %@% azi"
-          }
-        },
-        "ru": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Цель A1c %@% · оц. %@% сегодня"
           }
         }
       }
@@ -74413,478 +74059,6 @@
         }
       }
     },
-    "You were in range %lld% of the %@ — at or above your %lld% goal. Well done.": {
-      "extractionState": "manual",
-      "localizations": {
-        "de": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Du warst zu %lld% im Zielbereich (%@) — das erreicht oder übertrifft dein %lld%-Ziel. Gut gemacht!"
-          }
-        },
-        "es": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Estuviste en rango el %lld% del %@ — igual o por encima de tu meta del %lld%. Muy bien hecho."
-          }
-        },
-        "fr": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Tu es resté(e) dans la cible %lld% sur ta période (%@) — à la hauteur ou au-dessus de ton objectif de %lld%. Bravo."
-          }
-        },
-        "it": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Sei stato in range per il %lld% di %@ — al livello del tuo obiettivo del %lld% o superiore. Ottimo lavoro."
-          }
-        },
-        "nl": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Je zat %lld% van de %@ binnen bereik — op of boven je doel van %lld%. Goed gedaan."
-          }
-        },
-        "pl": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "%lld% w zakresie przez ostatni %@ — na poziomie lub powyżej Twojego celu %lld%. Brawo."
-          }
-        },
-        "pt": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Estiveste dentro do intervalo em %lld% do período (%@) — na tua meta de %lld% ou mais. Muito bem."
-          }
-        },
-        "ro": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Ai fost în interval țintă %lld% din %@ — la nivelul sau peste obiectivul tău de %lld%. Bravo!"
-          }
-        },
-        "ru": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Вы были в целевом диапазоне %lld% времени за %@ — на уровне цели %lld% или выше. Отлично!"
-          }
-        }
-      }
-    },
-    "You were in range %lld% of the %@, just shy of your %lld% goal — really close.": {
-      "extractionState": "manual",
-      "localizations": {
-        "de": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Du warst zu %lld% im Zielbereich (%@), knapp unter deinem %lld%-Ziel — ganz nah dran."
-          }
-        },
-        "es": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Estuviste en rango el %lld% del %@, muy cerca de tu meta del %lld% — casi lo logras."
-          }
-        },
-        "fr": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Tu es resté(e) dans la cible %lld% sur ta période (%@), tout près de ton objectif de %lld% — presque atteint."
-          }
-        },
-        "it": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Sei stato in range per il %lld% di %@, appena sotto il tuo obiettivo del %lld% — ci sei quasi."
-          }
-        },
-        "nl": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Je zat %lld% van de %@ binnen bereik, net onder je doel van %lld% — heel dichtbij."
-          }
-        },
-        "pl": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "%lld% w zakresie przez ostatni %@, tuż poniżej Twojego celu %lld% — naprawdę blisko."
-          }
-        },
-        "pt": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Estiveste dentro do intervalo em %lld% do período (%@), muito perto da tua meta de %lld% — quase lá."
-          }
-        },
-        "ro": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Ai fost în interval țintă %lld% din %@, la un pas de obiectivul tău de %lld% — foarte aproape."
-          }
-        },
-        "ru": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Вы были в целевом диапазоне %lld% времени за %@, совсем немного не дотянув до цели %lld% — очень близко."
-          }
-        }
-      }
-    },
-    "You were in range %lld% of the %@. Every bit of steadiness counts.": {
-      "extractionState": "manual",
-      "localizations": {
-        "de": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Du warst zu %lld% im Zielbereich (%@). Jede Stabilität zählt."
-          }
-        },
-        "es": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Estuviste en rango el %lld% del %@. Cada poco de estabilidad cuenta."
-          }
-        },
-        "fr": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Tu es resté(e) dans la cible %lld% sur ta période (%@). Chaque moment de stabilité compte."
-          }
-        },
-        "it": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Sei stato in range per il %lld% di %@. Ogni momento di stabilità conta."
-          }
-        },
-        "nl": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Je zat %lld% van de %@ binnen bereik. Elke beetje stabiliteit telt."
-          }
-        },
-        "pl": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "%lld% w zakresie przez ostatni %@. Każda odrobina stabilności się liczy."
-          }
-        },
-        "pt": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Estiveste dentro do intervalo em %lld% do período (%@). Cada momento de estabilidade conta."
-          }
-        },
-        "ro": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Ai fost în interval țintă %lld% din %@. Fiecare pas spre stabilitate contează."
-          }
-        },
-        "ru": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Вы были в целевом диапазоне %lld% времени за %@. Каждая капля стабильности важна."
-          }
-        }
-      }
-    },
-    "Your average was %@, an estimated A1c of about %@%.": {
-      "extractionState": "manual",
-      "localizations": {
-        "de": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Dein Durchschnitt lag bei %@, das entspricht einem geschätzten A1c von etwa %@%."
-          }
-        },
-        "es": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Tu promedio fue de %@, una A1c estimada de aproximadamente %@%."
-          }
-        },
-        "fr": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Ta moyenne était de %@, soit une A1c estimée à environ %@%."
-          }
-        },
-        "it": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "La tua media è stata %@, con un'A1c stimata di circa %@%."
-          }
-        },
-        "nl": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Je gemiddelde was %@, een geschatte A1c van ongeveer %@%."
-          }
-        },
-        "pl": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Twoja średnia wynosiła %@, co daje szacunkowe A1c na poziomie około %@%."
-          }
-        },
-        "pt": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "A tua média foi %@, um A1c estimado de cerca de %@%."
-          }
-        },
-        "ro": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Media ta a fost %@, cu un A1c estimat de aproximativ %@%."
-          }
-        },
-        "ru": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Ваше среднее значение составило %@, что соответствует примерному A1c около %@%."
-          }
-        }
-      }
-    },
-    "You spent %lld% below range. Easing off lows is usually the first win.": {
-      "extractionState": "manual",
-      "localizations": {
-        "de": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Du warst zu %lld% unterhalb des Zielbereichs. Weniger Unterzuckerungen zu haben ist meist der erste Erfolg."
-          }
-        },
-        "es": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Pasaste el %lld% por debajo del rango. Reducir las bajadas suele ser el primer logro."
-          }
-        },
-        "fr": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Tu as passé %lld% de ton temps sous la cible. Réduire les hypoglycémies est souvent la première victoire."
-          }
-        },
-        "it": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Hai trascorso il %lld% sotto il range. Ridurre le ipoglicemie è di solito il primo traguardo."
-          }
-        },
-        "nl": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Je zat %lld% van de tijd onder bereik. Minder lage waarden is meestal de eerste overwinning."
-          }
-        },
-        "pl": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "%lld% czasu poniżej zakresu. Ograniczenie niedocukrzeń to zwykle pierwszy sukces."
-          }
-        },
-        "pt": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Passaste %lld% do tempo abaixo do intervalo. Reduzir as hipoglicemias costuma ser a primeira vitória."
-          }
-        },
-        "ro": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Ai petrecut %lld% sub interval țintă. De obicei, primul progres e reducerea episoadelor de glicemie scăzută."
-          }
-        },
-        "ru": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Вы провели %lld% времени ниже целевого диапазона. Снижение числа гипогликемий обычно становится первой победой."
-          }
-        }
-      }
-    },
-    "Highs took up %lld% of the %@ — a spot to look at meals or timing.": {
-      "extractionState": "manual",
-      "localizations": {
-        "de": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Hohe Werte machten %lld% (%@) aus — ein guter Ansatzpunkt, um Mahlzeiten oder Timing zu überprüfen."
-          }
-        },
-        "es": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Los picos altos ocuparon el %lld% del %@ — un punto a revisar en las comidas o los horarios."
-          }
-        },
-        "fr": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Les hyperglycémies ont représenté %lld% sur ta période (%@) — un point à surveiller côté repas ou horaires."
-          }
-        },
-        "it": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Le iperglicemie hanno occupato il %lld% di %@ — un aspetto su cui rivedere pasti o tempistiche."
-          }
-        },
-        "nl": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Hoge waarden namen %lld% van de %@ in beslag — een goed punt om naar maaltijden of timing te kijken."
-          }
-        },
-        "pl": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Wysokie wartości zajęły %lld% przez ostatni %@ — warto przyjrzeć się posiłkom lub ich porom."
-          }
-        },
-        "pt": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "As subidas ocuparam %lld% do período (%@) — um bom ponto para rever refeições ou horários."
-          }
-        },
-        "ro": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Valorile mari au ocupat %lld% din %@ — un aspect de analizat legat de mese sau momentul administrării."
-          }
-        },
-        "ru": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Повышенный уровень занял %lld% времени за %@ — стоит обратить внимание на приёмы пищи или их время."
-          }
-        }
-      }
-    },
-    "Your glucose was nicely steady (variability %lld%).": {
-      "extractionState": "manual",
-      "localizations": {
-        "de": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Dein Blutzucker war schön stabil (Schwankung %lld%)."
-          }
-        },
-        "es": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Tu glucosa se mantuvo bastante estable (variabilidad del %lld%)."
-          }
-        },
-        "fr": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Ta glycémie est restée bien stable (variabilité %lld%)."
-          }
-        },
-        "it": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "La tua glicemia è stata piacevolmente stabile (variabilità %lld%)."
-          }
-        },
-        "nl": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Je bloedsuiker was mooi stabiel (variabiliteit %lld%)."
-          }
-        },
-        "pl": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Twoja glikemia była ładnie stabilna (zmienność %lld%)."
-          }
-        },
-        "pt": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "A tua glicose esteve bem estável (variabilidade de %lld%)."
-          }
-        },
-        "ro": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Glicemia ta a fost frumos de stabilă (variabilitate %lld%)."
-          }
-        },
-        "ru": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Уровень глюкозы был приятно стабильным (вариабельность %lld%)."
-          }
-        }
-      }
-    },
-    "Your glucose swung a fair bit (variability %lld%). Smoother is easier on you.": {
-      "extractionState": "manual",
-      "localizations": {
-        "de": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Dein Blutzucker hat ordentlich geschwankt (Schwankung %lld%). Mehr Stabilität tut dir gut."
-          }
-        },
-        "es": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Tu glucosa varió bastante (variabilidad del %lld%). Cuanto más estable, más fácil es para ti."
-          }
-        },
-        "fr": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Ta glycémie a pas mal varié (variabilité %lld%). Plus de stabilité, c'est plus facile pour toi."
-          }
-        },
-        "it": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "La tua glicemia ha oscillato parecchio (variabilità %lld%). Più stabilità significa meno fatica per te."
-          }
-        },
-        "nl": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Je bloedsuiker schommelde behoorlijk (variabiliteit %lld%). Stabieler is makkelijker voor je."
-          }
-        },
-        "pl": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Twoja glikemia dość mocno się wahała (zmienność %lld%). Stabilniejszy przebieg jest dla Ciebie łatwiejszy."
-          }
-        },
-        "pt": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "A tua glicose oscilou bastante (variabilidade de %lld%). Quanto mais estável, melhor para ti."
-          }
-        },
-        "ro": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Glicemia ta a variat destul de mult (variabilitate %lld%). Cu cât e mai stabilă, cu atât e mai ușor pentru tine."
-          }
-        },
-        "ru": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Уровень глюкозы заметно колебался (вариабельность %lld%). Чем ровнее, тем легче вашему организму."
-          }
-        }
-      }
-    },
     " You're on a %lld-day streak.": {
       "extractionState": "manual",
       "localizations": {
@@ -74940,124 +74114,6 @@
           "stringUnit": {
             "state": "translated",
             "value": " Ваша серия — %lld дней подряд."
-          }
-        }
-      }
-    },
-    "%lld% in range so far — lovely work.": {
-      "extractionState": "manual",
-      "localizations": {
-        "de": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "%lld% bisher im Zielbereich — klasse gemacht."
-          }
-        },
-        "es": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "%lld% en rango hasta ahora — muy buen trabajo."
-          }
-        },
-        "fr": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "%lld% dans la cible jusqu'ici — beau travail."
-          }
-        },
-        "it": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "%lld% in range finora — ottimo lavoro."
-          }
-        },
-        "nl": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "%lld% binnen bereik tot nu toe — knap werk."
-          }
-        },
-        "pl": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "%lld% w zakresie jak dotąd — świetna robota."
-          }
-        },
-        "pt": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "%lld% dentro do intervalo até agora — excelente trabalho."
-          }
-        },
-        "ro": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "%lld% în interval țintă până acum — treabă minunată."
-          }
-        },
-        "ru": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "%lld% в целевом диапазоне на данный момент — прекрасная работа."
-          }
-        }
-      }
-    },
-    "%lld% in range today. Small steps add up.": {
-      "extractionState": "manual",
-      "localizations": {
-        "de": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "%lld% heute im Zielbereich. Kleine Schritte summieren sich."
-          }
-        },
-        "es": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "%lld% en rango hoy. Los pequeños pasos suman."
-          }
-        },
-        "fr": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "%lld% dans la cible aujourd'hui. Chaque petit pas compte."
-          }
-        },
-        "it": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "%lld% in range oggi. Ogni piccolo passo conta."
-          }
-        },
-        "nl": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "%lld% binnen bereik vandaag. Kleine stappen tellen op."
-          }
-        },
-        "pl": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "%lld% w zakresie dzisiaj. Małe kroki się sumują."
-          }
-        },
-        "pt": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "%lld% dentro do intervalo hoje. Cada pequeno passo conta."
-          }
-        },
-        "ro": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "%lld% în interval țintă azi. Pașii mici se adună."
-          }
-        },
-        "ru": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "%lld% в целевом диапазоне сегодня. Маленькие шаги складываются в большой результат."
           }
         }
       }
@@ -85029,6 +84085,1068 @@
           "stringUnit": {
             "state": "translated",
             "value": "неделя"
+          }
+        }
+      }
+    },
+    "%@%%": {
+      "extractionState": "manual",
+      "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%@%%"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%@%%"
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%@%%"
+          }
+        },
+        "it": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%@%%"
+          }
+        },
+        "nl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%@%%"
+          }
+        },
+        "pl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%@%%"
+          }
+        },
+        "pt": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%@%%"
+          }
+        },
+        "ro": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%@%%"
+          }
+        },
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%@%%"
+          }
+        }
+      }
+    },
+    "%lld%%": {
+      "extractionState": "manual",
+      "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%lld%%"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%lld%%"
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%lld%%"
+          }
+        },
+        "it": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%lld%%"
+          }
+        },
+        "nl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%lld%%"
+          }
+        },
+        "pl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%lld%%"
+          }
+        },
+        "pt": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%lld%%"
+          }
+        },
+        "ro": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%lld%%"
+          }
+        },
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%lld%%"
+          }
+        }
+      }
+    },
+    "%lld%% of %lld readings are above range": {
+      "extractionState": "manual",
+      "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%lld%% von %lld Messwerten liegen über dem Zielbereich"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "El %lld% de %lld lecturas están por encima del rango"
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%lld% des %lld mesures sont au-dessus de la cible"
+          }
+        },
+        "it": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Il %lld% di %lld letture è sopra l'intervallo"
+          }
+        },
+        "nl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%lld%% van %lld metingen ligt boven bereik"
+          }
+        },
+        "pl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%lld%% z %lld odczytów jest powyżej zakresu"
+          }
+        },
+        "pt": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%lld% de %lld leituras estão acima do intervalo"
+          }
+        },
+        "ro": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%lld% din %lld valori sunt peste interval"
+          }
+        },
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%lld%% из %lld измерений выше диапазона"
+          }
+        }
+      }
+    },
+    "%lld%% of %lld readings are below range": {
+      "extractionState": "manual",
+      "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%lld%% von %lld Messwerten liegen unter dem Zielbereich"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "El %lld% de %lld lecturas están por debajo del rango"
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%lld% des %lld mesures sont en dessous de la cible"
+          }
+        },
+        "it": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Il %lld% di %lld letture è sotto l'intervallo"
+          }
+        },
+        "nl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%lld%% van %lld metingen ligt onder bereik"
+          }
+        },
+        "pl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%lld%% z %lld odczytów jest poniżej zakresu"
+          }
+        },
+        "pt": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%lld% de %lld leituras estão abaixo do intervalo"
+          }
+        },
+        "ro": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%lld% din %lld valori sunt sub interval"
+          }
+        },
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%lld%% из %lld измерений ниже диапазона"
+          }
+        }
+      }
+    },
+    "A1c goal %@%%": {
+      "extractionState": "manual",
+      "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "A1c-Ziel %@%%"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Objetivo de A1c %@%%"
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Objectif A1c %@%%"
+          }
+        },
+        "it": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Obiettivo A1c %@%%"
+          }
+        },
+        "nl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "A1c-doel %@%%"
+          }
+        },
+        "pl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Cel A1c %@%%"
+          }
+        },
+        "pt": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Objetivo de A1c %@%%"
+          }
+        },
+        "ro": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Țintă A1c %@%%"
+          }
+        },
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Цель A1c %@%%"
+          }
+        }
+      }
+    },
+    "A1c goal %@%% · est. %@%% today": {
+      "extractionState": "manual",
+      "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "A1c-Ziel %@%% · geschätzt %@%% heute"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Objetivo de A1c %@%% · est. %@%% hoy"
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Objectif A1c %@%% · est. %@%% aujourd'hui"
+          }
+        },
+        "it": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Obiettivo A1c %@%% · stim. %@%% oggi"
+          }
+        },
+        "nl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "A1c-doel %@%% · gesch. %@%% vandaag"
+          }
+        },
+        "pl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Cel A1c %@%% · szac. %@% dziś"
+          }
+        },
+        "pt": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Objetivo de A1c %@%% · est. %@%% hoje"
+          }
+        },
+        "ro": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Țintă A1c %@%% · est. %@%% azi"
+          }
+        },
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Цель A1c %@%% · оц. %@%% сегодня"
+          }
+        }
+      }
+    },
+    "You were in range %lld%% of the %@ — at or above your %lld%% goal. Well done.": {
+      "extractionState": "manual",
+      "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Du warst zu %lld%% im Zielbereich (%@) — das erreicht oder übertrifft dein %lld%%-Ziel. Gut gemacht!"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Estuviste en rango el %lld% del %@ — igual o por encima de tu meta del %lld%%. Muy bien hecho."
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Tu es resté(e) dans la cible %lld% sur ta période (%@) — à la hauteur ou au-dessus de ton objectif de %lld%%. Bravo."
+          }
+        },
+        "it": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Sei stato in range per il %lld% di %@ — al livello del tuo obiettivo del %lld%% o superiore. Ottimo lavoro."
+          }
+        },
+        "nl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Je zat %lld%% van de %@ binnen bereik — op of boven je doel van %lld%%. Goed gedaan."
+          }
+        },
+        "pl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%lld%% w zakresie przez ostatni %@ — na poziomie lub powyżej Twojego celu %lld%%. Brawo."
+          }
+        },
+        "pt": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Estiveste dentro do intervalo em %lld% do período (%@) — na tua meta de %lld%% ou mais. Muito bem."
+          }
+        },
+        "ro": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Ai fost în interval țintă %lld% din %@ — la nivelul sau peste obiectivul tău de %lld%%. Bravo!"
+          }
+        },
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Вы были в целевом диапазоне %lld%% времени за %@ — на уровне цели %lld%% или выше. Отлично!"
+          }
+        }
+      }
+    },
+    "You were in range %lld%% of the %@, just shy of your %lld%% goal — really close.": {
+      "extractionState": "manual",
+      "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Du warst zu %lld%% im Zielbereich (%@), knapp unter deinem %lld%%-Ziel — ganz nah dran."
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Estuviste en rango el %lld% del %@, muy cerca de tu meta del %lld%% — casi lo logras."
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Tu es resté(e) dans la cible %lld% sur ta période (%@), tout près de ton objectif de %lld%% — presque atteint."
+          }
+        },
+        "it": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Sei stato in range per il %lld% di %@, appena sotto il tuo obiettivo del %lld%% — ci sei quasi."
+          }
+        },
+        "nl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Je zat %lld%% van de %@ binnen bereik, net onder je doel van %lld%% — heel dichtbij."
+          }
+        },
+        "pl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%lld%% w zakresie przez ostatni %@, tuż poniżej Twojego celu %lld%% — naprawdę blisko."
+          }
+        },
+        "pt": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Estiveste dentro do intervalo em %lld% do período (%@), muito perto da tua meta de %lld%% — quase lá."
+          }
+        },
+        "ro": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Ai fost în interval țintă %lld% din %@, la un pas de obiectivul tău de %lld%% — foarte aproape."
+          }
+        },
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Вы были в целевом диапазоне %lld%% времени за %@, совсем немного не дотянув до цели %lld%% — очень близко."
+          }
+        }
+      }
+    },
+    "You were in range %lld%% of the %@. Every bit of steadiness counts.": {
+      "extractionState": "manual",
+      "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Du warst zu %lld%% im Zielbereich (%@). Jede Stabilität zählt."
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Estuviste en rango el %lld% del %@. Cada poco de estabilidad cuenta."
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Tu es resté(e) dans la cible %lld% sur ta période (%@). Chaque moment de stabilité compte."
+          }
+        },
+        "it": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Sei stato in range per il %lld% di %@. Ogni momento di stabilità conta."
+          }
+        },
+        "nl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Je zat %lld%% van de %@ binnen bereik. Elke beetje stabiliteit telt."
+          }
+        },
+        "pl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%lld%% w zakresie przez ostatni %@. Każda odrobina stabilności się liczy."
+          }
+        },
+        "pt": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Estiveste dentro do intervalo em %lld% do período (%@). Cada momento de estabilidade conta."
+          }
+        },
+        "ro": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Ai fost în interval țintă %lld% din %@. Fiecare pas spre stabilitate contează."
+          }
+        },
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Вы были в целевом диапазоне %lld%% времени за %@. Каждая капля стабильности важна."
+          }
+        }
+      }
+    },
+    "Your average was %@, an estimated A1c of about %@%%.": {
+      "extractionState": "manual",
+      "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Dein Durchschnitt lag bei %@, das entspricht einem geschätzten A1c von etwa %@%%."
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Tu promedio fue de %@, una A1c estimada de aproximadamente %@%%."
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Ta moyenne était de %@, soit une A1c estimée à environ %@%%."
+          }
+        },
+        "it": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "La tua media è stata %@, con un'A1c stimata di circa %@%%."
+          }
+        },
+        "nl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Je gemiddelde was %@, een geschatte A1c van ongeveer %@%%."
+          }
+        },
+        "pl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Twoja średnia wynosiła %@, co daje szacunkowe A1c na poziomie około %@%%."
+          }
+        },
+        "pt": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "A tua média foi %@, um A1c estimado de cerca de %@%%."
+          }
+        },
+        "ro": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Media ta a fost %@, cu un A1c estimat de aproximativ %@%%."
+          }
+        },
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Ваше среднее значение составило %@, что соответствует примерному A1c около %@%%."
+          }
+        }
+      }
+    },
+    "You spent %lld%% below range. Easing off lows is usually the first win.": {
+      "extractionState": "manual",
+      "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Du warst zu %lld% unterhalb des Zielbereichs. Weniger Unterzuckerungen zu haben ist meist der erste Erfolg."
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Pasaste el %lld%% por debajo del rango. Reducir las bajadas suele ser el primer logro."
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Tu as passé %lld% de ton temps sous la cible. Réduire les hypoglycémies est souvent la première victoire."
+          }
+        },
+        "it": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Hai trascorso il %lld% sotto il range. Ridurre le ipoglicemie è di solito il primo traguardo."
+          }
+        },
+        "nl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Je zat %lld%% van de tijd onder bereik. Minder lage waarden is meestal de eerste overwinning."
+          }
+        },
+        "pl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%lld% czasu poniżej zakresu. Ograniczenie niedocukrzeń to zwykle pierwszy sukces."
+          }
+        },
+        "pt": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Passaste %lld% do tempo abaixo do intervalo. Reduzir as hipoglicemias costuma ser a primeira vitória."
+          }
+        },
+        "ro": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Ai petrecut %lld% sub interval țintă. De obicei, primul progres e reducerea episoadelor de glicemie scăzută."
+          }
+        },
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Вы провели %lld%% времени ниже целевого диапазона. Снижение числа гипогликемий обычно становится первой победой."
+          }
+        }
+      }
+    },
+    "Highs took up %lld%% of the %@ — a spot to look at meals or timing.": {
+      "extractionState": "manual",
+      "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Hohe Werte machten %lld%% (%@) aus — ein guter Ansatzpunkt, um Mahlzeiten oder Timing zu überprüfen."
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Los picos altos ocuparon el %lld% del %@ — un punto a revisar en las comidas o los horarios."
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Les hyperglycémies ont représenté %lld% sur ta période (%@) — un point à surveiller côté repas ou horaires."
+          }
+        },
+        "it": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Le iperglicemie hanno occupato il %lld% di %@ — un aspetto su cui rivedere pasti o tempistiche."
+          }
+        },
+        "nl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Hoge waarden namen %lld%% van de %@ in beslag — een goed punt om naar maaltijden of timing te kijken."
+          }
+        },
+        "pl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Wysokie wartości zajęły %lld%% przez ostatni %@ — warto przyjrzeć się posiłkom lub ich porom."
+          }
+        },
+        "pt": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "As subidas ocuparam %lld% do período (%@) — um bom ponto para rever refeições ou horários."
+          }
+        },
+        "ro": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Valorile mari au ocupat %lld% din %@ — un aspect de analizat legat de mese sau momentul administrării."
+          }
+        },
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Повышенный уровень занял %lld%% времени за %@ — стоит обратить внимание на приёмы пищи или их время."
+          }
+        }
+      }
+    },
+    "Your glucose was nicely steady (variability %lld%%).": {
+      "extractionState": "manual",
+      "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Dein Blutzucker war schön stabil (Schwankung %lld%%)."
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Tu glucosa se mantuvo bastante estable (variabilidad del %lld%%)."
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Ta glycémie est restée bien stable (variabilité %lld%%)."
+          }
+        },
+        "it": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "La tua glicemia è stata piacevolmente stabile (variabilità %lld%%)."
+          }
+        },
+        "nl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Je bloedsuiker was mooi stabiel (variabiliteit %lld%%)."
+          }
+        },
+        "pl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Twoja glikemia była ładnie stabilna (zmienność %lld%%)."
+          }
+        },
+        "pt": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "A tua glicose esteve bem estável (variabilidade de %lld%%)."
+          }
+        },
+        "ro": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Glicemia ta a fost frumos de stabilă (variabilitate %lld%%)."
+          }
+        },
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Уровень глюкозы был приятно стабильным (вариабельность %lld%%)."
+          }
+        }
+      }
+    },
+    "Your glucose swung a fair bit (variability %lld%%). Smoother is easier on you.": {
+      "extractionState": "manual",
+      "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Dein Blutzucker hat ordentlich geschwankt (Schwankung %lld%%). Mehr Stabilität tut dir gut."
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Tu glucosa varió bastante (variabilidad del %lld%%). Cuanto más estable, más fácil es para ti."
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Ta glycémie a pas mal varié (variabilité %lld%%). Plus de stabilité, c'est plus facile pour toi."
+          }
+        },
+        "it": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "La tua glicemia ha oscillato parecchio (variabilità %lld%%). Più stabilità significa meno fatica per te."
+          }
+        },
+        "nl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Je bloedsuiker schommelde behoorlijk (variabiliteit %lld%%). Stabieler is makkelijker voor je."
+          }
+        },
+        "pl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Twoja glikemia dość mocno się wahała (zmienność %lld%%). Stabilniejszy przebieg jest dla Ciebie łatwiejszy."
+          }
+        },
+        "pt": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "A tua glicose oscilou bastante (variabilidade de %lld%%). Quanto mais estável, melhor para ti."
+          }
+        },
+        "ro": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Glicemia ta a variat destul de mult (variabilitate %lld%%). Cu cât e mai stabilă, cu atât e mai ușor pentru tine."
+          }
+        },
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Уровень глюкозы заметно колебался (вариабельность %lld%%). Чем ровнее, тем легче вашему организму."
+          }
+        }
+      }
+    },
+    "%lld%% in range so far — lovely work.": {
+      "extractionState": "manual",
+      "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%lld%% bisher im Zielbereich — klasse gemacht."
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%lld%% en rango hasta ahora — muy buen trabajo."
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%lld% dans la cible jusqu'ici — beau travail."
+          }
+        },
+        "it": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%lld%% in range finora — ottimo lavoro."
+          }
+        },
+        "nl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%lld%% binnen bereik tot nu toe — knap werk."
+          }
+        },
+        "pl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%lld%% w zakresie jak dotąd — świetna robota."
+          }
+        },
+        "pt": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%lld% dentro do intervalo até agora — excelente trabalho."
+          }
+        },
+        "ro": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%lld%% în interval țintă până acum — treabă minunată."
+          }
+        },
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%lld%% в целевом диапазоне на данный момент — прекрасная работа."
+          }
+        }
+      }
+    },
+    "%lld%% in range today. Small steps add up.": {
+      "extractionState": "manual",
+      "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%lld%% heute im Zielbereich. Kleine Schritte summieren sich."
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%lld%% en rango hoy. Los pequeños pasos suman."
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%lld% dans la cible aujourd'hui. Chaque petit pas compte."
+          }
+        },
+        "it": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%lld%% in range oggi. Ogni piccolo passo conta."
+          }
+        },
+        "nl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%lld%% binnen bereik vandaag. Kleine stappen tellen op."
+          }
+        },
+        "pl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%lld%% w zakresie dzisiaj. Małe kroki się sumują."
+          }
+        },
+        "pt": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%lld% dentro do intervalo hoje. Cada pequeno passo conta."
+          }
+        },
+        "ro": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%lld%% în interval țintă azi. Pașii mici se adună."
+          }
+        },
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%lld%% в целевом диапазоне сегодня. Маленькие шаги складываются в большой результат."
+          }
+        }
+      }
+    },
+    "Highs · %@": {
+      "extractionState": "manual",
+      "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Hochs · %@"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Altos · %@"
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Pics · %@"
+          }
+        },
+        "it": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Valori alti · %@"
+          }
+        },
+        "nl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Hoge waarden · %@"
+          }
+        },
+        "pl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Wysokie · %@"
+          }
+        },
+        "pt": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Valores altos · %@"
+          }
+        },
+        "ro": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Valori mari · %@"
+          }
+        },
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Высокие · %@"
+          }
+        }
+      }
+    },
+    "Lows · %@": {
+      "extractionState": "manual",
+      "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Tiefs · %@"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Bajos · %@"
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Creux · %@"
+          }
+        },
+        "it": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Valori bassi · %@"
+          }
+        },
+        "nl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Lage waarden · %@"
+          }
+        },
+        "pl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Niskie · %@"
+          }
+        },
+        "pt": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Valores baixos · %@"
+          }
+        },
+        "ro": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Valori mici · %@"
+          }
+        },
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Низкие · %@"
           }
         }
       }

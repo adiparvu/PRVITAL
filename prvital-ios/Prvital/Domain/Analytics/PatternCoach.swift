@@ -60,8 +60,8 @@ enum PatternCoach {
         let symbol = isLow ? "arrow.down.circle.fill" : "arrow.up.circle.fill"
 
         let title = isLow
-            ? String(localized: "Lows in the \(period.label.lowercased())")
-            : String(localized: "Highs in the \(period.label.lowercased())")
+            ? String(localized: "Lows · \(period.label.lowercased())")
+            : String(localized: "Highs · \(period.label.lowercased())")
 
         let detail: String
         switch (period, isLow) {
