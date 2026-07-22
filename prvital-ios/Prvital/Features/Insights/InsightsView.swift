@@ -4,8 +4,8 @@ import SwiftData
 /// Insights — the analytics home. A ranked "Insights" feed pins the app's most
 /// important patterns to the top (surfaced by `InsightFeed`), and a segmented
 /// control flips between the visual `ChartsView` and the numeric
-/// `StatisticsView`, while the toolbar offers a push to `ExportView` (share a
-/// report) and to the full `HistoryView` ledger.
+/// `StatisticsView`, while the toolbar offers a plain-language summary, the
+/// week-in-review digest and a push to `ExportView` (share a report).
 ///
 /// Both child screens share the same time-window vocabulary via
 /// `InsightsInterval`, which is declared here so every Insights file can use it.

@@ -6,20 +6,8 @@ import SwiftData
 /// carry non-glucose entries). Reads are reactive `@Query`s that are bucketed by
 /// `CalendarAggregator`; tapping a day with data opens a detail sheet with that
 /// day's glucose statistics and a compact, self-rendered list of its entries.
-/// Standalone Calendar screen — a thin `NavigationStack` wrapper so existing
-/// callers keep working. The reusable body lives in `CalendarContent` so the
-/// Journal tab can embed it as a mode (Faza 1).
-struct CalendarView: View {
-    var body: some View {
-        NavigationStack {
-            CalendarContent()
-                .navigationTitle("Calendar")
-        }
-    }
-}
-
 /// The month-grid calendar's content, without its own `NavigationStack`/title,
-/// so it can be shown standalone (via `CalendarView`) or embedded as a Journal mode.
+/// so the Journal tab embeds it as its "Calendar" mode (Faza 1).
 struct CalendarContent: View {
     @Environment(AppEnvironment.self) private var env
     @Environment(\.modelContext) private var modelContext
@@ -616,7 +604,7 @@ private func calendarMonthTitle(_ date: Date) -> String {
 
 #Preview {
     let env = AppEnvironment.preview()
-    return CalendarView()
+    return NavigationStack { CalendarContent() }
         .environment(env)
         .modelContainer(env.modelContainer)
 }

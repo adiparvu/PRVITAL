@@ -6,20 +6,8 @@ import SwiftData
 /// A range filter (Today / Yesterday / This week / This month / Custom) and a
 /// newest⇄oldest sort toggle drive a flat list. Rows swipe to delete through
 /// `env.entryStore` and tap to edit, exactly like the Journal.
-/// Standalone History screen — a thin `NavigationStack` wrapper so existing
-/// callers keep working. The reusable body lives in `HistoryContent` so the
-/// Journal tab can embed it as a mode (Faza 1).
-struct HistoryView: View {
-    var body: some View {
-        NavigationStack {
-            HistoryContent()
-                .navigationTitle("History")
-        }
-    }
-}
-
-/// The History ledger's content, without its own `NavigationStack`/title, so it
-/// can be shown standalone (via `HistoryView`) or embedded as a Journal mode.
+/// The History ledger's content, without its own `NavigationStack`/title, so the
+/// Journal tab embeds it as its "List" mode (Faza 1).
 struct HistoryContent: View {
     @Environment(AppEnvironment.self) private var env
 
@@ -56,9 +44,14 @@ struct HistoryContent: View {
         .sorted { sortNewestFirst ? $0.date > $1.date : $0.date < $1.date }
     }
 
-    /// The capped slice actually rendered, plus whether more were withheld.
-    private var visibleItems: ArraySlice<JournalTimelineItem> {
-        filteredItems.prefix(Self.renderCap)
+    /// The rendered items, always capped to the most-recent `renderCap` so the
+    /// footer's "most recent" promise holds even when the list is sorted
+    /// oldest-first (where the newest items are the tail).
+    private var visibleItems: [JournalTimelineItem] {
+        guard filteredItems.count > Self.renderCap else { return filteredItems }
+        return sortNewestFirst
+            ? Array(filteredItems.prefix(Self.renderCap))
+            : Array(filteredItems.suffix(Self.renderCap))
     }
 
     /// The half-open date interval selected by the current filter.

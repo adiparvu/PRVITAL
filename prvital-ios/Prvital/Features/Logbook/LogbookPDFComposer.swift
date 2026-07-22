@@ -13,7 +13,7 @@ import UIKit
 /// drawing (no shared view state), and `UIGraphicsPDFRenderer.writePDF(to:)`
 /// invokes its actions closure on a *nonisolated* context — a main-actor
 /// composer can't call its own helpers from inside that closure under Swift 6
-/// strict concurrency. The one call site (`LogbookView`) already runs on the
+/// strict concurrency. The one call site (`LogbookContent`) already runs on the
 /// main actor, so this stays on-main in practice while compiling cleanly.
 enum LogbookPDFComposer {
     #if canImport(UIKit)
