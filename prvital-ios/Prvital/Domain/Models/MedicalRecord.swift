@@ -99,12 +99,12 @@ enum ConsentScope: String, Codable, CaseIterable, Sendable, Identifiable {
         switch self {
         case .healthKit: return "Apple Health"
         case .appleWatch: return "Apple Watch"
-        case .externalCGM: return "CGM sensors"
+        case .externalCGM: return String(localized: "CGM sensors")
         case .nightscout: return "Nightscout"
-        case .bluetoothMeter: return "Glucose meters"
-        case .cloudSync: return "iCloud sync"
-        case .dataExport: return "Data export"
-        case .aiFeatures: return "Intelligent features"
+        case .bluetoothMeter: return String(localized: "Glucose meters")
+        case .cloudSync: return String(localized: "iCloud sync")
+        case .dataExport: return String(localized: "Data export")
+        case .aiFeatures: return String(localized: "Intelligent features")
         }
     }
 
@@ -112,21 +112,21 @@ enum ConsentScope: String, Codable, CaseIterable, Sendable, Identifiable {
     var rationale: String {
         switch self {
         case .healthKit:
-            return "Read glucose, insulin, carbohydrate and workout samples already in Apple Health, and write the entries you log here back to it. Data stays on your device and in your private Health store."
+            return String(localized: "Read glucose, insulin, carbohydrate and workout samples already in Apple Health, and write the entries you log here back to it. Data stays on your device and in your private Health store.")
         case .appleWatch:
-            return "Show your glucose and let you log insulin and carbs from your wrist. Nothing leaves your paired devices."
+            return String(localized: "Show your glucose and let you log insulin and carbs from your wrist. Nothing leaves your paired devices.")
         case .externalCGM:
-            return "Connect a Dexcom or FreeStyle Libre sensor so readings arrive automatically. You choose which sensor is your primary source."
+            return String(localized: "Connect a Dexcom or FreeStyle Libre sensor so readings arrive automatically. You choose which sensor is your primary source.")
         case .nightscout:
-            return "Fetch glucose readings from your own Nightscout site over the internet. The site address and access token you enter are stored on your device and sent only to your server — never to us."
+            return String(localized: "Fetch glucose readings from your own Nightscout site over the internet. The site address and access token you enter are stored on your device and sent only to your server — never to us.")
         case .bluetoothMeter:
-            return "Pair a Bluetooth blood-glucose meter — such as Contour or Accu-Chek — over Bluetooth to import its stored finger-stick readings. Nothing leaves your device."
+            return String(localized: "Pair a Bluetooth blood-glucose meter — such as Contour or Accu-Chek — over Bluetooth to import its stored finger-stick readings. Nothing leaves your device.")
         case .cloudSync:
-            return "Keep your journal in sync across your devices through your private iCloud database. Apple cannot read the contents; only your devices can."
+            return String(localized: "Keep your journal in sync across your devices through your private iCloud database. Apple cannot read the contents; only your devices can.")
         case .dataExport:
-            return "Generate PDF and CSV reports for your care team. Files are created on-device and shared only through the system share sheet."
+            return String(localized: "Generate PDF and CSV reports for your care team. Files are created on-device and shared only through the system share sheet.")
         case .aiFeatures:
-            return "Let on-device intelligence highlight patterns and summarise your day. Suggestions are never medical decisions, and your data is never used to train models."
+            return String(localized: "Let on-device intelligence highlight patterns and summarise your day. Suggestions are never medical decisions, and your data is never used to train models.")
         }
     }
 
