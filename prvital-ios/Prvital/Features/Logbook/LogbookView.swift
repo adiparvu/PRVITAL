@@ -11,10 +11,27 @@ struct LogbookView: View {
     @Environment(AppEnvironment.self) private var env
     @Environment(\.modelContext) private var modelContext
 
-    @Query(sort: \GlucoseReading.timestamp, order: .reverse) private var glucose: [GlucoseReading]
-    @Query(sort: \InsulinDose.timestamp, order: .reverse) private var insulin: [InsulinDose]
-    @Query(sort: \CarbEntry.timestamp, order: .reverse) private var carbs: [CarbEntry]
-    @Query(sort: \ObservationEntry.timestamp, order: .reverse) private var observations: [ObservationEntry]
+    @Query private var glucose: [GlucoseReading]
+    @Query private var insulin: [InsulinDose]
+    @Query private var carbs: [CarbEntry]
+    @Query private var observations: [ObservationEntry]
+
+    /// The widest register window is one year, so the queries never need more
+    /// than ~370 days. Windowing them here keeps a synced (or freshly imported)
+    /// 100k+-row table off the main thread — the builder still slices to the
+    /// selected `interval` below.
+    init() {
+        let cutoff = Calendar.current.date(byAdding: .day, value: -370, to: Date())
+            ?? Date().addingTimeInterval(-370 * 86_400)
+        _glucose = Query(filter: #Predicate<GlucoseReading> { $0.timestamp >= cutoff },
+                         sort: \.timestamp, order: .reverse)
+        _insulin = Query(filter: #Predicate<InsulinDose> { $0.timestamp >= cutoff },
+                         sort: \.timestamp, order: .reverse)
+        _carbs = Query(filter: #Predicate<CarbEntry> { $0.timestamp >= cutoff },
+                       sort: \.timestamp, order: .reverse)
+        _observations = Query(filter: #Predicate<ObservationEntry> { $0.timestamp >= cutoff },
+                              sort: \.timestamp, order: .reverse)
+    }
 
     @State private var range: LogbookRange = .week
     @State private var sheetTarget: LogbookSheetTarget?

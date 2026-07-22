@@ -8,10 +8,27 @@ import Charts
 struct ChartsView: View {
     @Environment(AppEnvironment.self) private var env
 
-    @Query(sort: \GlucoseReading.timestamp, order: .reverse) private var glucose: [GlucoseReading]
-    @Query(sort: \InsulinDose.timestamp, order: .reverse) private var insulin: [InsulinDose]
-    @Query(sort: \CarbEntry.timestamp, order: .reverse) private var carbs: [CarbEntry]
-    @Query(sort: \ActivityEntry.startTimestamp, order: .reverse) private var activity: [ActivityEntry]
+    @Query private var glucose: [GlucoseReading]
+    @Query private var insulin: [InsulinDose]
+    @Query private var carbs: [CarbEntry]
+    @Query private var activity: [ActivityEntry]
+
+    /// The widest interval is one year, so the queries never need more than ~370
+    /// days. Windowing them here means a synced (or freshly imported) 100k+-row
+    /// table is never fully materialised on the main thread just to chart the
+    /// selected sub-range — the in-memory `range` filters below still apply.
+    init() {
+        let cutoff = Calendar.current.date(byAdding: .day, value: -370, to: Date())
+            ?? Date().addingTimeInterval(-370 * 86_400)
+        _glucose = Query(filter: #Predicate<GlucoseReading> { $0.timestamp >= cutoff },
+                         sort: \.timestamp, order: .reverse)
+        _insulin = Query(filter: #Predicate<InsulinDose> { $0.timestamp >= cutoff },
+                         sort: \.timestamp, order: .reverse)
+        _carbs = Query(filter: #Predicate<CarbEntry> { $0.timestamp >= cutoff },
+                       sort: \.timestamp, order: .reverse)
+        _activity = Query(filter: #Predicate<ActivityEntry> { $0.startTimestamp >= cutoff },
+                          sort: \.startTimestamp, order: .reverse)
+    }
 
     @State private var interval: InsightsInterval = .week
 

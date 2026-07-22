@@ -14,11 +14,30 @@ import SwiftData
 struct JournalView: View {
     @Environment(AppEnvironment.self) private var env
 
-    @Query(sort: \GlucoseReading.timestamp, order: .reverse) private var glucose: [GlucoseReading]
-    @Query(sort: \InsulinDose.timestamp, order: .reverse) private var insulin: [InsulinDose]
-    @Query(sort: \CarbEntry.timestamp, order: .reverse) private var carbs: [CarbEntry]
-    @Query(sort: \ActivityEntry.startTimestamp, order: .reverse) private var activity: [ActivityEntry]
-    @Query(sort: \ObservationEntry.timestamp, order: .reverse) private var observations: [ObservationEntry]
+    @Query private var glucose: [GlucoseReading]
+    @Query private var insulin: [InsulinDose]
+    @Query private var carbs: [CarbEntry]
+    @Query private var activity: [ActivityEntry]
+    @Query private var observations: [ObservationEntry]
+
+    /// The Journal shows at most the 14 most-recent days *with data*, so the
+    /// queries only need a recent window — never the whole (potentially 100k-row,
+    /// post-import) history. Without this bound, every CGM sync re-materialised
+    /// the entire table on the main thread just to bucket the last two weeks.
+    init() {
+        let cutoff = Calendar.current.date(byAdding: .day, value: -120, to: Date())
+            ?? Date().addingTimeInterval(-120 * 86_400)
+        _glucose = Query(filter: #Predicate<GlucoseReading> { $0.timestamp >= cutoff },
+                         sort: \.timestamp, order: .reverse)
+        _insulin = Query(filter: #Predicate<InsulinDose> { $0.timestamp >= cutoff },
+                         sort: \.timestamp, order: .reverse)
+        _carbs = Query(filter: #Predicate<CarbEntry> { $0.timestamp >= cutoff },
+                       sort: \.timestamp, order: .reverse)
+        _activity = Query(filter: #Predicate<ActivityEntry> { $0.startTimestamp >= cutoff },
+                          sort: \.startTimestamp, order: .reverse)
+        _observations = Query(filter: #Predicate<ObservationEntry> { $0.timestamp >= cutoff },
+                              sort: \.timestamp, order: .reverse)
+    }
 
     @State private var editTarget: JournalEditTarget?
     @State private var showingQuickEntry = false
