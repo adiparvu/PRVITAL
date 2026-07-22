@@ -22,12 +22,12 @@ struct CalendarView: View {
 /// so it can be shown standalone (via `CalendarView`) or embedded as a Journal mode.
 struct CalendarContent: View {
     @Environment(AppEnvironment.self) private var env
+    @Environment(\.modelContext) private var modelContext
 
-    @Query(sort: \GlucoseReading.timestamp, order: .reverse) private var readings: [GlucoseReading]
-    @Query(sort: \InsulinDose.timestamp, order: .reverse) private var insulin: [InsulinDose]
-    @Query(sort: \CarbEntry.timestamp, order: .reverse) private var carbs: [CarbEntry]
-    @Query(sort: \ActivityEntry.startTimestamp, order: .reverse) private var activity: [ActivityEntry]
-    @Query(sort: \ObservationEntry.timestamp, order: .reverse) private var observations: [ObservationEntry]
+    /// Records for the visible month (± a week for the grid's edge days), fetched
+    /// on demand instead of through an all-history `@Query` — so a 100k+-row
+    /// table is never materialised on the main thread just to tint one month.
+    @State private var data = MonthRecords()
 
     /// Any date inside the month currently on screen.
     @State private var visibleMonth: Date = Date()
@@ -40,10 +40,10 @@ struct CalendarContent: View {
         let thresholds = env.preferences.thresholds
         let unit = env.preferences.glucoseUnit
         let summaries = CalendarAggregator.summaries(
-            readings: readings,
-            insulin: insulin,
-            carbs: carbs,
-            activity: activity,
+            readings: data.readings,
+            insulin: data.insulin,
+            carbs: data.carbs,
+            activity: data.activity,
             thresholds: thresholds,
             calendar: calendar
         )
@@ -57,6 +57,7 @@ struct CalendarContent: View {
                 .padding()
             }
             .background(Theme.background)
+            .task(id: visibleMonth) { loadMonth() }
             .toolbar {
                 ToolbarItem(placement: .primaryAction) {
                     Button {
@@ -71,11 +72,11 @@ struct CalendarContent: View {
             .sheet(item: $selection) { selected in
                 CalendarDayDetailSheet(
                     date: selected.date,
-                    readings: records(readings, on: selected.date) { $0.timestamp },
-                    insulin: records(insulin, on: selected.date) { $0.timestamp },
-                    carbs: records(carbs, on: selected.date) { $0.timestamp },
-                    activity: records(activity, on: selected.date) { $0.startTimestamp },
-                    observations: records(observations, on: selected.date) { $0.timestamp },
+                    readings: records(data.readings, on: selected.date) { $0.timestamp },
+                    insulin: records(data.insulin, on: selected.date) { $0.timestamp },
+                    carbs: records(data.carbs, on: selected.date) { $0.timestamp },
+                    activity: records(data.activity, on: selected.date) { $0.startTimestamp },
+                    observations: records(data.observations, on: selected.date) { $0.timestamp },
                     unit: unit,
                     thresholds: thresholds,
                     calendar: calendar
@@ -212,6 +213,36 @@ struct CalendarContent: View {
     private func records<R>(_ all: [R], on day: Date, timestamp: (R) -> Date) -> [R] {
         all.filter { calendar.isDate(timestamp($0), inSameDayAs: day) }
     }
+
+    /// Fetches just the visible month's records (± a week so the grid's leading/
+    /// trailing days from adjacent months still tint). Runs on month change via
+    /// `.task(id:)`, so the whole history is never loaded to show one grid.
+    private func loadMonth() {
+        guard let month = calendar.dateInterval(of: .month, for: visibleMonth) else { return }
+        let lo = calendar.date(byAdding: .day, value: -7, to: month.start) ?? month.start
+        let hi = calendar.date(byAdding: .day, value: 7, to: month.end) ?? month.end
+        var loaded = MonthRecords()
+        loaded.readings = (try? modelContext.fetch(FetchDescriptor<GlucoseReading>(
+            predicate: #Predicate { $0.timestamp >= lo && $0.timestamp <= hi }))) ?? []
+        loaded.insulin = (try? modelContext.fetch(FetchDescriptor<InsulinDose>(
+            predicate: #Predicate { $0.timestamp >= lo && $0.timestamp <= hi }))) ?? []
+        loaded.carbs = (try? modelContext.fetch(FetchDescriptor<CarbEntry>(
+            predicate: #Predicate { $0.timestamp >= lo && $0.timestamp <= hi }))) ?? []
+        loaded.activity = (try? modelContext.fetch(FetchDescriptor<ActivityEntry>(
+            predicate: #Predicate { $0.startTimestamp >= lo && $0.startTimestamp <= hi }))) ?? []
+        loaded.observations = (try? modelContext.fetch(FetchDescriptor<ObservationEntry>(
+            predicate: #Predicate { $0.timestamp >= lo && $0.timestamp <= hi }))) ?? []
+        data = loaded
+    }
+}
+
+/// One visible month's records for the calendar grid, fetched on demand.
+private struct MonthRecords {
+    var readings: [GlucoseReading] = []
+    var insulin: [InsulinDose] = []
+    var carbs: [CarbEntry] = []
+    var activity: [ActivityEntry] = []
+    var observations: [ObservationEntry] = []
 }
 
 // MARK: - Day cell
