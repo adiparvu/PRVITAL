@@ -59,17 +59,6 @@ struct SettingsView: View {
 
                 Section {
                     NavigationLink {
-                        SourcesSettingsView()
-                    } label: {
-                        SettingsRow(
-                            title: "Sources",
-                            subtitle: String(localized: "Primary: \(primary.displayName)"),
-                            systemImage: primary.symbol,
-                            tint: Theme.accent
-                        )
-                    }
-
-                    NavigationLink {
                         UnitsSettingsView()
                     } label: {
                         SettingsRow(
@@ -77,28 +66,6 @@ struct SettingsView: View {
                             subtitle: unit.rawValue,
                             systemImage: "ruler",
                             tint: Theme.zoneInRange
-                        )
-                    }
-
-                    NavigationLink {
-                        RemindersSettingsView()
-                    } label: {
-                        SettingsRow(
-                            title: "Reminders",
-                            subtitle: String(localized: "Local, on-device notifications"),
-                            systemImage: "bell.badge",
-                            tint: Theme.zoneHigh
-                        )
-                    }
-
-                    NavigationLink {
-                        GlucoseScheduleView()
-                    } label: {
-                        SettingsRow(
-                            title: "Logging schedule",
-                            subtitle: scheduleSubtitle,
-                            systemImage: "clock.badge.checkmark",
-                            tint: Theme.accent
                         )
                     }
 
@@ -114,26 +81,13 @@ struct SettingsView: View {
                     }
 
                     NavigationLink {
-                        EmergencyCardView()
+                        GlucoseScheduleView()
                     } label: {
                         SettingsRow(
-                            title: "Emergency card",
-                            subtitle: env.preferences.emergencyInfo.hasContent
-                                ? String(localized: "Ready to show a helper")
-                                : String(localized: "Not set up yet"),
-                            systemImage: "staroflife.fill",
-                            tint: Theme.zoneCritical
-                        )
-                    }
-
-                    NavigationLink {
-                        SensorView()
-                    } label: {
-                        SettingsRow(
-                            title: "Sensor",
-                            subtitle: String(localized: "Warm-up & expiry countdown"),
-                            systemImage: "sensor.tag.radiowaves.forward",
-                            tint: Theme.zoneInRange
+                            title: "Logging schedule",
+                            subtitle: scheduleSubtitle,
+                            systemImage: "clock.badge.checkmark",
+                            tint: Theme.accent
                         )
                     }
 
@@ -160,6 +114,62 @@ struct SettingsView: View {
                             tint: Theme.accent
                         )
                     }
+                } header: {
+                    Text("Glucose & therapy")
+                }
+                .listRowBackground(Theme.surface)
+
+                Section {
+                    NavigationLink {
+                        SourcesSettingsView()
+                    } label: {
+                        SettingsRow(
+                            title: "Sources",
+                            subtitle: String(localized: "Primary: \(primary.displayName)"),
+                            systemImage: primary.symbol,
+                            tint: Theme.accent
+                        )
+                    }
+
+                    NavigationLink {
+                        SensorView()
+                    } label: {
+                        SettingsRow(
+                            title: "Sensor",
+                            subtitle: String(localized: "Warm-up & expiry countdown"),
+                            systemImage: "sensor.tag.radiowaves.forward",
+                            tint: Theme.zoneInRange
+                        )
+                    }
+
+                    NavigationLink {
+                        EmergencyCardView()
+                    } label: {
+                        SettingsRow(
+                            title: "Emergency card",
+                            subtitle: env.preferences.emergencyInfo.hasContent
+                                ? String(localized: "Ready to show a helper")
+                                : String(localized: "Not set up yet"),
+                            systemImage: "staroflife.fill",
+                            tint: Theme.zoneCritical
+                        )
+                    }
+                } header: {
+                    Text("Devices & safety")
+                }
+                .listRowBackground(Theme.surface)
+
+                Section {
+                    NavigationLink {
+                        RemindersSettingsView()
+                    } label: {
+                        SettingsRow(
+                            title: "Reminders",
+                            subtitle: String(localized: "Local, on-device notifications"),
+                            systemImage: "bell.badge",
+                            tint: Theme.zoneHigh
+                        )
+                    }
 
                     NavigationLink {
                         AppearanceSettingsView()
@@ -171,6 +181,8 @@ struct SettingsView: View {
                             tint: Theme.accent
                         )
                     }
+                } header: {
+                    Text("App")
                 }
                 .listRowBackground(Theme.surface)
 
@@ -218,6 +230,8 @@ struct SettingsView: View {
                             tint: Theme.textSecondary
                         )
                     }
+                } header: {
+                    Text("Data & privacy")
                 } footer: {
                     Text("Prvital is private by design. Your health data lives on this device (and, only if you turn it on, your own private iCloud). It is never sold, never used for advertising, and never used to train models without your consent.")
                         .font(.footnote)
