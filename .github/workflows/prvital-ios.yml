@@ -309,6 +309,22 @@ jobs:
             -destination 'generic/platform=iOS' \
             -archivePath build/Prvital.xcarchive \
             CODE_SIGNING_ALLOWED=NO CODE_SIGNING_REQUIRED=NO
+      - name: Verify archived build number matches the project
+        # Guardrail against a build number that doesn't advance: if the archived
+        # CFBundleVersion isn't CURRENT_PROJECT_VERSION, TestFlight silently
+        # rejects the upload as a duplicate (masked as success below) and the
+        # visible build never moves. Fail here instead, loudly.
+        working-directory: prvital-ios
+        run: |
+          set -euo pipefail
+          EXPECTED=$(grep -m1 'CURRENT_PROJECT_VERSION:' project.yml | sed -E 's/.*"([0-9]+)".*/\1/')
+          PLIST="build/Prvital.xcarchive/Products/Applications/Prvital.app/Info.plist"
+          ACTUAL=$(/usr/libexec/PlistBuddy -c "Print :CFBundleVersion" "$PLIST")
+          echo "Archived CFBundleVersion=$ACTUAL  expected=$EXPECTED"
+          if [ "$ACTUAL" != "$EXPECTED" ]; then
+            echo "::error::Build number mismatch — archive is $ACTUAL but project is $EXPECTED. TestFlight would reject this as a duplicate. Fix CFBundleVersion in project.yml."
+            exit 1
+          fi
       - name: Export & upload to TestFlight
         working-directory: prvital-ios
         run: |

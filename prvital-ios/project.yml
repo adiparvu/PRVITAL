@@ -23,7 +23,7 @@ settings:
   base:
     SWIFT_VERSION: "6.0"
     MARKETING_VERSION: "1.0.0"
-    CURRENT_PROJECT_VERSION: "56"
+    CURRENT_PROJECT_VERSION: "57"
     DEVELOPMENT_TEAM: "SU92TVZT8W" # Apple Developer Team ID
     ENABLE_USER_SCRIPT_SANDBOXING: YES
 
@@ -44,6 +44,14 @@ targets:
       path: Prvital/Resources/Info.plist
       properties:
         CFBundleDisplayName: Prvital
+        # Pin the build number and marketing version to the project settings so
+        # every CURRENT_PROJECT_VERSION bump actually changes CFBundleVersion in
+        # the built binary. Without this the archive shipped a fixed build number,
+        # so TestFlight rejected each new upload as a duplicate (masked as success
+        # by the uploader's "already used" tolerance) and the visible build never
+        # advanced past 35.
+        CFBundleVersion: "$(CURRENT_PROJECT_VERSION)"
+        CFBundleShortVersionString: "$(MARKETING_VERSION)"
         CFBundleDevelopmentRegion: en
         CFBundleLocalizations:
           - en
