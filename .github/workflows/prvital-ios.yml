@@ -246,6 +246,23 @@ jobs:
             abort("bundleId lookup failed for #{bid} (HTTP #{code}): #{resp}") unless code == 200
             abort("::error::App ID #{bid} does not exist. Create it in Identifiers (with its capabilities) first.") if resp["data"].empty?
             ref = resp["data"][0]["id"]
+            # Ensure the HealthKit capability is ON for the main App ID BEFORE the
+            # profile is minted, so the profile carries com.apple.developer.healthkit.
+            # Without it the signed app has no HealthKit entitlement and Apple Health
+            # authorization fails at runtime with "Missing entitlement" (the app then
+            # shows "Apple Health isn't available on this build yet"). App Groups can't
+            # be toggled via the API, but HealthKit can. Idempotent: an already-enabled
+            # capability returns a 409/conflict, which we treat as success.
+            if bid == "com.prvital.app"
+              ccode, cresp = api(:post, "/v1/bundleIdCapabilities", {data: {type: "bundleIdCapabilities", attributes: {capabilityType: "HEALTHKIT"}, relationships: {bundleId: {data: {type: "bundleIds", id: ref}}}}})
+              if [200, 201].include?(ccode)
+                puts "enabled HEALTHKIT capability on #{bid}"
+              elsif ccode == 409
+                puts "HEALTHKIT capability already enabled on #{bid} (HTTP 409)"
+              else
+                puts "::warning::could not enable HEALTHKIT on #{bid} (HTTP #{ccode}): #{cresp}"
+              end
+            end
             code, resp = api(:post, "/v1/profiles", {data: {type: "profiles", attributes: {name: pname, profileType: "IOS_APP_STORE"}, relationships: {bundleId: {data: {type: "bundleIds", id: ref}}, certificates: {data: [{type: "certificates", id: cert_id}]}}}})
             abort("profile create failed for #{bid} (HTTP #{code}): #{resp}") unless code == 201
             uuid = resp["data"]["attributes"]["uuid"]
@@ -287,6 +304,39 @@ jobs:
             echo "::warning::$missing profile(s) lack group.com.prvital. Register the App Group under Identifiers > App Groups and enable it on the App IDs (com.prvital.app, com.prvital.app.widgets, com.prvital.app.watchkitapp, com.prvital.app.watchkitapp.widgets), then rebuild."
           else
             echo "All profiles carry group.com.prvital — cross-process widget data sharing is provisioned."
+          fi
+      - name: Verify HealthKit entitlement in the app's provisioning profile
+        # The app declares com.apple.developer.healthkit, but the entitlement is
+        # only honoured at runtime if the App ID's profile carries it too —
+        # otherwise Apple Health authorization fails with "Missing entitlement".
+        # The previous step enables the HEALTHKIT capability on com.prvital.app via
+        # the App Store Connect API, so this confirms it actually landed in the
+        # minted profile. Read-only; prints the truth without failing the build.
+        run: |
+          set -uo pipefail
+          PP_DIR="$HOME/Library/MobileDevice/Provisioning Profiles"
+          echo "=== HealthKit check: is com.apple.developer.healthkit in the app profile? ==="
+          found=0
+          shopt -s nullglob
+          for f in "$PP_DIR"/*.mobileprovision; do
+            security cms -D -i "$f" -o /tmp/pp.plist 2>/dev/null || continue
+            name=$(/usr/libexec/PlistBuddy -c "Print :Name" /tmp/pp.plist 2>/dev/null || echo "?")
+            case "$name" in
+              "Prvital App Store CI"*) : ;;   # the main iPhone app profile
+              *) continue ;;
+            esac
+            hk=$(/usr/libexec/PlistBuddy -c "Print :Entitlements:com.apple.developer.healthkit" /tmp/pp.plist 2>/dev/null || true)
+            if [ "$hk" = "true" ]; then
+              echo "  OK       $name  ->  includes HealthKit"
+              found=1
+            else
+              echo "  MISSING  $name  ->  NO HealthKit (Apple Health will fail with 'Missing entitlement')"
+            fi
+          done
+          if [ "$found" -eq 1 ]; then
+            echo "HealthKit is provisioned on com.prvital.app — Apple Health can connect."
+          else
+            echo "::warning::com.prvital.app profile lacks HealthKit. If this persists, enable HealthKit on the App ID in the developer portal manually."
           fi
       - name: Import certificate into keychain
         run: |
