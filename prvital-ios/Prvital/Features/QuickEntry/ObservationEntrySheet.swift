@@ -48,7 +48,7 @@ struct ObservationEntrySheet: View {
                     }
                 }
             }
-            .navigationTitle(existing == nil ? "Add observation" : "Edit observation")
+            .navigationTitle(existing == nil ? Text("Add observation") : Text("Edit observation"))
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
                 ToolbarItem(placement: .cancellationAction) { Button("Cancel") { dismiss() } }

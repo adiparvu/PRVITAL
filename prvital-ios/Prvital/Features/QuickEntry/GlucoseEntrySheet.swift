@@ -49,7 +49,7 @@ struct GlucoseEntrySheet: View {
                 }
                 if existing != nil { deleteSection }
             }
-            .navigationTitle(existing == nil ? "Log glucose" : "Edit glucose")
+            .navigationTitle(existing == nil ? Text("Log glucose") : Text("Edit glucose"))
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
                 ToolbarItem(placement: .cancellationAction) { Button("Cancel") { dismiss() } }

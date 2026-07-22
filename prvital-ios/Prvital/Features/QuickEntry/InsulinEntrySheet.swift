@@ -62,7 +62,7 @@ struct InsulinEntrySheet: View {
                     }
                 }
             }
-            .navigationTitle(existing == nil ? "Log insulin" : "Edit insulin")
+            .navigationTitle(existing == nil ? Text("Log insulin") : Text("Edit insulin"))
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
                 ToolbarItem(placement: .cancellationAction) { Button("Cancel") { dismiss() } }

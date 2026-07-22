@@ -340,9 +340,15 @@ private struct ProfileSettingsRow: View {
                 diameter: 60
             )
 
-            Text(profile.displayName.isEmpty ? "Your profile" : profile.displayName)
-                .font(.title3.weight(.semibold))
-                .foregroundStyle(Theme.textPrimary)
+            Group {
+                if profile.displayName.isEmpty {
+                    Text("Your profile")
+                } else {
+                    Text(verbatim: profile.displayName)
+                }
+            }
+            .font(.title3.weight(.semibold))
+            .foregroundStyle(Theme.textPrimary)
 
             Spacer(minLength: 0)
         }

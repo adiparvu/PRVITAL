@@ -54,7 +54,7 @@ struct ActivityEntrySheet: View {
                     }
                 }
             }
-            .navigationTitle(existing == nil ? "Log activity" : "Edit activity")
+            .navigationTitle(existing == nil ? Text("Log activity") : Text("Edit activity"))
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
                 ToolbarItem(placement: .cancellationAction) { Button("Cancel") { dismiss() } }
