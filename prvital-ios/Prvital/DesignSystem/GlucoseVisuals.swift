@@ -347,27 +347,33 @@ struct GlucoseTrendChart: View {
         return max(0, low)...high
     }
 
-    /// Hours between hour-aligned x-axis ticks, keeping ~4–6 unique labels for
-    /// any window (3h→1, 6h→2, 12h→3, 24h→6, multi-day custom→12).
+    /// Hours between hour-aligned x-axis ticks, scaled to keep ~4–6 readable,
+    /// non-overlapping labels for ANY window — from a few hours up to a year.
+    /// The old version capped the step at 12h, so a month (~720h) drew ~60 ticks
+    /// and a year hundreds, all piling into an unreadable band. Beyond a day the
+    /// step now snaps to whole-day multiples so week/month/year windows show a
+    /// handful of dated ticks instead.
     private var xStrideHours: Int {
         guard let first = sorted.first?.timestamp, let last = sorted.last?.timestamp else { return 1 }
-        let hours = last.timeIntervalSince(first) / 3600
-        switch hours {
-        case ..<4: return 1
-        case ..<9: return 2
-        case ..<15: return 3
-        case ..<27: return 6
-        default: return 12
-        }
+        let hours = max(1, last.timeIntervalSince(first) / 3600)
+        let target = hours / 5   // aim for ~5 evenly spaced ticks
+        let steps = [1, 2, 3, 6, 12, 24, 48, 72, 24 * 5, 24 * 7, 24 * 14, 24 * 30, 24 * 60, 24 * 90, 24 * 180, 24 * 365]
+        return steps.first { Double($0) >= target } ?? steps.last!
     }
 
-    /// Hour-only labels within a day; day + hour once a custom window spans more,
-    /// so two ticks a day apart can't read identically.
+    /// Window-adaptive label: times within a day, "Jul 22" for day-to-season
+    /// windows, and "Jul 26" once the window spans seasons — so two ticks a step
+    /// apart never read identically or pile up.
     private var xLabelFormat: Date.FormatStyle {
-        guard let first = sorted.first?.timestamp, let last = sorted.last?.timestamp,
-              last.timeIntervalSince(first) > 27 * 3600
-        else { return .dateTime.hour() }
-        return .dateTime.day().hour()
+        guard let first = sorted.first?.timestamp, let last = sorted.last?.timestamp else {
+            return .dateTime.hour()
+        }
+        let hours = last.timeIntervalSince(first) / 3600
+        switch hours {
+        case ..<27:      return .dateTime.hour()
+        case ..<24 * 90: return .dateTime.month(.abbreviated).day()
+        default:         return .dateTime.month(.abbreviated).year(.twoDigits)
+        }
     }
 }
 
