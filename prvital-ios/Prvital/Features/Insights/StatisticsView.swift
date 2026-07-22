@@ -2,6 +2,12 @@ import SwiftUI
 import SwiftData
 import Charts
 
+/// Identifiable wrapper so a tapped best/toughest day can drive `.sheet(item:)`.
+private struct StatDayRef: Identifiable {
+    let day: Date
+    var id: Date { day }
+}
+
 /// The numeric pane of Insights: a computed `PeriodStatistics` for the selected
 /// interval, rendered as a grid of `StatTile`s plus a Time-in-Range stacked bar.
 /// Glucose figures are always formatted through `GlucoseFormatting` in the user's
@@ -13,6 +19,7 @@ struct StatisticsView: View {
     @Query private var insulin: [InsulinDose]
     @Query private var carbs: [CarbEntry]
     @Query private var activity: [ActivityEntry]
+    @Query private var observations: [ObservationEntry]
     @Query(sort: \LabResult.timestamp, order: .reverse) private var labResults: [LabResult]
 
     init() {
@@ -28,10 +35,14 @@ struct StatisticsView: View {
                        sort: \.timestamp, order: .reverse)
         _activity = Query(filter: #Predicate<ActivityEntry> { $0.startTimestamp >= cutoff },
                           sort: \.startTimestamp, order: .reverse)
+        _observations = Query(filter: #Predicate<ObservationEntry> { $0.timestamp >= cutoff },
+                              sort: \.timestamp, order: .reverse)
     }
 
     @State private var interval: InsightsInterval = .week
     @State private var showingLogLab = false
+    /// The day whose detail sheet is open (tapping the best/toughest day).
+    @State private var selectedDay: StatDayRef?
 
     private var unit: GlucoseUnit { env.preferences.glucoseUnit }
     private var thresholds: GlucoseThresholds { env.preferences.thresholds }
@@ -329,22 +340,54 @@ struct StatisticsView: View {
                     Spacer()
                 }
             }
+            .sheet(item: $selectedDay) { ref in
+                dayDetailSheet(for: ref.day)
+            }
         }
     }
 
     private func dayColumn(title: LocalizedStringKey, day: DayTIR, tint: Color) -> some View {
-        VStack(alignment: .leading, spacing: 3) {
-            Text(title)
-                .font(.caption2)
-                .foregroundStyle(Theme.textSecondary)
-            Text(percent(day.timeInRange))
-                .font(.title3.weight(.bold))
-                .foregroundStyle(tint)
-            Text(day.day.formatted(.dateTime.weekday(.abbreviated).month(.abbreviated).day()))
+        Button {
+            Haptics.play(.light)
+            selectedDay = StatDayRef(day: day.day)
+        } label: {
+            VStack(alignment: .leading, spacing: 3) {
+                Text(title)
+                    .font(.caption2)
+                    .foregroundStyle(Theme.textSecondary)
+                Text(percent(day.timeInRange))
+                    .font(.title3.weight(.bold))
+                    .foregroundStyle(tint)
+                HStack(spacing: 3) {
+                    Text(day.day.formatted(.dateTime.weekday(.abbreviated).month(.abbreviated).day()))
+                    Image(systemName: "chevron.right").font(.system(size: 9, weight: .semibold))
+                }
                 .font(.caption2)
                 .foregroundStyle(Theme.textTertiary)
+            }
+            .contentShape(.rect)
         }
+        .buttonStyle(.plain)
         .accessibilityElement(children: .combine)
+        .accessibilityHint("Opens this day")
+    }
+
+    /// A day-detail sheet for one calendar day, filtering the windowed queries to
+    /// that day so tapping the best/toughest day opens its full record.
+    private func dayDetailSheet(for day: Date) -> some View {
+        let calendar = Calendar.current
+        func sameDay(_ date: Date) -> Bool { calendar.isDate(date, inSameDayAs: day) }
+        return CalendarDayDetailSheet(
+            date: day,
+            readings: glucose.filter { $0.isActive && sameDay($0.timestamp) },
+            insulin: insulin.filter { sameDay($0.timestamp) },
+            carbs: carbs.filter { sameDay($0.timestamp) },
+            activity: activity.filter { sameDay($0.startTimestamp) },
+            observations: observations.filter { sameDay($0.timestamp) },
+            unit: unit,
+            thresholds: thresholds,
+            calendar: calendar
+        )
     }
 
     // MARK: Insulin balance

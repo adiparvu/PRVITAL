@@ -308,7 +308,7 @@ private struct CalendarDayCell: View {
 
 // MARK: - Day detail sheet
 
-private struct CalendarDayDetailSheet: View {
+struct CalendarDayDetailSheet: View {
     let date: Date
     let readings: [GlucoseReading]
     let insulin: [InsulinDose]
