@@ -144,12 +144,19 @@ enum ExternalCSVImporter {
                 return fields[index]
             }
 
+            // Real Clarity records always carry a timestamp; the leading
+            // account/device/alert metadata rows don't — and some (e.g. an Alert
+            // row) even put a threshold value in the glucose column. Guard on the
+            // timestamp first so those metadata rows are ignored (not counted, and
+            // not mistaken for readings) before we classify by value column.
+            guard let timestamp = formatter.date(from: field(timestampCol)) else { continue }
+
             // Classify by which numeric VALUE column is populated, not by the
             // Event Type text. The EU/localized Clarity export translates the
             // Event Type/Subtype cells (e.g. German "Kohlenhydrate", French
             // "Glucides"), so an English-string switch silently dropped every
-            // meal, insulin and exercise row. Each Clarity row is a single event
-            // that fills exactly one value column, so this is unambiguous.
+            // meal, insulin and exercise row. Each Clarity record fills exactly
+            // one value column, so this is unambiguous.
             let eventType = field(eventTypeCol).lowercased()
             let glucoseText = field(glucoseCol)
 
@@ -159,9 +166,6 @@ enum ExternalCSVImporter {
                 // else treat it as a sensor reading.
                 let isCalibration = eventType.contains("cal") || eventType.contains("kal")
                     || eventType.contains("étal") || eventType.contains("etal")
-                guard let timestamp = formatter.date(from: field(timestampCol)) else {
-                    skipped += 1; continue
-                }
                 parsed.append(ParsedRow(
                     timestamp: timestamp, source: .dexcom,
                     record: .glucose(mgdL: unit.toMgdL(value),
@@ -169,9 +173,6 @@ enum ExternalCSVImporter {
                 ))
 
             } else if let units = CSVImportParser.number(from: field(insulinCol)) {
-                guard let timestamp = formatter.date(from: field(timestampCol)) else {
-                    skipped += 1; continue
-                }
                 // Long-acting/basal subtype across languages ("Long-Acting",
                 // "Langwirksam", "Lente", "Basal"); anything else is a bolus.
                 let subtype = field(subtypeCol).lowercased()
@@ -187,9 +188,6 @@ enum ExternalCSVImporter {
                 ))
 
             } else if let grams = CSVImportParser.number(from: field(carbCol)) {
-                guard let timestamp = formatter.date(from: field(timestampCol)) else {
-                    skipped += 1; continue
-                }
                 // Clarity carries no meal label — infer it from the hour, the
                 // same way Apple Health carbohydrate imports do.
                 parsed.append(ParsedRow(
@@ -200,9 +198,6 @@ enum ExternalCSVImporter {
                 ))
 
             } else if let minutes = clarityDurationMinutes(field(durationCol)), minutes > 0 {
-                guard let timestamp = formatter.date(from: field(timestampCol)) else {
-                    skipped += 1; continue
-                }
                 parsed.append(ParsedRow(
                     timestamp: timestamp, source: .dexcom,
                     record: .activity(type: .walking, minutes: minutes,
@@ -214,8 +209,8 @@ enum ExternalCSVImporter {
                 // count it as skipped, by design.
                 skipped += 1
             }
-            // Otherwise the row is account metadata (FirstName/Device/Alert/…) or
-            // a record kind Prvital doesn't model — ignored without counting.
+            // Otherwise the row is account metadata or a record kind Prvital
+            // doesn't model — ignored without counting.
         }
         return CSVParseResult(rows: parsed, skipped: skipped)
     }
