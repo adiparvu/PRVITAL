@@ -17,7 +17,7 @@ struct GlucoseScheduleView: View {
                 Text("Get a gentle local notification at each enabled time. Prvital never sends your data anywhere — reminders are scheduled on this device.")
                     .font(.footnote).foregroundStyle(Theme.textTertiary)
             }
-            .listRowBackground(Theme.surface)
+            .glassListRow()
 
             Section {
                 ForEach($schedule.slots) { $slot in
@@ -36,7 +36,7 @@ struct GlucoseScheduleView: View {
                 Text("For example: a waking reading at 07:00, one before each meal, and one at bedtime. Swipe a time to remove it.")
                     .font(.footnote).foregroundStyle(Theme.textTertiary)
             }
-            .listRowBackground(Theme.surface)
+            .glassListRow()
         }
         .scrollContentBackground(.hidden)
         .background(Theme.background)

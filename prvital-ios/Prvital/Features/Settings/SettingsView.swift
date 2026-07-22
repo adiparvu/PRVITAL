@@ -55,7 +55,7 @@ struct SettingsView: View {
                         ProfileSettingsRow(profile: profile)
                     }
                 }
-                .listRowBackground(Theme.surface)
+                .glassListRow()
 
                 Section {
                     NavigationLink {
@@ -117,7 +117,7 @@ struct SettingsView: View {
                 } header: {
                     Text("Glucose & therapy")
                 }
-                .listRowBackground(Theme.surface)
+                .glassListRow()
 
                 Section {
                     NavigationLink {
@@ -157,7 +157,7 @@ struct SettingsView: View {
                 } header: {
                     Text("Devices & safety")
                 }
-                .listRowBackground(Theme.surface)
+                .glassListRow()
 
                 Section {
                     NavigationLink {
@@ -195,7 +195,7 @@ struct SettingsView: View {
                 } header: {
                     Text("App")
                 }
-                .listRowBackground(Theme.surface)
+                .glassListRow()
 
                 Section {
                     NavigationLink {
@@ -249,7 +249,7 @@ struct SettingsView: View {
                         .foregroundStyle(Theme.textTertiary)
                         .padding(.top, 4)
                 }
-                .listRowBackground(Theme.surface)
+                .glassListRow()
 
                 Section {
                     NavigationLink {
@@ -273,7 +273,7 @@ struct SettingsView: View {
                         )
                     }
                 }
-                .listRowBackground(Theme.surface)
+                .glassListRow()
 
                 Section {
                     Button {
@@ -305,7 +305,7 @@ struct SettingsView: View {
                         .font(.footnote)
                         .foregroundStyle(Theme.textTertiary)
                 }
-                .listRowBackground(Theme.surface)
+                .glassListRow()
             }
             .scrollContentBackground(.hidden)
             .prvitalTabBackground()

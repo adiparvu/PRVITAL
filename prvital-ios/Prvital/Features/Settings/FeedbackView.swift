@@ -44,7 +44,7 @@ struct FeedbackView: View {
                 } header: {
                     Text("What's on your mind?")
                 }
-                .listRowBackground(Theme.surface)
+                .glassListRow()
 
                 Section {
                     TextEditor(text: $message)
@@ -62,7 +62,7 @@ struct FeedbackView: View {
                 } header: {
                     Text("Message")
                 }
-                .listRowBackground(Theme.surface)
+                .glassListRow()
 
                 Section {
                     Toggle("Include diagnostics", isOn: $includeDiagnostics)
@@ -76,7 +76,7 @@ struct FeedbackView: View {
                         .font(.footnote)
                         .foregroundStyle(Theme.textTertiary)
                 }
-                .listRowBackground(Theme.surface)
+                .glassListRow()
 
                 Section {
                     ShareLink(item: composedBody) {
@@ -89,7 +89,7 @@ struct FeedbackView: View {
                         .font(.footnote)
                         .foregroundStyle(Theme.textTertiary)
                 }
-                .listRowBackground(Theme.surface)
+                .glassListRow()
             }
             .scrollContentBackground(.hidden)
             .background(Theme.background)

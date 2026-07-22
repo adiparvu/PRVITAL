@@ -40,7 +40,7 @@ struct NightscoutSettingsView: View {
                     .font(.footnote)
                     .foregroundStyle(Theme.textTertiary)
             }
-            .listRowBackground(Theme.surface)
+            .glassListRow()
 
             Section {
                 Button(action: saveAndTest) {
@@ -63,7 +63,7 @@ struct NightscoutSettingsView: View {
                     }
                 }
             }
-            .listRowBackground(Theme.surface)
+            .glassListRow()
 
             Section {
                 Toggle("Upload my entries", isOn: $preferences.nightscoutUploadEnabled)
@@ -79,7 +79,7 @@ struct NightscoutSettingsView: View {
                 .font(.footnote)
                 .foregroundStyle(Theme.textTertiary)
             }
-            .listRowBackground(Theme.surface)
+            .glassListRow()
 
             if env.preferences.nightscout.isConfigured {
                 Section {
@@ -87,7 +87,7 @@ struct NightscoutSettingsView: View {
                         Text("Remove Nightscout")
                     }
                 }
-                .listRowBackground(Theme.surface)
+                .glassListRow()
             }
         }
         .scrollContentBackground(.hidden)

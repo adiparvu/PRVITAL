@@ -21,7 +21,7 @@ struct TherapySettingsView: View {
                     .font(.footnote)
                     .foregroundStyle(Theme.textTertiary)
             }
-            .listRowBackground(Theme.surface)
+            .glassListRow()
 
             if params.isEnabled {
                 Section("Ratios") {
@@ -29,7 +29,7 @@ struct TherapySettingsView: View {
                     numberRow("Correction factor", value: isfBinding, suffix: perUnit, digits: unit.fractionDigits)
                     numberRow("Target glucose", value: targetBinding, suffix: unit.rawValue, digits: unit.fractionDigits)
                 }
-                .listRowBackground(Theme.surface)
+                .glassListRow()
 
                 Section {
                     numberRow("Insulin duration", value: $params.durationHours, suffix: "h", digits: 1)
@@ -42,7 +42,7 @@ struct TherapySettingsView: View {
                         .font(.footnote)
                         .foregroundStyle(Theme.textTertiary)
                 }
-                .listRowBackground(Theme.surface)
+                .glassListRow()
 
                 if params.isValid {
                     Section {
@@ -53,7 +53,7 @@ struct TherapySettingsView: View {
                                 .foregroundStyle(Theme.accent)
                         }
                     }
-                    .listRowBackground(Theme.surface)
+                    .glassListRow()
                 } else {
                     Section {
                         Label("Enter positive ratios, and a time-to-peak shorter than half the duration, to use the calculator.",
@@ -61,7 +61,7 @@ struct TherapySettingsView: View {
                             .font(.footnote)
                             .foregroundStyle(Theme.zoneWarning)
                     }
-                    .listRowBackground(Theme.surface)
+                    .glassListRow()
                 }
             }
         }

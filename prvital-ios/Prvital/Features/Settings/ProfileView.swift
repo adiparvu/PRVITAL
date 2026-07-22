@@ -97,7 +97,7 @@ struct ProfileView: View {
                 .font(.footnote)
                 .foregroundStyle(Theme.textTertiary)
         }
-        .listRowBackground(Theme.surface)
+        .glassListRow()
     }
 
     // MARK: - Avatar
@@ -151,7 +151,7 @@ struct ProfileView: View {
                 .font(.footnote)
                 .foregroundStyle(Theme.textTertiary)
         }
-        .listRowBackground(Theme.surface)
+        .glassListRow()
     }
 
     /// The chosen ring/initials colour, falling back to the app accent.
@@ -201,7 +201,7 @@ struct ProfileView: View {
                 .font(.footnote)
                 .foregroundStyle(Theme.textTertiary)
         }
-        .listRowBackground(Theme.surface)
+        .glassListRow()
     }
 
     // MARK: - Diabetes & therapy
@@ -220,7 +220,7 @@ struct ProfileView: View {
                 .font(.footnote)
                 .foregroundStyle(Theme.textTertiary)
         }
-        .listRowBackground(Theme.surface)
+        .glassListRow()
     }
 
     private var therapySection: some View {
@@ -233,7 +233,7 @@ struct ProfileView: View {
         } header: {
             Text("How you manage it")
         }
-        .listRowBackground(Theme.surface)
+        .glassListRow()
     }
 
     private var therapyDetailsSection: some View {
@@ -252,7 +252,7 @@ struct ProfileView: View {
                 .font(.footnote)
                 .foregroundStyle(Theme.textTertiary)
         }
-        .listRowBackground(Theme.surface)
+        .glassListRow()
     }
 
     /// A therapy field row: the field name, its current value (or "Optional"),
@@ -291,7 +291,7 @@ struct ProfileView: View {
                 .font(.footnote)
                 .foregroundStyle(Theme.textTertiary)
         }
-        .listRowBackground(Theme.surface)
+        .glassListRow()
     }
 
     // MARK: - Care team
@@ -353,7 +353,7 @@ struct ProfileView: View {
                 .font(.footnote)
                 .foregroundStyle(Theme.textTertiary)
         }
-        .listRowBackground(Theme.surface)
+        .glassListRow()
     }
 
     private var callButtonTitle: String {
@@ -398,7 +398,7 @@ struct ProfileView: View {
         } header: {
             Text("Quick links")
         }
-        .listRowBackground(Theme.surface)
+        .glassListRow()
     }
 
     // MARK: - Notes
@@ -413,7 +413,7 @@ struct ProfileView: View {
         } header: {
             Text("Notes")
         }
-        .listRowBackground(Theme.surface)
+        .glassListRow()
     }
 
     // MARK: - Helpers

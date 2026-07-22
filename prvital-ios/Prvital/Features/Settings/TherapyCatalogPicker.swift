@@ -38,7 +38,7 @@ struct TherapyCatalogPicker: View {
                         }
                     }
                 }
-                .listRowBackground(Theme.surface)
+                .glassListRow()
             }
 
             Section {
@@ -62,7 +62,7 @@ struct TherapyCatalogPicker: View {
                     .font(.footnote)
                     .foregroundStyle(Theme.textTertiary)
             }
-            .listRowBackground(Theme.surface)
+            .glassListRow()
 
             if selection?.isEmpty == false {
                 Section {
@@ -72,7 +72,7 @@ struct TherapyCatalogPicker: View {
                         dismiss()
                     }
                 }
-                .listRowBackground(Theme.surface)
+                .glassListRow()
             }
         }
         .scrollContentBackground(.hidden)

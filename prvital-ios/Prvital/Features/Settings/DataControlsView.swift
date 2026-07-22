@@ -75,7 +75,7 @@ struct DataControlsView: View {
                     .font(.footnote)
                     .foregroundStyle(Theme.textTertiary)
             }
-            .listRowBackground(Theme.surface)
+            .glassListRow()
 
             Section {
                 Toggle(isOn: cloudSyncBinding) {
@@ -92,7 +92,7 @@ struct DataControlsView: View {
                     .font(.footnote)
                     .foregroundStyle(Theme.textTertiary)
             }
-            .listRowBackground(Theme.surface)
+            .glassListRow()
 
             Section {
                 Button {
@@ -119,7 +119,7 @@ struct DataControlsView: View {
                     .font(.footnote)
                     .foregroundStyle(Theme.textTertiary)
             }
-            .listRowBackground(Theme.surface)
+            .glassListRow()
 
             Section {
                 NavigationLink {
@@ -138,7 +138,7 @@ struct DataControlsView: View {
                     .font(.footnote)
                     .foregroundStyle(Theme.textTertiary)
             }
-            .listRowBackground(Theme.surface)
+            .glassListRow()
 
             Section {
                 Button(role: .destructive) {
@@ -153,7 +153,7 @@ struct DataControlsView: View {
                     .font(.footnote)
                     .foregroundStyle(Theme.textTertiary)
             }
-            .listRowBackground(Theme.surface)
+            .glassListRow()
 
             Section {
                 Label {
@@ -164,7 +164,7 @@ struct DataControlsView: View {
                     Image(systemName: "heart.text.square").foregroundStyle(Theme.accent)
                 }
             }
-            .listRowBackground(Theme.surface)
+            .glassListRow()
         }
         .scrollContentBackground(.hidden)
         .background(Theme.background)

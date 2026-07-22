@@ -48,7 +48,7 @@ struct CredentialSourceSettingsView: View {
                     .font(.footnote)
                     .foregroundStyle(Theme.textTertiary)
             }
-            .listRowBackground(Theme.surface)
+            .glassListRow()
 
             Section {
                 Button(action: saveAndTest) {
@@ -75,7 +75,7 @@ struct CredentialSourceSettingsView: View {
                     .font(.footnote)
                     .foregroundStyle(Theme.textTertiary)
             }
-            .listRowBackground(Theme.surface)
+            .glassListRow()
 
             if store.hasCredentials(for: dataSource) {
                 Section {
@@ -83,7 +83,7 @@ struct CredentialSourceSettingsView: View {
                         Text("Remove account")
                     }
                 }
-                .listRowBackground(Theme.surface)
+                .glassListRow()
             }
         }
         .scrollContentBackground(.hidden)

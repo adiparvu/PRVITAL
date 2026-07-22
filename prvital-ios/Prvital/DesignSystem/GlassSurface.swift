@@ -53,6 +53,22 @@ extension View {
     func glassCard(cornerRadius: CGFloat = 22, padding: CGFloat = 16) -> some View {
         modifier(GlassCard(cornerRadius: cornerRadius, padding: padding))
     }
+
+    /// A translucent "liquid glass" background for Form/List rows, so settings
+    /// surfaces read as frosted glass over the app background instead of solid
+    /// panels. Use in place of `.listRowBackground(Theme.surface)`.
+    func glassListRow() -> some View {
+        listRowBackground(GlassListRowBackground())
+    }
+}
+
+/// The frosted-glass fill behind a settings list row.
+struct GlassListRowBackground: View {
+    var body: some View {
+        Rectangle()
+            .fill(.ultraThinMaterial)
+            .overlay(Theme.surface.opacity(0.10))
+    }
 }
 
 /// A titled section container used throughout the app.

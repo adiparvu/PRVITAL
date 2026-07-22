@@ -32,7 +32,7 @@ struct LanguageSettingsView: View {
                     .font(.footnote)
                     .foregroundStyle(Theme.textTertiary)
             }
-            .listRowBackground(Theme.surface)
+            .glassListRow()
         }
         .scrollContentBackground(.hidden)
         .prvitalTabBackground()

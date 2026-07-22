@@ -20,7 +20,7 @@ struct SharingView: View {
                     .font(.subheadline)
                     .foregroundStyle(Theme.textSecondary)
             }
-            .listRowBackground(Theme.surface)
+            .glassListRow()
 
             Section {
                 Picker("Period", selection: $days) {
@@ -31,7 +31,7 @@ struct SharingView: View {
             } header: {
                 Text("Care summary")
             }
-            .listRowBackground(Theme.surface)
+            .glassListRow()
 
             Section {
                 ShareLink(item: summary) {
@@ -49,7 +49,7 @@ struct SharingView: View {
                     .foregroundStyle(Theme.textTertiary)
                     .padding(.top, 4)
             }
-            .listRowBackground(Theme.surface)
+            .glassListRow()
 
             Section {
                 NavigationLink {
@@ -77,7 +77,7 @@ struct SharingView: View {
                     .font(.footnote)
                     .foregroundStyle(Theme.textTertiary)
             }
-            .listRowBackground(Theme.surface)
+            .glassListRow()
         }
         .scrollContentBackground(.hidden)
         .background(Theme.background)

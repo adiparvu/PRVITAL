@@ -43,7 +43,7 @@ struct AppearanceSettingsView: View {
                     .font(.footnote)
                     .foregroundStyle(Theme.textTertiary)
             }
-            .listRowBackground(Theme.surface)
+            .glassListRow()
 
             Section {
                 ForEach(AccentTheme.allCases) { theme in
@@ -62,7 +62,7 @@ struct AppearanceSettingsView: View {
                     .font(.footnote)
                     .foregroundStyle(Theme.textTertiary)
             }
-            .listRowBackground(Theme.surface)
+            .glassListRow()
 
             // Display: text size, background, haptics.
             Section {
@@ -104,7 +104,7 @@ struct AppearanceSettingsView: View {
                     .font(.footnote)
                     .foregroundStyle(Theme.textTertiary)
             }
-            .listRowBackground(Theme.surface)
+            .glassListRow()
         }
         .scrollContentBackground(.hidden)
         .background(Theme.background)
@@ -146,7 +146,7 @@ struct TextSizeSettingsView: View {
                 .padding(.vertical, 6)
                 .dynamicTypeSize(prefs.useSystemTextSize ? .large : prefs.textSize.dynamicTypeSize)
                 .animation(.snappy, value: prefs.textSizeRaw)
-                .listRowBackground(Theme.surface)
+                .glassListRow()
             } header: {
                 Text("Preview")
             }
@@ -178,7 +178,7 @@ struct TextSizeSettingsView: View {
                     .font(.footnote)
                     .foregroundStyle(Theme.textTertiary)
             }
-            .listRowBackground(Theme.surface)
+            .glassListRow()
         }
         .scrollContentBackground(.hidden)
         .background(Theme.background)
@@ -221,7 +221,7 @@ struct BackgroundSettingsView: View {
             } header: {
                 Text("Background type")
             }
-            .listRowBackground(Theme.surface)
+            .glassListRow()
 
             if prefs.backgroundKind == .gradient {
                 Section {
@@ -249,7 +249,7 @@ struct BackgroundSettingsView: View {
                         .font(.footnote)
                         .foregroundStyle(Theme.textTertiary)
                 }
-                .listRowBackground(Theme.surface)
+                .glassListRow()
             }
         }
         .scrollContentBackground(.hidden)

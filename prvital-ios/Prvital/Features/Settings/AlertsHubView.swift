@@ -36,7 +36,7 @@ struct AlertsHubView: View {
                 AlertStatusCard(status: liveStatus)
                     .listRowInsets(EdgeInsets(top: 10, leading: 14, bottom: 10, trailing: 14))
             }
-            .listRowBackground(Theme.surface)
+            .glassListRow()
 
             Section {
                 Toggle("Enable glucose alerts", isOn: $prefs.enabled)
@@ -45,7 +45,7 @@ struct AlertsHubView: View {
                     .font(.footnote)
                     .foregroundStyle(Theme.textTertiary)
             }
-            .listRowBackground(Theme.surface)
+            .glassListRow()
 
             if prefs.enabled {
                 outOfRangeSection
@@ -98,7 +98,7 @@ struct AlertsHubView: View {
             Text("Uses the thresholds from Units & targets.")
                 .font(.footnote).foregroundStyle(Theme.textTertiary)
         }
-        .listRowBackground(Theme.surface)
+        .glassListRow()
     }
 
     @ViewBuilder
@@ -134,7 +134,7 @@ struct AlertsHubView: View {
                 Text("When an urgent low isn't acknowledged, it repeats on this schedule until you tap it, until a newer reading shows you back above the urgent-low threshold, or until the maximum repeats.")
                     .font(.footnote).foregroundStyle(Theme.textTertiary)
             }
-            .listRowBackground(Theme.surface)
+            .glassListRow()
         }
     }
 
@@ -159,7 +159,7 @@ struct AlertsHubView: View {
             Text("Catch a steep rise or fall early, whatever the value. Around 2–3 mg/dL per minute matches the classic \"rising/falling fast\" trend arrows.")
                 .font(.footnote).foregroundStyle(Theme.textTertiary)
         }
-        .listRowBackground(Theme.surface)
+        .glassListRow()
     }
 
     private var signalLossSection: some View {
@@ -185,7 +185,7 @@ struct AlertsHubView: View {
             Text("Warns you once when no new glucose data has arrived for this long — a sensor dropout or a lost connection. Detection runs while the app is open or syncing in the background.")
                 .font(.footnote).foregroundStyle(Theme.textTertiary)
         }
-        .listRowBackground(Theme.surface)
+        .glassListRow()
     }
 
     private var sensorSection: some View {
@@ -211,7 +211,7 @@ struct AlertsHubView: View {
             Text("Track your current sensor's warm-up and expiry so a change never catches you by surprise.")
                 .font(.footnote).foregroundStyle(Theme.textTertiary)
         }
-        .listRowBackground(Theme.surface)
+        .glassListRow()
     }
 
     private var snoozeSection: some View {
@@ -225,7 +225,7 @@ struct AlertsHubView: View {
             Text("The same alert won't repeat within this window. A change — such as low to urgent low, or a new direction — always alerts right away.")
                 .font(.footnote).foregroundStyle(Theme.textTertiary)
         }
-        .listRowBackground(Theme.surface)
+        .glassListRow()
     }
 
     // MARK: - Live status

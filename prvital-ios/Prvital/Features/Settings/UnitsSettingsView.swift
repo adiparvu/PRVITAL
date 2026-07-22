@@ -56,7 +56,7 @@ struct UnitsSettingsView: View {
                     .font(.footnote)
                     .foregroundStyle(Theme.textTertiary)
             }
-            .listRowBackground(Theme.surface)
+            .glassListRow()
 
             Section {
                 ZonePreviewBar(thresholds: thresholds)
@@ -104,7 +104,7 @@ struct UnitsSettingsView: View {
                     .font(.footnote)
                     .foregroundStyle(Theme.textTertiary)
             }
-            .listRowBackground(Theme.surface)
+            .glassListRow()
 
             Section {
                 Toggle(isOn: $thresholds.nightModeEnabled) {
@@ -149,7 +149,7 @@ struct UnitsSettingsView: View {
                     .font(.footnote)
                     .foregroundStyle(Theme.textTertiary)
             }
-            .listRowBackground(Theme.surface)
+            .glassListRow()
 
             Section {
                 Button {
@@ -164,7 +164,7 @@ struct UnitsSettingsView: View {
                     .font(.footnote)
                     .foregroundStyle(Theme.textTertiary)
             }
-            .listRowBackground(Theme.surface)
+            .glassListRow()
         }
         .scrollContentBackground(.hidden)
         .background(Theme.background)

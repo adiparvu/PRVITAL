@@ -25,7 +25,7 @@ struct RemindersSettingsView: View {
                     .font(.footnote)
                     .foregroundStyle(Theme.textTertiary)
             }
-            .listRowBackground(Theme.surface)
+            .glassListRow()
 
             Section {
                 Toggle(isOn: $reminders.journalEnabled) {
@@ -45,7 +45,7 @@ struct RemindersSettingsView: View {
                     .font(.footnote)
                     .foregroundStyle(Theme.textTertiary)
             }
-            .listRowBackground(Theme.surface)
+            .glassListRow()
 
             Section {
                 Toggle(isOn: $reminders.basalEnabled) {
@@ -59,7 +59,7 @@ struct RemindersSettingsView: View {
                     .font(.footnote)
                     .foregroundStyle(Theme.textTertiary)
             }
-            .listRowBackground(Theme.surface)
+            .glassListRow()
 
             Section {
                 Toggle(isOn: $reminders.mealsEnabled) {
@@ -79,7 +79,7 @@ struct RemindersSettingsView: View {
                     .font(.footnote)
                     .foregroundStyle(Theme.textTertiary)
             }
-            .listRowBackground(Theme.surface)
+            .glassListRow()
 
             Section {
                 Toggle(isOn: $reminders.glucoseCheckEnabled) {
@@ -99,7 +99,7 @@ struct RemindersSettingsView: View {
                     .font(.footnote)
                     .foregroundStyle(Theme.textTertiary)
             }
-            .listRowBackground(Theme.surface)
+            .glassListRow()
 
             Section {
                 Toggle(isOn: $reminders.hydrationEnabled) {
@@ -123,7 +123,7 @@ struct RemindersSettingsView: View {
                     .font(.footnote)
                     .foregroundStyle(Theme.textTertiary)
             }
-            .listRowBackground(Theme.surface)
+            .glassListRow()
         }
         .scrollContentBackground(.hidden)
         .background(Theme.background)
