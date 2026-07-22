@@ -63,11 +63,20 @@ extension View {
 }
 
 /// The frosted-glass fill behind a settings list row.
+///
+/// Uses `.regularMaterial` (not `.ultraThinMaterial`): the regular material is
+/// noticeably more opaque, so labels and captions stay legible even over a busy
+/// photo/gradient app background — the "text must be visible everywhere"
+/// requirement — while still reading as adaptive frosted glass in light and dark.
+/// A hairline keeps each row defined where the material blends into the backdrop.
 struct GlassListRowBackground: View {
     var body: some View {
         Rectangle()
-            .fill(.ultraThinMaterial)
-            .overlay(Theme.surface.opacity(0.10))
+            .fill(.regularMaterial)
+            .overlay(Theme.surface.opacity(0.06))
+            .overlay(alignment: .bottom) {
+                Rectangle().fill(Theme.hairline.opacity(0.5)).frame(height: 0.5)
+            }
     }
 }
 

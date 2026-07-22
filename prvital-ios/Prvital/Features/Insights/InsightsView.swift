@@ -13,6 +13,9 @@ struct InsightsView: View {
     @Environment(AppEnvironment.self) private var env
     @State private var section: InsightsSection = .charts
     @State private var showingWeeklyDigest = false
+    // Session-only: the user can dismiss the pinned insights card with its X; it
+    // is intentionally NOT persisted, so it returns the next time the app opens.
+    @State private var feedDismissed = false
 
     // Records feeding the ranked feed. Plain `@Query`s, filtered to a recent
     // window in `insightCards` so the surfaced patterns stay current.
@@ -54,11 +57,15 @@ struct InsightsView: View {
     var body: some View {
         NavigationStack {
             VStack(spacing: 0) {
-                if !insightCards.isEmpty {
-                    InsightsFeedSection(cards: insightCards)
-                        .padding(.horizontal)
-                        .padding(.top, 8)
-                        .padding(.bottom, 2)
+                if !feedDismissed, !insightCards.isEmpty {
+                    InsightsFeedSection(cards: insightCards) {
+                        withAnimation(.snappy) { feedDismissed = true }
+                        Haptics.play(.light)
+                    }
+                    .padding(.horizontal)
+                    .padding(.top, 8)
+                    .padding(.bottom, 2)
+                    .transition(.move(edge: .top).combined(with: .opacity))
                 }
 
                 Picker("View", selection: $section) {
@@ -121,9 +128,19 @@ struct InsightsView: View {
 /// Insights screen, Clarity-style: compact, tappable pattern tiles.
 private struct InsightsFeedSection: View {
     let cards: [InsightCard]
+    var onDismiss: () -> Void = {}
 
     var body: some View {
-        SectionCard("Insights", systemImage: "sparkles") {
+        SectionCard("Insights", systemImage: "sparkles", accessory: AnyView(
+            Button(action: onDismiss) {
+                Image(systemName: "xmark.circle.fill")
+                    .font(.title3)
+                    .foregroundStyle(Theme.textTertiary)
+                    .symbolRenderingMode(.hierarchical)
+            }
+            .buttonStyle(.plain)
+            .accessibilityLabel("Dismiss insights")
+        )) {
             // Paged slides with index dots (per device feedback) instead of a
             // horizontal scroll that cropped the next tile mid-word.
             TabView {
