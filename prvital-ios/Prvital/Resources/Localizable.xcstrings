@@ -74365,6 +74365,183 @@
           }
         }
       }
+    },
+    "Showing the most recent %@. Narrow the range to see the rest.": {
+      "extractionState": "manual",
+      "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Es werden die neuesten %@ angezeigt. Grenze den Zeitraum ein, um die übrigen zu sehen."
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Mostrando los %@ más recientes. Acota el periodo para ver el resto."
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Affichage des %@ plus récents. Restreins la période pour voir le reste."
+          }
+        },
+        "it": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Mostrando i %@ più recenti. Restringi il periodo per vedere il resto."
+          }
+        },
+        "nl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "De recentste %@ worden getoond. Beperk de periode om de rest te zien."
+          }
+        },
+        "pl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Pokazano %@ najnowszych. Zawęź zakres, aby zobaczyć resztę."
+          }
+        },
+        "pt": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "A mostrar os %@ mais recentes. Restringe o período para ver o resto."
+          }
+        },
+        "ro": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Se afișează cele mai recente %@. Restrânge intervalul ca să le vezi pe restul."
+          }
+        },
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Показаны %@ последних. Сузь диапазон, чтобы увидеть остальные."
+          }
+        }
+      }
+    },
+    "%@ already imported.": {
+      "extractionState": "manual",
+      "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%@ bereits importiert."
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%@ ya importados."
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%@ déjà importés."
+          }
+        },
+        "it": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%@ già importati."
+          }
+        },
+        "nl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%@ al geïmporteerd."
+          }
+        },
+        "pl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%@ już zaimportowano."
+          }
+        },
+        "pt": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%@ já importados."
+          }
+        },
+        "ro": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%@ deja importate."
+          }
+        },
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%@ уже импортировано."
+          }
+        }
+      }
+    },
+    "Around %@ lately. Checking ketones and reviewing sick-day steps can help.": {
+      "extractionState": "manual",
+      "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "In letzter Zeit etwa %@. Ketone zu prüfen und die Schritte für Kranktheitstage durchzugehen, kann helfen."
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Últimamente rondas %@. Comprobar las cetonas y repasar los pasos para días de enfermedad puede ayudar."
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Ces derniers temps, autour de %@. Vérifier les cétones et revoir les étapes des jours de maladie peut aider."
+          }
+        },
+        "it": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Ultimamente intorno a %@. Controllare i chetoni e rivedere i passaggi per i giorni di malattia può aiutare."
+          }
+        },
+        "nl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "De laatste tijd rond %@. Ketonen controleren en de ziektedag-stappen doornemen kan helpen."
+          }
+        },
+        "pl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Ostatnio około %@. Pomocne może być sprawdzenie ketonów i przejrzenie kroków na dni choroby."
+          }
+        },
+        "pt": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Ultimamente por volta de %@. Verificar as cetonas e rever os passos para dias de doença pode ajudar."
+          }
+        },
+        "ro": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "În ultima vreme în jur de %@. Verificarea cetonelor și recitirea pașilor pentru zilele de boală te pot ajuta."
+          }
+        },
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "В последнее время около %@. Проверка кетонов и повторение шагов на дни болезни могут помочь."
+          }
+        }
+      }
     }
   },
   "version": "1.0"
