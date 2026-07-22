@@ -18,6 +18,9 @@ struct DashboardView: View {
     @Query private var insulin: [InsulinDose]
     @Query private var carbs: [CarbEntry]
     @Query private var activity: [ActivityEntry]
+    @Query private var medications: [MedicationDose]
+    @Query private var ketones: [KetoneReading]
+    @Query private var notes: [ObservationEntry]
     @Query(sort: \SensorSession.startDate, order: .reverse) private var sensorSessions: [SensorSession]
     @Environment(\.scenePhase) private var scenePhase
     // Session-only dismissal of the companion card: cleared when the app returns
@@ -40,6 +43,12 @@ struct DashboardView: View {
                        sort: \.timestamp, order: .reverse)
         _activity = Query(filter: #Predicate<ActivityEntry> { $0.startTimestamp >= cutoff },
                           sort: \.startTimestamp, order: .reverse)
+        _medications = Query(filter: #Predicate<MedicationDose> { $0.timestamp >= cutoff },
+                             sort: \.timestamp, order: .reverse)
+        _ketones = Query(filter: #Predicate<KetoneReading> { $0.timestamp >= cutoff },
+                         sort: \.timestamp, order: .reverse)
+        _notes = Query(filter: #Predicate<ObservationEntry> { $0.timestamp >= cutoff },
+                       sort: \.timestamp, order: .reverse)
     }
 
     /// Earliest date the custom trend picker allows — matches the query window
@@ -366,11 +375,29 @@ struct DashboardView: View {
                     readings: windowReadings,
                     thresholds: thresholds,
                     unit: unit,
-                    compact: false
+                    compact: false,
+                    events: trendEvents(in: windowReadings),
+                    visibleEventKinds: env.preferences.chartEventKinds,
+                    eventKindsBinding: eventKindsBinding
                 )
             }
         }
         .sheet(isPresented: $showCustomRange) { trendCustomRangeSheet }
+    }
+
+    /// Non-glucose events within the same span as the shown trend readings, so
+    /// the markers line up with the visible curve.
+    private func trendEvents(in readings: [GlucoseReading]) -> [ChartEvent] {
+        guard let lo = readings.map(\.timestamp).min(),
+              let hi = readings.map(\.timestamp).max() else { return [] }
+        return ChartEvent.build(insulin: insulin, meals: carbs, medications: medications,
+                                activity: activity, ketones: ketones, notes: notes)
+            .filter { $0.date >= lo && $0.date <= hi }
+    }
+
+    private var eventKindsBinding: Binding<Set<ChartEventKind>> {
+        Binding(get: { env.preferences.chartEventKinds },
+                set: { env.preferences.chartEventKinds = $0 })
     }
 
     /// The active readings within the currently selected trend window.

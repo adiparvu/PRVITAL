@@ -81,9 +81,15 @@ struct GlucoseTrendChart: View {
     let thresholds: GlucoseThresholds
     let unit: GlucoseUnit
     var compact = false
+    /// Non-glucose events to pin on the chart, and which kinds are visible.
+    var events: [ChartEvent] = []
+    var visibleEventKinds: Set<ChartEventKind> = []
+    /// When provided (full-size charts), an ⓘ button opens the show/hide legend.
+    var eventKindsBinding: Binding<Set<ChartEventKind>>? = nil
 
     @State private var selectedDate: Date?
     @State private var appeared = false
+    @State private var showingLegend = false
 
     private var sorted: [GlucoseReading] {
         readings.filter(\.isActive).sorted { $0.timestamp < $1.timestamp }
@@ -140,6 +146,39 @@ struct GlucoseTrendChart: View {
         let lowText = GlucoseFormatting.labeled(mgdL: values.min() ?? 0, unit: unit)
         let highText = GlucoseFormatting.labeled(mgdL: values.max() ?? 0, unit: unit)
         return String(localized: "Glucose trend over \(sorted.count) readings. Latest \(latestText), average \(averageText), low \(lowText), high \(highText).")
+    }
+
+    /// Events whose kind is currently visible (full-size charts only).
+    private var visibleEvents: [ChartEvent] {
+        guard interactive else { return [] }
+        return events.filter { visibleEventKinds.contains($0.kind) }
+    }
+
+    /// A y just above the plot floor, where the event markers sit in a row.
+    private var markerY: Double {
+        let d = yDomain
+        return d.lowerBound + (d.upperBound - d.lowerBound) * 0.05
+    }
+
+    /// The ⓘ legend/toggle button — only on full-size charts given a binding.
+    @ViewBuilder private var legendButton: some View {
+        if let eventKindsBinding, !compact {
+            Button {
+                Haptics.play(.light)
+                showingLegend = true
+            } label: {
+                Image(systemName: "info.circle")
+                    .font(.system(size: 15))
+                    .foregroundStyle(Theme.textTertiary)
+                    .padding(6)
+                    .contentShape(.rect)
+            }
+            .buttonStyle(.plain)
+            .accessibilityLabel("Chart markers")
+            .sheet(isPresented: $showingLegend) {
+                ChartEventLegend(visible: eventKindsBinding)
+            }
+        }
     }
 
     var body: some View {
@@ -252,6 +291,21 @@ struct GlucoseTrendChart: View {
                     .symbolSize(120)
                     .foregroundStyle(thresholds.zone(forMgdL: sel.valueMgdL).color)
             }
+
+            // Event markers: a row of tinted symbol badges near the plot floor,
+            // one per visible non-glucose event (insulin, meal, med, …).
+            ForEach(visibleEvents) { event in
+                PointMark(x: .value("Event", event.date), y: .value("Marker", markerY))
+                    .symbolSize(0)
+                    .annotation(position: .overlay, alignment: .center, spacing: 0) {
+                        Image(systemName: event.kind.symbol)
+                            .font(.system(size: 8, weight: .black))
+                            .foregroundStyle(.white)
+                            .frame(width: 15, height: 15)
+                            .background(event.kind.color, in: .circle)
+                            .overlay(Circle().strokeBorder(Theme.background, lineWidth: 1))
+                    }
+            }
         }
         .chartXSelection(value: interactive ? $selectedDate : .constant(nil))
         .chartXScale(domain: xDomain)
@@ -288,6 +342,7 @@ struct GlucoseTrendChart: View {
         // the plot's floor into the axis strip or the card below it.
         .chartPlotStyle { plot in plot.clipped() }
         .frame(height: compact ? 120 : 220)
+        .overlay(alignment: .topTrailing) { legendButton }
         .opacity(appeared ? 1 : 0)
         .scaleEffect(y: appeared ? 1 : 0.94, anchor: .bottom)
         .onAppear {

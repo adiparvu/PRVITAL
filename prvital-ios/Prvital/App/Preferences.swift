@@ -20,6 +20,7 @@ final class Preferences {
         self.glucoseGoals = Self.readGlucoseGoals(self.defaults)
         self.ringGoals = Self.readRingGoals(self.defaults)
         self.periodTIRTargets = Self.readPeriodTIRTargets(self.defaults)
+        self.chartEventKinds = Self.readChartEventKinds(self.defaults)
         self.medicationPlan = Self.readMedicationPlan(self.defaults)
         self.liveSyncSeconds = (self.defaults.object(forKey: Keys.liveSync) as? Int) ?? 60
         self.postprandialWindowHours = (self.defaults.object(forKey: Keys.postprandialWindow) as? Int) ?? 3
@@ -109,6 +110,11 @@ final class Preferences {
     /// under its own key, so this is a purely additive, migration-safe change.
     var periodTIRTargets: PeriodTIRTargets {
         didSet { if let data = try? JSONEncoder().encode(periodTIRTargets) { defaults.set(data, forKey: Keys.periodTIRTargets) } }
+    }
+
+    /// Which non-glucose event kinds are drawn as markers on the glucose chart.
+    var chartEventKinds: Set<ChartEventKind> {
+        didSet { if let data = try? JSONEncoder().encode(chartEventKinds) { defaults.set(data, forKey: Keys.chartEventKinds) } }
     }
 
     /// The user's non-insulin medication schedule (names, doses, times). Drives
@@ -258,6 +264,7 @@ final class Preferences {
         static let glucoseGoals = "pref.glucoseGoals"
         static let ringGoals = "pref.ringGoals"
         static let periodTIRTargets = "pref.periodTIRTargets"
+        static let chartEventKinds = "pref.chartEventKinds"
         static let medicationPlan = "pref.medicationPlan"
         static let liveSync = "pref.liveSyncSeconds"
         static let postprandialWindow = "pref.postprandialWindowHours"
@@ -335,6 +342,12 @@ final class Preferences {
         guard let data = d.data(forKey: Keys.periodTIRTargets),
               let value = try? JSONDecoder().decode(PeriodTIRTargets.self, from: data)
         else { return .default }
+        return value
+    }
+    private static func readChartEventKinds(_ d: UserDefaults) -> Set<ChartEventKind> {
+        guard let data = d.data(forKey: Keys.chartEventKinds),
+              let value = try? JSONDecoder().decode(Set<ChartEventKind>.self, from: data)
+        else { return ChartEventKind.allShown }
         return value
     }
     private static func readMedicationPlan(_ d: UserDefaults) -> MedicationPlan {

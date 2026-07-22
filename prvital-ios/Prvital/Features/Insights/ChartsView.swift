@@ -12,6 +12,9 @@ struct ChartsView: View {
     @Query private var insulin: [InsulinDose]
     @Query private var carbs: [CarbEntry]
     @Query private var activity: [ActivityEntry]
+    @Query private var medications: [MedicationDose]
+    @Query private var ketones: [KetoneReading]
+    @Query private var notes: [ObservationEntry]
 
     /// The widest interval is one year, so the queries never need more than ~370
     /// days. Windowing them here means a synced (or freshly imported) 100k+-row
@@ -28,6 +31,12 @@ struct ChartsView: View {
                        sort: \.timestamp, order: .reverse)
         _activity = Query(filter: #Predicate<ActivityEntry> { $0.startTimestamp >= cutoff },
                           sort: \.startTimestamp, order: .reverse)
+        _medications = Query(filter: #Predicate<MedicationDose> { $0.timestamp >= cutoff },
+                             sort: \.timestamp, order: .reverse)
+        _ketones = Query(filter: #Predicate<KetoneReading> { $0.timestamp >= cutoff },
+                         sort: \.timestamp, order: .reverse)
+        _notes = Query(filter: #Predicate<ObservationEntry> { $0.timestamp >= cutoff },
+                       sort: \.timestamp, order: .reverse)
     }
 
     @State private var interval: InsightsInterval = .week
@@ -49,6 +58,27 @@ struct ChartsView: View {
     }
     private var filteredActivity: [ActivityEntry] {
         activity.filter { range.contains($0.startTimestamp) }
+    }
+    private var filteredMedications: [MedicationDose] {
+        medications.filter { range.contains($0.timestamp) }
+    }
+    private var filteredKetones: [KetoneReading] {
+        ketones.filter { range.contains($0.timestamp) }
+    }
+    private var filteredNotes: [ObservationEntry] {
+        notes.filter { range.contains($0.timestamp) }
+    }
+
+    /// Non-glucose events pinned on the trend chart for the selected interval.
+    private var chartEvents: [ChartEvent] {
+        ChartEvent.build(insulin: filteredInsulin, meals: filteredCarbs,
+                         medications: filteredMedications, activity: filteredActivity,
+                         ketones: filteredKetones, notes: filteredNotes)
+    }
+
+    private var eventKindsBinding: Binding<Set<ChartEventKind>> {
+        Binding(get: { env.preferences.chartEventKinds },
+                set: { env.preferences.chartEventKinds = $0 })
     }
 
     // MARK: Aggregations
@@ -165,7 +195,10 @@ struct ChartsView: View {
             if activeReadings.isEmpty {
                 emptyChart("No glucose readings in this period.")
             } else {
-                GlucoseTrendChart(readings: activeReadings, thresholds: thresholds, unit: unit)
+                GlucoseTrendChart(readings: activeReadings, thresholds: thresholds, unit: unit,
+                                  events: chartEvents,
+                                  visibleEventKinds: env.preferences.chartEventKinds,
+                                  eventKindsBinding: eventKindsBinding)
             }
         }
     }
