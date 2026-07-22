@@ -370,8 +370,8 @@ struct GlucoseTrendChart: View {
         }
         let hours = last.timeIntervalSince(first) / 3600
         switch hours {
-        case ..<27:      return .dateTime.hour()
-        case ..<24 * 90: return .dateTime.month(.abbreviated).day()
+        case ..<27:      return .dateTime.hour()          // within a day
+        case ..<2160:    return .dateTime.month(.abbreviated).day()          // up to ~90 days
         default:         return .dateTime.month(.abbreviated).year(.twoDigits)
         }
     }
