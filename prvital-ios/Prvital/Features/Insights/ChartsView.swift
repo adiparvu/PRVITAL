@@ -2,11 +2,42 @@ import SwiftUI
 import SwiftData
 import Charts
 
-/// The visual pane of Insights: glucose trend plus daily insulin, carbohydrate
-/// and activity bars for the selected interval. All reads are plain `@Query`s
-/// filtered to `interval.dateRange()` in computed vars, per the data guidelines.
+/// The visual pane of Insights: an interval picker over `ChartsContent`, which is
+/// re-created for each interval so only the selected window is ever loaded.
 struct ChartsView: View {
+    @State private var interval: InsightsInterval = .week
+
+    var body: some View {
+        ScrollView {
+            VStack(spacing: 20) {
+                Picker("Interval", selection: $interval) {
+                    ForEach(InsightsInterval.allCases) { option in
+                        Text(option.label).tag(option)
+                    }
+                }
+                .pickerStyle(.segmented)
+                .onChange(of: interval) { _, _ in Haptics.play(.selection) }
+
+                // Keyed on the interval so its windowed @Query re-initialises when
+                // the range changes — a freshly imported 100k-row history is never
+                // fully materialised, only the selected sub-range.
+                ChartsContent(interval: interval)
+                    .id(interval)
+            }
+            .padding()
+            .animation(.smooth, value: interval)
+        }
+        .background(Theme.background)
+    }
+}
+
+/// The charts for one interval. Every `@Query` is windowed to that interval's
+/// `dateRange()` in `init`, per the data guidelines, so the always-visible
+/// Insights tab never loads the whole CGM history on the main thread.
+struct ChartsContent: View {
     @Environment(AppEnvironment.self) private var env
+
+    let interval: InsightsInterval
 
     @Query private var glucose: [GlucoseReading]
     @Query private var insulin: [InsulinDose]
@@ -16,13 +47,9 @@ struct ChartsView: View {
     @Query private var ketones: [KetoneReading]
     @Query private var notes: [ObservationEntry]
 
-    /// The widest interval is one year, so the queries never need more than ~370
-    /// days. Windowing them here means a synced (or freshly imported) 100k+-row
-    /// table is never fully materialised on the main thread just to chart the
-    /// selected sub-range — the in-memory `range` filters below still apply.
-    init() {
-        let cutoff = Calendar.current.date(byAdding: .day, value: -370, to: Date())
-            ?? Date().addingTimeInterval(-370 * 86_400)
+    init(interval: InsightsInterval) {
+        self.interval = interval
+        let cutoff = interval.dateRange().lowerBound
         _glucose = Query(filter: #Predicate<GlucoseReading> { $0.timestamp >= cutoff },
                          sort: \.timestamp, order: .reverse)
         _insulin = Query(filter: #Predicate<InsulinDose> { $0.timestamp >= cutoff },
@@ -38,8 +65,6 @@ struct ChartsView: View {
         _notes = Query(filter: #Predicate<ObservationEntry> { $0.timestamp >= cutoff },
                        sort: \.timestamp, order: .reverse)
     }
-
-    @State private var interval: InsightsInterval = .week
 
     private var unit: GlucoseUnit { env.preferences.glucoseUnit }
     private var thresholds: GlucoseThresholds { env.preferences.thresholds }
@@ -125,26 +150,13 @@ struct ChartsView: View {
     // MARK: Body
 
     var body: some View {
-        ScrollView {
-            VStack(spacing: 20) {
-                Picker("Interval", selection: $interval) {
-                    ForEach(InsightsInterval.allCases) { option in
-                        Text(option.label).tag(option)
-                    }
-                }
-                .pickerStyle(.segmented)
-                .onChange(of: interval) { _, _ in Haptics.play(.selection) }
-
-                glucoseSection.appearTransition(delay: 0)
-                distributionSection.appearTransition(delay: 0.06)
-                insulinSection.appearTransition(delay: 0.12)
-                carbsSection.appearTransition(delay: 0.18)
-                activitySection.appearTransition(delay: 0.24)
-            }
-            .padding()
-            .animation(.smooth, value: interval)
+        VStack(spacing: 20) {
+            glucoseSection.appearTransition(delay: 0)
+            distributionSection.appearTransition(delay: 0.06)
+            insulinSection.appearTransition(delay: 0.12)
+            carbsSection.appearTransition(delay: 0.18)
+            activitySection.appearTransition(delay: 0.24)
         }
-        .background(Theme.background)
     }
 
     // MARK: Sections

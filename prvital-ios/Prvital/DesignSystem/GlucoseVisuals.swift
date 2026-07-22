@@ -95,6 +95,14 @@ struct GlucoseTrendChart: View {
         readings.filter(\.isActive).sorted { $0.timestamp < $1.timestamp }
     }
 
+    /// The readings actually drawn as area/line marks — downsampled so a wide
+    /// window (a year ≈ 105k points) doesn't emit hundreds of thousands of marks
+    /// and stall the main thread. Scrubbing, extreme callouts and the "now" dot
+    /// still read the full-fidelity `sorted` set.
+    private var marks: [GlucoseReading] {
+        GlucoseDownsampler.downsample(sorted, maxPoints: compact ? 160 : 480)
+    }
+
     /// Whether scrubbing / detailed marks are enabled (full-size only).
     private var interactive: Bool { !compact }
 
@@ -191,7 +199,7 @@ struct GlucoseTrendChart: View {
             // follow the effective band at each reading's time — so the target
             // visibly narrows/shifts across the night window.
             if thresholds.nightModeEnabled {
-                ForEach(sorted) { reading in
+                ForEach(marks) { reading in
                     LineMark(x: .value("Time", reading.timestamp),
                              y: .value("High limit", thresholds.targetUpper(at: reading.timestamp)),
                              series: .value("Band", "upper"))
@@ -214,7 +222,7 @@ struct GlucoseTrendChart: View {
                     .lineStyle(StrokeStyle(lineWidth: 1, dash: [4, 4]))
             }
 
-            ForEach(sorted) { reading in
+            ForEach(marks) { reading in
                 AreaMark(
                     x: .value("Time", reading.timestamp),
                     y: .value("Glucose", reading.valueMgdL)

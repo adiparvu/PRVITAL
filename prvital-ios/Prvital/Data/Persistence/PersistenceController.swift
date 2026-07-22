@@ -49,6 +49,7 @@ enum PersistenceController {
         // reboot"). Best-effort: if the device is still locked this throws and we
         // simply proceed (the entitlement default covers freshly-created files).
         relaxFileProtection(for: configuration)
+        relaxAppGroupPreferences()
         do {
             return try ModelContainer(for: AppSchema.schema, configurations: [configuration])
         } catch {
@@ -79,6 +80,23 @@ enum PersistenceController {
                 [.protectionKey: FileProtectionType.completeUntilFirstUserAuthentication],
                 ofItemAtPath: path)
         }
+    }
+
+    /// The widgets read their glucose snapshot from the App Group `UserDefaults`,
+    /// whose backing plist inherited the same sticky `NSFileProtectionComplete`
+    /// on upgrading installs — making it unreadable while the device is locked,
+    /// which is exactly when Lock Screen / background widgets refresh. Relax it to
+    /// match, so the snapshot stays readable and the widgets don't show "No data".
+    private static func relaxAppGroupPreferences() {
+        let fileManager = FileManager.default
+        guard let container = fileManager
+            .containerURL(forSecurityApplicationGroupIdentifier: AppSchema.appGroupIdentifier) else { return }
+        let plist = container
+            .appending(path: "Library/Preferences/\(AppSchema.appGroupIdentifier).plist")
+        guard fileManager.fileExists(atPath: plist.path) else { return }
+        try? fileManager.setAttributes(
+            [.protectionKey: FileProtectionType.completeUntilFirstUserAuthentication],
+            ofItemAtPath: plist.path)
     }
 
     private static func makeConfiguration(cloudSync: Bool) -> ModelConfiguration {
