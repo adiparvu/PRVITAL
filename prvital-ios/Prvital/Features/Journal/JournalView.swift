@@ -41,8 +41,7 @@ struct JournalView: View {
 
     @State private var editTarget: JournalEditTarget?
     @State private var showingQuickEntry = false
-    @State private var showingCalendar = false
-    @State private var showingLogbook = false
+    @State private var mode: JournalMode = .days
 
     private var unit: GlucoseUnit { env.preferences.glucoseUnit }
     private var thresholds: GlucoseThresholds { env.preferences.thresholds }
@@ -70,57 +69,38 @@ struct JournalView: View {
     }
 
     var body: some View {
-        let density = self.density
-        let buckets = self.buckets
+        NavigationStack {
+            VStack(spacing: 0) {
+                Picker("View", selection: $mode) {
+                    ForEach(JournalMode.allCases) { option in
+                        Text(option.label).tag(option)
+                    }
+                }
+                .pickerStyle(.segmented)
+                .padding(.horizontal)
+                .padding(.vertical, 8)
+                .onChange(of: mode) { _, _ in Haptics.play(.selection) }
 
-        return NavigationStack {
-            Group {
-                if buckets.isEmpty {
-                    ScrollView {
-                        EmptyStateView(
-                            systemImage: "book.closed",
-                            title: "No entries yet",
-                            message: "Log glucose, insulin, meals, activity and notes — they'll appear here as day cards."
-                        )
-                        .padding(.top, 72)
-                    }
-                } else {
-                    ScrollView {
-                        LazyVStack(alignment: .leading, spacing: 20) {
-                            ForEach(Array(buckets.enumerated()), id: \.element.id) { index, bucket in
-                                JournalDayCard(
-                                    bucket: bucket,
-                                    density: density,
-                                    unit: unit,
-                                    thresholds: thresholds
-                                ) { item in
-                                    Haptics.play(.selection)
-                                    editTarget = JournalEditTarget(item: item)
-                                }
-                                .appearTransition(delay: Double(min(index, 6)) * 0.05)
-                            }
-                        }
-                        .padding()
-                        .animation(.snappy, value: density)
-                    }
+                switch mode {
+                case .days: daysContent
+                case .list: HistoryContent()
+                case .calendar: CalendarContent()
+                case .register: LogbookContent()
                 }
             }
             .prvitalTabBackground()
             .navigationTitle("Journal")
             .toolbar {
-                // One filters menu on the left (density + calendar united, per
-                // device feedback), the logbook and "+" on the right.
-                ToolbarItem(placement: .topBarLeading) {
-                    filtersMenu
-                }
-                ToolbarItemGroup(placement: .primaryAction) {
-                    Button {
-                        Haptics.play(.selection)
-                        showingLogbook = true
-                    } label: {
-                        Image(systemName: "tablecells")
+                // The density filter only applies to the day-cards mode; the "+"
+                // is always available. Each mode contributes its own toolbar
+                // actions (History's sort/range, Calendar's Today, Registru's
+                // share) which merge in contextually.
+                if mode == .days {
+                    ToolbarItem(placement: .topBarLeading) {
+                        filtersMenu
                     }
-                    .accessibilityLabel("Open logbook")
+                }
+                ToolbarItem(placement: .primaryAction) {
                     Button {
                         Haptics.play(.light)
                         showingQuickEntry = true
@@ -133,21 +113,52 @@ struct JournalView: View {
             .sheet(isPresented: $showingQuickEntry) {
                 QuickEntrySheet()
             }
-            .sheet(isPresented: $showingCalendar) {
-                CalendarView()
-            }
-            .sheet(isPresented: $showingLogbook) {
-                LogbookView()
-            }
             .sheet(item: $editTarget) { target in
                 editorSheet(for: target.item)
             }
         }
     }
 
-    /// One united filters menu: the "presets"-style density picker (three
-    /// options with density icons, checkmark on the current choice, persisted
-    /// through `Preferences`) plus the calendar jump.
+    /// The day-cards feed — the default Journal mode (Tide Guide-style cards).
+    private var daysContent: some View {
+        let density = self.density
+        let buckets = self.buckets
+        return Group {
+            if buckets.isEmpty {
+                ScrollView {
+                    EmptyStateView(
+                        systemImage: "book.closed",
+                        title: "No entries yet",
+                        message: "Log glucose, insulin, meals, activity and notes — they'll appear here as day cards."
+                    )
+                    .padding(.top, 72)
+                }
+            } else {
+                ScrollView {
+                    LazyVStack(alignment: .leading, spacing: 20) {
+                        ForEach(Array(buckets.enumerated()), id: \.element.id) { index, bucket in
+                            JournalDayCard(
+                                bucket: bucket,
+                                density: density,
+                                unit: unit,
+                                thresholds: thresholds
+                            ) { item in
+                                Haptics.play(.selection)
+                                editTarget = JournalEditTarget(item: item)
+                            }
+                            .appearTransition(delay: Double(min(index, 6)) * 0.05)
+                        }
+                    }
+                    .padding()
+                    .animation(.snappy, value: density)
+                }
+            }
+        }
+    }
+
+    /// The "presets"-style card-density picker (three options with density icons,
+    /// checkmark on the current choice, persisted through `Preferences`). Shown
+    /// only in the day-cards mode.
     private var filtersMenu: some View {
         Menu {
             Picker("Card density", selection: densityBinding) {
@@ -155,17 +166,10 @@ struct JournalView: View {
                     Label(option.title, systemImage: option.symbol).tag(option)
                 }
             }
-            Divider()
-            Button {
-                Haptics.play(.selection)
-                showingCalendar = true
-            } label: {
-                Label("Open calendar", systemImage: "calendar")
-            }
         } label: {
             Image(systemName: "line.3.horizontal.decrease.circle")
         }
-        .accessibilityLabel("Filters")
+        .accessibilityLabel("Card density")
     }
 
     @ViewBuilder
@@ -188,6 +192,23 @@ struct JournalView: View {
 }
 
 // MARK: - Private helpers
+
+/// The Journal's view modes — the four "a day's data" screens, now united under
+/// one tab instead of scattered across sheets and the Insights tab.
+private enum JournalMode: String, CaseIterable, Identifiable {
+    case days, list, calendar, register
+
+    var id: String { rawValue }
+
+    var label: LocalizedStringKey {
+        switch self {
+        case .days: return "Days"
+        case .list: return "List"
+        case .calendar: return "Calendar"
+        case .register: return "Logbook"
+        }
+    }
+}
 
 /// Identifiable wrapper so a tapped row can drive `.sheet(item:)`.
 private struct JournalEditTarget: Identifiable {
