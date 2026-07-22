@@ -31,6 +31,14 @@ struct HealthWorkoutSample: Sendable {
     let deviceName: String?
 }
 
+/// A Sendable projection of an Apple Health heart-rate sample (beats per minute),
+/// used to overlay heart rate against glucose on the activity chart.
+struct HeartRateSample: Sendable, Identifiable {
+    let id: String
+    let bpm: Double
+    let timestamp: Date
+}
+
 /// Wraps HealthKit read/write for glucose, insulin, carbohydrates and workouts.
 ///
 /// Reads pull samples already in Apple Health (including those written by other
@@ -53,12 +61,15 @@ final class HealthKitService: @unchecked Sendable {
     private var glucoseType: HKQuantityType { HKQuantityType(.bloodGlucose) }
     private var insulinType: HKQuantityType { HKQuantityType(.insulinDelivery) }
     private var carbType: HKQuantityType { HKQuantityType(.dietaryCarbohydrates) }
+    private var heartRateType: HKQuantityType { HKQuantityType(.heartRate) }
+    private let bpmUnit = HKUnit.count().unitDivided(by: .minute())
 
     private var shareTypes: Set<HKSampleType> {
         [glucoseType, insulinType, carbType, HKObjectType.workoutType()]
     }
     private var readTypes: Set<HKObjectType> {
-        [glucoseType, insulinType, carbType, HKObjectType.workoutType()]
+        // Heart rate is read-only (for the activity chart); never written back.
+        [glucoseType, insulinType, carbType, heartRateType, HKObjectType.workoutType()]
     }
 
     func requestAuthorization() async throws {
@@ -107,6 +118,32 @@ final class HealthKitService: @unchecked Sendable {
                 limit: limit,
                 sortDescriptors: sort
             ) { _, samples, error in
+                if let error {
+                    continuation.resume(throwing: SourceError.underlying(error.localizedDescription))
+                } else {
+                    continuation.resume(returning: (samples as? [HKQuantitySample]) ?? [])
+                }
+            }
+            store.execute(query)
+        }
+    }
+
+    /// Heart-rate samples within a window (ascending by time), for overlaying HR
+    /// against glucose on the activity chart. Read-only from Apple Health.
+    func fetchHeartRateSamples(from start: Date, to end: Date, limit: Int = 3000) async throws -> [HeartRateSample] {
+        let samples = try await quantitySamplesWindowed(of: heartRateType, from: start, to: end, limit: limit)
+        return samples
+            .map { HeartRateSample(id: $0.uuid.uuidString,
+                                   bpm: $0.quantity.doubleValue(for: bpmUnit),
+                                   timestamp: $0.startDate) }
+            .sorted { $0.timestamp < $1.timestamp }
+    }
+
+    private func quantitySamplesWindowed(of type: HKQuantityType, from start: Date, to end: Date, limit: Int) async throws -> [HKQuantitySample] {
+        let predicate = HKQuery.predicateForSamples(withStart: start, end: end, options: .strictStartDate)
+        let sort = [NSSortDescriptor(key: HKSampleSortIdentifierStartDate, ascending: true)]
+        return try await withCheckedThrowingContinuation { continuation in
+            let query = HKSampleQuery(sampleType: type, predicate: predicate, limit: limit, sortDescriptors: sort) { _, samples, error in
                 if let error {
                     continuation.resume(throwing: SourceError.underlying(error.localizedDescription))
                 } else {

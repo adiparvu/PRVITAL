@@ -264,21 +264,39 @@ struct ChartsContent: View {
 
     private var activitySection: some View {
         SectionCard("Activity", systemImage: "figure.walk") {
-            if activityBars.isEmpty {
-                emptyChart("No activity logged in this period.")
-            } else {
-                Chart(activityBars) { bar in
-                    BarMark(
-                        x: .value("Day", bar.day, unit: .day),
-                        y: .value("Minutes", bar.total)
-                    )
-                    .foregroundStyle(Theme.zoneInRange.gradient)
-                    .cornerRadius(4)
+            VStack(spacing: 14) {
+                if activityBars.isEmpty {
+                    emptyChart("No activity logged in this period.")
+                } else {
+                    Chart(activityBars) { bar in
+                        BarMark(
+                            x: .value("Day", bar.day, unit: .day),
+                            y: .value("Minutes", bar.total)
+                        )
+                        .foregroundStyle(Theme.zoneInRange.gradient)
+                        .cornerRadius(4)
+                    }
+                    .chartXAxis { dateAxis }
+                    .chartYAxis { unitsAxis(suffix: "min") }
+                    .frame(height: 180)
+                    .accessibilityLabel("Daily active minutes")
                 }
-                .chartXAxis { dateAxis }
-                .chartYAxis { unitsAxis(suffix: "min") }
-                .frame(height: 180)
-                .accessibilityLabel("Daily active minutes")
+
+                Divider().overlay(Theme.hairline)
+                NavigationLink {
+                    MovementGlucoseView(date: Date())
+                } label: {
+                    HStack(spacing: 8) {
+                        Image(systemName: "heart.text.square.fill")
+                        Text("Movement & glucose")
+                        Spacer()
+                        Image(systemName: "chevron.right").font(.caption.weight(.semibold))
+                    }
+                    .font(.subheadline.weight(.medium))
+                    .foregroundStyle(Theme.accent)
+                    .contentShape(.rect)
+                }
+                .buttonStyle(.plain)
             }
         }
     }
