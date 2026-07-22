@@ -43,8 +43,8 @@ struct LearnView: View {
                 .foregroundStyle(Theme.accent)
                 .frame(width: 32)
             VStack(alignment: .leading, spacing: 2) {
-                Text(rule.title).font(.subheadline.weight(.semibold)).foregroundStyle(Theme.textPrimary)
-                Text(rule.tagline).font(.caption).foregroundStyle(Theme.textSecondary)
+                Text(LocalizedStringKey(rule.title)).font(.subheadline.weight(.semibold)).foregroundStyle(Theme.textPrimary)
+                Text(LocalizedStringKey(rule.tagline)).font(.caption).foregroundStyle(Theme.textSecondary)
             }
             Spacer()
             Image(systemName: "chevron.right").font(.caption).foregroundStyle(Theme.textTertiary)
@@ -94,8 +94,8 @@ struct LearnView: View {
                 .foregroundStyle(Theme.accent)
                 .frame(width: 32)
             VStack(alignment: .leading, spacing: 2) {
-                Text(article.title).font(.subheadline.weight(.semibold)).foregroundStyle(Theme.textPrimary)
-                Text(article.summary).font(.caption).foregroundStyle(Theme.textSecondary)
+                Text(LocalizedStringKey(article.title)).font(.subheadline.weight(.semibold)).foregroundStyle(Theme.textPrimary)
+                Text(LocalizedStringKey(article.summary)).font(.caption).foregroundStyle(Theme.textSecondary)
                     .lineLimit(2)
             }
             Spacer()
@@ -124,8 +124,8 @@ struct LearnView: View {
                 .foregroundStyle(Theme.zoneInRange)
                 .frame(width: 32)
             VStack(alignment: .leading, spacing: 2) {
-                Text(recipe.name).font(.subheadline.weight(.semibold)).foregroundStyle(Theme.textPrimary)
-                Text(recipe.summary).font(.caption).foregroundStyle(Theme.textSecondary).lineLimit(2)
+                Text(LocalizedStringKey(recipe.name)).font(.subheadline.weight(.semibold)).foregroundStyle(Theme.textPrimary)
+                Text(LocalizedStringKey(recipe.summary)).font(.caption).foregroundStyle(Theme.textSecondary).lineLimit(2)
             }
             Spacer()
             VStack(alignment: .trailing, spacing: 0) {
@@ -146,7 +146,7 @@ struct LearnDisclaimerCard: View {
             Image(systemName: "info.circle.fill")
                 .foregroundStyle(Theme.accent)
                 .accessibilityHidden(true)
-            Text(LearnDisclaimer.text)
+            Text(LocalizedStringKey(LearnDisclaimer.text))
                 .font(.footnote)
                 .foregroundStyle(Theme.textSecondary)
                 .fixedSize(horizontal: false, vertical: true)
@@ -174,7 +174,7 @@ struct RuleDetailView: View {
                     }
                 }
                 SectionCard("Good to know", systemImage: "lightbulb.fill") {
-                    Text(rule.detail)
+                    Text(LocalizedStringKey(rule.detail))
                         .font(.subheadline)
                         .foregroundStyle(Theme.textPrimary)
                         .fixedSize(horizontal: false, vertical: true)
@@ -186,7 +186,7 @@ struct RuleDetailView: View {
             .padding()
         }
         .background(Theme.background)
-        .navigationTitle(rule.title)
+        .navigationTitle(LocalizedStringKey(rule.title))
         .navigationBarTitleDisplayMode(.inline)
     }
 
@@ -198,8 +198,8 @@ struct RuleDetailView: View {
                 .frame(width: 60, height: 60)
                 .background(Theme.accentSoft, in: .circle)
             VStack(alignment: .leading, spacing: 4) {
-                Text(rule.title).font(.title2.weight(.bold)).foregroundStyle(Theme.textPrimary)
-                Text(rule.tagline).font(.subheadline).foregroundStyle(Theme.textSecondary)
+                Text(LocalizedStringKey(rule.title)).font(.title2.weight(.bold)).foregroundStyle(Theme.textPrimary)
+                Text(LocalizedStringKey(rule.tagline)).font(.subheadline).foregroundStyle(Theme.textSecondary)
             }
             Spacer()
         }
@@ -218,14 +218,14 @@ struct ArticleDetailView: View {
                         .foregroundStyle(Theme.accent)
                         .frame(width: 56, height: 56)
                         .background(Theme.accentSoft, in: .circle)
-                    Text(article.summary)
+                    Text(LocalizedStringKey(article.summary))
                         .font(.subheadline)
                         .foregroundStyle(Theme.textSecondary)
                         .fixedSize(horizontal: false, vertical: true)
                 }
                 ForEach(article.sections) { section in
                     SectionCard(LocalizedStringKey(section.heading)) {
-                        Text(section.body)
+                        Text(LocalizedStringKey(section.body))
                             .font(.subheadline)
                             .foregroundStyle(Theme.textPrimary)
                             .fixedSize(horizontal: false, vertical: true)
@@ -238,7 +238,7 @@ struct ArticleDetailView: View {
             .padding()
         }
         .background(Theme.background)
-        .navigationTitle(article.title)
+        .navigationTitle(LocalizedStringKey(article.title))
         .navigationBarTitleDisplayMode(.inline)
     }
 
@@ -246,7 +246,7 @@ struct ArticleDetailView: View {
         SectionCard("Sources", systemImage: "text.book.closed") {
             VStack(alignment: .leading, spacing: 6) {
                 ForEach(article.sources, id: \.self) { source in
-                    Label(source, systemImage: "circle.fill")
+                    Label(LocalizedStringKey(source), systemImage: "circle.fill")
                         .labelStyle(BulletLabelStyle())
                         .font(.caption)
                         .foregroundStyle(Theme.textSecondary)
@@ -265,7 +265,7 @@ struct RecipeDetailView: View {
     var body: some View {
         ScrollView {
             VStack(alignment: .leading, spacing: 18) {
-                Text(recipe.summary)
+                Text(LocalizedStringKey(recipe.summary))
                     .font(.subheadline)
                     .foregroundStyle(Theme.textSecondary)
                     .fixedSize(horizontal: false, vertical: true)
@@ -280,7 +280,7 @@ struct RecipeDetailView: View {
                     ScrollView(.horizontal, showsIndicators: false) {
                         HStack(spacing: 8) {
                             ForEach(recipe.tags, id: \.self) { tag in
-                                Text(tag)
+                                Text(LocalizedStringKey(tag))
                                     .font(.caption.weight(.medium))
                                     .padding(.horizontal, 10).padding(.vertical, 5)
                                     .background(Theme.accentSoft, in: .capsule)
@@ -293,7 +293,7 @@ struct RecipeDetailView: View {
                 SectionCard("Ingredients", systemImage: "basket.fill") {
                     VStack(alignment: .leading, spacing: 8) {
                         ForEach(recipe.ingredients, id: \.self) { item in
-                            Label(item, systemImage: "circle.fill")
+                            Label(LocalizedStringKey(item), systemImage: "circle.fill")
                                 .labelStyle(BulletLabelStyle())
                                 .font(.subheadline)
                                 .foregroundStyle(Theme.textPrimary)
@@ -316,7 +316,7 @@ struct RecipeDetailView: View {
             .padding()
         }
         .background(Theme.background)
-        .navigationTitle(recipe.name)
+        .navigationTitle(LocalizedStringKey(recipe.name))
         .navigationBarTitleDisplayMode(.inline)
     }
 
@@ -366,7 +366,7 @@ struct LearnStepRow: View {
                 .foregroundStyle(Theme.accent)
                 .frame(width: 24, height: 24)
                 .background(Theme.accentSoft, in: .circle)
-            Text(text)
+            Text(LocalizedStringKey(text))
                 .font(.subheadline)
                 .foregroundStyle(Theme.textPrimary)
                 .fixedSize(horizontal: false, vertical: true)
@@ -386,7 +386,7 @@ private struct BulletLabelStyle: LabelStyle {
 }
 
 private func sourceNote(_ text: String) -> some View {
-    Label(text, systemImage: "text.book.closed")
+    Label(LocalizedStringKey(text), systemImage: "text.book.closed")
         .font(.caption2)
         .foregroundStyle(Theme.textTertiary)
         .frame(maxWidth: .infinity, alignment: .leading)
