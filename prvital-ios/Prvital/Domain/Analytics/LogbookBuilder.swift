@@ -52,13 +52,13 @@ enum LogbookGlucoseSlot: CaseIterable, Sendable {
     /// Compact column header (the views may break it into two lines).
     var title: String {
         switch self {
-        case .beforeBreakfast: return "Before breakfast"
-        case .afterBreakfast: return "2h after breakfast"
-        case .beforeLunch: return "Before lunch"
-        case .afterLunch: return "2h after lunch"
-        case .beforeDinner: return "Before dinner"
-        case .afterDinner: return "2h after dinner"
-        case .bedtime: return "Bedtime"
+        case .beforeBreakfast: return String(localized: "Before breakfast")
+        case .afterBreakfast: return String(localized: "2h after breakfast")
+        case .beforeLunch: return String(localized: "Before lunch")
+        case .afterLunch: return String(localized: "2h after lunch")
+        case .beforeDinner: return String(localized: "Before dinner")
+        case .afterDinner: return String(localized: "2h after dinner")
+        case .bedtime: return String(localized: "Bedtime")
         }
     }
 }

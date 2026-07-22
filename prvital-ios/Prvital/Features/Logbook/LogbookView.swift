@@ -212,7 +212,7 @@ struct LogbookContent: View {
     }
 
     private func headerCell(_ title: String, width: CGFloat) -> some View {
-        Text(title)
+        Text(LocalizedStringKey(title))
             .font(.caption2.weight(.semibold))
             .foregroundStyle(Theme.textSecondary)
             .multilineTextAlignment(.center)
@@ -393,13 +393,13 @@ private enum LogbookRange: String, CaseIterable, Identifiable {
 
     var title: String {
         switch self {
-        case .day: return "Day"
-        case .week: return "Week"
-        case .month: return "Month"
-        case .threeMonths: return "3 months"
-        case .sixMonths: return "6 months"
-        case .nineMonths: return "9 months"
-        case .year: return "1 year"
+        case .day: return String(localized: "Day")
+        case .week: return String(localized: "Week")
+        case .month: return String(localized: "Month")
+        case .threeMonths: return String(localized: "3 months")
+        case .sixMonths: return String(localized: "6 months")
+        case .nineMonths: return String(localized: "9 months")
+        case .year: return String(localized: "1 year")
         }
     }
 
