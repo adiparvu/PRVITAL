@@ -35,7 +35,7 @@ enum ChartEventKind: String, CaseIterable, Codable, Identifiable, Sendable {
         switch self {
         case .insulin:    return Theme.accent
         case .meal:       return Theme.zoneHigh
-        case .medication: return Color(hex: "8E7CFF")   // a distinct violet
+        case .medication: return Color(hex: 0x8E7CFF)   // a distinct violet
         case .activity:   return Theme.zoneInRange
         case .ketone:     return Theme.zoneCritical
         case .note:       return Theme.textSecondary
