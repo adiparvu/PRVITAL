@@ -127,7 +127,7 @@ struct BolusCalculatorView: View {
             Text(value)
                 .font(.headline.monospacedDigit())
                 .foregroundStyle(Theme.textPrimary)
-            Text(label)
+            Text(LocalizedStringKey(label))
                 .font(.caption2)
                 .foregroundStyle(Theme.textSecondary)
         }
