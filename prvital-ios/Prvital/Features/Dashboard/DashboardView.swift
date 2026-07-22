@@ -11,11 +11,38 @@ struct DashboardView: View {
     @Environment(AppEnvironment.self) private var env
     @Environment(\.requestReview) private var requestReview
 
-    @Query(sort: \GlucoseReading.timestamp, order: .reverse) private var readings: [GlucoseReading]
-    @Query(sort: \InsulinDose.timestamp, order: .reverse) private var insulin: [InsulinDose]
-    @Query(sort: \CarbEntry.timestamp, order: .reverse) private var carbs: [CarbEntry]
-    @Query(sort: \ActivityEntry.startTimestamp, order: .reverse) private var activity: [ActivityEntry]
+    // Bounded to a recent window (see `windowDays`) so the home screen stays
+    // snappy even after a full-history import of 100k+ readings. Deep history
+    // lives in the Journal and Insights tabs.
+    @Query private var readings: [GlucoseReading]
+    @Query private var insulin: [InsulinDose]
+    @Query private var carbs: [CarbEntry]
+    @Query private var activity: [ActivityEntry]
     @Query(sort: \SensorSession.startDate, order: .reverse) private var sensorSessions: [SensorSession]
+
+    /// How far back the dashboard reaches: enough for the 7-day forecast
+    /// baseline and a reasonable custom trend range. The custom picker is
+    /// capped to match so it can't ask for data the query didn't load.
+    private static let windowDays = 21
+
+    init() {
+        let cutoff = Calendar.current.date(byAdding: .day, value: -Self.windowDays, to: Date())
+            ?? Date().addingTimeInterval(-Double(Self.windowDays) * 86_400)
+        _readings = Query(filter: #Predicate<GlucoseReading> { $0.timestamp >= cutoff },
+                          sort: \.timestamp, order: .reverse)
+        _insulin = Query(filter: #Predicate<InsulinDose> { $0.timestamp >= cutoff },
+                         sort: \.timestamp, order: .reverse)
+        _carbs = Query(filter: #Predicate<CarbEntry> { $0.timestamp >= cutoff },
+                       sort: \.timestamp, order: .reverse)
+        _activity = Query(filter: #Predicate<ActivityEntry> { $0.startTimestamp >= cutoff },
+                          sort: \.startTimestamp, order: .reverse)
+    }
+
+    /// Earliest date the custom trend picker allows — matches the query window
+    /// so the picker can't request data the bounded query never loaded.
+    private var earliestTrendDate: Date {
+        Calendar.current.date(byAdding: .day, value: -Self.windowDays, to: Date()) ?? Date()
+    }
 
     @State private var showQuickEntry = false
     @State private var showGlucoseEntry = false
@@ -383,7 +410,7 @@ struct DashboardView: View {
     private var trendCustomRangeSheet: some View {
         NavigationStack {
             Form {
-                DatePicker("From", selection: $customStart, in: ...customEnd)
+                DatePicker("From", selection: $customStart, in: earliestTrendDate...customEnd)
                 DatePicker("To", selection: $customEnd, in: customStart...Date())
             }
             .navigationTitle("Custom range")

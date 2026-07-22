@@ -10,9 +10,22 @@ struct BolusCalculatorView: View {
     @Environment(AppEnvironment.self) private var env
     @Environment(\.dismiss) private var dismiss
 
-    @Query(sort: \InsulinDose.timestamp, order: .reverse) private var doses: [InsulinDose]
-    @Query(sort: \GlucoseReading.timestamp, order: .reverse) private var readings: [GlucoseReading]
-    @Query(sort: \CarbEntry.timestamp, order: .reverse) private var carbEntries: [CarbEntry]
+    @Query private var doses: [InsulinDose]
+    @Query private var readings: [GlucoseReading]
+    @Query private var carbEntries: [CarbEntry]
+
+    init() {
+        // The calculator only needs recent data (IOB/COB span a few hours, plus
+        // the latest glucose) — a tight window keeps it instant after a big import.
+        let cutoff = Calendar.current.date(byAdding: .day, value: -3, to: Date())
+            ?? Date().addingTimeInterval(-3 * 86_400)
+        _doses = Query(filter: #Predicate<InsulinDose> { $0.timestamp >= cutoff },
+                       sort: \.timestamp, order: .reverse)
+        _readings = Query(filter: #Predicate<GlucoseReading> { $0.timestamp >= cutoff },
+                          sort: \.timestamp, order: .reverse)
+        _carbEntries = Query(filter: #Predicate<CarbEntry> { $0.timestamp >= cutoff },
+                             sort: \.timestamp, order: .reverse)
+    }
 
     @State private var carbs: Double = 0
     @State private var glucoseDisplay: Double = 0

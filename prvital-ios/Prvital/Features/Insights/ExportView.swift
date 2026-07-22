@@ -8,11 +8,28 @@ import SwiftData
 struct ExportView: View {
     @Environment(AppEnvironment.self) private var env
 
-    @Query(sort: \GlucoseReading.timestamp, order: .reverse) private var glucose: [GlucoseReading]
-    @Query(sort: \InsulinDose.timestamp, order: .reverse) private var insulin: [InsulinDose]
-    @Query(sort: \CarbEntry.timestamp, order: .reverse) private var carbs: [CarbEntry]
-    @Query(sort: \ActivityEntry.startTimestamp, order: .reverse) private var activity: [ActivityEntry]
-    @Query(sort: \ObservationEntry.timestamp, order: .reverse) private var observations: [ObservationEntry]
+    @Query private var glucose: [GlucoseReading]
+    @Query private var insulin: [InsulinDose]
+    @Query private var carbs: [CarbEntry]
+    @Query private var activity: [ActivityEntry]
+    @Query private var observations: [ObservationEntry]
+
+    init() {
+        // Export offers up to a year; cap at ~400 days. (Full-history CSV import
+        // is a separate path that streams the file, not this screen.)
+        let cutoff = Calendar.current.date(byAdding: .day, value: -400, to: Date())
+            ?? Date().addingTimeInterval(-400 * 86_400)
+        _glucose = Query(filter: #Predicate<GlucoseReading> { $0.timestamp >= cutoff },
+                         sort: \.timestamp, order: .reverse)
+        _insulin = Query(filter: #Predicate<InsulinDose> { $0.timestamp >= cutoff },
+                         sort: \.timestamp, order: .reverse)
+        _carbs = Query(filter: #Predicate<CarbEntry> { $0.timestamp >= cutoff },
+                       sort: \.timestamp, order: .reverse)
+        _activity = Query(filter: #Predicate<ActivityEntry> { $0.startTimestamp >= cutoff },
+                          sort: \.startTimestamp, order: .reverse)
+        _observations = Query(filter: #Predicate<ObservationEntry> { $0.timestamp >= cutoff },
+                              sort: \.timestamp, order: .reverse)
+    }
 
     @State private var interval: InsightsInterval = .month
     @State private var exportedURL: URL?

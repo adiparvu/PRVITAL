@@ -67,7 +67,16 @@ struct RuleOf15Sheet: View {
     @Environment(AppEnvironment.self) private var env
     @Environment(\.dismiss) private var dismiss
 
-    @Query(sort: \GlucoseReading.timestamp, order: .reverse) private var readings: [GlucoseReading]
+    @Query private var readings: [GlucoseReading]
+
+    init() {
+        // Only the latest reading and a little recent context matter here, so a
+        // tight window keeps the sheet instant even after a full-history import.
+        let cutoff = Calendar.current.date(byAdding: .day, value: -2, to: Date())
+            ?? Date().addingTimeInterval(-2 * 86_400)
+        _readings = Query(filter: #Predicate<GlucoseReading> { $0.timestamp >= cutoff },
+                          sort: \.timestamp, order: .reverse)
+    }
 
     @State private var state = RuleOf15State()
     /// When the current wait started, so an old reading can't resolve the flow —

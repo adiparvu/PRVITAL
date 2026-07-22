@@ -7,9 +7,22 @@ import Charts
 /// the Time-in-Range bar.
 struct AGPReportView: View {
     @Environment(AppEnvironment.self) private var env
-    @Query(sort: \GlucoseReading.timestamp, order: .reverse) private var readings: [GlucoseReading]
-    @Query(sort: \CarbEntry.timestamp, order: .reverse) private var carbs: [CarbEntry]
-    @Query(sort: \ActivityEntry.startTimestamp, order: .reverse) private var activity: [ActivityEntry]
+    @Query private var readings: [GlucoseReading]
+    @Query private var carbs: [CarbEntry]
+    @Query private var activity: [ActivityEntry]
+
+    init() {
+        // The AGP offers up to a year; cap at ~400 days so several imported years
+        // don't all load at once.
+        let cutoff = Calendar.current.date(byAdding: .day, value: -400, to: Date())
+            ?? Date().addingTimeInterval(-400 * 86_400)
+        _readings = Query(filter: #Predicate<GlucoseReading> { $0.timestamp >= cutoff },
+                          sort: \.timestamp, order: .reverse)
+        _carbs = Query(filter: #Predicate<CarbEntry> { $0.timestamp >= cutoff },
+                       sort: \.timestamp, order: .reverse)
+        _activity = Query(filter: #Predicate<ActivityEntry> { $0.startTimestamp >= cutoff },
+                          sort: \.startTimestamp, order: .reverse)
+    }
 
     @State private var interval: InsightsInterval = .month
 

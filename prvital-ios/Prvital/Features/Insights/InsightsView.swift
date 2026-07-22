@@ -16,10 +16,25 @@ struct InsightsView: View {
 
     // Records feeding the ranked feed. Plain `@Query`s, filtered to a recent
     // window in `insightCards` so the surfaced patterns stay current.
-    @Query(sort: \GlucoseReading.timestamp, order: .reverse) private var glucose: [GlucoseReading]
-    @Query(sort: \InsulinDose.timestamp, order: .reverse) private var insulin: [InsulinDose]
-    @Query(sort: \CarbEntry.timestamp, order: .reverse) private var carbs: [CarbEntry]
-    @Query(sort: \ActivityEntry.startTimestamp, order: .reverse) private var activity: [ActivityEntry]
+    @Query private var glucose: [GlucoseReading]
+    @Query private var insulin: [InsulinDose]
+    @Query private var carbs: [CarbEntry]
+    @Query private var activity: [ActivityEntry]
+
+    init() {
+        // Bounded past the 30-day feed window so the ranked insights never
+        // materialise all history when the Insights tab renders.
+        let cutoff = Calendar.current.date(byAdding: .day, value: -45, to: Date())
+            ?? Date().addingTimeInterval(-45 * 86_400)
+        _glucose = Query(filter: #Predicate<GlucoseReading> { $0.timestamp >= cutoff },
+                         sort: \.timestamp, order: .reverse)
+        _insulin = Query(filter: #Predicate<InsulinDose> { $0.timestamp >= cutoff },
+                         sort: \.timestamp, order: .reverse)
+        _carbs = Query(filter: #Predicate<CarbEntry> { $0.timestamp >= cutoff },
+                       sort: \.timestamp, order: .reverse)
+        _activity = Query(filter: #Predicate<ActivityEntry> { $0.startTimestamp >= cutoff },
+                          sort: \.startTimestamp, order: .reverse)
+    }
 
     /// The last 30 days — enough history for the analyzers, recent enough to act on.
     private var feedRange: ClosedRange<Date> { InsightsInterval.month.dateRange() }

@@ -11,6 +11,19 @@ struct AchievementsView: View {
     @Query private var meals: [CarbEntry]
     @Query private var activity: [ActivityEntry]
 
+    init() {
+        // Milestones look back about a year; cap at ~400 days so several imported
+        // years don't all load when opening Achievements.
+        let cutoff = Calendar.current.date(byAdding: .day, value: -400, to: Date())
+            ?? Date().addingTimeInterval(-400 * 86_400)
+        _readings = Query(filter: #Predicate<GlucoseReading> { $0.timestamp >= cutoff },
+                          sort: \.timestamp, order: .reverse)
+        _meals = Query(filter: #Predicate<CarbEntry> { $0.timestamp >= cutoff },
+                       sort: \.timestamp, order: .reverse)
+        _activity = Query(filter: #Predicate<ActivityEntry> { $0.startTimestamp >= cutoff },
+                          sort: \.startTimestamp, order: .reverse)
+    }
+
     @State private var store = AchievementStore()
 
     private var challengeInputs: ChallengeInputs {
