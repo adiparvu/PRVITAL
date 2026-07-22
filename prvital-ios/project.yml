@@ -23,7 +23,7 @@ settings:
   base:
     SWIFT_VERSION: "6.0"
     MARKETING_VERSION: "1.0.0"
-    CURRENT_PROJECT_VERSION: "44"
+    CURRENT_PROJECT_VERSION: "45"
     DEVELOPMENT_TEAM: "SU92TVZT8W" # Apple Developer Team ID
     ENABLE_USER_SCRIPT_SANDBOXING: YES
 
@@ -86,7 +86,13 @@ targets:
       properties:
         com.apple.developer.healthkit: true
         com.apple.developer.healthkit.access: []
-        com.apple.developer.default-data-protection: NSFileProtectionComplete
+        # CompleteUntilFirstUserAuthentication (not Complete): the store still
+        # encrypts at rest, but stays readable after the first unlock following a
+        # reboot. Complete makes the file inaccessible whenever the device is
+        # locked, so a background launch before first unlock (this app has
+        # background refresh) can't open the store — which surfaced as "all data
+        # gone" after a restart. This is also the iOS default protection class.
+        com.apple.developer.default-data-protection: NSFileProtectionCompleteUntilFirstUserAuthentication
         # Lets urgent low/high alerts use the .timeSensitive interruption level so
         # they can break through Focus and scheduled summaries.
         com.apple.developer.usernotifications.time-sensitive: true
