@@ -13,8 +13,12 @@ import SwiftData
 
 struct InsulinLogView: View {
     @Environment(AppEnvironment.self) private var env
+    @Environment(\.modelContext) private var modelContext
     @Query private var doses: [InsulinDose]
     @State private var editing: InsulinDose?
+    // Glucose (value + trend) at each injection's time, matched from the CGM
+    // history. Computed off the render path in a `.task` and cached by dose id.
+    @State private var glucoseByDose: [UUID: GlucoseEventContext] = [:]
 
     private static let renderCap = 500
 
@@ -35,7 +39,8 @@ struct InsulinLogView: View {
                             EntryLogRow(systemImage: "syringe.fill", tint: Theme.accent,
                                         value: String(localized: "\(dose.units.formatted()) U"),
                                         title: dose.insulinType.label, note: dose.note,
-                                        date: dose.timestamp)
+                                        date: dose.timestamp,
+                                        glucose: glucoseByDose[dose.id])
                         }
                         .listRowBackground(Theme.surface)
                         .swipeActions {
@@ -49,6 +54,35 @@ struct InsulinLogView: View {
         }
         .navigationTitle("Insulin")
         .sheet(item: $editing) { InsulinEntrySheet(existing: $0) }
+        .task(id: doses.count) { await loadGlucoseContexts() }
+    }
+
+    /// Fetches the CGM readings spanning the visible doses once, then binary-search
+    /// matches each dose to its nearest reading — so the whole list gets its
+    /// glucose-at-injection chips without materialising the full history per row.
+    private func loadGlucoseContexts() async {
+        let visible = Array(doses.prefix(Self.renderCap))
+        guard let lo = visible.map(\.timestamp).min(),
+              let hi = visible.map(\.timestamp).max() else { glucoseByDose = [:]; return }
+        // Cap how far back we fetch readings so a light logger's 500 doses can't
+        // pull a year of CGM; doses older than this simply show no chip.
+        let floor = Date().addingTimeInterval(-120 * 86_400)
+        let lower = max(lo.addingTimeInterval(-20 * 60), floor)
+        let upper = hi.addingTimeInterval(20 * 60)
+        let descriptor = FetchDescriptor<GlucoseReading>(
+            predicate: #Predicate { $0.isActive && $0.timestamp >= lower && $0.timestamp <= upper },
+            sortBy: [SortDescriptor(\.timestamp)])
+        let readings = (try? modelContext.fetch(descriptor)) ?? []
+        let unit = env.preferences.glucoseUnit
+        let thresholds = env.preferences.thresholds
+        var map: [UUID: GlucoseEventContext] = [:]
+        for dose in visible {
+            if let ctx = GlucoseEventContext.nearest(to: dose.timestamp, in: readings,
+                                                     unit: unit, thresholds: thresholds) {
+                map[dose.id] = ctx
+            }
+        }
+        glucoseByDose = map
     }
 }
 
@@ -228,6 +262,8 @@ private struct EntryLogRow: View {
     let title: String
     var note: String?
     let date: Date
+    /// Glucose at the time of this entry (value + trend), when known.
+    var glucose: GlucoseEventContext? = nil
 
     var body: some View {
         HStack(spacing: 12) {
@@ -249,6 +285,9 @@ private struct EntryLogRow: View {
                     // Localized so an imported entry's "Imported" note follows the
                     // in-app language; free-text notes pass through unchanged.
                     Text(verbatim: PrvitalString(note)).font(.caption).foregroundStyle(Theme.textSecondary).lineLimit(2)
+                }
+                if let glucose {
+                    glucose.chip.padding(.top, 1)
                 }
             }
             Spacer(minLength: 0)
