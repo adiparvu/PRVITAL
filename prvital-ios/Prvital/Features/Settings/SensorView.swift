@@ -146,7 +146,10 @@ struct StartSensorSheet: View {
                     Text("Prvital counts the warm-up and the wear time from here, and shows a countdown until you need to replace it.")
                         .font(.footnote).foregroundStyle(Theme.textTertiary)
                 }
+                .glassListRow()
             }
+            .scrollContentBackground(.hidden)
+            .background(Theme.background)
             .navigationTitle("New sensor")
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
