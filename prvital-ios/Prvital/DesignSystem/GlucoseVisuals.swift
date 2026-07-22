@@ -86,6 +86,10 @@ struct GlucoseTrendChart: View {
     var visibleEventKinds: Set<ChartEventKind> = []
     /// When provided (full-size charts), an ⓘ button opens the show/hide legend.
     var eventKindsBinding: Binding<Set<ChartEventKind>>? = nil
+    /// When true, events are shown as a slim lane BELOW the chart (aligned to the
+    /// same time axis) instead of tiny badges on the curve — which get lost
+    /// against the area fill. Per device feedback ("a band under the chart").
+    var eventBand: Bool = false
 
     @State private var selectedDate: Date?
     @State private var appeared = false
@@ -162,6 +166,12 @@ struct GlucoseTrendChart: View {
         return events.filter { visibleEventKinds.contains($0.kind) }
     }
 
+    /// Whether to render the separate event lane beneath the chart (opted in,
+    /// full-size, and there is at least one visible event to show).
+    private var showEventBand: Bool {
+        eventBand && interactive && !visibleEvents.isEmpty
+    }
+
     /// A y just above the plot floor, where the event markers sit in a row.
     private var markerY: Double {
         let d = yDomain
@@ -190,6 +200,7 @@ struct GlucoseTrendChart: View {
     }
 
     var body: some View {
+        VStack(spacing: 0) {
         Chart {
             // Threshold lines carry the colour of the zone they border, so the
             // top dashed line reads as the high limit and the bottom one as the
@@ -301,18 +312,21 @@ struct GlucoseTrendChart: View {
             }
 
             // Event markers: a row of tinted symbol badges near the plot floor,
-            // one per visible non-glucose event (insulin, meal, med, …).
-            ForEach(visibleEvents) { event in
-                PointMark(x: .value("Event", event.date), y: .value("Marker", markerY))
-                    .symbolSize(0)
-                    .annotation(position: .overlay, alignment: .center, spacing: 0) {
-                        Image(systemName: event.kind.symbol)
-                            .font(.system(size: 8, weight: .black))
-                            .foregroundStyle(.white)
-                            .frame(width: 15, height: 15)
-                            .background(event.kind.color, in: .circle)
-                            .overlay(Circle().strokeBorder(Theme.background, lineWidth: 1))
-                    }
+            // one per visible non-glucose event (insulin, meal, med, …). Skipped
+            // when the separate event lane below is in use (they move down there).
+            if !showEventBand {
+                ForEach(visibleEvents) { event in
+                    PointMark(x: .value("Event", event.date), y: .value("Marker", markerY))
+                        .symbolSize(0)
+                        .annotation(position: .overlay, alignment: .center, spacing: 0) {
+                            Image(systemName: event.kind.symbol)
+                                .font(.system(size: 8, weight: .black))
+                                .foregroundStyle(.white)
+                                .frame(width: 15, height: 15)
+                                .background(event.kind.color, in: .circle)
+                                .overlay(Circle().strokeBorder(Theme.background, lineWidth: 1))
+                        }
+                }
             }
         }
         .chartXSelection(value: interactive ? $selectedDate : .constant(nil))
@@ -351,6 +365,11 @@ struct GlucoseTrendChart: View {
         .chartPlotStyle { plot in plot.clipped() }
         .frame(height: compact ? 120 : 220)
         .overlay(alignment: .topTrailing) { legendButton }
+
+            if showEventBand {
+                eventBandView
+            }
+        }
         .opacity(appeared ? 1 : 0)
         .scaleEffect(y: appeared ? 1 : 0.94, anchor: .bottom)
         .onAppear {
@@ -358,6 +377,39 @@ struct GlucoseTrendChart: View {
         }
         .accessibilityElement(children: .ignore)
         .accessibilityLabel(accessibilitySummary)
+    }
+
+    /// A slim lane beneath the chart that lines each non-glucose event (insulin,
+    /// meal, medication, …) up on the SAME time axis as the curve above. Uses the
+    /// chart's `xDomain`, so a badge sits directly under the moment it happened —
+    /// clearer than the tiny on-curve markers that vanished against the area fill.
+    private var eventBandView: some View {
+        VStack(spacing: 3) {
+            Rectangle()
+                .fill(Theme.hairline.opacity(0.5))
+                .frame(height: 0.5)
+            Chart {
+                ForEach(visibleEvents) { event in
+                    PointMark(x: .value("Time", event.date), y: .value("Lane", 0))
+                        .symbolSize(0)
+                        .annotation(position: .overlay, alignment: .center, spacing: 0) {
+                            Image(systemName: event.kind.symbol)
+                                .font(.system(size: 9, weight: .black))
+                                .foregroundStyle(.white)
+                                .frame(width: 19, height: 19)
+                                .background(event.kind.color, in: .circle)
+                                .overlay(Circle().strokeBorder(Theme.background, lineWidth: 1.5))
+                        }
+                }
+            }
+            .chartXScale(domain: xDomain)
+            .chartYScale(domain: -1...1)
+            .chartXAxis(.hidden)
+            .chartYAxis(.hidden)
+            .frame(height: 22)
+        }
+        .padding(.top, 4)
+        .accessibilityHidden(true)
     }
 
     /// The two-line label attached to an annotated extreme: the value in the

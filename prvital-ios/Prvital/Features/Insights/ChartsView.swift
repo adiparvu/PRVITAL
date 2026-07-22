@@ -210,7 +210,8 @@ struct ChartsContent: View {
                 GlucoseTrendChart(readings: activeReadings, thresholds: thresholds, unit: unit,
                                   events: chartEvents,
                                   visibleEventKinds: env.preferences.chartEventKinds,
-                                  eventKindsBinding: eventKindsBinding)
+                                  eventKindsBinding: eventKindsBinding,
+                                  eventBand: true)
             }
         }
     }

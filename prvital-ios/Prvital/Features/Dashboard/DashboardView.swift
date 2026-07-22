@@ -378,7 +378,8 @@ struct DashboardView: View {
                     compact: false,
                     events: trendEvents(in: windowReadings),
                     visibleEventKinds: env.preferences.chartEventKinds,
-                    eventKindsBinding: eventKindsBinding
+                    eventKindsBinding: eventKindsBinding,
+                    eventBand: true
                 )
             }
         }

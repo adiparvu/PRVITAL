@@ -13,6 +13,8 @@ struct InsightsView: View {
     @Environment(AppEnvironment.self) private var env
     @State private var section: InsightsSection = .charts
     @State private var showingWeeklyDigest = false
+    @State private var showingPlainSummary = false
+    @State private var showingExport = false
     // Session-only: the user can dismiss the pinned insights card with its X; it
     // is intentionally NOT persisted, so it returns the next time the app opens.
     @State private var feedDismissed = false
@@ -88,35 +90,58 @@ struct InsightsView: View {
             .prvitalTabBackground()
             .navigationTitle("Insights")
             .toolbar {
+                // The three actions — plain-language summary, week-in-review and
+                // export — live in one overflow menu so the header stays clean
+                // (per device feedback: "all of these into one menu button").
                 // History moved to the Journal tab (its "List" mode); Insights is
                 // trends + reports only now.
-                ToolbarItem(placement: .topBarLeading) {
-                    NavigationLink {
-                        PlainLanguageSummaryView()
-                    } label: {
-                        Image(systemName: "text.quote")
-                    }
-                    .accessibilityLabel("In plain words")
-                }
                 ToolbarItem(placement: .topBarTrailing) {
-                    Button {
-                        Haptics.play(.selection)
-                        showingWeeklyDigest = true
+                    Menu {
+                        Button {
+                            Haptics.play(.selection)
+                            showingPlainSummary = true
+                        } label: {
+                            Label("In plain words", systemImage: "text.quote")
+                        }
+                        Button {
+                            Haptics.play(.selection)
+                            showingWeeklyDigest = true
+                        } label: {
+                            Label("Week in review", systemImage: "calendar.badge.clock")
+                        }
+                        Button {
+                            Haptics.play(.selection)
+                            showingExport = true
+                        } label: {
+                            Label("Export a report", systemImage: "square.and.arrow.up")
+                        }
                     } label: {
-                        Image(systemName: "calendar.badge.clock")
+                        Image(systemName: "ellipsis.circle")
                     }
-                    .accessibilityLabel("Week in review")
-                }
-                ToolbarItem(placement: .topBarTrailing) {
-                    NavigationLink {
-                        ExportView()
-                    } label: {
-                        Image(systemName: "square.and.arrow.up")
-                    }
-                    .accessibilityLabel("Export a report")
+                    .accessibilityLabel("More")
                 }
             }
             .sheet(isPresented: $showingWeeklyDigest) { WeeklyDigestView() }
+            .sheet(isPresented: $showingPlainSummary) {
+                NavigationStack {
+                    PlainLanguageSummaryView()
+                        .toolbar {
+                            ToolbarItem(placement: .confirmationAction) {
+                                Button("Done") { showingPlainSummary = false }
+                            }
+                        }
+                }
+            }
+            .sheet(isPresented: $showingExport) {
+                NavigationStack {
+                    ExportView()
+                        .toolbar {
+                            ToolbarItem(placement: .confirmationAction) {
+                                Button("Done") { showingExport = false }
+                            }
+                        }
+                }
+            }
         }
     }
 }
