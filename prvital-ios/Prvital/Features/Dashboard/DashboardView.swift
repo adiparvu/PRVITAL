@@ -901,7 +901,9 @@ struct DashboardView: View {
                     .foregroundStyle(scheduleTint(status.state))
                     .frame(width: 26)
                 VStack(alignment: .leading, spacing: 1) {
-                    Text(status.slot.label)
+                    // Look the (stored, English-default) label up in the catalog so
+                    // the preset slot names localize; custom names fall through as-is.
+                    Text(LocalizedStringKey(status.slot.label))
                         .font(.subheadline.weight(.medium)).foregroundStyle(Theme.textPrimary)
                     Text(scheduleStateText(status.state))
                         .font(.caption2).foregroundStyle(Theme.textSecondary)
