@@ -63,13 +63,10 @@ struct DashboardView: View {
                     trendSection(summary: summary, thresholds: thresholds, unit: unit)
                         .appearTransition(delay: 0.06)
                     if todayStats.hasGlucose {
-                        todayCard(todayStats)
+                        todayCard(todayStats,
+                                  forecast: tirForecast(thresholds: thresholds),
+                                  goalFraction: env.preferences.glucoseGoals.targetTIRFraction)
                             .appearTransition(delay: 0.12)
-                        let forecast = tirForecast(thresholds: thresholds)
-                        if forecast.hasData {
-                            forecastCard(forecast, goalFraction: env.preferences.glucoseGoals.targetTIRFraction)
-                                .appearTransition(delay: 0.13)
-                        }
                     }
                     if env.preferences.glucoseGoals.enabled {
                         goalsCard(todayStats, thresholds: thresholds)
@@ -436,32 +433,41 @@ struct DashboardView: View {
 
     // MARK: - Today's time in range
 
-    private func todayCard(_ stats: PeriodStatistics) -> some View {
+    private func todayCard(_ stats: PeriodStatistics, forecast: TIRForecast, goalFraction: Double) -> some View {
         let pct = (stats.timeInRange * 100).formatted(.number.precision(.fractionLength(0))) + "%"
         return SectionCard("Today's time in range", systemImage: "target") {
-            VStack(alignment: .leading, spacing: 8) {
-                GeometryReader { geo in
-                    HStack(spacing: 1) {
-                        todayBand(geo, stats.timeBelowRange, Theme.zoneWarning)
-                        todayBand(geo, stats.timeInRange, Theme.zoneInRange)
-                        todayBand(geo, stats.timeAboveRange, Theme.zoneHigh)
+            VStack(alignment: .leading, spacing: 14) {
+                VStack(alignment: .leading, spacing: 8) {
+                    GeometryReader { geo in
+                        HStack(spacing: 1) {
+                            todayBand(geo, stats.timeBelowRange, Theme.zoneWarning)
+                            todayBand(geo, stats.timeInRange, Theme.zoneInRange)
+                            todayBand(geo, stats.timeAboveRange, Theme.zoneHigh)
+                        }
+                        .clipShape(RoundedRectangle(cornerRadius: 5))
                     }
-                    .clipShape(RoundedRectangle(cornerRadius: 5))
-                }
-                .frame(height: 14)
+                    .frame(height: 14)
 
-                HStack {
-                    Text("\(pct) in range")
-                        .font(.subheadline.weight(.semibold))
-                        .foregroundStyle(Theme.zoneInRange)
-                    Spacer()
-                    Text("\(stats.readingCount) readings")
-                        .font(.caption)
-                        .foregroundStyle(Theme.textSecondary)
+                    HStack {
+                        Text("\(pct) in range")
+                            .font(.subheadline.weight(.semibold))
+                            .foregroundStyle(Theme.zoneInRange)
+                        Spacer()
+                        Text("\(stats.readingCount) readings")
+                            .font(.caption)
+                            .foregroundStyle(Theme.textSecondary)
+                    }
+                }
+                .accessibilityElement(children: .combine)
+                .accessibilityLabel("Today's time in range \(pct), \(stats.readingCount) readings")
+
+                // The end-of-day outlook, folded in so today's time-in-range lives
+                // in one card instead of two adjacent ones.
+                if forecast.hasData {
+                    Divider().overlay(Theme.hairline)
+                    forecastRow(forecast, goalFraction: goalFraction)
                 }
             }
-            .accessibilityElement(children: .combine)
-            .accessibilityLabel("Today's time in range \(pct), \(stats.readingCount) readings")
         }
     }
 
@@ -487,7 +493,9 @@ struct DashboardView: View {
     /// A gentle projection of today's end-of-day time-in-range: where it stands
     /// now, where it's heading, and how confident that estimate is. Supportive,
     /// never alarming.
-    private func forecastCard(_ forecast: TIRForecast, goalFraction: Double) -> some View {
+    /// The end-of-day outlook row (now → projected + confidence), folded into the
+    /// Today card so today's time-in-range isn't rendered across two cards.
+    private func forecastRow(_ forecast: TIRForecast, goalFraction: Double) -> some View {
         let nowPct = (forecast.currentFraction * 100).formatted(.number.precision(.fractionLength(0)))
         let projPct = (forecast.projectedFraction * 100).formatted(.number.precision(.fractionLength(0)))
         let onTrack = goalFraction > 0 && forecast.projectedFraction >= goalFraction
@@ -496,27 +504,25 @@ struct DashboardView: View {
             : (onTrack
                 ? String(localized: "On track to reach your goal today.")
                 : String(localized: "A steady rest of the day can still lift this."))
-        return SectionCard("Today's outlook", systemImage: "chart.line.uptrend.xyaxis") {
-            VStack(alignment: .leading, spacing: 12) {
-                HStack(spacing: 16) {
-                    forecastFigure(title: "Now", value: "\(nowPct)%", tint: Theme.textPrimary)
-                    Image(systemName: "arrow.right")
-                        .font(.caption.weight(.bold))
-                        .foregroundStyle(Theme.textTertiary)
-                        .accessibilityHidden(true)
-                    forecastFigure(title: "Projected", value: "\(projPct)%",
-                                   tint: onTrack ? Theme.zoneInRange : Theme.accent)
-                    Spacer()
-                    confidenceBadge(forecast.confidence)
-                }
-                Text(note)
-                    .font(.caption)
-                    .foregroundStyle(Theme.textSecondary)
-                    .fixedSize(horizontal: false, vertical: true)
+        return VStack(alignment: .leading, spacing: 10) {
+            HStack(spacing: 16) {
+                forecastFigure(title: "Now", value: "\(nowPct)%", tint: Theme.textPrimary)
+                Image(systemName: "arrow.right")
+                    .font(.caption.weight(.bold))
+                    .foregroundStyle(Theme.textTertiary)
+                    .accessibilityHidden(true)
+                forecastFigure(title: "Projected", value: "\(projPct)%",
+                               tint: onTrack ? Theme.zoneInRange : Theme.accent)
+                Spacer()
+                confidenceBadge(forecast.confidence)
             }
-            .accessibilityElement(children: .combine)
-            .accessibilityLabel("Today's outlook. Now \(nowPct) percent in range, projected \(projPct) percent by end of day. \(confidenceLabel(forecast.confidence)) confidence. \(note)")
+            Text(note)
+                .font(.caption)
+                .foregroundStyle(Theme.textSecondary)
+                .fixedSize(horizontal: false, vertical: true)
         }
+        .accessibilityElement(children: .combine)
+        .accessibilityLabel("End-of-day outlook. Now \(nowPct) percent in range, projected \(projPct) percent. \(confidenceLabel(forecast.confidence)) confidence. \(note)")
     }
 
     private func forecastFigure(title: LocalizedStringKey, value: String, tint: Color) -> some View {
