@@ -5,6 +5,9 @@ import SwiftUI
 /// mood icon, a headline and a warm subline.
 struct DailyCompanionCard: View {
     let message: CompanionMessage
+    /// When set, a small "x" appears in the corner to hide the card for this
+    /// session (the dashboard passes this; it reappears on the next launch).
+    var onDismiss: (() -> Void)? = nil
 
     private var symbol: String {
         switch message.mood {
@@ -50,6 +53,25 @@ struct DailyCompanionCard: View {
         .glassCard(cornerRadius: 18, padding: 14)
         .accessibilityElement(children: .combine)
         .accessibilityLabel("\(message.headline). \(message.subline)")
+        .overlay(alignment: .topTrailing) { dismissButton }
+    }
+
+    /// A small close control, shown only when the card is dismissible.
+    @ViewBuilder private var dismissButton: some View {
+        if let onDismiss {
+            Button {
+                Haptics.play(.light)
+                onDismiss()
+            } label: {
+                Image(systemName: "xmark.circle.fill")
+                    .font(.system(size: 18))
+                    .symbolRenderingMode(.hierarchical)
+                    .foregroundStyle(Theme.textTertiary)
+                    .padding(8)
+            }
+            .buttonStyle(.plain)
+            .accessibilityLabel("Dismiss")
+        }
     }
 }
 

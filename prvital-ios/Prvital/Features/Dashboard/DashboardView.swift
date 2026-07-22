@@ -19,6 +19,10 @@ struct DashboardView: View {
     @Query private var carbs: [CarbEntry]
     @Query private var activity: [ActivityEntry]
     @Query(sort: \SensorSession.startDate, order: .reverse) private var sensorSessions: [SensorSession]
+    @Environment(\.scenePhase) private var scenePhase
+    // Session-only dismissal of the companion card: cleared when the app returns
+    // to the foreground, so it comes back on the next open (as requested).
+    @State private var companionDismissed = false
 
     /// How far back the dashboard reaches: enough for the 7-day forecast
     /// baseline and a reasonable custom trend range. The custom picker is
@@ -73,7 +77,7 @@ struct DashboardView: View {
                 VStack(spacing: 20) {
                     hero(summary: summary, thresholds: thresholds, unit: unit)
                         .appearTransition(delay: 0)
-                    if env.preferences.showDailyCompanion {
+                    if env.preferences.showDailyCompanion && !companionDismissed {
                         dailyCompanionCard(summary: summary, todayStats: todayStats, thresholds: thresholds)
                             .appearTransition(delay: 0.02)
                     }
@@ -131,6 +135,9 @@ struct DashboardView: View {
             }
             .prvitalTabBackground()
             .navigationTitle("Today")
+            .onChange(of: scenePhase) { _, phase in
+                if phase == .active { companionDismissed = false }
+            }
             .toolbar {
                 ToolbarItem(placement: .topBarLeading) {
                     Button {
@@ -596,7 +603,9 @@ struct DashboardView: View {
             goalFraction: goalFraction,
             currentZone: summary.isStale ? nil : summary.zone,
             streakDays: streak)
-        return DailyCompanionCard(message: message)
+        return DailyCompanionCard(message: message) {
+            withAnimation(.snappy) { companionDismissed = true }
+        }
     }
 
     // MARK: - Daily rings
