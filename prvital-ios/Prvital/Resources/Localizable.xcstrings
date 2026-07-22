@@ -52753,71 +52753,6 @@
         }
       }
     },
-    "A short name for this meal, e.g. \\\"Usual breakfast\\\".": {
-      "extractionState": "manual",
-      "localizations": {
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "A short name for this meal, e.g. \\\"Usual breakfast\\\"."
-          }
-        },
-        "ro": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Un nume scurt pentru această masă, de ex. „Micul dejun obișnuit”."
-          }
-        },
-        "de": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Ein kurzer Name für diese Mahlzeit, z. B. „Übliches Frühstück“."
-          }
-        },
-        "es": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Un nombre corto para esta comida, p. ej. «Desayuno habitual»."
-          }
-        },
-        "fr": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Un nom court pour ce repas, par ex. « Petit-déjeuner habituel »."
-          }
-        },
-        "it": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Un nome breve per questo pasto, ad es. \"Colazione solita\"."
-          }
-        },
-        "nl": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Een korte naam voor deze maaltijd, bijv. \"Gewoon ontbijt\"."
-          }
-        },
-        "pl": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Krótka nazwa tego posiłku, np. „Zwykłe śniadanie”."
-          }
-        },
-        "pt": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Um nome curto para esta refeição, p. ex. \"Pequeno-almoço habitual\"."
-          }
-        },
-        "ru": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Короткое название блюда, например «Обычный завтрак»."
-          }
-        }
-      }
-    },
     "A soft, static wash of colour.": {
       "extractionState": "manual",
       "localizations": {
@@ -56909,71 +56844,6 @@
           "stringUnit": {
             "state": "translated",
             "value": "Вес"
-          }
-        }
-      }
-    },
-    "When an urgent low alert isn't acknowledged, it repeats on this schedule until you tap the alert or its \\\"I'm on it\\\" button, until a newer synced reading shows you back at or above the urgent-low threshold, or until the maximum number of repeats. Standing down automatically relies on the app syncing a newer reading. In Focus or silent mode, delivery follows the system's Time Sensitive notification rules.": {
-      "extractionState": "manual",
-      "localizations": {
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "When an urgent low alert isn't acknowledged, it repeats on this schedule until you tap the alert or its \\\"I'm on it\\\" button, until a newer synced reading shows you back at or above the urgent-low threshold, or until the maximum number of repeats. Standing down automatically relies on the app syncing a newer reading. In Focus or silent mode, delivery follows the system's Time Sensitive notification rules."
-          }
-        },
-        "ro": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Când o alertă de urgent scăzută nu este confirmată, se repetă după acest program — până când atingi alerta sau butonul ei „Mă ocup”, până când o citire sincronizată mai nouă arată că ești din nou la sau peste pragul de urgent scăzut, ori până la numărul maxim de repetări. Oprirea automată depinde de sincronizarea unei citiri mai noi de către aplicație. În modul Concentrare sau silențios, livrarea urmează regulile sistemului pentru notificări sensibile la timp."
-          }
-        },
-        "de": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Wird eine Warnung bei dringend niedriger Glukose nicht bestätigt, wiederholt sie sich in diesem Rhythmus — bis du die Warnung oder ihren Button „Ich kümmere mich“ antippst, bis ein neuer synchronisierter Messwert dich wieder auf oder über der Schwelle für dringend niedrig zeigt, oder bis zur maximalen Anzahl an Wiederholungen. Das automatische Beenden setzt voraus, dass die App einen neueren Messwert synchronisiert. Im Fokus- oder Lautlos-Modus folgt die Zustellung den Systemregeln für zeitkritische Mitteilungen."
-          }
-        },
-        "es": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Cuando una alerta de bajada urgente no se confirma, se repite con esta pauta hasta que toques la alerta o su botón «Me encargo», hasta que una lectura sincronizada más reciente muestre que estás de nuevo en o por encima del umbral de bajada urgente, o hasta el número máximo de repeticiones. La desactivación automática depende de que la app sincronice una lectura más reciente. En modo Concentración o silencio, la entrega sigue las reglas del sistema para notificaciones urgentes (Time Sensitive)."
-          }
-        },
-        "fr": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Quand une alerte de glycémie basse urgente n'est pas confirmée, elle se répète selon ce rythme jusqu'à ce que vous touchiez l'alerte ou son bouton « Je m'en occupe », jusqu'à ce qu'une mesure synchronisée plus récente vous montre de nouveau au niveau ou au-dessus du seuil de basse urgente, ou jusqu'au nombre maximal de répétitions. L'arrêt automatique dépend de la synchronisation d'une mesure plus récente par l'app. En mode Concentration ou silencieux, la distribution suit les règles système des notifications sensibles au temps (Time Sensitive)."
-          }
-        },
-        "it": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Quando un avviso di bassa urgente non viene confermato, si ripete con questa cadenza finché non tocchi l'avviso o il suo pulsante \"Ci penso io\", finché una lettura sincronizzata più recente non ti mostra di nuovo pari o sopra la soglia di bassa urgente, o fino al numero massimo di ripetizioni. La disattivazione automatica dipende dalla sincronizzazione di una lettura più recente da parte dell'app. In modalità Full Immersion o silenziosa, la consegna segue le regole di sistema per le notifiche sensibili al tempo."
-          }
-        },
-        "nl": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Wordt een waarschuwing voor urgent laag niet bevestigd, dan herhaalt die zich volgens dit schema — tot je de waarschuwing of de knop \"Ik ben ermee bezig\" aantikt, tot een nieuwere gesynchroniseerde meting laat zien dat je weer op of boven de urgent-laag-drempel zit, of tot het maximale aantal herhalingen. Automatisch stoppen vereist dat de app een nieuwere meting synchroniseert. In focus- of stille modus volgt de bezorging de systeemregels voor tijdgevoelige meldingen."
-          }
-        },
-        "pl": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Gdy alert pilnie niskiej glukozy nie zostanie potwierdzony, powtarza się według tego harmonogramu — dopóki nie dotkniesz alertu lub jego przycisku „Zajmuję się tym”, dopóki nowszy zsynchronizowany odczyt nie pokaże, że jesteś z powrotem na poziomie progu pilnie niskiego lub powyżej, albo do maksymalnej liczby powtórzeń. Automatyczne wyciszenie zależy od zsynchronizowania przez aplikację nowszego odczytu. W trybie skupienia lub cichym dostarczanie podlega systemowym zasadom powiadomień wrażliwych na czas."
-          }
-        },
-        "pt": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Quando um alerta de urgentemente baixa não é confirmado, repete-se com esta cadência — até tocares no alerta ou no botão \"Estou a tratar disso\", até uma leitura sincronizada mais recente mostrar que voltaste a estar no limiar de urgentemente baixa ou acima dele, ou até ao número máximo de repetições. A desativação automática depende de a aplicação sincronizar uma leitura mais recente. No modo de concentração ou silencioso, a entrega segue as regras do sistema para notificações sensíveis ao tempo."
-          }
-        },
-        "ru": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Если оповещение о критически низкой глюкозе не подтверждено, оно повторяется по этому расписанию — пока вы не нажмёте на оповещение или его кнопку «Я занимаюсь этим», пока более новое синхронизированное измерение не покажет, что вы снова на пороге критически низкого уровня или выше, либо до максимального числа повторов. Автоматическая отмена зависит от синхронизации приложением более нового измерения. В режиме фокусирования или беззвучном доставка подчиняется системным правилам для срочных уведомлений (Time Sensitive)."
           }
         }
       }
@@ -68934,65 +68804,6 @@
           "stringUnit": {
             "state": "translated",
             "value": "Основы подсчёта углеводов"
-          }
-        }
-      }
-    },
-    "Catch a steep rise or fall early, whatever the value. Around 2–3 mg/dL per minute matches the classic \\\"rising/falling fast\\\" trend arrows.": {
-      "extractionState": "manual",
-      "localizations": {
-        "de": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Erkenne einen steilen Anstieg oder Abfall frühzeitig, unabhängig vom Wert. Etwa 2–3 mg/dL pro Minute entspricht den klassischen Trendpfeilen \\\"schnell steigend/fallend\\\"."
-          }
-        },
-        "es": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Detecta pronto una subida o bajada pronunciada, sea cual sea el valor. Alrededor de 2–3 mg/dL por minuto coincide con las flechas de tendencia clásicas de \"subida/bajada rápida\"."
-          }
-        },
-        "fr": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Repère tôt une hausse ou une baisse rapide, quelle que soit la valeur. Environ 2–3 mg/dL par minute correspond aux flèches de tendance classiques \\\"montée/descente rapide\\\"."
-          }
-        },
-        "it": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Individua tempestivamente una salita o una discesa ripida, qualunque sia il valore. Circa 2–3 mg/dL al minuto corrisponde alle classiche frecce di tendenza \\\"in salita/discesa rapida\\\"."
-          }
-        },
-        "nl": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Signaleer een scherpe stijging of daling vroegtijdig, ongeacht de waarde. Ongeveer 2–3 mg/dL per minuut komt overeen met de klassieke trendpijlen \\\"snel stijgend/dalend\\\"."
-          }
-        },
-        "pl": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Wychwyć gwałtowny wzrost lub spadek już na wczesnym etapie, niezależnie od wartości. Około 2–3 mg/dL na minutę odpowiada klasycznym strzałkom trendu \\\"szybko rośnie/szybko spada\\\"."
-          }
-        },
-        "pt": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Deteta cedo uma subida ou descida acentuada, seja qual for o valor. Cerca de 2–3 mg/dL por minuto corresponde às setas de tendência clássicas \\\"a subir/a descer rapidamente\\\"."
-          }
-        },
-        "ro": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Sesizează din timp o creștere sau o scădere bruscă, indiferent de valoare. Aproximativ 2–3 mg/dL pe minut corespunde săgeților clasice de tendință \\\"crește/scade rapid\\\"."
-          }
-        },
-        "ru": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Замечай резкий подъём или падение на раннем этапе, независимо от значения. Примерно 2–3 mg/dL в минуту соответствует классическим стрелкам тренда \\\"быстро растёт/падает\\\"."
           }
         }
       }
@@ -84927,65 +84738,6 @@
         }
       }
     },
-    "    This is general education, not medical advice. Diabetes care is individual — \\\n    always follow the plan agreed with your own healthcare team, and contact them \\\n    before changing how you treat lows and highs or how you dose insulin.\n    ": {
-      "extractionState": "manual",
-      "localizations": {
-        "de": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "    Dies sind allgemeine Informationen und keine medizinische Beratung. Die Diabetesbehandlung ist individuell — \\\n    befolge immer den Plan, den du mit deinem Behandlungsteam vereinbart hast, und wende dich an dein Team, \\\n    bevor du änderst, wie du Unter- oder Überzuckerungen behandelst oder wie du Insulin dosierst.\n    "
-          }
-        },
-        "es": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "    Esto es educación general, no un consejo médico. El cuidado de la diabetes es individual — \\\n    sigue siempre el plan acordado con tu propio equipo de salud, y contáctalo \\\n    antes de cambiar cómo tratas los niveles bajos y altos o cómo dosificas la insulina.\n    "
-          }
-        },
-        "fr": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "    Ceci est une information générale, pas un avis médical. La prise en charge du diabète est individuelle — \\\n    suis toujours le plan convenu avec ton équipe soignante, et contacte-la \\\n    avant de changer ta façon de traiter les hypos et les hypers ou de doser ton insuline.\n    "
-          }
-        },
-        "it": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "    Questo è materiale educativo generale, non un consiglio medico. La gestione del diabete è un percorso individuale — \\\n    segui sempre il piano concordato con il tuo team sanitario, e contattalo \\\n    prima di modificare il modo in cui tratti le ipoglicemie e le iperglicemie o dosi l'insulina.\n    "
-          }
-        },
-        "nl": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "    Dit is algemene voorlichting, geen medisch advies. Diabeteszorg is persoonlijk — \\\n    volg altijd het plan dat je met je eigen zorgteam hebt afgesproken en neem contact met hen op \\\n    voordat je verandert hoe je lage en hoge waarden behandelt of hoe je insuline doseert.\n    "
-          }
-        },
-        "pl": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "    To ogólna edukacja, a nie porada medyczna. Opieka nad cukrzycą jest sprawą indywidualną — \\\n    zawsze postępuj zgodnie z planem ustalonym z własnym zespołem opieki zdrowotnej i skontaktuj się z nim \\\n    przed zmianą sposobu leczenia niedocukrzeń i przecukrzeń oraz dawkowania insuliny.\n    "
-          }
-        },
-        "pt": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "    Esta é uma explicação educativa geral, não é aconselhamento médico. O tratamento da diabetes é individual — \\\n    segue sempre o plano acordado com a tua própria equipa de saúde, e contacta-a \\\n    antes de alterares a forma como tratas as hipoglicemias e as hiperglicemias ou como doseias a insulina.\n    "
-          }
-        },
-        "ro": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "    Aceasta este o informare educațională generală, nu un sfat medical. Îngrijirea diabetului este individuală — \\\n    urmează întotdeauna planul stabilit împreună cu propria ta echipă medicală și contacteaz-o \\\n    înainte de a schimba modul în care tratezi hipoglicemiile și hiperglicemiile sau modul în care dozezi insulina.\n    "
-          }
-        },
-        "ru": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "    Это общая информация, а не медицинская рекомендация. Диабет у каждого протекает по-своему — \\\n    всегда следуй плану, согласованному с твоей лечащей командой, и свяжись с ней \\\n    перед тем, как менять то, как ты справляешься с низким и высоким уровнем глюкозы, или как дозируешь инсулин.\n    "
-          }
-        }
-      }
-    },
     "highs_and_lows": {
       "extractionState": "manual",
       "localizations": {
@@ -85100,6 +84852,183 @@
           "stringUnit": {
             "state": "translated",
             "value": "Приложение меняет язык мгновенно. Это касается только Prvital, а не остального устройства."
+          }
+        }
+      }
+    },
+    "This is general education, not medical advice. Diabetes care is individual — always follow the plan agreed with your own healthcare team, and contact them before changing how you treat lows and highs or how you dose insulin.": {
+      "extractionState": "manual",
+      "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Dies sind allgemeine Informationen und keine medizinische Beratung. Die Diabetesbehandlung ist individuell — befolge immer den Plan, den du mit deinem Behandlungsteam vereinbart hast, und wende dich an dein Team, bevor du änderst, wie du Unter- oder Überzuckerungen behandelst oder wie du Insulin dosierst."
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Esto es educación general, no un consejo médico. El cuidado de la diabetes es individual — sigue siempre el plan acordado con tu propio equipo de salud, y contáctalo antes de cambiar cómo tratas los niveles bajos y altos o cómo dosificas la insulina."
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Ceci est une information générale, pas un avis médical. La prise en charge du diabète est individuelle — suis toujours le plan convenu avec ton équipe soignante, et contacte-la avant de changer ta façon de traiter les hypos et les hypers ou de doser ton insuline."
+          }
+        },
+        "it": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Questo è materiale educativo generale, non un consiglio medico. La gestione del diabete è un percorso individuale — segui sempre il piano concordato con il tuo team sanitario, e contattalo prima di modificare il modo in cui tratti le ipoglicemie e le iperglicemie o dosi l'insulina."
+          }
+        },
+        "nl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Dit is algemene voorlichting, geen medisch advies. Diabeteszorg is persoonlijk — volg altijd het plan dat je met je eigen zorgteam hebt afgesproken en neem contact met hen op voordat je verandert hoe je lage en hoge waarden behandelt of hoe je insuline doseert."
+          }
+        },
+        "pl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "To ogólna edukacja, a nie porada medyczna. Opieka nad cukrzycą jest sprawą indywidualną — zawsze postępuj zgodnie z planem ustalonym z własnym zespołem opieki zdrowotnej i skontaktuj się z nim przed zmianą sposobu leczenia niedocukrzeń i przecukrzeń oraz dawkowania insuliny."
+          }
+        },
+        "pt": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Esta é uma explicação educativa geral, não é aconselhamento médico. O tratamento da diabetes é individual — segue sempre o plano acordado com a tua própria equipa de saúde, e contacta-a antes de alterares a forma como tratas as hipoglicemias e as hiperglicemias ou como doseias a insulina."
+          }
+        },
+        "ro": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Aceasta este o informare educațională generală, nu un sfat medical. Îngrijirea diabetului este individuală — urmează întotdeauna planul stabilit împreună cu propria ta echipă medicală și contacteaz-o înainte de a schimba modul în care tratezi hipoglicemiile și hiperglicemiile sau modul în care dozezi insulina."
+          }
+        },
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Это общая информация, а не медицинская рекомендация. Диабет у каждого протекает по-своему — всегда следуй плану, согласованному с твоей лечащей командой, и свяжись с ней перед тем, как менять то, как ты справляешься с низким и высоким уровнем глюкозы, или как дозируешь инсулин."
+          }
+        }
+      }
+    },
+    "day": {
+      "extractionState": "manual",
+      "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Tag"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "día"
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "journée"
+          }
+        },
+        "it": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "giornata"
+          }
+        },
+        "nl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "dag"
+          }
+        },
+        "pl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "dzień"
+          }
+        },
+        "pt": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "dia"
+          }
+        },
+        "ro": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "zi"
+          }
+        },
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "день"
+          }
+        }
+      }
+    },
+    "week": {
+      "extractionState": "manual",
+      "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Woche"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "semana"
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "semaine"
+          }
+        },
+        "it": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "settimana"
+          }
+        },
+        "nl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "week"
+          }
+        },
+        "pl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "tydzień"
+          }
+        },
+        "pt": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "semana"
+          }
+        },
+        "ro": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "săptămână"
+          }
+        },
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "неделя"
           }
         }
       }
