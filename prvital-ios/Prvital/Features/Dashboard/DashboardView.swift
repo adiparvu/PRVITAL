@@ -115,16 +115,6 @@ struct DashboardView: View {
                     .accessibilityLabel("Goals")
                     .accessibilityHint("Set your time-in-range and A1c goals")
                 }
-                ToolbarItem(placement: .topBarLeading) {
-                    Button {
-                        Haptics.play(.selection)
-                        GlucoseSpeaker.shared.speak(SharedStore.load())
-                    } label: {
-                        Image(systemName: "speaker.wave.2.fill")
-                    }
-                    .accessibilityLabel("Speak my glucose")
-                    .accessibilityHint("Reads your latest glucose aloud")
-                }
                 ToolbarItem(placement: .primaryAction) {
                     Button {
                         Haptics.play(.selection)
@@ -907,9 +897,12 @@ struct DashboardView: View {
             .font(.headline)
             .accessibilityAddTraits(.isHeader)
             HStack(spacing: 12) {
-                insulinTile(summary.lastInsulin)
-                mealTile(summary.lastMeal)
-                activityTile(summary.lastActivity)
+                NavigationLink { InsulinLogView() } label: { insulinTile(summary.lastInsulin) }
+                    .buttonStyle(PressableCardStyle())
+                NavigationLink { MealLogView() } label: { mealTile(summary.lastMeal) }
+                    .buttonStyle(PressableCardStyle())
+                NavigationLink { ActivityLogView() } label: { activityTile(summary.lastActivity) }
+                    .buttonStyle(PressableCardStyle())
             }
         }
     }
