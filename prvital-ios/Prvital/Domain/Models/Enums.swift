@@ -276,7 +276,14 @@ enum InsulinDeliveryMethod: String, Codable, CaseIterable, Sendable {
     case pump
     case inhaled
 
-    var label: String { rawValue.capitalized }
+    var label: String {
+        switch self {
+        case .pen: return String(localized: "Pen")
+        case .syringe: return String(localized: "Syringe")
+        case .pump: return String(localized: "Pump")
+        case .inhaled: return String(localized: "Inhaled")
+        }
+    }
 }
 
 /// Why a dose was taken.
@@ -369,7 +376,13 @@ enum ActivityIntensity: String, Codable, CaseIterable, Sendable {
     case moderate
     case high
 
-    var label: String { rawValue.capitalized }
+    var label: String {
+        switch self {
+        case .low: return String(localized: "Low")
+        case .moderate: return String(localized: "Moderate")
+        case .high: return String(localized: "High")
+        }
+    }
 }
 
 /// A contextual note the user can attach to a day / entry.

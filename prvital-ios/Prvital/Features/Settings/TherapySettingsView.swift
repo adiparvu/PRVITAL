@@ -80,10 +80,10 @@ struct TherapySettingsView: View {
 
     private func numberRow(_ title: String, value: Binding<Double>, suffix: String, digits: Int) -> some View {
         HStack {
-            Text(title)
+            Text(LocalizedStringKey(title))
                 .foregroundStyle(Theme.textPrimary)
             Spacer()
-            TextField(title, value: value, format: .number.precision(.fractionLength(0...max(0, digits))))
+            TextField(LocalizedStringKey(title), value: value, format: .number.precision(.fractionLength(0...max(0, digits))))
                 .keyboardType(.decimalPad)
                 .multilineTextAlignment(.trailing)
                 .frame(maxWidth: 90)

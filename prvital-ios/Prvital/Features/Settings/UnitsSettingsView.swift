@@ -254,7 +254,7 @@ private struct UnitsThresholdStepper: View {
         Stepper(value: displayBinding, in: range, step: step) {
             HStack {
                 Label {
-                    Text(title).foregroundStyle(Theme.textPrimary)
+                    Text(LocalizedStringKey(title)).foregroundStyle(Theme.textPrimary)
                 } icon: {
                     Image(systemName: systemImage).foregroundStyle(tint)
                 }
