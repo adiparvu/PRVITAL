@@ -4,6 +4,7 @@ import SwiftData
 @main
 struct PrvitalApp: App {
     @State private var environment = AppEnvironment.live()
+    @State private var language = LanguageManager.shared
 
     init() {
         // Handles notification action taps (acknowledging critical-low alarm
@@ -19,6 +20,11 @@ struct PrvitalApp: App {
                 .modelContainer(environment.modelContainer)
                 .tint(Theme.accent)
                 .task { environment.bootstrap() }
+                // Instant in-app language switch: the locale re-resolves every
+                // `Text`, and keying on the language rebuilds the tree so
+                // `String(localized:)` values refresh too — no restart.
+                .environment(\.locale, language.locale)
+                .id(language.renderID)
         }
         .backgroundTask(.appRefresh(AppEnvironment.backgroundRefreshIdentifier)) { [environment] in
             await environment.performBackgroundRefresh()

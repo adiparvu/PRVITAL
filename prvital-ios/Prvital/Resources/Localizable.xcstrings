@@ -85044,6 +85044,65 @@
           }
         }
       }
+    },
+    "The app switches language immediately. This affects Prvital only, not the rest of your device.": {
+      "extractionState": "manual",
+      "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Die App wechselt die Sprache sofort. Das betrifft nur Prvital, nicht den Rest deines Geräts."
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "La app cambia de idioma al instante. Esto afecta solo a Prvital, no al resto del dispositivo."
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "L'app change de langue immédiatement. Cela ne concerne que Prvital, pas le reste de votre appareil."
+          }
+        },
+        "it": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "L'app cambia lingua immediatamente. Riguarda solo Prvital, non il resto del dispositivo."
+          }
+        },
+        "nl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "De app schakelt direct van taal. Dit geldt alleen voor Prvital, niet voor de rest van je apparaat."
+          }
+        },
+        "pl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Aplikacja zmienia język natychmiast. Dotyczy to tylko Prvital, a nie reszty urządzenia."
+          }
+        },
+        "pt": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "A app muda de idioma imediatamente. Isto afeta apenas o Prvital, não o resto do seu dispositivo."
+          }
+        },
+        "ro": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Aplicația schimbă limba instantaneu. Afectează doar Prvital, nu și restul dispozitivului."
+          }
+        },
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Приложение меняет язык мгновенно. Это касается только Prvital, а не остального устройства."
+          }
+        }
+      }
     }
   },
   "version": "1.0"
