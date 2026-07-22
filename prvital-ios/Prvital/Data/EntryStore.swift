@@ -245,7 +245,7 @@ final class EntryStore {
         for r in (try? context.fetch(FetchDescriptor<ObservationEntry>(predicate: #Predicate { $0.importBatchID == id }))) ?? [] { context.delete(r) }
         context.delete(batch)
         try? context.save()
-        audit.log(.deletion, source: nil, userConfirmation: true,
+        audit.log(.dataDeletion, source: nil, userConfirmation: true,
                   detail: "Removed imported file (\(total) record(s))")
         onChange()
     }
