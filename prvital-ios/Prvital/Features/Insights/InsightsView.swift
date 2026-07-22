@@ -66,14 +66,8 @@ struct InsightsView: View {
             .prvitalTabBackground()
             .navigationTitle("Insights")
             .toolbar {
-                ToolbarItem(placement: .topBarLeading) {
-                    NavigationLink {
-                        HistoryView()
-                    } label: {
-                        Image(systemName: "clock.arrow.circlepath")
-                    }
-                    .accessibilityLabel("History")
-                }
+                // History moved to the Journal tab (its "List" mode); Insights is
+                // trends + reports only now.
                 ToolbarItem(placement: .topBarLeading) {
                     NavigationLink {
                         PlainLanguageSummaryView()
