@@ -160,7 +160,7 @@ struct SourcesSettingsView: View {
             .glassListRow()
         }
         .scrollContentBackground(.hidden)
-        .background(Theme.background)
+        .prvitalScreenBackground()
         .navigationTitle("Sources")
         .navigationBarTitleDisplayMode(.inline)
     }

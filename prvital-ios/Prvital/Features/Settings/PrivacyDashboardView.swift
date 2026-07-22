@@ -29,7 +29,7 @@ struct PrivacyDashboardView: View {
             .glassListRow()
         }
         .scrollContentBackground(.hidden)
-        .background(Theme.background)
+        .prvitalScreenBackground()
         .navigationTitle("Privacy")
         .navigationBarTitleDisplayMode(.inline)
     }

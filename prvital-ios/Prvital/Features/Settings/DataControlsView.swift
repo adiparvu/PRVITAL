@@ -194,7 +194,7 @@ struct DataControlsView: View {
             .glassListRow()
         }
         .scrollContentBackground(.hidden)
-        .background(Theme.background)
+        .prvitalScreenBackground()
         .navigationTitle("Your data")
         .navigationBarTitleDisplayMode(.inline)
         .task { refreshCounts() }

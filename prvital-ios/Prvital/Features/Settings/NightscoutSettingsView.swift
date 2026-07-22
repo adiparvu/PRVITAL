@@ -91,7 +91,7 @@ struct NightscoutSettingsView: View {
             }
         }
         .scrollContentBackground(.hidden)
-        .background(Theme.background)
+        .prvitalScreenBackground()
         .navigationTitle("Nightscout")
         .navigationBarTitleDisplayMode(.inline)
         .onAppear {

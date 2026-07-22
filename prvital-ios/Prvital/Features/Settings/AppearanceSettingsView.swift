@@ -107,7 +107,7 @@ struct AppearanceSettingsView: View {
             .glassListRow()
         }
         .scrollContentBackground(.hidden)
-        .background(Theme.background)
+        .prvitalScreenBackground()
         .navigationTitle("Appearance")
         .navigationBarTitleDisplayMode(.inline)
     }
@@ -181,7 +181,7 @@ struct TextSizeSettingsView: View {
             .glassListRow()
         }
         .scrollContentBackground(.hidden)
-        .background(Theme.background)
+        .prvitalScreenBackground()
         .navigationTitle("Text size")
         .navigationBarTitleDisplayMode(.inline)
     }
@@ -253,7 +253,7 @@ struct BackgroundSettingsView: View {
             }
         }
         .scrollContentBackground(.hidden)
-        .background(Theme.background)
+        .prvitalScreenBackground()
         .navigationTitle("Background")
         .navigationBarTitleDisplayMode(.inline)
         .onChange(of: photoItem) { _, newItem in

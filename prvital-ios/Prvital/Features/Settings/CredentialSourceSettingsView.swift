@@ -87,7 +87,7 @@ struct CredentialSourceSettingsView: View {
             }
         }
         .scrollContentBackground(.hidden)
-        .background(Theme.background)
+        .prvitalScreenBackground()
         .navigationTitle(dataSource.displayName)
         .navigationBarTitleDisplayMode(.inline)
         .onAppear(perform: load)

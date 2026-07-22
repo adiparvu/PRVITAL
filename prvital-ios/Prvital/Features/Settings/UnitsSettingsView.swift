@@ -167,7 +167,7 @@ struct UnitsSettingsView: View {
             .glassListRow()
         }
         .scrollContentBackground(.hidden)
-        .background(Theme.background)
+        .prvitalScreenBackground()
         .navigationTitle("Units & targets")
         .navigationBarTitleDisplayMode(.inline)
         .onAppear {

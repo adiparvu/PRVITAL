@@ -66,7 +66,7 @@ struct TherapySettingsView: View {
             }
         }
         .scrollContentBackground(.hidden)
-        .background(Theme.background)
+        .prvitalScreenBackground()
         .animation(.easeInOut(duration: 0.25), value: params.isEnabled)
         .navigationTitle("Therapy & bolus")
         .navigationBarTitleDisplayMode(.inline)

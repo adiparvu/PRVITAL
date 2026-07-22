@@ -39,7 +39,7 @@ struct SensorView: View {
             }
             .padding()
         }
-        .background(Theme.background)
+        .prvitalScreenBackground()
         .navigationTitle("Sensor")
         .navigationBarTitleDisplayMode(.inline)
         .sheet(isPresented: $showingStart) { StartSensorSheet() }
@@ -149,7 +149,7 @@ struct StartSensorSheet: View {
                 .glassListRow()
             }
             .scrollContentBackground(.hidden)
-            .background(Theme.background)
+            .prvitalScreenBackground()
             .navigationTitle("New sensor")
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {

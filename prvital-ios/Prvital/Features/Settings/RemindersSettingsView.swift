@@ -126,7 +126,7 @@ struct RemindersSettingsView: View {
             .glassListRow()
         }
         .scrollContentBackground(.hidden)
-        .background(Theme.background)
+        .prvitalScreenBackground()
         .navigationTitle("Reminders")
         .navigationBarTitleDisplayMode(.inline)
         .onAppear {

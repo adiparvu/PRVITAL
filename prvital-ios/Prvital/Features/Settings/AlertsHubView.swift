@@ -57,7 +57,7 @@ struct AlertsHubView: View {
             }
         }
         .scrollContentBackground(.hidden)
-        .background(Theme.background)
+        .prvitalScreenBackground()
         .animation(.easeInOut(duration: 0.25), value: prefs.enabled)
         .animation(.easeInOut(duration: 0.25), value: prefs.riseRateEnabled)
         .animation(.easeInOut(duration: 0.25), value: prefs.fallRateEnabled)

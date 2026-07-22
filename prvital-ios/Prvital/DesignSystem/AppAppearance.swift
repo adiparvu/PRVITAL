@@ -194,11 +194,29 @@ struct AppBackgroundView: View {
     var body: some View {
         switch kind {
         case .standard:
-            Theme.background
+            standardBackground
         case .gradient:
             gradient.gradient
         case .photo:
             photoView
+        }
+    }
+
+    /// The default background. Not a flat fill but a whisper-soft wash — a faint
+    /// accent glow at the top and a hint of the in-range green at the bottom over
+    /// the base surface — so the frosted-glass cards and settings rows layered
+    /// above always have some depth to refract. Without this, glass over a flat
+    /// colour just reads as flat grey, which is exactly the "this isn't liquid
+    /// glass" complaint. Subtle enough that text legibility is untouched.
+    private var standardBackground: some View {
+        ZStack {
+            Theme.background
+            LinearGradient(
+                colors: [Theme.accent.opacity(0.14), .clear],
+                startPoint: .top, endPoint: UnitPoint(x: 0.5, y: 0.45))
+            LinearGradient(
+                colors: [.clear, Theme.zoneInRange.opacity(0.07)],
+                startPoint: UnitPoint(x: 0.5, y: 0.6), endPoint: .bottom)
         }
     }
 

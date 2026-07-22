@@ -32,7 +32,7 @@ struct AuditLogView: View {
             .glassListRow()
         }
         .scrollContentBackground(.hidden)
-        .background(Theme.background)
+        .prvitalScreenBackground()
         .navigationTitle("Audit trail")
         .navigationBarTitleDisplayMode(.inline)
         .toolbar {

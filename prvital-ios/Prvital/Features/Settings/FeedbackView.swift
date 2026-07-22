@@ -92,7 +92,7 @@ struct FeedbackView: View {
                 .glassListRow()
             }
             .scrollContentBackground(.hidden)
-            .background(Theme.background)
+            .prvitalScreenBackground()
             .navigationTitle("Send feedback")
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {

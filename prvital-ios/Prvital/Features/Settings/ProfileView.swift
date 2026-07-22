@@ -50,7 +50,7 @@ struct ProfileView: View {
             notesSection
         }
         .scrollContentBackground(.hidden)
-        .background(Theme.background)
+        .prvitalScreenBackground()
         .navigationTitle("Profile")
         .navigationBarTitleDisplayMode(.inline)
         .sheet(isPresented: $showGoalsEditor) {
@@ -536,7 +536,7 @@ private struct AvatarRingPickerSheet: View {
                 .background(Theme.surface, in: .rect(cornerRadius: 16))
                 .padding(.horizontal)
             }
-            .background(Theme.background)
+            .prvitalScreenBackground()
             .navigationTitle("Ring colour")
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {

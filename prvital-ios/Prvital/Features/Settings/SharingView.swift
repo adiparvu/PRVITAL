@@ -80,7 +80,7 @@ struct SharingView: View {
             .glassListRow()
         }
         .scrollContentBackground(.hidden)
-        .background(Theme.background)
+        .prvitalScreenBackground()
         .navigationTitle("Sharing")
         .navigationBarTitleDisplayMode(.inline)
         .onAppear { regenerate() }

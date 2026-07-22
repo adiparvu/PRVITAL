@@ -39,7 +39,7 @@ struct GlucoseScheduleView: View {
             .glassListRow()
         }
         .scrollContentBackground(.hidden)
-        .background(Theme.background)
+        .prvitalScreenBackground()
         .navigationTitle("Logging schedule")
         .navigationBarTitleDisplayMode(.inline)
         .toolbar { EditButton() }
@@ -61,7 +61,7 @@ struct GlucoseScheduleView: View {
     private func slotRow(_ slot: Binding<GlucoseLogSlot>) -> some View {
         VStack(spacing: 8) {
             HStack {
-                TextField("Label", text: slot.label)
+                TextField("Label", text: localizedLabel(slot))
                     .font(.body.weight(.medium))
                 Spacer()
                 Toggle("", isOn: slot.enabled).labelsHidden()
@@ -72,6 +72,24 @@ struct GlucoseScheduleView: View {
         }
         .padding(.vertical, 2)
     }
+
+    /// The four built-in slot labels are stored as their English keys (created at
+    /// first launch), so they don't follow an in-app language override. This
+    /// binding shows the translated label for an untouched default while leaving
+    /// the stored key alone; the moment the user types, their own text is saved.
+    private func localizedLabel(_ slot: Binding<GlucoseLogSlot>) -> Binding<String> {
+        Binding(
+            get: {
+                let raw = slot.wrappedValue.label
+                return Self.defaultLabelKeys.contains(raw) ? PrvitalString(raw) : raw
+            },
+            set: { slot.wrappedValue.label = $0 }
+        )
+    }
+
+    /// The English keys of the built-in default slots, translated on display.
+    private static let defaultLabelKeys: Set<String> =
+        ["Waking", "Before lunch", "Before dinner", "Bedtime"]
 
     private func timeBinding(_ slot: Binding<GlucoseLogSlot>) -> Binding<Date> {
         Binding(
