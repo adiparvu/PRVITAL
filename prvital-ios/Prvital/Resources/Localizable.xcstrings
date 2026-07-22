@@ -84219,19 +84219,19 @@
         "es": {
           "stringUnit": {
             "state": "translated",
-            "value": "El %lld% de %lld lecturas están por encima del rango"
+            "value": "El %lld%% de %lld lecturas están por encima del rango"
           }
         },
         "fr": {
           "stringUnit": {
             "state": "translated",
-            "value": "%lld% des %lld mesures sont au-dessus de la cible"
+            "value": "%lld%% des %lld mesures sont au-dessus de la cible"
           }
         },
         "it": {
           "stringUnit": {
             "state": "translated",
-            "value": "Il %lld% di %lld letture è sopra l'intervallo"
+            "value": "Il %lld%% di %lld letture è sopra l'intervallo"
           }
         },
         "nl": {
@@ -84249,13 +84249,13 @@
         "pt": {
           "stringUnit": {
             "state": "translated",
-            "value": "%lld% de %lld leituras estão acima do intervalo"
+            "value": "%lld%% de %lld leituras estão acima do intervalo"
           }
         },
         "ro": {
           "stringUnit": {
             "state": "translated",
-            "value": "%lld% din %lld valori sunt peste interval"
+            "value": "%lld%% din %lld valori sunt peste interval"
           }
         },
         "ru": {
@@ -84278,19 +84278,19 @@
         "es": {
           "stringUnit": {
             "state": "translated",
-            "value": "El %lld% de %lld lecturas están por debajo del rango"
+            "value": "El %lld%% de %lld lecturas están por debajo del rango"
           }
         },
         "fr": {
           "stringUnit": {
             "state": "translated",
-            "value": "%lld% des %lld mesures sont en dessous de la cible"
+            "value": "%lld%% des %lld mesures sont en dessous de la cible"
           }
         },
         "it": {
           "stringUnit": {
             "state": "translated",
-            "value": "Il %lld% di %lld letture è sotto l'intervallo"
+            "value": "Il %lld%% di %lld letture è sotto l'intervallo"
           }
         },
         "nl": {
@@ -84308,13 +84308,13 @@
         "pt": {
           "stringUnit": {
             "state": "translated",
-            "value": "%lld% de %lld leituras estão abaixo do intervalo"
+            "value": "%lld%% de %lld leituras estão abaixo do intervalo"
           }
         },
         "ro": {
           "stringUnit": {
             "state": "translated",
-            "value": "%lld% din %lld valori sunt sub interval"
+            "value": "%lld%% din %lld valori sunt sub interval"
           }
         },
         "ru": {
@@ -84420,7 +84420,7 @@
         "pl": {
           "stringUnit": {
             "state": "translated",
-            "value": "Cel A1c %@%% · szac. %@% dziś"
+            "value": "Cel A1c %@%% · szac. %@%% dziś"
           }
         },
         "pt": {
@@ -84455,19 +84455,19 @@
         "es": {
           "stringUnit": {
             "state": "translated",
-            "value": "Estuviste en rango el %lld% del %@ — igual o por encima de tu meta del %lld%%. Muy bien hecho."
+            "value": "Estuviste en rango el %lld%% del %@ — igual o por encima de tu meta del %lld%%. Muy bien hecho."
           }
         },
         "fr": {
           "stringUnit": {
             "state": "translated",
-            "value": "Tu es resté(e) dans la cible %lld% sur ta période (%@) — à la hauteur ou au-dessus de ton objectif de %lld%%. Bravo."
+            "value": "Tu es resté(e) dans la cible %lld%% sur ta période (%@) — à la hauteur ou au-dessus de ton objectif de %lld%%. Bravo."
           }
         },
         "it": {
           "stringUnit": {
             "state": "translated",
-            "value": "Sei stato in range per il %lld% di %@ — al livello del tuo obiettivo del %lld%% o superiore. Ottimo lavoro."
+            "value": "Sei stato in range per il %lld%% di %@ — al livello del tuo obiettivo del %lld%% o superiore. Ottimo lavoro."
           }
         },
         "nl": {
@@ -84485,13 +84485,13 @@
         "pt": {
           "stringUnit": {
             "state": "translated",
-            "value": "Estiveste dentro do intervalo em %lld% do período (%@) — na tua meta de %lld%% ou mais. Muito bem."
+            "value": "Estiveste dentro do intervalo em %lld%% do período (%@) — na tua meta de %lld%% ou mais. Muito bem."
           }
         },
         "ro": {
           "stringUnit": {
             "state": "translated",
-            "value": "Ai fost în interval țintă %lld% din %@ — la nivelul sau peste obiectivul tău de %lld%%. Bravo!"
+            "value": "Ai fost în interval țintă %lld%% din %@ — la nivelul sau peste obiectivul tău de %lld%%. Bravo!"
           }
         },
         "ru": {
@@ -84514,19 +84514,19 @@
         "es": {
           "stringUnit": {
             "state": "translated",
-            "value": "Estuviste en rango el %lld% del %@, muy cerca de tu meta del %lld%% — casi lo logras."
+            "value": "Estuviste en rango el %lld%% del %@, muy cerca de tu meta del %lld%% — casi lo logras."
           }
         },
         "fr": {
           "stringUnit": {
             "state": "translated",
-            "value": "Tu es resté(e) dans la cible %lld% sur ta période (%@), tout près de ton objectif de %lld%% — presque atteint."
+            "value": "Tu es resté(e) dans la cible %lld%% sur ta période (%@), tout près de ton objectif de %lld%% — presque atteint."
           }
         },
         "it": {
           "stringUnit": {
             "state": "translated",
-            "value": "Sei stato in range per il %lld% di %@, appena sotto il tuo obiettivo del %lld%% — ci sei quasi."
+            "value": "Sei stato in range per il %lld%% di %@, appena sotto il tuo obiettivo del %lld%% — ci sei quasi."
           }
         },
         "nl": {
@@ -84544,13 +84544,13 @@
         "pt": {
           "stringUnit": {
             "state": "translated",
-            "value": "Estiveste dentro do intervalo em %lld% do período (%@), muito perto da tua meta de %lld%% — quase lá."
+            "value": "Estiveste dentro do intervalo em %lld%% do período (%@), muito perto da tua meta de %lld%% — quase lá."
           }
         },
         "ro": {
           "stringUnit": {
             "state": "translated",
-            "value": "Ai fost în interval țintă %lld% din %@, la un pas de obiectivul tău de %lld%% — foarte aproape."
+            "value": "Ai fost în interval țintă %lld%% din %@, la un pas de obiectivul tău de %lld%% — foarte aproape."
           }
         },
         "ru": {
@@ -84573,19 +84573,19 @@
         "es": {
           "stringUnit": {
             "state": "translated",
-            "value": "Estuviste en rango el %lld% del %@. Cada poco de estabilidad cuenta."
+            "value": "Estuviste en rango el %lld%% del %@. Cada poco de estabilidad cuenta."
           }
         },
         "fr": {
           "stringUnit": {
             "state": "translated",
-            "value": "Tu es resté(e) dans la cible %lld% sur ta période (%@). Chaque moment de stabilité compte."
+            "value": "Tu es resté(e) dans la cible %lld%% sur ta période (%@). Chaque moment de stabilité compte."
           }
         },
         "it": {
           "stringUnit": {
             "state": "translated",
-            "value": "Sei stato in range per il %lld% di %@. Ogni momento di stabilità conta."
+            "value": "Sei stato in range per il %lld%% di %@. Ogni momento di stabilità conta."
           }
         },
         "nl": {
@@ -84603,13 +84603,13 @@
         "pt": {
           "stringUnit": {
             "state": "translated",
-            "value": "Estiveste dentro do intervalo em %lld% do período (%@). Cada momento de estabilidade conta."
+            "value": "Estiveste dentro do intervalo em %lld%% do período (%@). Cada momento de estabilidade conta."
           }
         },
         "ro": {
           "stringUnit": {
             "state": "translated",
-            "value": "Ai fost în interval țintă %lld% din %@. Fiecare pas spre stabilitate contează."
+            "value": "Ai fost în interval țintă %lld%% din %@. Fiecare pas spre stabilitate contează."
           }
         },
         "ru": {
@@ -84685,7 +84685,7 @@
         "de": {
           "stringUnit": {
             "state": "translated",
-            "value": "Du warst zu %lld% unterhalb des Zielbereichs. Weniger Unterzuckerungen zu haben ist meist der erste Erfolg."
+            "value": "Du warst zu %lld%% unterhalb des Zielbereichs. Weniger Unterzuckerungen zu haben ist meist der erste Erfolg."
           }
         },
         "es": {
@@ -84697,13 +84697,13 @@
         "fr": {
           "stringUnit": {
             "state": "translated",
-            "value": "Tu as passé %lld% de ton temps sous la cible. Réduire les hypoglycémies est souvent la première victoire."
+            "value": "Tu as passé %lld%% de ton temps sous la cible. Réduire les hypoglycémies est souvent la première victoire."
           }
         },
         "it": {
           "stringUnit": {
             "state": "translated",
-            "value": "Hai trascorso il %lld% sotto il range. Ridurre le ipoglicemie è di solito il primo traguardo."
+            "value": "Hai trascorso il %lld%% sotto il range. Ridurre le ipoglicemie è di solito il primo traguardo."
           }
         },
         "nl": {
@@ -84715,19 +84715,19 @@
         "pl": {
           "stringUnit": {
             "state": "translated",
-            "value": "%lld% czasu poniżej zakresu. Ograniczenie niedocukrzeń to zwykle pierwszy sukces."
+            "value": "%lld%% czasu poniżej zakresu. Ograniczenie niedocukrzeń to zwykle pierwszy sukces."
           }
         },
         "pt": {
           "stringUnit": {
             "state": "translated",
-            "value": "Passaste %lld% do tempo abaixo do intervalo. Reduzir as hipoglicemias costuma ser a primeira vitória."
+            "value": "Passaste %lld%% do tempo abaixo do intervalo. Reduzir as hipoglicemias costuma ser a primeira vitória."
           }
         },
         "ro": {
           "stringUnit": {
             "state": "translated",
-            "value": "Ai petrecut %lld% sub interval țintă. De obicei, primul progres e reducerea episoadelor de glicemie scăzută."
+            "value": "Ai petrecut %lld%% sub interval țintă. De obicei, primul progres e reducerea episoadelor de glicemie scăzută."
           }
         },
         "ru": {
@@ -84750,19 +84750,19 @@
         "es": {
           "stringUnit": {
             "state": "translated",
-            "value": "Los picos altos ocuparon el %lld% del %@ — un punto a revisar en las comidas o los horarios."
+            "value": "Los picos altos ocuparon el %lld%% del %@ — un punto a revisar en las comidas o los horarios."
           }
         },
         "fr": {
           "stringUnit": {
             "state": "translated",
-            "value": "Les hyperglycémies ont représenté %lld% sur ta période (%@) — un point à surveiller côté repas ou horaires."
+            "value": "Les hyperglycémies ont représenté %lld%% sur ta période (%@) — un point à surveiller côté repas ou horaires."
           }
         },
         "it": {
           "stringUnit": {
             "state": "translated",
-            "value": "Le iperglicemie hanno occupato il %lld% di %@ — un aspetto su cui rivedere pasti o tempistiche."
+            "value": "Le iperglicemie hanno occupato il %lld%% di %@ — un aspetto su cui rivedere pasti o tempistiche."
           }
         },
         "nl": {
@@ -84780,13 +84780,13 @@
         "pt": {
           "stringUnit": {
             "state": "translated",
-            "value": "As subidas ocuparam %lld% do período (%@) — um bom ponto para rever refeições ou horários."
+            "value": "As subidas ocuparam %lld%% do período (%@) — um bom ponto para rever refeições ou horários."
           }
         },
         "ro": {
           "stringUnit": {
             "state": "translated",
-            "value": "Valorile mari au ocupat %lld% din %@ — un aspect de analizat legat de mese sau momentul administrării."
+            "value": "Valorile mari au ocupat %lld%% din %@ — un aspect de analizat legat de mese sau momentul administrării."
           }
         },
         "ru": {
@@ -84933,7 +84933,7 @@
         "fr": {
           "stringUnit": {
             "state": "translated",
-            "value": "%lld% dans la cible jusqu'ici — beau travail."
+            "value": "%lld%% dans la cible jusqu'ici — beau travail."
           }
         },
         "it": {
@@ -84957,7 +84957,7 @@
         "pt": {
           "stringUnit": {
             "state": "translated",
-            "value": "%lld% dentro do intervalo até agora — excelente trabalho."
+            "value": "%lld%% dentro do intervalo até agora — excelente trabalho."
           }
         },
         "ro": {
@@ -84992,7 +84992,7 @@
         "fr": {
           "stringUnit": {
             "state": "translated",
-            "value": "%lld% dans la cible aujourd'hui. Chaque petit pas compte."
+            "value": "%lld%% dans la cible aujourd'hui. Chaque petit pas compte."
           }
         },
         "it": {
@@ -85016,7 +85016,7 @@
         "pt": {
           "stringUnit": {
             "state": "translated",
-            "value": "%lld% dentro do intervalo hoje. Cada pequeno passo conta."
+            "value": "%lld%% dentro do intervalo hoje. Cada pequeno passo conta."
           }
         },
         "ro": {
