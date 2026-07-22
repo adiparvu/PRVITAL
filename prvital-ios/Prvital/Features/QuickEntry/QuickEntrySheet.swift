@@ -78,6 +78,7 @@ struct QuickEntrySheet: View {
     @State private var editor: EntryEditorKind?
     @State private var showBolusCalculator = false
     @State private var showRuleOf15 = false
+    @State private var showKetones = false
 
     private let columns = [GridItem(.flexible(), spacing: 12), GridItem(.flexible(), spacing: 12)]
 
@@ -134,6 +135,7 @@ struct QuickEntrySheet: View {
             .sheet(item: $editor) { EntryEditor(kind: $0) }
             .sheet(isPresented: $showBolusCalculator) { BolusCalculatorView() }
             .sheet(isPresented: $showRuleOf15) { RuleOf15Sheet() }
+            .sheet(isPresented: $showKetones) { LogKetoneSheet() }
         }
     }
 
@@ -278,7 +280,39 @@ struct QuickEntrySheet: View {
             }
             .buttonStyle(PressableCardStyle())
             .appearTransition(delay: 0.38)
+            Button { Haptics.play(.selection); showKetones = true } label: {
+                ketoneLauncherRow
+            }
+            .buttonStyle(PressableCardStyle())
+            .appearTransition(delay: 0.40)
         }
+    }
+
+    /// The ketone launcher — a full-width row like the observation launcher, but
+    /// opening the ketone sheet (ketone logging moved here from the sick-day
+    /// screen so all logging lives in one place).
+    private var ketoneLauncherRow: some View {
+        HStack(spacing: 12) {
+            Image(systemName: "drop.triangle.fill")
+                .font(.title3)
+                .foregroundStyle(Theme.zoneWarning)
+                .frame(width: 42, height: 42)
+                .background(Theme.zoneWarning.opacity(0.14), in: .circle)
+            VStack(alignment: .leading, spacing: 1) {
+                Text("Ketones")
+                    .font(.subheadline.weight(.semibold))
+                    .foregroundStyle(Theme.textPrimary)
+                Text("Blood or urine reading")
+                    .font(.caption2)
+                    .foregroundStyle(Theme.textSecondary)
+            }
+            Spacer()
+            Image(systemName: "chevron.right")
+                .font(.caption)
+                .foregroundStyle(Theme.textTertiary)
+        }
+        .glassCard(cornerRadius: 18, padding: 14)
+        .accessibilityElement(children: .combine)
     }
 
     /// A square-ish grid tile: tinted icon circle, localized title + subtitle.
