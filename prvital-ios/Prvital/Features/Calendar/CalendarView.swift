@@ -330,7 +330,10 @@ struct CalendarDayDetailSheet: View {
             insulin: insulin,
             carbs: carbs,
             activity: activity,
-            observations: observations
+            observations: observations,
+            readings: readings,
+            unit: unit,
+            thresholds: thresholds
         )
     }
 
@@ -450,6 +453,18 @@ private struct CalendarEntryRowView: View {
                         .foregroundStyle(Theme.textSecondary)
                         .lineLimit(1)
                 }
+                if let g = item.glucose {
+                    // Glucose at the moment of the event, tinted by zone, with a
+                    // trend arrow — so an injection/meal shows where you were.
+                    HStack(spacing: 3) {
+                        Image(systemName: "drop.fill").font(.system(size: 9))
+                        Text(g.text).font(.caption.weight(.semibold)).monospacedDigit()
+                        Image(systemName: g.trendSymbol).font(.caption2.weight(.bold))
+                    }
+                    .foregroundStyle(g.color)
+                    .padding(.top, 1)
+                    .accessibilityHidden(true)
+                }
             }
 
             Spacer(minLength: 8)
@@ -486,10 +501,70 @@ private struct CalendarEntryItem: Identifiable {
     let title: String
     let subtitle: String?
     let date: Date
+    /// The glucose (value + trend) nearest this event's time, when known — shown
+    /// on insulin/meal rows so you can see where your glucose was at that moment.
+    var glucose: GlucoseContext? = nil
+
+    /// A compact glucose reading nearest an event: the value with a zone tint and
+    /// a trend arrow (the reading's own, or inferred from the surrounding slope).
+    struct GlucoseContext {
+        let text: String
+        let unitText: String
+        let trendSymbol: String
+        let color: Color
+        let accessibility: String
+    }
 
     var accessibilityText: String {
         let time = date.formatted(date: .omitted, time: .shortened)
-        return "\(title)\(subtitle.map { ", \($0)" } ?? ""), \(time)"
+        let glucosePart = glucose.map { ", \($0.accessibility)" } ?? ""
+        return "\(title)\(subtitle.map { ", \($0)" } ?? "")\(glucosePart), \(time)"
+    }
+
+    /// The glucose nearest `time` (within 20 minutes) from the day's readings —
+    /// which we already have from the CGM history (e.g. imported from Clarity) —
+    /// with a trend arrow: the reading's own trend if present, else inferred from
+    /// the slope of the surrounding points.
+    static func glucoseContext(at time: Date, sortedReadings: [GlucoseReading],
+                               unit: GlucoseUnit, thresholds: GlucoseThresholds) -> GlucoseContext? {
+        guard !sortedReadings.isEmpty else { return nil }
+        var nearestIdx = 0
+        var bestDelta = Double.greatestFiniteMagnitude
+        for (i, r) in sortedReadings.enumerated() {
+            let d = abs(r.timestamp.timeIntervalSince(time))
+            if d < bestDelta { bestDelta = d; nearestIdx = i }
+        }
+        guard bestDelta <= 20 * 60 else { return nil }
+        let nearest = sortedReadings[nearestIdx]
+        let symbol = nearest.trend?.symbol ?? trendSymbol(in: sortedReadings, at: nearestIdx)
+        let value = GlucoseFormatting.string(mgdL: nearest.valueMgdL, unit: unit)
+        return GlucoseContext(
+            text: value,
+            unitText: unit.rawValue,
+            trendSymbol: symbol,
+            color: thresholds.zone(forMgdL: nearest.valueMgdL).color,
+            accessibility: String(localized: "\(value) \(unit.rawValue) at the time")
+        )
+    }
+
+    /// A 5-way CGM trend arrow inferred from the slope between the nearest reading
+    /// and one 8–25 minutes earlier.
+    private static func trendSymbol(in sorted: [GlucoseReading], at index: Int) -> String {
+        let nearest = sorted[index]
+        guard let prior = sorted[..<index].last(where: {
+            let dt = nearest.timestamp.timeIntervalSince($0.timestamp)
+            return dt >= 8 * 60 && dt <= 25 * 60
+        }) else { return "arrow.right" }
+        let minutes = nearest.timestamp.timeIntervalSince(prior.timestamp) / 60
+        guard minutes > 0 else { return "arrow.right" }
+        let rate = (nearest.valueMgdL - prior.valueMgdL) / minutes
+        switch rate {
+        case ..<(-2.0): return "arrow.down"
+        case -2.0 ..< -1.0: return "arrow.down.right"
+        case -1.0 ..< 1.0: return "arrow.right"
+        case 1.0 ..< 2.0: return "arrow.up.right"
+        default: return "arrow.up"
+        }
     }
 
     /// Merges every non-glucose record type into one time-ordered list (newest first).
@@ -497,9 +572,16 @@ private struct CalendarEntryItem: Identifiable {
         insulin: [InsulinDose],
         carbs: [CarbEntry],
         activity: [ActivityEntry],
-        observations: [ObservationEntry]
+        observations: [ObservationEntry],
+        readings: [GlucoseReading],
+        unit: GlucoseUnit,
+        thresholds: GlucoseThresholds
     ) -> [CalendarEntryItem] {
         var items: [CalendarEntryItem] = []
+        // Sort the day's readings once so each event can look up the glucose (and
+        // its trend) nearest its timestamp — no new data source, just the CGM
+        // history already stored.
+        let sortedReadings = readings.filter(\.isActive).sorted { $0.timestamp < $1.timestamp }
 
         for dose in insulin {
             items.append(CalendarEntryItem(
@@ -508,7 +590,8 @@ private struct CalendarEntryItem: Identifiable {
                 tint: Theme.accent,
                 title: String(localized: "\(dose.units.formatted()) U · \(dose.insulinType.label)"),
                 subtitle: [dose.doseContext.label, dose.insulinName].compactMap { $0 }.joined(separator: " · "),
-                date: dose.timestamp
+                date: dose.timestamp,
+                glucose: glucoseContext(at: dose.timestamp, sortedReadings: sortedReadings, unit: unit, thresholds: thresholds)
             ))
         }
 
@@ -519,7 +602,8 @@ private struct CalendarEntryItem: Identifiable {
                 tint: Theme.zoneHigh,
                 title: String(localized: "\(meal.grams.formatted()) g · \(meal.mealType.label)"),
                 subtitle: meal.foodDescription,
-                date: meal.timestamp
+                date: meal.timestamp,
+                glucose: glucoseContext(at: meal.timestamp, sortedReadings: sortedReadings, unit: unit, thresholds: thresholds)
             ))
         }
 
