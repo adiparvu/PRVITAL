@@ -71,8 +71,12 @@ struct StatisticsContent: View {
     // body and every card builder stay unchanged.
 
     @State private var derived = StatisticsDerived()
+    // Apple Health's daily exercise minutes for the window, merged into the
+    // "Active time" figure so it matches the Move ring and the Activity chart.
+    @State private var healthExercise: [DailyMetric] = []
 
     private var stats: PeriodStatistics { derived.stats }
+    private var activityMinutes: Int { derived.activityMinutes }
     private var hasAnyData: Bool { derived.hasAnyData }
     private var hypoRecovery: HypoRecoveryStats? { derived.hypoRecovery }
     private var gmiTrend: [GMIPoint] { derived.gmiTrend }
@@ -98,7 +102,9 @@ struct StatisticsContent: View {
             newest: glucose.first?.timestamp,
             thresholds: thresholds,
             periodTargets: env.preferences.periodTIRTargets,
-            globalTargetPercent: env.preferences.glucoseGoals.targetTIRPercent)
+            globalTargetPercent: env.preferences.glucoseGoals.targetTIRPercent,
+            healthExerciseDays: healthExercise.count,
+            healthExerciseTotal: Int(healthExercise.reduce(0.0) { $0 + $1.value }.rounded()))
     }
 
     /// A ~95-day glucose window fetched on demand for the A1c reconciliation (it
@@ -166,9 +172,15 @@ struct StatisticsContent: View {
             await derived.rebuild(
                 glucose: glucose, insulin: insulin, carbs: carbs, activity: activity,
                 labResults: labResults, reconReadings: reconReadings,
+                healthExercise: healthExercise,
                 range: interval.dateRange(), thresholds: thresholds,
                 periodTargets: env.preferences.periodTIRTargets,
                 globalTargetPercent: env.preferences.glucoseGoals.targetTIRPercent)
+        }
+        // Pull the window's Apple Health exercise minutes; when they land the
+        // signature changes and the rebuild re-runs to merge them into "Active time".
+        .task(id: interval) {
+            healthExercise = await env.healthKit.dailyMetric(.exercise, days: interval.dayCount)
         }
     }
 
@@ -796,7 +808,7 @@ struct StatisticsContent: View {
             StatTile(title: "Meals", value: "\(stats.mealCount)",
                      caption: String(localized: "Logged"), tint: Theme.zoneHigh, systemImage: "list.bullet")
 
-            StatTile(title: "Activity", value: String(localized: "\(stats.activityMinutes) min"),
+            StatTile(title: "Activity", value: String(localized: "\(activityMinutes) min"),
                      caption: String(localized: "Active time"), tint: Theme.zoneInRange, systemImage: "figure.walk")
         }
     }
@@ -915,6 +927,8 @@ struct StatisticsSignature: Equatable {
     let thresholds: GlucoseThresholds
     let periodTargets: PeriodTIRTargets
     let globalTargetPercent: Double
+    let healthExerciseDays: Int
+    let healthExerciseTotal: Int
 }
 
 /// Holds the prepared statistics for the current window. Rebuilt once per data
@@ -927,6 +941,10 @@ struct StatisticsSignature: Equatable {
 final class StatisticsDerived {
     var ready = false
     var stats = PeriodStatistics()
+    /// Active minutes for the window — logged workouts merged with Apple Health's
+    /// exercise total (per-day max, so the Watch's activity shows even with no
+    /// logged sessions and workout time is never double-counted).
+    var activityMinutes = 0
     var hasAnyData = false
     var hypoRecovery: HypoRecoveryStats?
     var gmiTrend: [GMIPoint] = []
@@ -945,6 +963,7 @@ final class StatisticsDerived {
     func rebuild(
         glucose: [GlucoseReading], insulin: [InsulinDose], carbs: [CarbEntry],
         activity: [ActivityEntry], labResults: [LabResult], reconReadings: [GlucoseReading],
+        healthExercise: [DailyMetric],
         range: ClosedRange<Date>,
         thresholds: GlucoseThresholds, periodTargets: PeriodTIRTargets,
         globalTargetPercent: Double
@@ -963,7 +982,9 @@ final class StatisticsDerived {
 
         let base = StatisticsEngine.glucose(active, thresholds: thresholds)
         let summary = StatisticsEngine.enrich(base, insulin: fInsulin, carbs: fCarbs, activity: fActivity)
-        let anyData = summary.hasGlucose || !fInsulin.isEmpty || !fCarbs.isEmpty || !fActivity.isEmpty
+        let activityMins = Self.mergedActivityMinutes(logged: fActivity, health: healthExercise, range: range)
+        let anyData = summary.hasGlucose || !fInsulin.isEmpty || !fCarbs.isEmpty
+            || !fActivity.isEmpty || activityMins > 0
 
         let gmi = GMITrend.weekly(active)
         // Reconciliation uses the full reading history (not the window) so its
@@ -988,6 +1009,7 @@ final class StatisticsDerived {
             targets: periodTargets, globalTargetPercent: globalTargetPercent)
 
         self.stats = summary
+        self.activityMinutes = activityMins
         self.hasAnyData = anyData
         self.hypoRecovery = hypo
         self.gmiTrend = gmi
@@ -1003,6 +1025,26 @@ final class StatisticsDerived {
         self.carbsByMeal = byMeal
         self.periodTIRs = pTIRs
         self.ready = true
+    }
+
+    /// Total active minutes over the window: per day, the LARGER of logged workout
+    /// minutes and Apple Health's exercise total (never the sum — Apple Health's
+    /// `appleExerciseTime` already counts logged workout time), then summed.
+    static func mergedActivityMinutes(logged: [ActivityEntry], health: [DailyMetric],
+                                      range: ClosedRange<Date>) -> Int {
+        let calendar = Calendar.current
+        var loggedByDay: [Date: Double] = [:]
+        for entry in logged {
+            loggedByDay[calendar.startOfDay(for: entry.startTimestamp), default: 0] += Double(entry.durationMinutes)
+        }
+        var healthByDay: [Date: Double] = [:]
+        let lowerDay = calendar.startOfDay(for: range.lowerBound)
+        for metric in health where metric.day >= lowerDay {
+            healthByDay[calendar.startOfDay(for: metric.day)] = metric.value
+        }
+        let days = Set(loggedByDay.keys).union(healthByDay.keys)
+        let total = days.reduce(0.0) { $0 + max(loggedByDay[$1] ?? 0, healthByDay[$1] ?? 0) }
+        return Int(total.rounded())
     }
 }
 

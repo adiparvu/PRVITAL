@@ -49,6 +49,10 @@ struct ChartsContent: View {
     @Query private var notes: [ObservationEntry]
 
     @State private var derived = ChartsDerived()
+    // Apple Health's daily exercise minutes (appleExerciseTime — the Watch's green
+    // ring) for the window, fetched off the render path and merged into the
+    // Activity chart so it reflects real Watch activity, not only logged workouts.
+    @State private var healthExercise: [DailyMetric] = []
 
     init(interval: InsightsInterval) {
         self.interval = interval
@@ -86,7 +90,9 @@ struct ChartsContent: View {
             glucose: glucose.count, insulin: insulin.count, carbs: carbs.count,
             activity: activity.count, medications: medications.count,
             ketones: ketones.count, notes: notes.count,
-            newest: glucose.first?.timestamp
+            newest: glucose.first?.timestamp,
+            healthExerciseDays: healthExercise.count,
+            healthExerciseTotal: Int(healthExercise.reduce(0.0) { $0 + $1.value }.rounded())
         )
     }
 
@@ -108,7 +114,12 @@ struct ChartsContent: View {
             await derived.rebuild(
                 glucose: glucose, insulin: insulin, carbs: carbs, activity: activity,
                 medications: medications, ketones: ketones, notes: notes,
-                range: interval.dateRange())
+                healthExercise: healthExercise, range: interval.dateRange())
+        }
+        // Pull the window's Apple Health exercise minutes; when they land the
+        // signature changes and the rebuild re-runs to merge them in.
+        .task(id: interval) {
+            healthExercise = await env.healthKit.dailyMetric(.exercise, days: interval.dayCount)
         }
     }
 
@@ -306,6 +317,8 @@ struct ChartsSignature: Equatable {
     let ketones: Int
     let notes: Int
     let newest: Date?
+    let healthExerciseDays: Int
+    let healthExerciseTotal: Int
 }
 
 /// Holds the prepared, already-aggregated chart data. Rebuilt once per data
@@ -333,7 +346,7 @@ final class ChartsDerived {
     func rebuild(
         glucose: [GlucoseReading], insulin: [InsulinDose], carbs: [CarbEntry],
         activity: [ActivityEntry], medications: [MedicationDose], ketones: [KetoneReading],
-        notes: [ObservationEntry], range: ClosedRange<Date>
+        notes: [ObservationEntry], healthExercise: [DailyMetric], range: ClosedRange<Date>
     ) async {
         let active = glucose.filter { $0.isActive && range.contains($0.timestamp) }
         let fInsulin = insulin.filter { range.contains($0.timestamp) }
@@ -352,7 +365,9 @@ final class ChartsDerived {
                                       ketones: fKetones, notes: fNotes)
         let insulinBars = Self.insulinBars(fInsulin)
         let carbBars = Self.dailyTotals(fCarbs.map { ($0.timestamp, $0.grams) })
-        let activityBars = Self.dailyTotals(fActivity.map { ($0.startTimestamp, Double($0.durationMinutes)) })
+        let activityBars = Self.activityBars(
+            logged: fActivity.map { ($0.startTimestamp, Double($0.durationMinutes)) },
+            health: healthExercise, range: range)
         let trend = Self.downsample(active, maxPoints: Self.maxTrendPoints)
 
         self.distribution = distribution
@@ -413,6 +428,29 @@ final class ChartsDerived {
         }
         return totals
             .map { ChartsDailyBar(day: $0.key, total: $0.value) }
+            .sorted { $0.day < $1.day }
+    }
+
+    /// Daily active-minute bars combining logged workouts with Apple Health's
+    /// exercise total. Apple Health's `appleExerciseTime` already counts logged
+    /// workout time, so per day we take the LARGER of the two (never the sum) to
+    /// avoid double counting — the same rule the Move ring uses.
+    static func activityBars(logged: [(Date, Double)], health: [DailyMetric],
+                             range: ClosedRange<Date>) -> [ChartsDailyBar] {
+        let calendar = Calendar.current
+        var loggedByDay: [Date: Double] = [:]
+        for (date, value) in logged {
+            loggedByDay[calendar.startOfDay(for: date), default: 0] += value
+        }
+        var healthByDay: [Date: Double] = [:]
+        let lowerDay = calendar.startOfDay(for: range.lowerBound)
+        for metric in health where metric.day >= lowerDay {
+            healthByDay[calendar.startOfDay(for: metric.day)] = metric.value
+        }
+        let days = Set(loggedByDay.keys).union(healthByDay.keys)
+        return days
+            .map { ChartsDailyBar(day: $0, total: max(loggedByDay[$0] ?? 0, healthByDay[$0] ?? 0)) }
+            .filter { $0.total > 0 }
             .sorted { $0.day < $1.day }
     }
 }

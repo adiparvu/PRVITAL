@@ -331,6 +331,17 @@ enum InsightsInterval: String, CaseIterable, Identifiable {
         }
     }
 
+    /// How many days of daily Apple Health metrics to fetch to cover this window,
+    /// including the extra calendar day a rolling window can straddle at its edge.
+    var dayCount: Int {
+        switch self {
+        case .day:   return 2
+        case .week:  return 8
+        case .month: return 31
+        case .year:  return 366
+        }
+    }
+
     /// A closed range `[start, now]` where `start` is `now` minus one interval.
     func dateRange(now: Date = Date()) -> ClosedRange<Date> {
         let calendar = Calendar.current

@@ -90,8 +90,13 @@ struct InsulinLogView: View {
 
 struct MealLogView: View {
     @Environment(AppEnvironment.self) private var env
+    @Environment(\.modelContext) private var modelContext
     @Query private var meals: [CarbEntry]
     @State private var editing: CarbEntry?
+    // Glucose (value + trend) at each meal's time, matched from the CGM history —
+    // so each meal shows where your glucose was when you ate. Computed off the
+    // render path in a `.task` and cached by meal id.
+    @State private var glucoseByMeal: [UUID: GlucoseEventContext] = [:]
 
     private static let renderCap = 500
 
@@ -113,7 +118,8 @@ struct MealLogView: View {
                                         value: String(localized: "\(meal.grams.formatted()) g"),
                                         title: meal.mealType.label,
                                         note: meal.foodDescription ?? meal.note,
-                                        date: meal.timestamp)
+                                        date: meal.timestamp,
+                                        glucose: glucoseByMeal[meal.id])
                         }
                         .listRowBackground(Theme.surface)
                         .swipeActions {
@@ -127,6 +133,35 @@ struct MealLogView: View {
         }
         .navigationTitle("Meals")
         .sheet(item: $editing) { CarbEntrySheet(existing: $0) }
+        .task(id: meals.count) { await loadGlucoseContexts() }
+    }
+
+    /// Fetches the CGM readings spanning the visible meals once, then binary-search
+    /// matches each meal to its nearest reading — so every meal gets its
+    /// glucose-at-the-time chip without materialising the full history per row.
+    private func loadGlucoseContexts() async {
+        let visible = Array(meals.prefix(Self.renderCap))
+        guard let lo = visible.map(\.timestamp).min(),
+              let hi = visible.map(\.timestamp).max() else { glucoseByMeal = [:]; return }
+        // Cap how far back we fetch readings so a light logger's 500 meals can't
+        // pull a year of CGM; meals older than this simply show no chip.
+        let floor = Date().addingTimeInterval(-120 * 86_400)
+        let lower = max(lo.addingTimeInterval(-20 * 60), floor)
+        let upper = hi.addingTimeInterval(20 * 60)
+        let descriptor = FetchDescriptor<GlucoseReading>(
+            predicate: #Predicate { $0.isActive && $0.timestamp >= lower && $0.timestamp <= upper },
+            sortBy: [SortDescriptor(\.timestamp)])
+        let readings = (try? modelContext.fetch(descriptor)) ?? []
+        let unit = env.preferences.glucoseUnit
+        let thresholds = env.preferences.thresholds
+        var map: [UUID: GlucoseEventContext] = [:]
+        for meal in visible {
+            if let ctx = GlucoseEventContext.nearest(to: meal.timestamp, in: readings,
+                                                     unit: unit, thresholds: thresholds) {
+                map[meal.id] = ctx
+            }
+        }
+        glucoseByMeal = map
     }
 }
 
