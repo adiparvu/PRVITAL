@@ -12,8 +12,23 @@ private struct StatDayRef: Identifiable {
 /// interval, rendered as a grid of `StatTile`s plus a Time-in-Range stacked bar.
 /// Glucose figures are always formatted through `GlucoseFormatting` in the user's
 /// unit; percentages use the `value * 100` rounding rule.
+/// A thin wrapper that re-creates its windowed content whenever the interval
+/// changes, so each interval fetches only its own window (Day ≈ 288 readings, not
+/// the whole ~100k-row history). Materialising a year of readings on every
+/// appearance was what still blocked the main thread on navigation into the tab,
+/// even after the computation itself was moved off it.
 struct StatisticsView: View {
+    @Binding var interval: InsightsInterval
+
+    var body: some View {
+        StatisticsContent(interval: interval).id(interval)
+    }
+}
+
+struct StatisticsContent: View {
     @Environment(AppEnvironment.self) private var env
+
+    let interval: InsightsInterval
 
     @Query private var glucose: [GlucoseReading]
     @Query private var insulin: [InsulinDose]
@@ -22,12 +37,11 @@ struct StatisticsView: View {
     @Query private var observations: [ObservationEntry]
     @Query(sort: \LabResult.timestamp, order: .reverse) private var labResults: [LabResult]
 
-    init(interval: Binding<InsightsInterval>) {
-        _interval = interval
-        // Statistics offer up to a year, so cap at ~400 days: even with several
-        // years imported, no view loads more than the longest window it can show.
-        let cutoff = Calendar.current.date(byAdding: .day, value: -400, to: Date())
-            ?? Date().addingTimeInterval(-400 * 86_400)
+    init(interval: InsightsInterval) {
+        self.interval = interval
+        // Window every query to the SELECTED interval, so Day loads a day and only
+        // Year loads a year — instead of a fixed 400-day fetch regardless of view.
+        let cutoff = interval.dateRange().lowerBound
         _glucose = Query(filter: #Predicate<GlucoseReading> { $0.timestamp >= cutoff },
                          sort: \.timestamp, order: .reverse)
         _insulin = Query(filter: #Predicate<InsulinDose> { $0.timestamp >= cutoff },
@@ -39,9 +53,6 @@ struct StatisticsView: View {
         _observations = Query(filter: #Predicate<ObservationEntry> { $0.timestamp >= cutoff },
                               sort: \.timestamp, order: .reverse)
     }
-
-    // Driven by the shared top-left menu in InsightsView.
-    @Binding var interval: InsightsInterval
     @State private var showingLogLab = false
     /// The day whose detail sheet is open (tapping the best/toughest day).
     @State private var selectedDay: StatDayRef?
@@ -90,6 +101,19 @@ struct StatisticsView: View {
             globalTargetPercent: env.preferences.glucoseGoals.targetTIRPercent)
     }
 
+    /// A ~95-day glucose window fetched on demand for the A1c reconciliation (it
+    /// needs the span a lab reflects, wider than the selected interval). Called
+    /// only when a lab result exists, so the common case never pays for it.
+    static func fetchReconReadings(_ env: AppEnvironment) -> [GlucoseReading] {
+        let cutoff = Calendar.current.date(byAdding: .day, value: -95, to: Date())
+            ?? Date().addingTimeInterval(-95 * 86_400)
+        var descriptor = FetchDescriptor<GlucoseReading>(
+            predicate: #Predicate { $0.timestamp >= cutoff },
+            sortBy: [SortDescriptor(\.timestamp)])
+        descriptor.fetchLimit = 40_000
+        return (try? env.modelContainer.mainContext.fetch(descriptor)) ?? []
+    }
+
     private let columns = [
         GridItem(.flexible(), spacing: 12),
         GridItem(.flexible(), spacing: 12),
@@ -135,9 +159,14 @@ struct StatisticsView: View {
         .background(Theme.background)
         .sheet(isPresented: $showingLogLab) { LogLabA1cSheet() }
         .task(id: signature) {
+            // The A1c reconciliation compares a lab result to the CGM estimate over
+            // the ~90 days the lab reflects — wider than the selected interval — so
+            // fetch that window on demand, and only when a lab actually exists.
+            let reconReadings = labResults.first == nil ? [] : Self.fetchReconReadings(env)
             await derived.rebuild(
                 glucose: glucose, insulin: insulin, carbs: carbs, activity: activity,
-                labResults: labResults, range: interval.dateRange(), thresholds: thresholds,
+                labResults: labResults, reconReadings: reconReadings,
+                range: interval.dateRange(), thresholds: thresholds,
                 periodTargets: env.preferences.periodTIRTargets,
                 globalTargetPercent: env.preferences.glucoseGoals.targetTIRPercent)
         }
@@ -915,7 +944,8 @@ final class StatisticsDerived {
 
     func rebuild(
         glucose: [GlucoseReading], insulin: [InsulinDose], carbs: [CarbEntry],
-        activity: [ActivityEntry], labResults: [LabResult], range: ClosedRange<Date>,
+        activity: [ActivityEntry], labResults: [LabResult], reconReadings: [GlucoseReading],
+        range: ClosedRange<Date>,
         thresholds: GlucoseThresholds, periodTargets: PeriodTIRTargets,
         globalTargetPercent: Double
     ) async {
@@ -939,7 +969,7 @@ final class StatisticsDerived {
         // Reconciliation uses the full reading history (not the window) so its
         // ~90-day comparison is always the clinically correct one.
         let recon: A1cReconciliation? = labResults.first.flatMap {
-            A1cReconciler.reconcile(lab: $0, readings: glucose, thresholds: thresholds)
+            A1cReconciler.reconcile(lab: $0, readings: reconReadings, thresholds: thresholds)
         }
         let projection: A1cProjectionResult? = {
             guard let p = A1cProjection.project(gmi), p.confidence == .ok else { return nil }

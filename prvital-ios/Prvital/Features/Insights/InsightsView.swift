@@ -13,8 +13,11 @@ struct InsightsView: View {
     @Environment(AppEnvironment.self) private var env
     @State private var section: InsightsSection = .charts
     // Interval lives here (not in the child panes) so the single top-left menu can
-    // drive both the view (Charts/Statistics/AGP) and the period at once.
-    @State private var interval: InsightsInterval = .week
+    // drive both the view (Charts/Statistics/AGP) and the period at once. Defaults
+    // to Day: it opens on "today" and, because each pane windows its @Query to the
+    // selected interval, the lightest possible fetch — no ~100k-row materialisation
+    // blocking the first navigation into the tab.
+    @State private var interval: InsightsInterval = .day
     @State private var showingWeeklyDigest = false
     @State private var showingPlainSummary = false
     @State private var showingExport = false
