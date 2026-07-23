@@ -25,10 +25,14 @@ struct AchievementsView: View {
     }
 
     @State private var store = AchievementStore()
+    // This week's Apple Health exercise minutes by day, so the "Get moving"
+    // challenge counts Apple Watch activity, not only logged sessions.
+    @State private var healthExercise: [DailyMetric] = []
 
     private var challengeInputs: ChallengeInputs {
         ChallengeInputsBuilder.make(
             readings: readings, meals: meals, activity: activity,
+            healthExercise: healthExercise,
             thresholds: env.preferences.thresholds,
             goalFraction: env.preferences.glucoseGoals.targetTIRFraction)
     }
@@ -68,6 +72,10 @@ struct AchievementsView: View {
         .prvitalTabBackground()
         .navigationTitle("Achievements")
         .navigationBarTitleDisplayMode(.inline)
+        .task {
+            // A week fits in ~8 daily buckets (today + up to 7 prior days).
+            healthExercise = await env.healthKit.dailyMetric(.exercise, days: 8)
+        }
         .onAppear {
             store.record(unlocked: AchievementEvaluator.unlocked(inputs))
             store.markAllSeen()

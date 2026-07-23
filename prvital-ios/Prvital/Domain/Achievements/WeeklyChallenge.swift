@@ -83,6 +83,9 @@ enum WeeklyChallengeEngine {
 /// Builds `ChallengeInputs` for the current week. Pure and deterministic.
 enum ChallengeInputsBuilder {
     static let minReadingsPerDay = 6
+    /// Minutes of Apple Health exercise in a day for it to count as one "activity"
+    /// toward the weekly "Get moving" challenge.
+    static let activeDayMinutes = 10
 
     /// The start of the calendar week containing `now`.
     static func weekStart(for now: Date, calendar: Calendar = .current) -> Date {
@@ -93,6 +96,7 @@ enum ChallengeInputsBuilder {
         readings: [GlucoseReading],
         meals: [CarbEntry],
         activity: [ActivityEntry],
+        healthExercise: [DailyMetric] = [],
         thresholds: GlucoseThresholds,
         goalFraction: Double,
         now: Date = Date(),
@@ -101,7 +105,15 @@ enum ChallengeInputsBuilder {
         let start = weekStart(for: now, calendar: calendar)
         var inputs = ChallengeInputs()
         inputs.mealsLogged = meals.filter { $0.timestamp >= start && $0.timestamp <= now }.count
-        inputs.activitiesLogged = activity.filter { $0.startTimestamp >= start && $0.startTimestamp <= now }.count
+        let loggedActivities = activity.filter { $0.startTimestamp >= start && $0.startTimestamp <= now }.count
+        // Days this week with meaningful Apple Health exercise count as activities
+        // too, so "Get moving" tracks Apple Watch movement — not only manually
+        // logged sessions. Take the larger (never the sum) so a day that was both
+        // logged and recorded on the Watch isn't counted twice.
+        let healthActiveDays = healthExercise.filter {
+            $0.day >= start && $0.day <= now && $0.value >= Double(activeDayMinutes)
+        }.count
+        inputs.activitiesLogged = max(loggedActivities, healthActiveDays)
 
         // Bucket this week's readings by day.
         var byDay: [Date: [GlucoseReading]] = [:]
