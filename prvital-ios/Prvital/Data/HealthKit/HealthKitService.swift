@@ -64,12 +64,28 @@ final class HealthKitService: @unchecked Sendable {
     private var heartRateType: HKQuantityType { HKQuantityType(.heartRate) }
     private let bpmUnit = HKUnit.count().unitDivided(by: .minute())
 
+    // Wellness metrics for the Health hub (all read-only; never written back).
+    var stepType: HKQuantityType { HKQuantityType(.stepCount) }
+    var activeEnergyType: HKQuantityType { HKQuantityType(.activeEnergyBurned) }
+    var exerciseType: HKQuantityType { HKQuantityType(.appleExerciseTime) }
+    var restingHRType: HKQuantityType { HKQuantityType(.restingHeartRate) }
+    var hrvType: HKQuantityType { HKQuantityType(.heartRateVariabilitySDNN) }
+    var respiratoryType: HKQuantityType { HKQuantityType(.respiratoryRate) }
+    var oxygenType: HKQuantityType { HKQuantityType(.oxygenSaturation) }
+    var systolicType: HKQuantityType { HKQuantityType(.bloodPressureSystolic) }
+    var diastolicType: HKQuantityType { HKQuantityType(.bloodPressureDiastolic) }
+    var bodyMassType: HKQuantityType { HKQuantityType(.bodyMass) }
+    var sleepType: HKCategoryType { HKCategoryType(.sleepAnalysis) }
+
     private var shareTypes: Set<HKSampleType> {
         [glucoseType, insulinType, carbType, HKObjectType.workoutType()]
     }
     private var readTypes: Set<HKObjectType> {
-        // Heart rate is read-only (for the activity chart); never written back.
-        [glucoseType, insulinType, carbType, heartRateType, HKObjectType.workoutType()]
+        // Heart rate + the wellness metrics are read-only (for the Health hub and
+        // the activity chart); never written back.
+        [glucoseType, insulinType, carbType, heartRateType, HKObjectType.workoutType(),
+         stepType, activeEnergyType, exerciseType, restingHRType, hrvType,
+         respiratoryType, oxygenType, systolicType, diastolicType, bodyMassType, sleepType]
     }
 
     func requestAuthorization() async throws {
@@ -152,6 +168,97 @@ final class HealthKitService: @unchecked Sendable {
             }
             store.execute(query)
         }
+    }
+
+    // MARK: Health hub — wellness metrics
+
+    /// (type, unit, statistics option) for a quantity-based metric. Blood pressure
+    /// and sleep are aggregated separately.
+    private func quantityConfig(for kind: HealthMetricKind) -> (HKQuantityType, HKUnit, HKStatisticsOptions)? {
+        switch kind {
+        case .steps:            return (stepType, .count(), .cumulativeSum)
+        case .activeEnergy:     return (activeEnergyType, .kilocalorie(), .cumulativeSum)
+        case .exercise:         return (exerciseType, .minute(), .cumulativeSum)
+        case .restingHeartRate: return (restingHRType, bpmUnit, .discreteAverage)
+        case .hrv:              return (hrvType, HKUnit.secondUnit(with: .milli), .discreteAverage)
+        case .respiratoryRate:  return (respiratoryType, bpmUnit, .discreteAverage)
+        case .oxygen:           return (oxygenType, .percent(), .discreteAverage)
+        case .weight:           return (bodyMassType, .gramUnit(with: .kilo), .discreteAverage)
+        case .bloodPressure, .sleep: return nil
+        }
+    }
+
+    /// Daily buckets for a quantity metric over the last `days`, via a statistics
+    /// collection query — HealthKit aggregates each day server-side, so the app
+    /// never materialises thousands of raw samples on the main thread.
+    func dailyMetric(_ kind: HealthMetricKind, days: Int) async -> [DailyMetric] {
+        guard isAvailable, let (type, unit, option) = quantityConfig(for: kind) else { return [] }
+        let cal = Calendar.current
+        let end = Date()
+        let anchor = cal.startOfDay(for: end)
+        guard let start = cal.date(byAdding: .day, value: -(days - 1), to: anchor) else { return [] }
+        let predicate = HKQuery.predicateForSamples(withStart: start, end: end, options: .strictStartDate)
+        return await withCheckedContinuation { continuation in
+            let query = HKStatisticsCollectionQuery(
+                quantityType: type, quantitySamplePredicate: predicate,
+                options: option, anchorDate: anchor, intervalComponents: DateComponents(day: 1))
+            query.initialResultsHandler = { _, results, _ in
+                var out: [DailyMetric] = []
+                results?.enumerateStatistics(from: start, to: end) { stat, _ in
+                    let q = option == .cumulativeSum ? stat.sumQuantity() : stat.averageQuantity()
+                    if let q { out.append(DailyMetric(day: stat.startDate, value: q.doubleValue(for: unit))) }
+                }
+                continuation.resume(returning: out)
+            }
+            store.execute(query)
+        }
+    }
+
+    /// The most recent reading of a quantity metric (resting HR, HRV, SpO2, weight…).
+    func latestReading(_ kind: HealthMetricKind) async -> MetricReading? {
+        guard isAvailable, let (type, unit, _) = quantityConfig(for: kind) else { return nil }
+        let samples = try? await quantitySamples(of: type, since: .distantPast, limit: 1)
+        guard let s = samples?.first else { return nil }
+        return MetricReading(value: s.quantity.doubleValue(for: unit), date: s.startDate)
+    }
+
+    /// The latest blood-pressure pair (systolic + diastolic).
+    func latestBloodPressure() async -> BloodPressureReading? {
+        guard isAvailable else { return nil }
+        let sys = try? await quantitySamples(of: systolicType, since: .distantPast, limit: 1)
+        let dia = try? await quantitySamples(of: diastolicType, since: .distantPast, limit: 1)
+        guard let s = sys?.first, let d = dia?.first else { return nil }
+        let mmHg = HKUnit.millimeterOfMercury()
+        return BloodPressureReading(systolic: s.quantity.doubleValue(for: mmHg),
+                                    diastolic: d.quantity.doubleValue(for: mmHg),
+                                    date: s.startDate)
+    }
+
+    /// Hours asleep per night over the last `days`, bucketed to each interval's day.
+    func sleepHoursByNight(days: Int) async -> [DailyMetric] {
+        guard isAvailable else { return [] }
+        let cal = Calendar.current
+        guard let start = cal.date(byAdding: .day, value: -days, to: Date()) else { return [] }
+        let predicate = HKQuery.predicateForSamples(withStart: start, end: Date(), options: [])
+        let asleep: [HKCategorySample] = await withCheckedContinuation { continuation in
+            let query = HKSampleQuery(sampleType: sleepType, predicate: predicate,
+                                      limit: HKObjectQueryNoLimit, sortDescriptors: nil) { _, samples, _ in
+                continuation.resume(returning: (samples as? [HKCategorySample]) ?? [])
+            }
+            store.execute(query)
+        }
+        let asleepValues: Set<Int> = [
+            HKCategoryValueSleepAnalysis.asleepUnspecified.rawValue,
+            HKCategoryValueSleepAnalysis.asleepCore.rawValue,
+            HKCategoryValueSleepAnalysis.asleepDeep.rawValue,
+            HKCategoryValueSleepAnalysis.asleepREM.rawValue
+        ]
+        var byDay: [Date: Double] = [:]
+        for s in asleep where asleepValues.contains(s.value) {
+            let day = cal.startOfDay(for: s.startDate)
+            byDay[day, default: 0] += s.endDate.timeIntervalSince(s.startDate) / 3600
+        }
+        return byDay.map { DailyMetric(day: $0.key, value: $0.value) }.sorted { $0.day < $1.day }
     }
 
     // MARK: Reads — insulin, carbs, workouts (for the full journal timeline)
@@ -307,5 +414,9 @@ final class HealthKitService: @unchecked Sendable {
     func saveGlucose(mgdL: Double, at date: Date) async throws {}
     func saveInsulin(units: Double, isBasal: Bool, at date: Date) async throws {}
     func saveCarbs(grams: Double, at date: Date) async throws {}
+    func dailyMetric(_ kind: HealthMetricKind, days: Int) async -> [DailyMetric] { [] }
+    func latestReading(_ kind: HealthMetricKind) async -> MetricReading? { nil }
+    func latestBloodPressure() async -> BloodPressureReading? { nil }
+    func sleepHoursByNight(days: Int) async -> [DailyMetric] { [] }
     #endif
 }
