@@ -43,7 +43,7 @@ jobs:
             -project Prvital.xcodeproj \
             -scheme Prvital \
             -destination 'generic/platform=iOS' \
-            CODE_SIGNING_ALLOWED=NO CODE_SIGNING_REQUIRED=NO
+            CODE_SIGNING_ALLOWED=NO CODE_SIGNING_REQUIRED=NO CODE_SIGN_IDENTITY="" PROVISIONING_PROFILE_SPECIFIER=""
       - name: Run unit tests (simulator)
         working-directory: prvital-ios
         run: |
@@ -73,7 +73,7 @@ jobs:
             -project Prvital.xcodeproj \
             -scheme Prvital \
             -destination "id=$UDID" \
-            CODE_SIGNING_ALLOWED=NO CODE_SIGNING_REQUIRED=NO
+            CODE_SIGNING_ALLOWED=NO CODE_SIGNING_REQUIRED=NO CODE_SIGN_IDENTITY="" PROVISIONING_PROFILE_SPECIFIER=""
       - name: Build Apple Watch app (no signing)
         working-directory: prvital-ios
         run: |
@@ -82,7 +82,7 @@ jobs:
             -project Prvital.xcodeproj \
             -scheme PrvitalWatch \
             -destination 'generic/platform=watchOS' \
-            CODE_SIGNING_ALLOWED=NO CODE_SIGNING_REQUIRED=NO
+            CODE_SIGNING_ALLOWED=NO CODE_SIGNING_REQUIRED=NO CODE_SIGN_IDENTITY="" PROVISIONING_PROFILE_SPECIFIER=""
 
   testflight:
     # Archives the app (with its widget + watch targets) with MANUAL signing and
@@ -241,7 +241,11 @@ jobs:
           end
           map = []
           BUNDLES.each do |bid, base|
-            pname = "#{base} #{ENV["GITHUB_RUN_ID"]}"
+            # Fixed profile name (no run-id suffix) so project.yml's
+            # PROVISIONING_PROFILE_SPECIFIER can reference it for a signed archive.
+            # Stale profiles from earlier runs (with or without the old suffix) are
+            # deleted above by name prefix, then recreated here.
+            pname = base
             code, resp = api(:get, "/v1/bundleIds?filter[identifier]=#{bid}&limit=1")
             abort("bundleId lookup failed for #{bid} (HTTP #{code}): #{resp}") unless code == 200
             abort("::error::App ID #{bid} does not exist. Create it in Identifiers (with its capabilities) first.") if resp["data"].empty?
@@ -349,8 +353,13 @@ jobs:
           security set-key-partition-list -S apple-tool:,apple: -k "" "$KEYCHAIN" >/dev/null
           security list-keychains -d user -s "$KEYCHAIN" $(security list-keychains -d user | tr -d '"')
           security find-identity -v -p codesigning "$KEYCHAIN"
-      - name: Archive (unsigned)
+      - name: Archive (signed)
         working-directory: prvital-ios
+        # Signed archive (manual, per-target profiles set in project.yml). Signing
+        # HERE — not disabling it and re-signing at export — is what makes the
+        # capability entitlements (HealthKit, App Group, iCloud) end up in the
+        # binary. The distribution cert is in the keychain and the profiles are
+        # installed by the earlier steps.
         run: |
           set -o pipefail
           xcodebuild archive \
@@ -358,7 +367,8 @@ jobs:
             -scheme Prvital \
             -destination 'generic/platform=iOS' \
             -archivePath build/Prvital.xcarchive \
-            CODE_SIGNING_ALLOWED=NO CODE_SIGNING_REQUIRED=NO
+            CODE_SIGN_STYLE=Manual \
+            DEVELOPMENT_TEAM=SU92TVZT8W
       - name: Verify archived build number matches the project
         # Guardrail against a build number that doesn't advance: if the archived
         # CFBundleVersion isn't CURRENT_PROJECT_VERSION, TestFlight silently
