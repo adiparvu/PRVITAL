@@ -31,4 +31,28 @@ final class ContextualLessonTests: XCTestCase {
         let lesson = ContextualLesson.make(recentMgdL: [70, 180], targetLow: 70, targetHigh: 180)
         XCTAssertEqual(lesson?.situation, .steady)
     }
+
+    func testHighAfterAMealPointsToCarbCounting() {
+        let lesson = ContextualLesson.make(recentMgdL: [150, 210, 170],
+                                           targetLow: 70, targetHigh: 180,
+                                           hadRecentMeal: true)
+        XCTAssertEqual(lesson?.situation, .postMealHigh)
+        XCTAssertEqual(lesson?.articleID, "carb-counting")
+    }
+
+    func testHighWithoutAMealStaysGeneric() {
+        let lesson = ContextualLesson.make(recentMgdL: [150, 210, 170],
+                                           targetLow: 70, targetHigh: 180,
+                                           hadRecentMeal: false)
+        XCTAssertEqual(lesson?.situation, .recentHigh)
+        XCTAssertEqual(lesson?.articleID, "hyperglycaemia")
+    }
+
+    func testLowStillOutranksAPostMealHigh() {
+        // Even with a meal and a high, a low is the priority.
+        let lesson = ContextualLesson.make(recentMgdL: [210, 60],
+                                           targetLow: 70, targetHigh: 180,
+                                           hadRecentMeal: true)
+        XCTAssertEqual(lesson?.situation, .recentLow)
+    }
 }

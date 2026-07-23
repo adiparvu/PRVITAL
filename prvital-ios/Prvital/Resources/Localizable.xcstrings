@@ -93232,6 +93232,65 @@
           }
         }
       }
+    },
+    "A high after eating — a carb refresher can help": {
+      "extractionState": "manual",
+      "localizations": {
+        "ro": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "O glicemie mare după masă — o recapitulare a carbohidraților ajută"
+          }
+        },
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Ein Hoch nach dem Essen – eine Kohlenhydrat-Auffrischung hilft"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Una subida tras comer: repasar los carbohidratos ayuda"
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Une hyper après le repas — réviser les glucides peut aider"
+          }
+        },
+        "it": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Un valore alto dopo il pasto — un ripasso sui carboidrati aiuta"
+          }
+        },
+        "nl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Een hoge waarde na het eten — een koolhydraten-opfrisser helpt"
+          }
+        },
+        "pl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Wysoki poziom po posiłku — warto odświeżyć liczenie węglowodanów"
+          }
+        },
+        "pt": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Uma alta após comer — rever os carboidratos ajuda"
+          }
+        },
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Высокий уровень после еды — освежить подсчёт углеводов будет полезно"
+          }
+        }
+      }
     }
   },
   "version": "1.0"

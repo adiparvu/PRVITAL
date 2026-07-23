@@ -11,6 +11,7 @@ import Foundation
 struct ContextualLesson: Equatable, Sendable {
     enum Situation: String, Equatable, Sendable {
         case recentLow
+        case postMealHigh
         case recentHigh
         case steady
     }
@@ -21,24 +22,33 @@ struct ContextualLesson: Equatable, Sendable {
     /// `LearnLibrary.articles`.
     var articleID: String {
         switch situation {
-        case .recentLow:  return "hypoglycaemia"
-        case .recentHigh: return "hyperglycaemia"
-        case .steady:     return "time-in-range"
+        case .recentLow:    return "hypoglycaemia"
+        case .postMealHigh: return "carb-counting"
+        case .recentHigh:   return "hyperglycaemia"
+        case .steady:       return "time-in-range"
         }
     }
 
     /// Picks a lesson from recent glucose values (mg/dL) against the user's target
-    /// band. A low outranks a high — it's the more urgent thing to understand — and
-    /// with neither, a steady stretch is a chance to reinforce why time in range
-    /// matters. Values exactly on a boundary count as in range. Returns nil when
-    /// there's nothing recent to teach from.
-    static func make(recentMgdL: [Double], targetLow: Double, targetHigh: Double) -> ContextualLesson? {
+    /// band. A low outranks everything — it's the most urgent thing to understand.
+    /// A high that followed a logged meal points to carb counting (the likely
+    /// cause) rather than the generic highs article; any other high is the generic
+    /// one. With neither, a steady stretch reinforces why time in range matters.
+    /// Values exactly on a boundary count as in range. Returns nil when there's
+    /// nothing recent to teach from.
+    static func make(
+        recentMgdL: [Double],
+        targetLow: Double,
+        targetHigh: Double,
+        hadRecentMeal: Bool = false
+    ) -> ContextualLesson? {
         guard !recentMgdL.isEmpty else { return nil }
         if recentMgdL.contains(where: { $0 < targetLow }) {
             return ContextualLesson(situation: .recentLow)
         }
-        if recentMgdL.contains(where: { $0 > targetHigh }) {
-            return ContextualLesson(situation: .recentHigh)
+        let hasHigh = recentMgdL.contains(where: { $0 > targetHigh })
+        if hasHigh {
+            return ContextualLesson(situation: hadRecentMeal ? .postMealHigh : .recentHigh)
         }
         return ContextualLesson(situation: .steady)
     }

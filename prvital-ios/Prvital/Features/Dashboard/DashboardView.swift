@@ -518,7 +518,8 @@ struct DashboardView: View {
         if let lesson = ContextualLesson.make(
                 recentMgdL: recentMgdLForLesson(),
                 targetLow: thresholds.targetLower,
-                targetHigh: thresholds.targetUpper),
+                targetHigh: thresholds.targetUpper,
+                hadRecentMeal: hadRecentMealForLesson()),
            let article = LearnLibrary.articles.first(where: { $0.id == lesson.articleID }) {
             NavigationLink {
                 ArticleDetailView(article: article)
@@ -556,9 +557,10 @@ struct DashboardView: View {
 
     private func lessonReason(_ situation: ContextualLesson.Situation) -> LocalizedStringKey {
         switch situation {
-        case .recentLow:  return "Because you had a low earlier"
-        case .recentHigh: return "Because you had a high earlier"
-        case .steady:     return "You've been steady — here's why that matters"
+        case .recentLow:    return "Because you had a low earlier"
+        case .postMealHigh: return "A high after eating — a carb refresher can help"
+        case .recentHigh:   return "Because you had a high earlier"
+        case .steady:       return "You've been steady — here's why that matters"
         }
     }
 
@@ -567,6 +569,13 @@ struct DashboardView: View {
     private func recentMgdLForLesson() -> [Double] {
         let cutoff = Date().addingTimeInterval(-6 * 3600)
         return readings.filter { $0.isActive && $0.timestamp >= cutoff }.map(\.valueMgdL)
+    }
+
+    /// Whether a meal was logged in the last three hours — used to attribute a
+    /// recent high to carbs and point to the carb-counting lesson.
+    private func hadRecentMealForLesson() -> Bool {
+        let cutoff = Date().addingTimeInterval(-3 * 3600)
+        return carbs.contains { $0.timestamp >= cutoff }
     }
 
     /// The top-right range picker (3h / 6h / 12h / 24h / custom).
