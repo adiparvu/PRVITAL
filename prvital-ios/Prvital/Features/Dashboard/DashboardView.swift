@@ -271,6 +271,17 @@ struct DashboardView: View {
                 }
                 .accessibilityElement(children: .combine)
 
+                // The live "how am I right now?" vitals: IOB, COB, time since bolus,
+                // time until insulin clears, time to the next reading.
+                let vitals = LiveVitals.make(
+                    latestReadingAt: current.timestamp,
+                    sourceIsCGM: current.source.isCGM,
+                    cgmCadenceMinutes: 5,
+                    insulin: insulin, carbs: carbs,
+                    bolus: env.preferences.bolusParameters)
+                LiveVitalsStrip(vitals: vitals)
+                    .animation(.snappy, value: vitals)
+
                 if let warning = projectionWarning(summary: summary, thresholds: thresholds) {
                     warningChip(warning)
                 }
