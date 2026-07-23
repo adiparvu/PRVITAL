@@ -230,14 +230,28 @@ jobs:
           # 2) App Store provisioning profile per bundle id.
           pp_dir = File.join(HOME, "Library/MobileDevice/Provisioning Profiles")
           FileUtils.mkdir_p(pp_dir)
-          # Remove profiles left over from earlier runs so the names don't collide.
-          code, resp = api(:get, "/v1/profiles?limit=200")
-          if code == 200
+          # Remove ALL profiles left over from earlier runs so the fixed names we
+          # recreate below don't collide (Apple rejects a create when duplicates of
+          # the same name already exist). The account can hold well over 200
+          # profiles, so paginate through every page (the old single limit=200 fetch
+          # missed the duplicates and the create failed with "Multiple profiles
+          # found with the name ..."). Collect first, then delete, so deleting
+          # doesn't disturb the pagination cursor.
+          to_delete = []
+          next_url = "/v1/profiles?limit=200"
+          while next_url
+            code, resp = api(:get, next_url)
+            break unless code == 200
             (resp["data"] || []).each do |p|
-              next unless BUNDLES.values.any? { |b| p["attributes"]["name"].to_s.start_with?(b) }
-              dc, _ = api(:delete, "/v1/profiles/#{p["id"]}")
-              puts "deleted stale profile '#{p["attributes"]["name"]}' (HTTP #{dc})"
+              nm = p["attributes"]["name"].to_s
+              to_delete << p["id"] if BUNDLES.values.any? { |b| nm.start_with?(b) }
             end
+            nxt = resp.dig("links", "next")
+            next_url = nxt ? nxt.sub("https://api.appstoreconnect.apple.com", "") : nil
+          end
+          to_delete.each do |pid|
+            dc, _ = api(:delete, "/v1/profiles/#{pid}")
+            puts "deleted stale profile #{pid} (HTTP #{dc})"
           end
           map = []
           BUNDLES.each do |bid, base|
