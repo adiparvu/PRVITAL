@@ -124,6 +124,7 @@ private struct WidgetGlucoseMedium: View {
                         .lineLimit(1)
                         .accessibilityLabel("Last insulin \(insulin)")
                 }
+                WidgetOnBoardStrip(snapshot: snapshot)
                 WidgetUpdatedText(snapshot: snapshot)
                     .font(.caption2)
                     .foregroundStyle(.tertiary)
@@ -167,6 +168,8 @@ private struct WidgetGlucoseLarge: View {
 
             WidgetGlucoseChart(snapshot: snapshot)
                 .frame(height: 110)
+
+            WidgetOnBoardStrip(snapshot: snapshot)
 
             if let reminder = snapshot.nextReminderText {
                 Label(reminder, systemImage: "bell.badge")
@@ -235,6 +238,38 @@ private struct WidgetGlucoseValueColumn: View {
         }
         .accessibilityElement(children: .ignore)
         .accessibilityLabel(WidgetSnapshotText.valueSummary(snapshot))
+    }
+}
+
+// MARK: - On-board strip
+
+/// A compact "on board" strip: insulin- and carbs-on-board chips, shown only when
+/// the app supplied them. Mirrors the Live Activity / Dynamic Island and the Apple
+/// Watch Now page so the same live therapy state — how much insulin is still
+/// working and how many carbs are still digesting — reads identically on every
+/// surface. Rendered from pre-formatted snapshot strings, so no medical logic runs
+/// in the widget process.
+private struct WidgetOnBoardStrip: View {
+    let snapshot: GlucoseSnapshot
+
+    var body: some View {
+        if snapshot.iobText != nil || snapshot.cobText != nil {
+            HStack(spacing: 12) {
+                if let iob = snapshot.iobText {
+                    Label(iob, systemImage: "syringe.fill")
+                        .lineLimit(1)
+                        .accessibilityLabel("Insulin on board \(iob)")
+                }
+                if let cob = snapshot.cobText {
+                    Label(cob, systemImage: "fork.knife")
+                        .lineLimit(1)
+                        .accessibilityLabel("Carbs on board \(cob)")
+                }
+                Spacer(minLength: 0)
+            }
+            .font(.caption2)
+            .foregroundStyle(.secondary)
+        }
     }
 }
 
