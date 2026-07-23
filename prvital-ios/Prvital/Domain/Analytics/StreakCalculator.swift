@@ -49,10 +49,33 @@ enum StreakCalculator {
         // one entry per day; if a day somehow repeats, the later entry wins.
         var met: [Date: Bool] = [:]
         for day in days {
-            let key = calendar.startOfDay(for: day.day)
-            met[key] = day.timeInRange >= targetFraction
+            met[calendar.startOfDay(for: day.day)] = day.timeInRange >= targetFraction
         }
+        return compute(met: met, reference: reference, calendar: calendar)
+    }
 
+    /// A streak from a daily health metric (steps, active energy, exercise…): a
+    /// day "meets" the goal when its value is at least `goal`. Uses the same
+    /// today-in-progress rule as the Time-in-Range streak, so a partial today
+    /// never breaks an existing run.
+    static func evaluate(
+        dailyValues: [(day: Date, value: Double)],
+        goal: Double,
+        reference: Date = Date(),
+        calendar: Calendar = .current
+    ) -> StreakResult {
+        guard goal > 0, !dailyValues.isEmpty else { return .none }
+        var met: [Date: Bool] = [:]
+        for entry in dailyValues {
+            met[calendar.startOfDay(for: entry.day)] = entry.value >= goal
+        }
+        return compute(met: met, reference: reference, calendar: calendar)
+    }
+
+    /// The shared streak core: given each day's met/not-met, count the current run
+    /// back from today (a data-less today is treated as still in progress) and the
+    /// best run anywhere in the input.
+    private static func compute(met: [Date: Bool], reference: Date, calendar: Calendar) -> StreakResult {
         let today = calendar.startOfDay(for: reference)
         let todayMet = met[today] == true
 

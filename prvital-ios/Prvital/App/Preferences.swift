@@ -19,6 +19,7 @@ final class Preferences {
         self.glucoseSchedule = Self.readGlucoseSchedule(self.defaults)
         self.glucoseGoals = Self.readGlucoseGoals(self.defaults)
         self.ringGoals = Self.readRingGoals(self.defaults)
+        self.activityGoals = Self.readActivityGoals(self.defaults)
         self.periodTIRTargets = Self.readPeriodTIRTargets(self.defaults)
         self.chartEventKinds = Self.readChartEventKinds(self.defaults)
         self.medicationPlan = Self.readMedicationPlan(self.defaults)
@@ -102,6 +103,12 @@ final class Preferences {
     /// so this only owns the two ring-specific numbers.
     var ringGoals: RingGoals {
         didSet { if let data = try? JSONEncoder().encode(ringGoals) { defaults.set(data, forKey: Keys.ringGoals) } }
+    }
+
+    /// Editable daily targets for the Health hub's activity rings (steps, move
+    /// energy, exercise minutes) and the streaks built on them.
+    var activityGoals: ActivityGoals {
+        didSet { if let data = try? JSONEncoder().encode(activityGoals) { defaults.set(data, forKey: Keys.activityGoals) } }
     }
 
     /// Optional per-time-of-day Time-in-Range targets. When disabled, every
@@ -263,6 +270,7 @@ final class Preferences {
         static let glucoseSchedule = "pref.glucoseSchedule"
         static let glucoseGoals = "pref.glucoseGoals"
         static let ringGoals = "pref.ringGoals"
+        static let activityGoals = "pref.activityGoals"
         static let periodTIRTargets = "pref.periodTIRTargets"
         static let chartEventKinds = "pref.chartEventKinds"
         static let medicationPlan = "pref.medicationPlan"
@@ -335,6 +343,12 @@ final class Preferences {
     private static func readRingGoals(_ d: UserDefaults) -> RingGoals {
         guard let data = d.data(forKey: Keys.ringGoals),
               let value = try? JSONDecoder().decode(RingGoals.self, from: data)
+        else { return .default }
+        return value
+    }
+    private static func readActivityGoals(_ d: UserDefaults) -> ActivityGoals {
+        guard let data = d.data(forKey: Keys.activityGoals),
+              let value = try? JSONDecoder().decode(ActivityGoals.self, from: data)
         else { return .default }
         return value
     }
@@ -437,6 +451,18 @@ struct RingGoals: Codable, Equatable, Sendable {
 
     /// The uptime target as a 0…1 fraction, matching `DailyRings.coverageFraction`.
     var coverageGoalFraction: Double { coverageGoalPercent / 100 }
+}
+
+/// Editable daily targets for the Health-hub activity rings and their streaks:
+/// steps, active energy (kcal) and exercise minutes. Sensible defaults (10k
+/// steps, 500 kcal, 30 min); stored under its own key so this is a purely
+/// additive, migration-safe change.
+struct ActivityGoals: Codable, Equatable, Sendable {
+    var stepGoal: Int = 10_000
+    var moveGoalKcal: Int = 500
+    var exerciseMinutesGoal: Int = 30
+
+    static let `default` = ActivityGoals()
 }
 
 /// Optional per-time-of-day Time-in-Range targets. Some people run tighter by

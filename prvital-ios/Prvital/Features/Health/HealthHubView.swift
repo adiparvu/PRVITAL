@@ -12,6 +12,7 @@ import Observation
 struct HealthHubView: View {
     @Environment(AppEnvironment.self) private var env
     @State private var model = HealthHubModel()
+    @State private var showingGoals = false
 
     // Recent glucose, bounded, used only to correlate daily-average glucose with
     // the daily Apple Health metrics (steps / sleep / HRV).
@@ -29,7 +30,7 @@ struct HealthHubView: View {
     var body: some View {
         ScrollView {
             VStack(spacing: 16) {
-                ActivityRingsCard(rings: model.rings)
+                ActivityRingsCard(rings: model.rings, streak: model.stepStreak, bestStreak: model.bestStepStreak)
                 if !model.correlations.isEmpty {
                     CorrelationsSection(items: model.correlations, unit: env.preferences.glucoseUnit)
                 }
@@ -49,18 +50,35 @@ struct HealthHubView: View {
         .prvitalScreenBackground()
         .navigationTitle("Health")
         .navigationBarTitleDisplayMode(.inline)
-        .task {
-            // Ask for the expanded read types (steps, sleep, HRV, energy, …). If
-            // Apple Health was connected before these were added, they're still
-            // "not determined", so nothing loads until we request them here — which
-            // is why iOS never re-prompted. This triggers the sheet for the new
-            // types, then loads.
+        .toolbar {
+            ToolbarItem(placement: .topBarLeading) {
+                Button { showingGoals = true } label: { Image(systemName: "target") }
+                    .accessibilityLabel("Daily goals")
+            }
+        }
+        .sheet(isPresented: $showingGoals) {
+            NavigationStack {
+                ActivityGoalsSheet()
+                    .toolbar {
+                        ToolbarItem(placement: .confirmationAction) {
+                            Button("Done") { showingGoals = false }
+                        }
+                    }
+            }
+        }
+        // Keyed on the goals so editing a target re-runs the load (rings + streak
+        // update). Ask for the expanded read types too: if Apple Health was
+        // connected before these were added they stay "not determined", so nothing
+        // loads until we request them here — which is why iOS never re-prompted.
+        .task(id: env.preferences.activityGoals) {
             try? await env.healthKit.requestAuthorization()
-            await model.load(env.healthKit, glucoseDaily: Self.dailyAverageGlucose(glucose))
+            await model.load(env.healthKit, glucoseDaily: Self.dailyAverageGlucose(glucose),
+                             goals: env.preferences.activityGoals)
         }
         .refreshable {
             try? await env.healthKit.requestAuthorization()
-            await model.load(env.healthKit, glucoseDaily: Self.dailyAverageGlucose(glucose))
+            await model.load(env.healthKit, glucoseDaily: Self.dailyAverageGlucose(glucose),
+                             goals: env.preferences.activityGoals)
         }
     }
 
@@ -117,14 +135,16 @@ final class HealthHubModel {
     var rings: [ActivityRing] = []
     var cards: [MetricCard] = []
     var correlations: [HealthGlucoseCorrelation] = []
+    /// Current run of consecutive days that hit the step goal (Apple-rings style),
+    /// and the best such run over the last month.
+    var stepStreak = 0
+    var bestStepStreak = 0
     var loaded = false
 
-    // Daily goals (sensible defaults; personalisation comes later).
-    private let stepGoal = 10_000.0
-    private let moveGoal = 500.0      // kcal active energy
-    private let exerciseGoal = 30.0   // minutes
-
-    func load(_ hk: HealthKitService, glucoseDaily: [DailyMetric]) async {
+    func load(_ hk: HealthKitService, glucoseDaily: [DailyMetric], goals: ActivityGoals) async {
+        let stepGoal = Double(goals.stepGoal)
+        let moveGoal = Double(goals.moveGoalKcal)
+        let exerciseGoal = Double(goals.exerciseMinutesGoal)
         async let stepsD = hk.dailyMetric(.steps, days: 7)
         async let energyD = hk.dailyMetric(.activeEnergy, days: 7)
         async let exerciseD = hk.dailyMetric(.exercise, days: 7)
@@ -215,6 +235,14 @@ final class HealthHubModel {
             if let c = candidate, c.isMeaningful { found.append(c) }
         }
         self.correlations = found
+
+        // Step-goal streak from the 30-day step series (reuses the correlation fetch).
+        let streak = StreakCalculator.evaluate(
+            dailyValues: stepsMonth.map { (day: $0.day, value: $0.value) },
+            goal: Double(goals.stepGoal))
+        self.stepStreak = streak.current
+        self.bestStepStreak = streak.best
+
         self.loaded = true
     }
 
@@ -235,6 +263,8 @@ final class HealthHubModel {
 
 private struct ActivityRingsCard: View {
     let rings: [ActivityRing]
+    var streak: Int = 0
+    var bestStreak: Int = 0
 
     var body: some View {
         VStack(spacing: 14) {
@@ -259,9 +289,28 @@ private struct ActivityRingsCard: View {
                     }
                 }
             }
+            if streak > 0 {
+                Divider().overlay(Theme.hairline)
+                HStack(spacing: 8) {
+                    Image(systemName: "flame.fill").font(.subheadline).foregroundStyle(.orange)
+                    Text(streakText).font(.subheadline.weight(.semibold)).foregroundStyle(Theme.textPrimary)
+                    Spacer()
+                    if bestStreak > streak {
+                        Text(bestText).font(.caption).foregroundStyle(Theme.textTertiary)
+                    }
+                }
+                .accessibilityElement(children: .combine)
+            }
         }
         .frame(maxWidth: .infinity, alignment: .leading)
         .glassCard()
+    }
+
+    private var streakText: String {
+        String(format: NSLocalizedString("%@-day step streak", comment: ""), "\(streak)")
+    }
+    private var bestText: String {
+        String(format: NSLocalizedString("Best: %@ days", comment: ""), "\(bestStreak)")
     }
 }
 
@@ -450,5 +499,47 @@ private struct CorrelationCardView: View {
     private var caption: String {
         String(format: NSLocalizedString("Based on %@ days — a pattern, not proof of cause.", comment: ""),
                "\(correlation.sampleSize)")
+    }
+}
+
+// MARK: - Daily goals editor
+
+/// Edits the three activity-ring targets (steps, move energy, exercise minutes).
+/// Writing a stepper persists via `Preferences`, and the hub's `.task(id:)`
+/// reloads so the rings and streak update immediately.
+private struct ActivityGoalsSheet: View {
+    @Environment(AppEnvironment.self) private var env
+
+    var body: some View {
+        @Bindable var preferences = env.preferences
+        Form {
+            Section {
+                Stepper(value: $preferences.activityGoals.stepGoal, in: 1_000...30_000, step: 500) {
+                    goalRow("Steps", "figure.walk",
+                            "\(preferences.activityGoals.stepGoal.formatted()) \(String(localized: "steps"))")
+                }
+                Stepper(value: $preferences.activityGoals.moveGoalKcal, in: 50...2_000, step: 50) {
+                    goalRow("Move", "flame.fill", "\(preferences.activityGoals.moveGoalKcal) kcal")
+                }
+                Stepper(value: $preferences.activityGoals.exerciseMinutesGoal, in: 5...240, step: 5) {
+                    goalRow("Exercise", "figure.run",
+                            "\(preferences.activityGoals.exerciseMinutesGoal) \(String(localized: "min"))")
+                }
+            } header: {
+                Text("Daily goals")
+            } footer: {
+                Text("Your activity rings and step streak use these targets.")
+            }
+        }
+        .navigationTitle("Daily goals")
+        .navigationBarTitleDisplayMode(.inline)
+    }
+
+    private func goalRow(_ title: LocalizedStringKey, _ icon: String, _ value: String) -> some View {
+        HStack {
+            Label { Text(title) } icon: { Image(systemName: icon).foregroundStyle(Theme.accent) }
+            Spacer()
+            Text(value).foregroundStyle(Theme.accent).monospacedDigit()
+        }
     }
 }
