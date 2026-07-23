@@ -1,4 +1,5 @@
 import SwiftUI
+import SwiftData
 
 /// Create or edit an insulin dose, with the quick-dose chip row.
 struct InsulinEntrySheet: View {
@@ -14,10 +15,19 @@ struct InsulinEntrySheet: View {
     @State private var delivery: InsulinDeliveryMethod = .pen
     @State private var context: InsulinDoseContext = .mealBolus
     @State private var note = ""
+    /// The connected glucose story for an existing dose (before → after + IOB).
+    @State private var impact: EventInsight?
 
     var body: some View {
         NavigationStack {
             Form {
+                if let impact, impact.hasContext {
+                    Section("Impact") {
+                        EventImpactSection(insight: impact,
+                                           unit: env.preferences.glucoseUnit,
+                                           thresholds: env.preferences.thresholds)
+                    }
+                }
                 Section {
                     HStack {
                         Text("\(units.formatted()) U")
@@ -81,6 +91,28 @@ struct InsulinEntrySheet: View {
         delivery = existing.deliveryMethod
         context = existing.doseContext
         note = existing.note ?? ""
+        computeImpact(for: existing)
+    }
+
+    /// Reads the glucose around this dose and the insulin already active at its
+    /// time, so the editor can show the connected before → after + IOB story.
+    private func computeImpact(for dose: InsulinDose) {
+        let event = dose.timestamp
+        let lo = event.addingTimeInterval(-60 * 60)
+        let hi = event.addingTimeInterval(4 * 3600)
+        let gDesc = FetchDescriptor<GlucoseReading>(
+            predicate: #Predicate { $0.timestamp >= lo && $0.timestamp <= hi },
+            sortBy: [SortDescriptor(\.timestamp)])
+        let readings = (try? env.modelContainer.mainContext.fetch(gDesc)) ?? []
+        let diaLo = event.addingTimeInterval(-env.preferences.bolusParameters.durationHours * 3600)
+        let iDesc = FetchDescriptor<InsulinDose>(
+            predicate: #Predicate { $0.timestamp >= diaLo && $0.timestamp <= event },
+            sortBy: [SortDescriptor(\.timestamp)])
+        let doses = (try? env.modelContainer.mainContext.fetch(iDesc)) ?? []
+        impact = EventInsight.make(
+            eventDate: event, excludingDoseID: dose.id,
+            readings: readings, insulin: doses,
+            bolus: env.preferences.bolusParameters)
     }
 
     private func save() {

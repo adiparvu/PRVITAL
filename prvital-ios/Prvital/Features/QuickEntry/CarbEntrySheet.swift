@@ -33,10 +33,19 @@ struct CarbEntrySheet: View {
     @State private var saveAsFavorite = false
     @State private var showingFavoriteNamePrompt = false
     @State private var favoriteName = ""
+    /// The connected glucose story for an existing meal (before → after + IOB).
+    @State private var impact: EventInsight?
 
     var body: some View {
         NavigationStack {
             Form {
+                if let impact, impact.hasContext {
+                    Section("Impact") {
+                        EventImpactSection(insight: impact,
+                                           unit: env.preferences.glucoseUnit,
+                                           thresholds: env.preferences.thresholds)
+                    }
+                }
                 if existing == nil, !favorites.isEmpty {
                     Section("Favorites") {
                         ScrollView(.horizontal, showsIndicators: false) {
@@ -176,6 +185,28 @@ struct CarbEntrySheet: View {
         food = existing.foodDescription ?? ""
         note = existing.note ?? ""
         photoData = existing.photo
+        computeImpact(for: existing)
+    }
+
+    /// Reads the glucose around this meal and the insulin active at its time, so
+    /// the editor can show the connected before → after + IOB story.
+    private func computeImpact(for meal: CarbEntry) {
+        let event = meal.timestamp
+        let lo = event.addingTimeInterval(-60 * 60)
+        let hi = event.addingTimeInterval(4 * 3600)
+        let gDesc = FetchDescriptor<GlucoseReading>(
+            predicate: #Predicate { $0.timestamp >= lo && $0.timestamp <= hi },
+            sortBy: [SortDescriptor(\.timestamp)])
+        let readings = (try? modelContext.fetch(gDesc)) ?? []
+        let diaLo = event.addingTimeInterval(-env.preferences.bolusParameters.durationHours * 3600)
+        let iDesc = FetchDescriptor<InsulinDose>(
+            predicate: #Predicate { $0.timestamp >= diaLo && $0.timestamp <= event },
+            sortBy: [SortDescriptor(\.timestamp)])
+        let doses = (try? modelContext.fetch(iDesc)) ?? []
+        impact = EventInsight.make(
+            eventDate: event, excludingDoseID: nil,
+            readings: readings, insulin: doses,
+            bolus: env.preferences.bolusParameters)
     }
 
     private func save() {
