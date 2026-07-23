@@ -267,6 +267,14 @@ struct JournalDayCard: View {
                 Text(dateText)
                     .font(.subheadline.weight(.semibold))
                     .foregroundStyle(Theme.textSecondary)
+                if let headline = dayHeadline {
+                    Text(headlineText(headline.kind))
+                        .font(.caption.weight(.medium))
+                        .foregroundStyle(headlineTint(headline.tone))
+                        .lineLimit(1)
+                        .minimumScaleFactor(0.8)
+                        .padding(.top, 1)
+                }
             }
             Spacer(minLength: 8)
             glyph
@@ -274,6 +282,32 @@ struct JournalDayCard: View {
         .accessibilityElement(children: .ignore)
         .accessibilityAddTraits(.isHeader)
         .accessibilityLabel(headerAccessibilityText)
+    }
+
+    /// A plain-language headline for the day, from its stats. Nil for an empty day.
+    private var dayHeadline: JournalDayHeadline? {
+        JournalDayHeadline.make(stats: bucket.stats,
+                                targetLow: thresholds.targetLower,
+                                targetHigh: thresholds.targetUpper)
+    }
+
+    private func headlineText(_ kind: JournalDayHeadline.Kind) -> LocalizedStringKey {
+        switch kind {
+        case .excellentRange: return "A strong day in range"
+        case .goodRange:      return "A fairly steady day"
+        case .someLows:       return "Keep an eye on the lows"
+        case .someHighs:      return "A few highs to smooth out"
+        case .toughDay:       return "A tougher day"
+        case .loggedOnly:     return "Entries logged"
+        }
+    }
+
+    private func headlineTint(_ tone: JournalDayHeadline.Tone) -> Color {
+        switch tone {
+        case .positive: return Theme.zoneInRange
+        case .neutral:  return Theme.textSecondary
+        case .caution:  return Theme.zoneWarning
+        }
     }
 
     /// "Today" / "Yesterday" / the wide weekday name.
