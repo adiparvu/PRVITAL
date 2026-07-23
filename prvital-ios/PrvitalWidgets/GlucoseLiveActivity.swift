@@ -63,6 +63,7 @@ struct GlucoseLiveActivity: Widget {
                                 values: state.recentMgdL,
                                 lower: state.targetLowerMgdL,
                                 upper: state.targetUpperMgdL,
+                                forecast: state.forecastMgdL,
                                 tint: tint
                             )
                             .frame(height: 34)
@@ -185,10 +186,12 @@ private struct IslandSparkline: View {
     let values: [Double]
     let lower: Double
     let upper: Double
+    var forecast: Double? = nil
     let tint: Color
 
     private var yDomain: ClosedRange<Double> {
-        let all = values + [lower, upper]
+        var all = values + [lower, upper]
+        if let forecast { all.append(forecast) }
         guard let lo = all.min(), let hi = all.max(), hi > lo else { return 40...200 }
         let pad = max((hi - lo) * 0.12, 6)
         return (lo - pad)...(hi + pad)
@@ -206,7 +209,8 @@ private struct IslandSparkline: View {
             ForEach(Array(values.enumerated()), id: \.offset) { index, value in
                 LineMark(
                     x: .value("Reading", index),
-                    y: .value("Glucose", value)
+                    y: .value("Glucose", value),
+                    series: .value("Series", "history")
                 )
                 .interpolationMethod(.catmullRom)
                 .foregroundStyle(tint)
@@ -220,6 +224,25 @@ private struct IslandSparkline: View {
                 )
                 .foregroundStyle(tint)
                 .symbolSize(22)
+
+                // Dashed forecast continuation one step past the last reading, in
+                // its own series so it never joins the solid history line.
+                if let forecast {
+                    let next = values.count
+                    LineMark(x: .value("Reading", last), y: .value("Glucose", values[last]),
+                             series: .value("Series", "forecast"))
+                        .interpolationMethod(.linear)
+                        .foregroundStyle(tint.opacity(0.6))
+                        .lineStyle(StrokeStyle(lineWidth: 2, dash: [3, 3]))
+                    LineMark(x: .value("Reading", next), y: .value("Glucose", forecast),
+                             series: .value("Series", "forecast"))
+                        .interpolationMethod(.linear)
+                        .foregroundStyle(tint.opacity(0.6))
+                        .lineStyle(StrokeStyle(lineWidth: 2, dash: [3, 3]))
+                    PointMark(x: .value("Reading", next), y: .value("Glucose", forecast))
+                        .foregroundStyle(tint.opacity(0.6))
+                        .symbolSize(14)
+                }
             }
         }
         .chartYScale(domain: yDomain)

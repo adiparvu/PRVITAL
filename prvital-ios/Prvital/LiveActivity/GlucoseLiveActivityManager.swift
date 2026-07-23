@@ -43,7 +43,8 @@ final class GlucoseLiveActivityManager {
             targetLowerMgdL: snapshot.targetLowerMgdL,
             targetUpperMgdL: snapshot.targetUpperMgdL,
             isOutOfRange: outOfRange,
-            recentMgdL: recent
+            recentMgdL: recent,
+            forecastMgdL: snapshot.forecastMgdL
         )
         let staleDate = snapshot.updatedAt.addingTimeInterval(30 * 60)
         let store = self.store

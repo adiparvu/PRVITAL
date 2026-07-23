@@ -32,6 +32,9 @@ struct GlucoseActivityAttributes: ActivityAttributes, Sendable {
         /// The recent readings (oldest → newest, mg/dL) for the expanded Dynamic
         /// Island sparkline. Capped small so the activity payload stays tiny.
         var recentMgdL: [Double] = []
+        /// A short-horizon projected value drawn as a dashed continuation past the
+        /// last reading on the sparkline. Nil when there's no moving projection.
+        var forecastMgdL: Double? = nil
     }
 
     var title: String = "Glucose"
