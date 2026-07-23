@@ -14,6 +14,9 @@ struct DailyGoalsView: View {
     @Query private var activity: [ActivityEntry]
 
     @State private var showGoalsEditor = false
+    /// Today's Apple Health exercise minutes (the Watch's green ring), so the
+    /// Active ring reflects all-day movement, not only logged workouts.
+    @State private var healthActiveMinutes = 0
 
     init() {
         let windowStart = Calendar.current.date(byAdding: .hour, value: -24, to: Date())
@@ -35,7 +38,8 @@ struct DailyGoalsView: View {
             thresholds: env.preferences.thresholds,
             inRangeGoalFraction: env.preferences.glucoseGoals.targetTIRFraction,
             activeGoalMinutes: env.preferences.ringGoals.activeMinutesGoal,
-            coverageGoalFraction: env.preferences.ringGoals.coverageGoalFraction
+            coverageGoalFraction: env.preferences.ringGoals.coverageGoalFraction,
+            healthExerciseMinutes: healthActiveMinutes
         )
     }
 
@@ -54,6 +58,10 @@ struct DailyGoalsView: View {
         .prvitalTabBackground()
         .navigationTitle("Daily goals")
         .navigationBarTitleDisplayMode(.inline)
+        .task {
+            let minutes = (await env.healthKit.dailyMetric(.exercise, days: 1)).last?.value ?? 0
+            healthActiveMinutes = Int(minutes.rounded())
+        }
         .toolbar {
             ToolbarItem(placement: .primaryAction) {
                 Button {

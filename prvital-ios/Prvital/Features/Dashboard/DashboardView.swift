@@ -66,6 +66,10 @@ struct DashboardView: View {
     @State private var showCustomRange = false
     @State private var customStart = Date().addingTimeInterval(-6 * 3600)
     @State private var customEnd = Date()
+    /// Today's Apple Health exercise minutes (the Watch's green ring), read live so
+    /// the Active ring and activity tile fill from all-day movement, not only
+    /// logged workouts.
+    @State private var healthActiveMinutes = 0
 
     var body: some View {
         let thresholds = env.preferences.thresholds
@@ -145,8 +149,12 @@ struct DashboardView: View {
             .prvitalTabBackground()
             .navigationTitle("Today")
             .onChange(of: scenePhase) { _, phase in
-                if phase == .active { companionDismissed = false }
+                if phase == .active {
+                    companionDismissed = false
+                    Task { await refreshHealthActivity() }
+                }
             }
+            .task { await refreshHealthActivity() }
             .toolbar {
                 ToolbarItem(placement: .topBarLeading) {
                     Button {
@@ -648,7 +656,8 @@ struct DashboardView: View {
             thresholds: thresholds,
             inRangeGoalFraction: env.preferences.glucoseGoals.targetTIRFraction,
             activeGoalMinutes: env.preferences.ringGoals.activeMinutesGoal,
-            coverageGoalFraction: env.preferences.ringGoals.coverageGoalFraction
+            coverageGoalFraction: env.preferences.ringGoals.coverageGoalFraction,
+            healthExerciseMinutes: healthActiveMinutes
         )
         return NavigationLink {
             DailyGoalsView()
@@ -994,13 +1003,29 @@ struct DashboardView: View {
     }
 
     private func activityTile(_ session: ActivityEntry?) -> some View {
-        StatTile(
-            title: "Activity",
-            value: session.map { String(localized: "\($0.durationMinutes) min") } ?? "—",
-            caption: session.map { "\($0.activityType.label) · \(dashboardRelativeText($0.startTimestamp))" } ?? String(localized: "No activity"),
-            tint: Theme.zoneInRange,
-            systemImage: "figure.walk"
-        )
+        // Prefer today's Apple Health exercise time (matches the Watch's green
+        // ring); fall back to the most recent logged workout, then to empty.
+        let value: String
+        let caption: String
+        if healthActiveMinutes > 0 {
+            value = String(localized: "\(healthActiveMinutes) min")
+            caption = String(localized: "Exercise today")
+        } else if let session {
+            value = String(localized: "\(session.durationMinutes) min")
+            caption = "\(session.activityType.label) · \(dashboardRelativeText(session.startTimestamp))"
+        } else {
+            value = "—"
+            caption = String(localized: "No activity")
+        }
+        return StatTile(title: "Activity", value: value, caption: caption,
+                        tint: Theme.zoneInRange, systemImage: "figure.walk")
+    }
+
+    /// Reads today's Apple Health exercise minutes (a single daily-bucket
+    /// statistics query — cheap, off the main thread) for the Active ring + tile.
+    private func refreshHealthActivity() async {
+        let minutes = (await env.healthKit.dailyMetric(.exercise, days: 1)).last?.value ?? 0
+        healthActiveMinutes = Int(minutes.rounded())
     }
 }
 

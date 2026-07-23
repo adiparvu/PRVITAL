@@ -57,6 +57,7 @@ struct DailyRings: Equatable, Sendable {
         inRangeGoalFraction: Double,
         activeGoalMinutes: Int,
         coverageGoalFraction: Double,
+        healthExerciseMinutes: Int = 0,
         now: Date = Date(),
         calendar: Calendar = .current
     ) -> DailyRings {
@@ -66,8 +67,14 @@ struct DailyRings: Equatable, Sendable {
         let todaysReadings = readings.filter { $0.isActive && $0.timestamp >= start && $0.timestamp <= now }
         let stats = StatisticsEngine.glucose(todaysReadings, thresholds: thresholds)
 
+        // The Active ring mirrors the Apple Watch's green Exercise ring: it counts
+        // today's Apple Health exercise minutes (all-day brisk movement, not only
+        // logged workouts), taking the max with any workouts logged in the app so a
+        // manually-logged non-Apple session still counts. `appleExerciseTime`
+        // already includes workout time, so max() avoids double-counting.
         let todaysActivity = activity.filter { $0.startTimestamp >= start && $0.startTimestamp <= now }
-        let minutes = todaysActivity.reduce(0) { $0 + $1.durationMinutes }
+        let loggedMinutes = todaysActivity.reduce(0) { $0 + $1.durationMinutes }
+        let minutes = max(loggedMinutes, healthExerciseMinutes)
 
         let coverage = GlucoseCoverage.coverage(readingCount: todaysReadings.count, window: elapsed)
 
