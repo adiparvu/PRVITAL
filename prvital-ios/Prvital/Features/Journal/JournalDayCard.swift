@@ -62,17 +62,23 @@ struct JournalDayStats: Equatable {
 
     var hasGlucose: Bool { readingCount > 0 }
     var entryCount: Int { readingCount + mealCount + doseCount + activityCount + noteCount }
-    var hasTherapyData: Bool { mealCount > 0 || doseCount > 0 || activityCount > 0 || noteCount > 0 }
+    var hasTherapyData: Bool {
+        mealCount > 0 || doseCount > 0 || activityCount > 0 || activityMinutes > 0 || noteCount > 0
+    }
 
     /// Summarises one local day's records. Only *active* glucose readings count,
-    /// mirroring `StatisticsEngine` and `CalendarAggregator`.
+    /// mirroring `StatisticsEngine` and `CalendarAggregator`. `healthExerciseMinutes`
+    /// is Apple Health's exercise total for the day (appleExerciseTime); the shown
+    /// active minutes are the LARGER of it and the logged sessions, so the Watch's
+    /// activity appears without double-counting logged workout time.
     static func build(
         readings: [GlucoseReading],
         insulin: [InsulinDose],
         carbs: [CarbEntry],
         activity: [ActivityEntry],
         observations: [ObservationEntry],
-        thresholds: GlucoseThresholds
+        thresholds: GlucoseThresholds,
+        healthExerciseMinutes: Int = 0
     ) -> JournalDayStats {
         var stats = JournalDayStats()
 
@@ -98,7 +104,7 @@ struct JournalDayStats: Equatable {
         stats.doseCount = insulin.count
         stats.totalCarbGrams = carbs.reduce(0) { $0 + $1.grams }
         stats.mealCount = carbs.count
-        stats.activityMinutes = activity.reduce(0) { $0 + $1.durationMinutes }
+        stats.activityMinutes = max(activity.reduce(0) { $0 + $1.durationMinutes }, healthExerciseMinutes)
         stats.activityCount = activity.count
         stats.noteCount = observations.count
         return stats
@@ -131,6 +137,7 @@ struct JournalDayBucket: Identifiable {
         activity: [ActivityEntry],
         observations: [ObservationEntry],
         thresholds: GlucoseThresholds,
+        healthExerciseByDay: [Date: Int] = [:],
         calendar: Calendar = .current,
         maxDays: Int = 14
     ) -> [JournalDayBucket] {
@@ -141,12 +148,18 @@ struct JournalDayBucket: Identifiable {
         let carbsByDay = Dictionary(grouping: carbs) { startOfDay($0.timestamp) }
         let activityByDay = Dictionary(grouping: activity) { startOfDay($0.startTimestamp) }
         let observationsByDay = Dictionary(grouping: observations) { startOfDay($0.timestamp) }
+        // Apple Health exercise minutes, re-keyed to start-of-day with this
+        // calendar so a day with only Watch activity still gets a card.
+        let healthByDay = Dictionary(
+            healthExerciseByDay.compactMap { $0.value > 0 ? (startOfDay($0.key), $0.value) : nil },
+            uniquingKeysWith: max)
 
         let days = Set(readingsByDay.keys)
             .union(insulinByDay.keys)
             .union(carbsByDay.keys)
             .union(activityByDay.keys)
             .union(observationsByDay.keys)
+            .union(healthByDay.keys)
             .sorted(by: >)
             .prefix(max(0, maxDays))
 
@@ -172,7 +185,8 @@ struct JournalDayBucket: Identifiable {
                     carbs: dayCarbs,
                     activity: dayActivity,
                     observations: dayObservations,
-                    thresholds: thresholds
+                    thresholds: thresholds,
+                    healthExerciseMinutes: healthByDay[day] ?? 0
                 )
             )
         }
@@ -390,7 +404,7 @@ struct JournalDayCard: View {
                 systemImage: "figure.walk",
                 tint: Theme.zoneInRange,
                 value: String(localized: "\(stats.activityMinutes) min"),
-                caption: stats.activityCount == 1 ? String(localized: "1 session") : String(localized: "\(stats.activityCount) sessions")
+                caption: activityCaption(stats)
             )
             JournalStatChip(
                 systemImage: "note.text",
@@ -399,6 +413,15 @@ struct JournalDayCard: View {
                 caption: stats.noteCount == 1 ? String(localized: "note") : String(localized: "notes")
             )
         }
+    }
+
+    /// The activity chip's caption: the logged-session count, or — when the day's
+    /// minutes come only from Apple Health (no logged session) — "Exercise".
+    private static func activityCaption(_ stats: JournalDayStats) -> String {
+        if stats.activityCount == 0 { return String(localized: "Exercise") }
+        return stats.activityCount == 1
+            ? String(localized: "1 session")
+            : String(localized: "\(stats.activityCount) sessions")
     }
 
     private static func chipGrid(@ViewBuilder content: () -> some View) -> some View {

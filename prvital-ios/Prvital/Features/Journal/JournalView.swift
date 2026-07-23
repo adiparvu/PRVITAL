@@ -42,6 +42,10 @@ struct JournalView: View {
     @State private var editTarget: JournalEditTarget?
     @State private var showingQuickEntry = false
     @State private var mode: JournalMode = .days
+    // Apple Health's daily exercise minutes (appleExerciseTime), merged into each
+    // day card's "activity" so the Watch's Move-ring activity shows even on days
+    // with no manually logged workout. Fetched off the render path.
+    @State private var healthExerciseByDay: [Date: Int] = [:]
 
     private var unit: GlucoseUnit { env.preferences.glucoseUnit }
     private var thresholds: GlucoseThresholds { env.preferences.thresholds }
@@ -64,8 +68,22 @@ struct JournalView: View {
         JournalDayBucket.build(
             glucose: glucose, insulin: insulin, carbs: carbs,
             activity: activity, observations: observations,
-            thresholds: thresholds
+            thresholds: thresholds,
+            healthExerciseByDay: healthExerciseByDay
         )
+    }
+
+    /// Reads the last two weeks of Apple Health exercise minutes and keys them by
+    /// start-of-day for the day-card merge — the same figure the Move ring counts.
+    private func loadHealthExercise() async {
+        let daily = await env.healthKit.dailyMetric(.exercise, days: 15)
+        let calendar = Calendar.current
+        var map: [Date: Int] = [:]
+        for metric in daily {
+            let minutes = Int(metric.value.rounded())
+            if minutes > 0 { map[calendar.startOfDay(for: metric.day)] = minutes }
+        }
+        healthExerciseByDay = map
     }
 
     var body: some View {
@@ -116,6 +134,7 @@ struct JournalView: View {
             .sheet(item: $editTarget) { target in
                 editorSheet(for: target.item)
             }
+            .task { await loadHealthExercise() }
         }
     }
 
