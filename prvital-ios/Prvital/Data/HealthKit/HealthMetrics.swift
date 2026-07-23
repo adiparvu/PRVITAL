@@ -39,4 +39,27 @@ enum HealthMetricKind: String, CaseIterable, Identifiable, Sendable {
         default: return false
         }
     }
+
+    /// Blood pressure has no single series, so it gets no detail screen.
+    var hasDetail: Bool { self != .bloodPressure }
+}
+
+/// The window a metric-detail screen shows, mirroring Apple Health: a day of
+/// hourly buckets, a week/month of daily buckets, or a year of monthly buckets.
+enum MetricInterval: String, CaseIterable, Identifiable, Sendable {
+    case day, week, month, year
+    var id: String { rawValue }
+}
+
+/// A bucketed series for one metric over one interval, plus the summary figures
+/// the detail screen shows (average / lowest / highest). Values are already in
+/// the metric's display unit.
+struct MetricSeries: Sendable {
+    let points: [DailyMetric]
+    let average: Double
+    let minimum: Double
+    let maximum: Double
+
+    var isEmpty: Bool { points.isEmpty }
+    static let empty = MetricSeries(points: [], average: 0, minimum: 0, maximum: 0)
 }

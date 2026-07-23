@@ -105,6 +105,8 @@ struct MetricCard: Identifiable {
     let caption: String
     let color: Color
     let series: [DailyMetric]
+    /// The Apple Health metric this card represents, so tapping opens its detail.
+    let kind: HealthMetricKind?
     /// Sparkline baseline: bars for cumulative metrics, a line for levels.
     let cumulative: Bool
 }
@@ -161,32 +163,43 @@ final class HealthHubModel {
 
         var cards: [MetricCard] = []
         func add(_ title: LocalizedStringKey, _ image: String, _ value: String, _ unit: String,
-                 _ caption: String, _ color: Color, _ series: [DailyMetric], cumulative: Bool) {
+                 _ caption: String, _ color: Color, _ series: [DailyMetric],
+                 kind: HealthMetricKind, cumulative: Bool) {
             guard !value.isEmpty else { return }
             cards.append(MetricCard(title: title, systemImage: image, value: value, unit: unit,
-                                    caption: caption, color: color, series: series, cumulative: cumulative))
+                                    caption: caption, color: color, series: series,
+                                    kind: kind, cumulative: cumulative))
         }
 
         add("Steps", "figure.walk", stepsToday > 0 ? Self.int(stepsToday) : "",
-            String(localized: "steps"), Self.avgCaption(steps, "%@ avg"), Theme.accent, steps, cumulative: true)
+            String(localized: "steps"), Self.avgCaption(steps, "%@ avg"), Theme.accent, steps,
+            kind: .steps, cumulative: true)
         add("Move", "flame.fill", moveToday > 0 ? Self.int(moveToday) : "",
-            "kcal", Self.avgCaption(energy, "%@ avg"), Theme.zoneCritical, energy, cumulative: true)
+            "kcal", Self.avgCaption(energy, "%@ avg"), Theme.zoneCritical, energy,
+            kind: .activeEnergy, cumulative: true)
         add("Sleep", "bed.double.fill", sleep.last.map { Self.oneDecimal($0.value) } ?? "",
-            String(localized: "h"), Self.avgCaption(sleep, "%@ h avg"), Color(hex: 0x8E7CFF), sleep, cumulative: true)
+            String(localized: "h"), Self.avgCaption(sleep, "%@ h avg"), Color(hex: 0x8E7CFF), sleep,
+            kind: .sleep, cumulative: true)
         add("Resting heart rate", "heart.fill", restingHR.last.map { Self.int($0.value) } ?? "",
-            "bpm", Self.avgCaption(restingHR, "%@ avg"), Theme.zoneWarning, restingHR, cumulative: false)
+            "bpm", Self.avgCaption(restingHR, "%@ avg"), Theme.zoneWarning, restingHR,
+            kind: .restingHeartRate, cumulative: false)
         add("Heart rate variability", "waveform.path.ecg", hrv.last.map { Self.int($0.value) } ?? "",
-            "ms", Self.avgCaption(hrv, "%@ avg"), Theme.accent, hrv, cumulative: false)
+            "ms", Self.avgCaption(hrv, "%@ avg"), Theme.accent, hrv,
+            kind: .hrv, cumulative: false)
         add("Respiratory rate", "lungs.fill", resp.last.map { Self.oneDecimal($0.value) } ?? "",
-            String(localized: "br/min"), "", Theme.zoneInRange, resp, cumulative: false)
+            String(localized: "br/min"), "", Theme.zoneInRange, resp,
+            kind: .respiratoryRate, cumulative: false)
         add("Blood oxygen", "drop.fill", oxygen.last.map { Self.int($0.value * 100) } ?? "",
-            "%", "", Theme.accent, oxygen.map { DailyMetric(day: $0.day, value: $0.value * 100) }, cumulative: false)
+            "%", "", Theme.accent, oxygen.map { DailyMetric(day: $0.day, value: $0.value * 100) },
+            kind: .oxygen, cumulative: false)
         if let p = pressure {
             add("Blood pressure", "heart.circle.fill", "\(Self.int(p.systolic))/\(Self.int(p.diastolic))",
-                "mmHg", Self.relative(p.date), Theme.zoneCritical, [], cumulative: false)
+                "mmHg", Self.relative(p.date), Theme.zoneCritical, [],
+                kind: .bloodPressure, cumulative: false)
         }
         add("Weight", "scalemass.fill", weight.last.map { Self.oneDecimal($0.value) } ?? "",
-            "kg", "", Theme.textSecondary, weight, cumulative: false)
+            "kg", "", Theme.textSecondary, weight,
+            kind: .weight, cumulative: false)
 
         self.cards = cards
 
@@ -279,6 +292,20 @@ private struct MetricCardView: View {
     let card: MetricCard
 
     var body: some View {
+        if let kind = card.kind, kind.hasDetail {
+            NavigationLink {
+                MetricDetailView(kind: kind, title: card.title, systemImage: card.systemImage,
+                                 unit: card.unit, color: card.color, cumulative: card.cumulative)
+            } label: {
+                cardContent
+            }
+            .buttonStyle(.plain)
+        } else {
+            cardContent
+        }
+    }
+
+    private var cardContent: some View {
         VStack(alignment: .leading, spacing: 8) {
             HStack(spacing: 6) {
                 Image(systemName: card.systemImage).font(.system(size: 13, weight: .semibold))

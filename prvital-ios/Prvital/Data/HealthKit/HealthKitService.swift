@@ -261,6 +261,91 @@ final class HealthKitService: @unchecked Sendable {
         return byDay.map { DailyMetric(day: $0.key, value: $0.value) }.sorted { $0.day < $1.day }
     }
 
+    /// A bucketed series plus summary figures (average / lowest / highest) for a
+    /// metric over one interval — the data behind the per-metric detail screen.
+    /// Hourly buckets for a day, daily for a week or month, monthly for a year.
+    /// For level metrics (heart rate, HRV…) the min/max are the true sample
+    /// extremes, so the summary matches Apple Health rather than the min/max of
+    /// the daily averages.
+    func metricSeries(_ kind: HealthMetricKind, interval: MetricInterval) async -> MetricSeries {
+        guard isAvailable else { return .empty }
+        if kind == .sleep { return await sleepSeries(interval: interval) }
+        guard let (type, unit, option) = quantityConfig(for: kind) else { return .empty }
+
+        let cal = Calendar.current
+        let end = Date()
+        let anchor: Date
+        let comps: DateComponents
+        switch interval {
+        case .day:
+            anchor = cal.startOfDay(for: end); comps = DateComponents(hour: 1)
+        case .week:
+            anchor = cal.date(byAdding: .day, value: -6, to: cal.startOfDay(for: end)) ?? end
+            comps = DateComponents(day: 1)
+        case .month:
+            anchor = cal.date(byAdding: .day, value: -29, to: cal.startOfDay(for: end)) ?? end
+            comps = DateComponents(day: 1)
+        case .year:
+            let startMonth = cal.date(byAdding: .month, value: -11, to: cal.startOfDay(for: end)) ?? end
+            anchor = cal.dateInterval(of: .month, for: startMonth)?.start ?? startMonth
+            comps = DateComponents(month: 1)
+        }
+
+        var options = option
+        if option == .discreteAverage { options.insert(.discreteMin); options.insert(.discreteMax) }
+
+        let predicate = HKQuery.predicateForSamples(withStart: anchor, end: end, options: .strictStartDate)
+        return await withCheckedContinuation { continuation in
+            let query = HKStatisticsCollectionQuery(
+                quantityType: type, quantitySamplePredicate: predicate,
+                options: options, anchorDate: anchor, intervalComponents: comps)
+            query.initialResultsHandler = { _, results, _ in
+                var points: [DailyMetric] = []
+                var lo = Double.greatestFiniteMagnitude
+                var hi = -Double.greatestFiniteMagnitude
+                var sum = 0.0
+                var n = 0
+                results?.enumerateStatistics(from: anchor, to: end) { stat, _ in
+                    if option == .cumulativeSum {
+                        guard let q = stat.sumQuantity() else { return }
+                        let v = q.doubleValue(for: unit)
+                        points.append(DailyMetric(day: stat.startDate, value: v))
+                        lo = min(lo, v); hi = max(hi, v); sum += v; n += 1
+                    } else {
+                        guard let avg = stat.averageQuantity() else { return }
+                        let v = avg.doubleValue(for: unit)
+                        points.append(DailyMetric(day: stat.startDate, value: v))
+                        sum += v; n += 1
+                        if let mn = stat.minimumQuantity() { lo = min(lo, mn.doubleValue(for: unit)) }
+                        if let mx = stat.maximumQuantity() { hi = max(hi, mx.doubleValue(for: unit)) }
+                    }
+                }
+                guard n > 0 else { continuation.resume(returning: .empty); return }
+                if lo > hi { lo = 0; hi = 0 }
+                continuation.resume(returning: MetricSeries(
+                    points: points, average: sum / Double(n), minimum: lo, maximum: hi))
+            }
+            store.execute(query)
+        }
+    }
+
+    private func sleepSeries(interval: MetricInterval) async -> MetricSeries {
+        let days: Int
+        switch interval {
+        case .day: days = 1
+        case .week: days = 7
+        case .month: days = 30
+        case .year: days = 365
+        }
+        let nights = await sleepHoursByNight(days: days)
+        guard !nights.isEmpty else { return .empty }
+        let values = nights.map(\.value)
+        return MetricSeries(points: nights,
+                            average: values.reduce(0, +) / Double(values.count),
+                            minimum: values.min() ?? 0,
+                            maximum: values.max() ?? 0)
+    }
+
     // MARK: Reads — insulin, carbs, workouts (for the full journal timeline)
 
     /// The app's own bundle id, so imports can skip the samples we mirrored to
@@ -418,5 +503,6 @@ final class HealthKitService: @unchecked Sendable {
     func latestReading(_ kind: HealthMetricKind) async -> MetricReading? { nil }
     func latestBloodPressure() async -> BloodPressureReading? { nil }
     func sleepHoursByNight(days: Int) async -> [DailyMetric] { [] }
+    func metricSeries(_ kind: HealthMetricKind, interval: MetricInterval) async -> MetricSeries { .empty }
     #endif
 }
