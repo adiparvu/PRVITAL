@@ -92,8 +92,11 @@ private struct WidgetAccessoryRectangular: View {
                     .font(.footnote.weight(.bold))
                     .imageScale(.small)
             }
-            // When stale, show how old the value is (self-advancing relative
-            // text) instead of the source — a frozen number must say so.
+            // Second line, in priority order:
+            //  • stale → how old the value is (a frozen number must say so);
+            //  • an imminent low/high → the forecast warning, the most important
+            //    thing to glance at on a watch face / Lock Screen;
+            //  • otherwise → the source.
             if snapshot.isStale, snapshot.updatedAt > .distantPast {
                 HStack(spacing: 3) {
                     Image(systemName: "clock")
@@ -103,6 +106,16 @@ private struct WidgetAccessoryRectangular: View {
                 }
                 .foregroundStyle(.secondary)
                 .lineLimit(1)
+            } else if let prediction = snapshot.predictionText {
+                HStack(spacing: 3) {
+                    Image(systemName: "exclamationmark.triangle.fill")
+                        .font(.caption2)
+                    Text(prediction)
+                        .font(.caption2)
+                }
+                .foregroundStyle(.secondary)
+                .lineLimit(1)
+                .minimumScaleFactor(0.7)
             } else {
                 Text(snapshot.sourceName)
                     .font(.caption2)
@@ -113,9 +126,17 @@ private struct WidgetAccessoryRectangular: View {
         .frame(maxWidth: .infinity, alignment: .leading)
         .containerBackground(.clear, for: .widget)
         .accessibilityElement(children: .ignore)
-        .accessibilityLabel(snapshot.isStale
-            ? "Glucose \(snapshot.valueText) \(snapshot.unitText), outdated"
-            : "Glucose \(snapshot.valueText) \(snapshot.unitText), \(snapshot.trendLabel), from \(snapshot.sourceName)")
+        .accessibilityLabel(accessibilityLabel)
+    }
+
+    private var accessibilityLabel: String {
+        if snapshot.isStale {
+            return "Glucose \(snapshot.valueText) \(snapshot.unitText), outdated"
+        }
+        if let prediction = snapshot.predictionText {
+            return "Glucose \(snapshot.valueText) \(snapshot.unitText), \(snapshot.trendLabel), \(prediction)"
+        }
+        return "Glucose \(snapshot.valueText) \(snapshot.unitText), \(snapshot.trendLabel), from \(snapshot.sourceName)"
     }
 }
 
