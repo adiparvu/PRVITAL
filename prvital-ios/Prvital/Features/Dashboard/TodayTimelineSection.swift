@@ -78,7 +78,7 @@ struct TodayTimelineCard: View {
         for n in notes where isToday(n.timestamp) {
             out.append(TodayEvent(
                 id: "n-\(n.id)", date: n.timestamp, icon: "note.text", tint: Theme.textSecondary,
-                title: n.text, detail: nil))
+                title: n.text?.isEmpty == false ? n.text! : String(localized: "Note"), detail: nil))
         }
         // Manual glucose logs only — the CGM stream is what the trend chart shows.
         for r in readings where isToday(r.timestamp) && r.isActive && !r.source.isCGM {
