@@ -136,8 +136,13 @@ struct ActivityLogView: View {
     @Environment(AppEnvironment.self) private var env
     @Query private var sessions: [ActivityEntry]
     @State private var editing: ActivityEntry?
+    // Apple Health's daily exercise minutes (appleExerciseTime — the Watch's green
+    // ring), fetched off the render path. Merged with logged workouts so every
+    // active day appears here, not only the handful of manually logged sessions.
+    @State private var exerciseByDay: [Date: Int] = [:]
 
     private static let renderCap = 500
+    private static let exerciseDays = 90
 
     init() {
         let cutoff = Calendar.current.date(byAdding: .day, value: -370, to: Date())
@@ -146,12 +151,35 @@ struct ActivityLogView: View {
                           sort: \.startTimestamp, order: .reverse)
     }
 
+    /// Merges logged workouts and Apple Health exercise-minute totals into one
+    /// list of dated day groups (newest day first). Each day carries its exercise
+    /// total (0 when none) plus every logged session that day, so a day with only
+    /// Watch activity still shows up.
+    private var days: [ActivityDay] {
+        let cal = Calendar.current
+        let sessionsByDay = Dictionary(grouping: Array(sessions.prefix(Self.renderCap))) {
+            cal.startOfDay(for: $0.startTimestamp)
+        }
+        let allDays = Set(sessionsByDay.keys).union(exerciseByDay.keys)
+        return allDays.sorted(by: >).map { day in
+            ActivityDay(day: day,
+                        exerciseMinutes: exerciseByDay[day] ?? 0,
+                        sessions: sessionsByDay[day] ?? [])
+        }
+    }
+
     var body: some View {
-        EntryLogList(isEmpty: sessions.isEmpty, emptyImage: "figure.walk",
+        let days = days
+        EntryLogList(isEmpty: days.isEmpty, emptyImage: "figure.walk",
                      emptyTitle: "No activity", capped: sessions.count > Self.renderCap) {
-            ForEach(groupedByDay(Array(sessions.prefix(Self.renderCap)), date: { $0.startTimestamp })) { group in
+            ForEach(days) { group in
                 Section {
-                    ForEach(group.items) { session in
+                    // The day's Apple Health exercise total, headlining the section.
+                    if group.exerciseMinutes > 0 {
+                        ExerciseSummaryRow(minutes: group.exerciseMinutes)
+                            .listRowBackground(Theme.surface)
+                    }
+                    ForEach(group.sessions) { session in
                         Button { Haptics.play(.selection); editing = session } label: {
                             EntryLogRow(systemImage: "figure.walk", tint: Theme.zoneInRange,
                                         value: String(localized: "\(session.durationMinutes) min"),
@@ -170,6 +198,60 @@ struct ActivityLogView: View {
         }
         .navigationTitle("Activity")
         .sheet(item: $editing) { ActivityEntrySheet(existing: $0) }
+        .task { await loadExerciseMinutes() }
+    }
+
+    /// Reads Apple Health's daily exercise minutes for the recent window and keys
+    /// them by start-of-day, so the merge in `days` is a cheap dictionary lookup.
+    private func loadExerciseMinutes() async {
+        let daily = await env.healthKit.dailyMetric(.exercise, days: Self.exerciseDays)
+        let cal = Calendar.current
+        var map: [Date: Int] = [:]
+        for metric in daily {
+            let minutes = Int(metric.value.rounded())
+            if minutes > 0 { map[cal.startOfDay(for: metric.day)] = minutes }
+        }
+        exerciseByDay = map
+    }
+}
+
+/// One calendar day in the activity log: its Apple Health exercise total (0 when
+/// none) and the logged workouts recorded that day.
+private struct ActivityDay: Identifiable {
+    let day: Date
+    let exerciseMinutes: Int
+    let sessions: [ActivityEntry]
+    var id: Date { day }
+}
+
+/// The day's Apple Health exercise minutes, shown as a non-editable headline row
+/// above any logged workouts — the same figure the Move ring counts.
+private struct ExerciseSummaryRow: View {
+    let minutes: Int
+
+    var body: some View {
+        HStack(spacing: 12) {
+            Image(systemName: "flame.fill")
+                .font(.system(size: 15, weight: .semibold))
+                .foregroundStyle(.white)
+                .frame(width: 32, height: 32)
+                .background(Theme.zoneInRange, in: .rect(cornerRadius: 8))
+                .accessibilityHidden(true)
+
+            VStack(alignment: .leading, spacing: 2) {
+                HStack(spacing: 6) {
+                    Text(String(localized: "\(minutes) min"))
+                        .font(.body.weight(.semibold)).foregroundStyle(Theme.textPrimary)
+                    Text("Exercise").font(.subheadline).foregroundStyle(Theme.textSecondary)
+                }
+                Text("From Apple Health")
+                    .font(.caption).foregroundStyle(Theme.textTertiary)
+            }
+            Spacer(minLength: 0)
+        }
+        .padding(.vertical, 2)
+        .contentShape(.rect)
+        .accessibilityElement(children: .combine)
     }
 }
 
