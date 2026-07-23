@@ -103,6 +103,10 @@ struct ChartsContent: View {
             if derived.ready {
                 glucoseSection.appearTransition(delay: 0)
                 distributionSection.appearTransition(delay: 0.06)
+                if derived.heatmap.hasData {
+                    GlucoseHeatmapCard(heatmap: derived.heatmap, unit: unit, thresholds: thresholds)
+                        .appearTransition(delay: 0.09)
+                }
                 insulinSection.appearTransition(delay: 0.12)
                 carbsSection.appearTransition(delay: 0.18)
                 activitySection.appearTransition(delay: 0.24)
@@ -336,6 +340,7 @@ final class ChartsDerived {
     var insulinBars: [ChartsInsulinBar] = []
     var carbBars: [ChartsDailyBar] = []
     var activityBars: [ChartsDailyBar] = []
+    var heatmap = GlucoseHeatmap(blocksPerDay: 8, averages: [])
 
     /// Cap on the number of points fed to the glucose trend chart. A month is
     /// ~8.6k CGM readings and a year ~100k; Swift Charts renders a mark per
@@ -369,7 +374,9 @@ final class ChartsDerived {
             logged: fActivity.map { ($0.startTimestamp, Double($0.durationMinutes)) },
             health: healthExercise, range: range)
         let trend = Self.downsample(active, maxPoints: Self.maxTrendPoints)
+        let heatmap = GlucoseHeatmap.build(active)
 
+        self.heatmap = heatmap
         self.distribution = distribution
         self.chartEvents = events
         self.insulinBars = insulinBars
