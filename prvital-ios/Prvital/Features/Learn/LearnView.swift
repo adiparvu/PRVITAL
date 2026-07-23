@@ -18,16 +18,69 @@ struct LearnView: View {
         NavigationStack {
             ScrollView {
                 VStack(spacing: 20) {
-                    rulesSection.appearTransition(delay: 0)
-                    sickDaySection.appearTransition(delay: 0.06)
-                    articlesSection.appearTransition(delay: 0.12)
-                    recipesSection.appearTransition(delay: 0.18)
-                    LearnDisclaimerCard().appearTransition(delay: 0.24)
+                    continueCard.appearTransition(delay: 0)
+                    rulesSection.appearTransition(delay: 0.06)
+                    sickDaySection.appearTransition(delay: 0.12)
+                    articlesSection.appearTransition(delay: 0.18)
+                    recipesSection.appearTransition(delay: 0.24)
+                    LearnDisclaimerCard().appearTransition(delay: 0.3)
                 }
                 .padding()
             }
             .prvitalTabBackground()
             .navigationTitle("Learn")
+        }
+    }
+
+    /// The academy's guiding hand: a hero card that points to the next unread
+    /// article — a gentle "read this next" — and turns into a small celebration
+    /// once the whole encyclopedia is read.
+    @ViewBuilder private var continueCard: some View {
+        if articles.isEmpty {
+            EmptyView()
+        } else if let nextID = progress.firstUnread(among: articleIDs),
+                  let next = articles.first(where: { $0.id == nextID }) {
+            NavigationLink { ArticleDetailView(article: next) } label: {
+                HStack(spacing: 14) {
+                    Image(systemName: "graduationcap.fill")
+                        .font(.title2)
+                        .foregroundStyle(Theme.accent)
+                        .frame(width: 46, height: 46)
+                        .background(Theme.accentSoft, in: .circle)
+                    VStack(alignment: .leading, spacing: 3) {
+                        Text(progress.readCount(among: articleIDs) == 0 ? "Start learning" : "Continue learning")
+                            .font(.caption2.weight(.semibold))
+                            .foregroundStyle(Theme.accent)
+                            .textCase(.uppercase)
+                        Text(LocalizedStringKey(next.title))
+                            .font(.headline)
+                            .foregroundStyle(Theme.textPrimary)
+                            .lineLimit(2)
+                    }
+                    Spacer(minLength: 8)
+                    Image(systemName: "chevron.right").font(.subheadline).foregroundStyle(Theme.textTertiary)
+                }
+                .frame(maxWidth: .infinity, alignment: .leading)
+                .glassCard(cornerRadius: 20, padding: 14)
+                .contentShape(.rect)
+            }
+            .buttonStyle(PressableCardStyle())
+        } else {
+            HStack(spacing: 14) {
+                Image(systemName: "checkmark.seal.fill")
+                    .font(.title2)
+                    .foregroundStyle(Theme.zoneInRange)
+                    .frame(width: 46, height: 46)
+                    .background(Theme.zoneInRange.opacity(0.15), in: .circle)
+                VStack(alignment: .leading, spacing: 3) {
+                    Text("Academy complete").font(.headline).foregroundStyle(Theme.textPrimary)
+                    Text("You've read every article").font(.caption).foregroundStyle(Theme.textSecondary)
+                }
+                Spacer(minLength: 0)
+            }
+            .frame(maxWidth: .infinity, alignment: .leading)
+            .glassCard(cornerRadius: 20, padding: 14)
+            .accessibilityElement(children: .combine)
         }
     }
 

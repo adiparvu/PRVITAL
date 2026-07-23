@@ -30,6 +30,17 @@ struct LearnProgress: Equatable, Sendable {
         return Double(readCount(among: ids)) / Double(ids.count)
     }
 
+    /// The first ID in reading order that hasn't been read yet — what the hub
+    /// suggests reading next. `nil` once everything is read (or the list is empty).
+    func firstUnread(among ids: [String]) -> String? {
+        ids.first { !readIDs.contains($0) }
+    }
+
+    /// True when every article in the (non-empty) library is read.
+    func isComplete(among ids: [String]) -> Bool {
+        !ids.isEmpty && firstUnread(among: ids) == nil
+    }
+
     // MARK: - Compact persistence
 
     /// Decodes the storage format: IDs joined by a tab. A tab is used as the

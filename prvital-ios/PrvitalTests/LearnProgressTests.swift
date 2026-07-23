@@ -54,4 +54,26 @@ final class LearnProgressTests: XCTestCase {
         let b = LearnProgress(readIDs: ["m", "z", "a"])
         XCTAssertEqual(a.encoded(), b.encoded(), "same set → same stored string regardless of insertion order")
     }
+
+    func testFirstUnreadFollowsReadingOrder() {
+        let ids = ["a", "b", "c", "d"]
+        var p = LearnProgress()
+        XCTAssertEqual(p.firstUnread(among: ids), "a") // nothing read → the very first
+        p.markRead("a")
+        p.markRead("b")
+        XCTAssertEqual(p.firstUnread(among: ids), "c") // skips read ones, keeps order
+    }
+
+    func testFirstUnreadIsNilWhenComplete() {
+        let ids = ["a", "b"]
+        let p = LearnProgress(readIDs: ["a", "b"])
+        XCTAssertNil(p.firstUnread(among: ids))
+        XCTAssertTrue(p.isComplete(among: ids))
+    }
+
+    func testEmptyLibraryIsNeitherUnreadNorComplete() {
+        let p = LearnProgress(readIDs: ["a"])
+        XCTAssertNil(p.firstUnread(among: []))
+        XCTAssertFalse(p.isComplete(among: []), "an empty library is not 'complete'")
+    }
 }
