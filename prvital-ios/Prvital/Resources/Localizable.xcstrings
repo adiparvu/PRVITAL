@@ -91521,6 +91521,65 @@
           }
         }
       }
+    },
+    "Glucose differs by about %@ between your highest and lowest days.": {
+      "extractionState": "manual",
+      "localizations": {
+        "ro": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Glicemia diferă cu aproximativ %@ între zilele cu cele mai mari și cele mai mici valori."
+          }
+        },
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Die Glukose unterscheidet sich um etwa %@ zwischen deinen höchsten und niedrigsten Tagen."
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "La glucosa varía unos %@ entre tus días más altos y más bajos."
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "La glycémie varie d’environ %@ entre vos jours les plus élevés et les plus bas."
+          }
+        },
+        "it": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "La glicemia varia di circa %@ tra i giorni più alti e più bassi."
+          }
+        },
+        "nl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "De glucose verschilt ongeveer %@ tussen je hoogste en laagste dagen."
+          }
+        },
+        "pl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Glikemia różni się o około %@ między dniami o najwyższych i najniższych wartościach."
+          }
+        },
+        "pt": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "A glicose varia cerca de %@ entre os teus dias mais altos e mais baixos."
+          }
+        },
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Глюкоза различается примерно на %@ между днями с самыми высокими и самыми низкими значениями."
+          }
+        }
+      }
     }
   },
   "version": "1.0"

@@ -31,7 +31,7 @@ struct HealthHubView: View {
             VStack(spacing: 16) {
                 ActivityRingsCard(rings: model.rings)
                 if !model.correlations.isEmpty {
-                    CorrelationsSection(items: model.correlations)
+                    CorrelationsSection(items: model.correlations, unit: env.preferences.glucoseUnit)
                 }
                 if model.cards.isEmpty && model.loaded {
                     EmptyStateView(systemImage: "heart.text.square",
@@ -358,13 +358,14 @@ private struct MetricCardView: View {
 
 private struct CorrelationsSection: View {
     let items: [HealthGlucoseCorrelation]
+    let unit: GlucoseUnit
 
     var body: some View {
         VStack(alignment: .leading, spacing: 12) {
             Label("What moves your glucose", systemImage: "sparkles")
                 .font(.headline)
                 .foregroundStyle(Theme.textPrimary)
-            ForEach(items) { CorrelationCardView(correlation: $0) }
+            ForEach(items) { CorrelationCardView(correlation: $0, unit: unit) }
         }
         .frame(maxWidth: .infinity, alignment: .leading)
     }
@@ -374,6 +375,7 @@ private struct CorrelationsSection: View {
 /// Green when the metric and lower glucose move together, amber otherwise.
 private struct CorrelationCardView: View {
     let correlation: HealthGlucoseCorrelation
+    let unit: GlucoseUnit
 
     var body: some View {
         let tint = correlation.favourable ? Theme.zoneInRange : Theme.zoneHigh
@@ -387,6 +389,12 @@ private struct CorrelationCardView: View {
                 .font(.callout)
                 .foregroundStyle(Theme.textPrimary)
                 .fixedSize(horizontal: false, vertical: true)
+            if let deltaLine {
+                Text(deltaLine)
+                    .font(.footnote.weight(.semibold))
+                    .foregroundStyle(tint)
+                    .fixedSize(horizontal: false, vertical: true)
+            }
             GeometryReader { geo in
                 ZStack(alignment: .leading) {
                     Capsule().fill(Theme.hairline)
@@ -428,6 +436,15 @@ private struct CorrelationCardView: View {
         case (.hrv, true):    return "When your HRV is higher, your glucose tends to run lower."
         case (.hrv, false):   return "When your HRV is higher, your glucose tends to run higher."
         }
+    }
+
+    /// The concrete effect size, shown only when it's big enough to matter (≥ 5
+    /// mg/dL). Formatted in the user's glucose unit.
+    private var deltaLine: String? {
+        guard abs(correlation.deltaMgdL) >= 5 else { return nil }
+        let amount = GlucoseFormatting.labeled(mgdL: abs(correlation.deltaMgdL), unit: unit)
+        return String(format: NSLocalizedString(
+            "Glucose differs by about %@ between your highest and lowest days.", comment: ""), amount)
     }
 
     private var caption: String {

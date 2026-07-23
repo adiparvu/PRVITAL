@@ -15,6 +15,11 @@ struct HealthGlucoseCorrelation: Sendable, Identifiable {
     let coefficient: Double
     /// Number of paired days behind the estimate.
     let sampleSize: Int
+    /// The concrete effect size: average glucose on the *higher-metric* half of
+    /// days minus the *lower-metric* half (mg/dL). Negative = glucose is lower on
+    /// the days with more steps / sleep / HRV. This is what the card shows as a
+    /// number ("~12 mg/dL lower on your most active days").
+    let deltaMgdL: Double
 
     var id: String { kind.rawValue }
 
@@ -74,6 +79,21 @@ enum HealthGlucoseCorrelator {
             }
         }
         guard pairs.count >= minPairs, let r = pearson(pairs) else { return nil }
-        return HealthGlucoseCorrelation(kind: kind, coefficient: r, sampleSize: pairs.count)
+
+        // Concrete effect size: split the days into the lower- and higher-metric
+        // halves and compare their average glucose. The middle day is dropped when
+        // the count is odd so the two halves never overlap.
+        let byMetric = pairs.sorted { $0.0 < $1.0 }
+        let half = byMetric.count / 2
+        let lowHalf = byMetric.prefix(half)
+        let highHalf = byMetric.suffix(half)
+        let delta = mean(highHalf) - mean(lowHalf)
+
+        return HealthGlucoseCorrelation(kind: kind, coefficient: r, sampleSize: pairs.count, deltaMgdL: delta)
+    }
+
+    private static func mean(_ slice: ArraySlice<(Double, Double)>) -> Double {
+        guard !slice.isEmpty else { return 0 }
+        return slice.reduce(0) { $0 + $1.1 } / Double(slice.count)
     }
 }
