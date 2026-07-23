@@ -375,6 +375,58 @@ jobs:
             echo "::error::Build number mismatch — archive is $ACTUAL but project is $EXPECTED. TestFlight would reject this as a duplicate. Fix CFBundleVersion in project.yml."
             exit 1
           fi
+      - name: Inspect signed entitlements (diagnostic, never fails)
+        # Ground truth for the "Apple Health missing entitlement" + blank-widget
+        # bugs: export a signed copy to disk and print whether HealthKit and the
+        # App Group actually survive into the SIGNED binary. The profile carrying
+        # them is necessary but not sufficient — an unsigned archive re-signed by
+        # -exportArchive can drop capability entitlements, which is exactly what
+        # would make Apple Health fail at runtime and the app lose its shared
+        # container (blanking the widgets). continue-on-error so this never blocks
+        # the real upload below.
+        working-directory: prvital-ios
+        continue-on-error: true
+        run: |
+          set -uo pipefail
+          PROFILES_XML=""
+          while IFS='=' read -r bundle name; do
+            [ -z "$bundle" ] && continue
+            PROFILES_XML="${PROFILES_XML}    <key>${bundle}</key><string>${name}</string>"$'\n'
+          done < "$RUNNER_TEMP/profile_map.txt"
+          {
+            echo '<?xml version="1.0" encoding="UTF-8"?>'
+            echo '<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">'
+            echo '<plist version="1.0"><dict>'
+            echo '  <key>method</key><string>app-store-connect</string>'
+            echo '  <key>destination</key><string>export</string>'
+            echo '  <key>signingStyle</key><string>manual</string>'
+            echo '  <key>signingCertificate</key><string>Apple Distribution</string>'
+            echo '  <key>teamID</key><string>SU92TVZT8W</string>'
+            echo '  <key>provisioningProfiles</key><dict>'
+            printf '%s' "$PROFILES_XML"
+            echo '  </dict>'
+            echo '</dict></plist>'
+          } > /tmp/ExportInspect.plist
+          xcodebuild -exportArchive \
+            -archivePath build/Prvital.xcarchive \
+            -exportOptionsPlist /tmp/ExportInspect.plist \
+            -exportPath build/inspect \
+            -authenticationKeyID "${{ secrets.ASC_KEY_ID }}" \
+            -authenticationKeyIssuerID "${{ secrets.ASC_ISSUER_ID }}" \
+            -authenticationKeyPath "$HOME/private_keys/AuthKey_${{ secrets.ASC_KEY_ID }}.p8" 2>&1 | tail -6 || true
+          IPA=$(ls build/inspect/*.ipa 2>/dev/null | head -1 || true)
+          if [ -z "$IPA" ]; then echo "no ipa exported for inspection"; exit 0; fi
+          WORK=/tmp/ipa_inspect
+          rm -rf "$WORK"; mkdir -p "$WORK"
+          unzip -q "$(pwd)/$IPA" -d "$WORK"
+          echo "=== SIGNED entitlements — does HealthKit + App Group survive signing? ==="
+          for app in "$WORK"/Payload/*.app "$WORK"/Payload/*.app/PlugIns/*.appex; do
+            [ -e "$app" ] || continue
+            ent=$(codesign -d --entitlements - "$app" 2>/dev/null || true)
+            hk=$(printf '%s' "$ent" | grep -a -c "com.apple.developer.healthkit" || true)
+            ag=$(printf '%s' "$ent" | grep -a -c "group.com.prvital" || true)
+            echo "  $(basename "$app"):  healthkit=$([ "${hk:-0}" -gt 0 ] && echo YES || echo NO)  appgroup=$([ "${ag:-0}" -gt 0 ] && echo YES || echo NO)"
+          done
       - name: Export & upload to TestFlight
         working-directory: prvital-ios
         run: |
