@@ -22,7 +22,8 @@ struct StatisticsView: View {
     @Query private var observations: [ObservationEntry]
     @Query(sort: \LabResult.timestamp, order: .reverse) private var labResults: [LabResult]
 
-    init() {
+    init(interval: Binding<InsightsInterval>) {
+        _interval = interval
         // Statistics offer up to a year, so cap at ~400 days: even with several
         // years imported, no view loads more than the longest window it can show.
         let cutoff = Calendar.current.date(byAdding: .day, value: -400, to: Date())
@@ -39,7 +40,8 @@ struct StatisticsView: View {
                               sort: \.timestamp, order: .reverse)
     }
 
-    @State private var interval: InsightsInterval = .week
+    // Driven by the shared top-left menu in InsightsView.
+    @Binding var interval: InsightsInterval
     @State private var showingLogLab = false
     /// The day whose detail sheet is open (tapping the best/toughest day).
     @State private var selectedDay: StatDayRef?
@@ -164,14 +166,6 @@ struct StatisticsView: View {
     var body: some View {
         ScrollView {
             VStack(spacing: 20) {
-                Picker("Interval", selection: $interval) {
-                    ForEach(InsightsInterval.allCases) { option in
-                        Text(option.label).tag(option)
-                    }
-                }
-                .pickerStyle(.segmented)
-                .onChange(of: interval) { _, _ in Haptics.play(.selection) }
-
                 if hasAnyData {
                     if stats.hasGlucose { timeInRangeBar.appearTransition(delay: 0) }
                     statsGrid.appearTransition(delay: 0.06)
@@ -854,7 +848,7 @@ struct StatisticsView: View {
 
 #Preview {
     let env = AppEnvironment.preview()
-    return StatisticsView()
+    return StatisticsView(interval: .constant(.week))
         .environment(env)
         .modelContainer(env.modelContainer)
 }

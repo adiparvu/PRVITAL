@@ -12,6 +12,9 @@ import SwiftData
 struct InsightsView: View {
     @Environment(AppEnvironment.self) private var env
     @State private var section: InsightsSection = .charts
+    // Interval lives here (not in the child panes) so the single top-left menu can
+    // drive both the view (Charts/Statistics/AGP) and the period at once.
+    @State private var interval: InsightsInterval = .week
     @State private var showingWeeklyDigest = false
     @State private var showingPlainSummary = false
     @State private var showingExport = false
@@ -71,26 +74,44 @@ struct InsightsView: View {
                     .transition(.move(edge: .top).combined(with: .opacity))
                 }
 
-                Picker("View", selection: $section) {
-                    ForEach(InsightsSection.allCases) { option in
-                        Text(option.label).tag(option)
-                    }
-                }
-                .pickerStyle(.segmented)
-                .padding(.horizontal)
-                .padding(.top, 8)
-                .padding(.bottom, 6)
-                .onChange(of: section) { _, _ in Haptics.play(.selection) }
-
                 switch section {
-                case .charts: ChartsView()
-                case .statistics: StatisticsView()
+                case .charts: ChartsView(interval: $interval)
+                case .statistics: StatisticsView(interval: $interval)
                 case .agp: AGPReportView()
                 }
             }
             .prvitalTabBackground()
             .navigationTitle("Insights")
             .toolbar {
+                // The view (Charts/Statistics/AGP) and the period (Day/Week/Month/
+                // Year) both live in ONE top-left menu instead of two segmented bars
+                // stacked above the content — so the page reads as one whole and the
+                // controls don't break it up (device feedback).
+                ToolbarItem(placement: .topBarLeading) {
+                    Menu {
+                        Picker("View", selection: $section) {
+                            ForEach(InsightsSection.allCases) { option in
+                                Text(option.label).tag(option)
+                            }
+                        }
+                        if section != .agp {
+                            Picker("Period", selection: $interval) {
+                                ForEach(InsightsInterval.allCases) { option in
+                                    Text(option.label).tag(option)
+                                }
+                            }
+                        }
+                    } label: {
+                        HStack(spacing: 4) {
+                            Text(section.label).font(.body.weight(.semibold))
+                            Image(systemName: "chevron.down").font(.caption2.weight(.bold))
+                        }
+                        .foregroundStyle(Theme.textPrimary)
+                    }
+                    .onChange(of: section) { _, _ in Haptics.play(.selection) }
+                    .onChange(of: interval) { _, _ in Haptics.play(.selection) }
+                    .accessibilityLabel("View and period")
+                }
                 // The three actions — plain-language summary, week-in-review and
                 // export — live in one overflow menu so the header stays clean
                 // (per device feedback: "all of these into one menu button").

@@ -5,19 +5,12 @@ import Charts
 /// The visual pane of Insights: an interval picker over `ChartsContent`, which is
 /// re-created for each interval so only the selected window is ever loaded.
 struct ChartsView: View {
-    @State private var interval: InsightsInterval = .week
+    // Driven by the shared top-left menu in InsightsView.
+    @Binding var interval: InsightsInterval
 
     var body: some View {
         ScrollView {
             VStack(spacing: 20) {
-                Picker("Interval", selection: $interval) {
-                    ForEach(InsightsInterval.allCases) { option in
-                        Text(option.label).tag(option)
-                    }
-                }
-                .pickerStyle(.segmented)
-                .onChange(of: interval) { _, _ in Haptics.play(.selection) }
-
                 // Keyed on the interval so its windowed @Query re-initialises when
                 // the range changes — a freshly imported 100k-row history is never
                 // fully materialised, only the selected sub-range.
@@ -356,7 +349,7 @@ private struct ChartsDailyBar: Identifiable {
 
 #Preview {
     let env = AppEnvironment.preview()
-    return ChartsView()
+    return ChartsView(interval: .constant(.week))
         .environment(env)
         .modelContainer(env.modelContainer)
 }
