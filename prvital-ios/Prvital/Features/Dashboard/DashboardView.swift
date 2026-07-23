@@ -369,13 +369,13 @@ struct DashboardView: View {
             systemImage: "waveform.path.ecg",
             accessory: AnyView(trendRangeMenu)
         ) {
-            // Prefer the responsive 20-minute velocity; if a brief CGM gap leaves
-            // too few points for it, fall back to a wider 45-minute window so the
-            // trend + projection line doesn't vanish whenever a reading is missed.
-            let velocity = summary.velocity
-                ?? (summary.isStale ? nil
-                    : GlucoseTrendAnalyzer.velocity(summary.recent, now: summary.now, window: 45 * 60))
-            if let velocity, let current = summary.current {
+            // The most *local* velocity available — the tightest window (hence the
+            // most precise recent rate) that still has enough points, so the line
+            // stays put through a missed reading without smearing the rate more
+            // than necessary.
+            if let velocity = summary.isStale ? nil
+                : GlucoseTrendAnalyzer.bestVelocity(summary.recent, now: summary.now),
+               let current = summary.current {
                 velocityLine(velocity, currentMgdL: current.valueMgdL, unit: unit)
             }
             if windowReadings.isEmpty {

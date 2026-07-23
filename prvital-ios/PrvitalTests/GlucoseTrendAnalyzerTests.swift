@@ -59,6 +59,32 @@ final class GlucoseTrendAnalyzerTests: XCTestCase {
         XCTAssertNil(GlucoseTrendAnalyzer.velocity(readings, now: now))
     }
 
+    func testBestVelocityPrefersTightWindowWhenSufficient() {
+        let now = Date()
+        let readings = [
+            GlucoseReading(valueMgdL: 100, timestamp: now.addingTimeInterval(-600), source: .manual),
+            GlucoseReading(valueMgdL: 120, timestamp: now.addingTimeInterval(-300), source: .manual),
+            GlucoseReading(valueMgdL: 140, timestamp: now, source: .manual),
+        ]
+        // All three points sit inside the 20-minute window, so bestVelocity uses it
+        // and matches the tight-window rate exactly (4 mg/dL/min).
+        XCTAssertEqual(GlucoseTrendAnalyzer.bestVelocity(readings, now: now)?.mgdLPerMinute ?? 0,
+                       4, accuracy: 1e-6)
+    }
+
+    func testBestVelocityWidensWhenTightWindowIsShort() {
+        let now = Date()
+        let readings = [
+            GlucoseReading(valueMgdL: 100, timestamp: now.addingTimeInterval(-40 * 60), source: .manual),
+            GlucoseReading(valueMgdL: 110, timestamp: now.addingTimeInterval(-30 * 60), source: .manual),
+            GlucoseReading(valueMgdL: 120, timestamp: now, source: .manual),
+        ]
+        // The 20-minute window has only one point, but the 45-minute fallback has
+        // all three — so bestVelocity recovers a rate the tight window couldn't.
+        XCTAssertNil(GlucoseTrendAnalyzer.velocity(readings, now: now))
+        XCTAssertNotNil(GlucoseTrendAnalyzer.bestVelocity(readings, now: now))
+    }
+
     func testTrendCutoffs() {
         XCTAssertEqual(GlucoseTrendAnalyzer.trend(forSlopePerMinute: 3), .risingFast)
         XCTAssertEqual(GlucoseTrendAnalyzer.trend(forSlopePerMinute: 2), .rising)

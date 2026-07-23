@@ -55,6 +55,21 @@ enum GlucoseTrendAnalyzer {
         return GlucoseVelocity(mgdLPerMinute: slope, trend: trend(forSlopePerMinute: slope))
     }
 
+    /// The most *local* velocity available: tries progressively wider windows and
+    /// returns the first (tightest) one that has enough points. The tight window
+    /// gives the most precise current rate; the wider fallbacks keep the rate
+    /// available through a missed reading instead of vanishing. Windows are in
+    /// minutes; the default ladder is 20 → 30 → 45.
+    static func bestVelocity(
+        _ readings: [GlucoseReading], now: Date,
+        windowsMinutes: [Double] = [20, 30, 45]
+    ) -> GlucoseVelocity? {
+        for minutes in windowsMinutes {
+            if let v = velocity(readings, now: now, window: minutes * 60) { return v }
+        }
+        return nil
+    }
+
     /// Maps a slope (mg/dL per minute) to the app's five trend levels using the
     /// conventional CGM cutoffs (±1.5 and ±3 mg/dL/min).
     static func trend(forSlopePerMinute slope: Double) -> GlucoseTrend {
