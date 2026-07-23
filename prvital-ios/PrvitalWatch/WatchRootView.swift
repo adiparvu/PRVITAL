@@ -105,6 +105,19 @@ private struct WatchNowPage: View {
                 .padding(.vertical, 3)
                 .background(zoneColor.opacity(0.18), in: Capsule())
 
+            if snapshot.iobText != nil || snapshot.cobText != nil {
+                HStack(spacing: 10) {
+                    if let iob = snapshot.iobText {
+                        Label(iob, systemImage: "syringe.fill")
+                            .font(.caption2).foregroundStyle(Theme.textSecondary).lineLimit(1)
+                    }
+                    if let cob = snapshot.cobText {
+                        Label(cob, systemImage: "fork.knife")
+                            .font(.caption2).foregroundStyle(Theme.textSecondary).lineLimit(1)
+                    }
+                }
+            }
+
             VStack(spacing: 1) {
                 HStack(spacing: 4) {
                     Circle()
