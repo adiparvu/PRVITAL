@@ -27,6 +27,14 @@ struct GlucoseSnapshot: Codable, Equatable, Sendable {
     var targetLowerMgdL: Double = 70
     var targetUpperMgdL: Double = 180
 
+    /// A short-horizon projected reading, so a chart can draw the trajectory as a
+    /// dashed segment continuing past the last real point. Both are nil unless the
+    /// app has a fresh reading with a measured trend and the projected change is big
+    /// enough to be worth showing — see `SnapshotPublisher`.
+    var forecastMgdL: Double?
+    /// When the projected reading lands (last reading time + horizon).
+    var forecastAt: Date?
+
     var lastInsulinText: String?
     var lastMealText: String?
     var nextReminderText: String?

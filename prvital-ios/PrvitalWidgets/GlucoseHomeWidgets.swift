@@ -292,7 +292,8 @@ private struct WidgetGlucoseChart: View {
     private var zoneColor: Color { Color(hex: snapshot.zoneColorHex) }
 
     private var yDomain: ClosedRange<Double> {
-        let values = snapshot.points.map(\.mgdL) + [snapshot.targetLowerMgdL, snapshot.targetUpperMgdL]
+        var values = snapshot.points.map(\.mgdL) + [snapshot.targetLowerMgdL, snapshot.targetUpperMgdL]
+        if let forecast = snapshot.forecastMgdL { values.append(forecast) }
         guard let lo = values.min(), let hi = values.max(), hi > lo else { return 40...200 }
         let pad = max((hi - lo) * 0.12, 8)
         return (lo - pad)...(hi + pad)
@@ -334,7 +335,8 @@ private struct WidgetGlucoseChart: View {
 
                     LineMark(
                         x: .value("Time", point.date),
-                        y: .value("Glucose", point.mgdL)
+                        y: .value("Glucose", point.mgdL),
+                        series: .value("Series", "history")
                     )
                     .interpolationMethod(.catmullRom)
                     .foregroundStyle(zoneColor)
@@ -348,6 +350,35 @@ private struct WidgetGlucoseChart: View {
                     )
                     .foregroundStyle(zoneColor)
                     .symbolSize(34)
+                }
+
+                // The damped forecast as a dashed tail continuing past the last
+                // reading, in its own series so it never merges with the history
+                // line, plus a faint dot at the projected value. Shown only when
+                // the app supplied a moving projection.
+                if let forecastMgdL = snapshot.forecastMgdL,
+                   let forecastAt = snapshot.forecastAt,
+                   let last = snapshot.points.last {
+                    ForEach([
+                        GlucoseSnapshot.Point(date: last.date, mgdL: last.mgdL),
+                        GlucoseSnapshot.Point(date: forecastAt, mgdL: forecastMgdL)
+                    ]) { point in
+                        LineMark(
+                            x: .value("Time", point.date),
+                            y: .value("Glucose", point.mgdL),
+                            series: .value("Series", "forecast")
+                        )
+                        .interpolationMethod(.linear)
+                        .foregroundStyle(zoneColor.opacity(0.6))
+                        .lineStyle(StrokeStyle(lineWidth: 2, dash: [3, 3]))
+                    }
+
+                    PointMark(
+                        x: .value("Time", forecastAt),
+                        y: .value("Glucose", forecastMgdL)
+                    )
+                    .foregroundStyle(zoneColor.opacity(0.6))
+                    .symbolSize(20)
                 }
             }
             .chartYScale(domain: yDomain)

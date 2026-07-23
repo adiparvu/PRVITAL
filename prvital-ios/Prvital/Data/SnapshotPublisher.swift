@@ -69,6 +69,23 @@ final class SnapshotPublisher {
                 imminent = projection
                 snapshot.predictionText = Self.predictionText(projection)
             }
+
+            // Short-horizon trajectory for the widget chart's dashed forecast tail.
+            // Uses the same damped projection the Dashboard shows, so the little
+            // dashed continuation agrees with the "~X in N min" figure.
+            if !summary.isStale, let velocity = summary.velocity {
+                let horizonMinutes = 30
+                let forecast = GlucoseForecast.project(
+                    currentMgdL: current.valueMgdL,
+                    velocityMgdLPerMin: velocity.mgdLPerMinute,
+                    horizonMinutes: horizonMinutes)
+                // Only worth a dashed tail when the trajectory actually moves; a
+                // near-flat projection would just be visual noise on the sparkline.
+                if abs(forecast.projectedMgdL - current.valueMgdL) >= 5 {
+                    snapshot.forecastMgdL = forecast.projectedMgdL
+                    snapshot.forecastAt = current.timestamp.addingTimeInterval(Double(horizonMinutes) * 60)
+                }
+            }
         }
 
         snapshot.points = summary.recent.map { .init(date: $0.timestamp, mgdL: $0.valueMgdL) }
