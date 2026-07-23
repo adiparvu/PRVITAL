@@ -42,8 +42,7 @@ struct MovementGlucoseView: View {
     var body: some View {
         ScrollView {
             VStack(spacing: 20) {
-                glucoseCard
-                heartRateCard
+                combinedCard
                 impactCard
             }
             .padding()
@@ -56,55 +55,114 @@ struct MovementGlucoseView: View {
 
     // MARK: Cards
 
-    private var glucoseCard: some View {
-        SectionCard("Glucose", systemImage: "drop.fill") {
-            if readings.isEmpty {
-                emptyRow("No glucose readings on this day.")
-            } else {
-                Chart {
-                    activityBands
-                    RuleMark(y: .value("High", thresholds.targetUpper))
-                        .foregroundStyle(Theme.zoneHigh.opacity(0.4))
-                        .lineStyle(StrokeStyle(lineWidth: 1, dash: [4, 4]))
-                    RuleMark(y: .value("Low", thresholds.targetLower))
-                        .foregroundStyle(Theme.zoneWarning.opacity(0.4))
-                        .lineStyle(StrokeStyle(lineWidth: 1, dash: [4, 4]))
-                    ForEach(GlucoseDownsampler.downsample(readings, maxPoints: 300)) { r in
-                        LineMark(x: .value("Time", r.timestamp), y: .value("Glucose", r.valueMgdL))
-                            .interpolationMethod(.catmullRom)
-                            .foregroundStyle(Theme.accent)
-                            .lineStyle(StrokeStyle(lineWidth: 2, lineCap: .round))
+    /// Glucose and heart rate overlaid on one shared time axis — glucose in the
+    /// app tint on the left mg/dL scale, heart rate in red on the right bpm scale
+    /// — so a workout's effect on both is visible at a glance. Swift Charts has a
+    /// single y-domain per chart, so heart rate is mapped into the glucose value
+    /// range (`hrScale`) and the trailing axis relabels the ticks back to bpm.
+    private var combinedCard: some View {
+        SectionCard("Glucose & heart rate", systemImage: "heart.text.square.fill") {
+            VStack(alignment: .leading, spacing: 12) {
+                if loadingHR && readings.isEmpty {
+                    ProgressView().frame(maxWidth: .infinity).frame(height: 160)
+                } else if readings.isEmpty && heartRate.isEmpty {
+                    emptyRow("No glucose or heart-rate data on this day.")
+                } else {
+                    Chart {
+                        activityBands
+                        RuleMark(y: .value("High", thresholds.targetUpper))
+                            .foregroundStyle(Theme.zoneHigh.opacity(0.4))
+                            .lineStyle(StrokeStyle(lineWidth: 1, dash: [4, 4]))
+                        RuleMark(y: .value("Low", thresholds.targetLower))
+                            .foregroundStyle(Theme.zoneWarning.opacity(0.4))
+                            .lineStyle(StrokeStyle(lineWidth: 1, dash: [4, 4]))
+                        // Glucose — real mg/dL on the left scale.
+                        ForEach(GlucoseDownsampler.downsample(readings, maxPoints: 300)) { r in
+                            LineMark(x: .value("Time", r.timestamp),
+                                     y: .value("Glucose", r.valueMgdL),
+                                     series: .value("Series", "Glucose"))
+                                .interpolationMethod(.catmullRom)
+                                .foregroundStyle(Theme.accent)
+                                .lineStyle(StrokeStyle(lineWidth: 2, lineCap: .round))
+                        }
+                        // Heart rate — bpm mapped into the glucose domain (red).
+                        ForEach(downsampledHR) { s in
+                            LineMark(x: .value("Time", s.timestamp),
+                                     y: .value("Heart rate", s.bpm * hrScale),
+                                     series: .value("Series", "Heart rate"))
+                                .interpolationMethod(.catmullRom)
+                                .foregroundStyle(Theme.zoneCritical)
+                                .lineStyle(StrokeStyle(lineWidth: 2, lineCap: .round))
+                        }
+                    }
+                    .chartXScale(domain: xDomain)
+                    .chartYScale(domain: 0...gTop)
+                    .chartXAxis { hourAxis }
+                    .chartYAxis {
+                        AxisMarks(position: .leading, values: .automatic(desiredCount: 4)) { value in
+                            AxisGridLine().foregroundStyle(Theme.hairline.opacity(0.6))
+                            AxisValueLabel {
+                                if let v = value.as(Double.self) {
+                                    Text("\(Int(v))").foregroundStyle(Theme.accent)
+                                }
+                            }
+                        }
+                        AxisMarks(position: .trailing, values: hrAxisPlottedValues) { value in
+                            AxisValueLabel {
+                                if let v = value.as(Double.self) {
+                                    Text("\(Int((v / hrScale).rounded()))").foregroundStyle(Theme.zoneCritical)
+                                }
+                            }
+                        }
+                    }
+                    .frame(height: 240)
+                    .accessibilityLabel("Glucose in milligrams per deciliter and heart rate in beats per minute across the day")
+
+                    HStack(spacing: 16) {
+                        legendItem(color: Theme.accent, label: String(localized: "Glucose"), unit: unit.rawValue)
+                        legendItem(color: Theme.zoneCritical, label: String(localized: "Heart rate"), unit: "bpm")
+                        Spacer()
+                    }
+
+                    if heartRate.isEmpty && !loadingHR {
+                        Text("No heart-rate data from Apple Health for this day. Connect Apple Health in Sources to see it here.")
+                            .font(.caption)
+                            .foregroundStyle(Theme.textTertiary)
+                            .fixedSize(horizontal: false, vertical: true)
                     }
                 }
-                .chartXScale(domain: xDomain)
-                .chartXAxis { hourAxis }
-                .frame(height: 180)
             }
         }
     }
 
-    private var heartRateCard: some View {
-        SectionCard("Heart rate", systemImage: "heart.fill") {
-            if loadingHR {
-                ProgressView().frame(maxWidth: .infinity).frame(height: 120)
-            } else if heartRate.isEmpty {
-                emptyRow("No heart-rate data from Apple Health for this day. Connect Apple Health in Sources to see it here.")
-            } else {
-                Chart {
-                    activityBands
-                    ForEach(downsampledHR) { s in
-                        LineMark(x: .value("Time", s.timestamp), y: .value("BPM", s.bpm))
-                            .interpolationMethod(.catmullRom)
-                            .foregroundStyle(Theme.zoneHigh)
-                            .lineStyle(StrokeStyle(lineWidth: 2, lineCap: .round))
-                    }
-                }
-                .chartXScale(domain: xDomain)
-                .chartXAxis { hourAxis }
-                .frame(height: 180)
-                .accessibilityLabel("Heart rate in beats per minute across the day")
-            }
+    private func legendItem(color: Color, label: String, unit: String) -> some View {
+        HStack(spacing: 6) {
+            Capsule().fill(color).frame(width: 14, height: 4)
+            Text("\(label) (\(unit))")
+                .font(.caption2)
+                .foregroundStyle(Theme.textSecondary)
         }
+        .accessibilityElement(children: .combine)
+    }
+
+    // Shared y-scale plumbing for the dual-axis chart.
+
+    /// Top of the glucose (left) axis — at least 300, rounded above the day's max.
+    private var gTop: Double {
+        let maxG = readings.map(\.valueMgdL).max() ?? 0
+        return max(300, (maxG / 50).rounded(.up) * 50)
+    }
+    /// Top of the heart-rate (right) axis — at least 160, rounded above the max.
+    private var hrTop: Double {
+        let maxHR = heartRate.map(\.bpm).max() ?? 0
+        return max(160, (maxHR / 20).rounded(.up) * 20)
+    }
+    /// Factor mapping bpm into the glucose y-domain so both series share one scale.
+    private var hrScale: Double { gTop / hrTop }
+    /// Trailing-axis tick positions (in the plotted glucose domain) for ~5 evenly
+    /// spaced bpm gridlines; the axis relabels each back to bpm.
+    private var hrAxisPlottedValues: [Double] {
+        stride(from: 0, through: hrTop, by: max(hrTop / 4, 1)).map { $0 * hrScale }
     }
 
     @ViewBuilder private var impactCard: some View {
