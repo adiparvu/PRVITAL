@@ -519,7 +519,8 @@ struct DashboardView: View {
                 recentMgdL: recentMgdLForLesson(),
                 targetLow: thresholds.targetLower,
                 targetHigh: thresholds.targetUpper,
-                hadRecentMeal: hadRecentMealForLesson()),
+                hadRecentMeal: hadRecentMealForLesson(),
+                dawnRiseLikely: dawnRiseLikelyForLesson()),
            let article = LearnLibrary.articles.first(where: { $0.id == lesson.articleID }) {
             NavigationLink {
                 ArticleDetailView(article: article)
@@ -559,6 +560,7 @@ struct DashboardView: View {
         switch situation {
         case .recentLow:    return "Because you had a low earlier"
         case .postMealHigh: return "A high after eating — a carb refresher can help"
+        case .dawnRise:     return "A morning rise — this may be why"
         case .recentHigh:   return "Because you had a high earlier"
         case .steady:       return "You've been steady — here's why that matters"
         }
@@ -576,6 +578,15 @@ struct DashboardView: View {
     private func hadRecentMealForLesson() -> Bool {
         let cutoff = Date().addingTimeInterval(-3 * 3600)
         return carbs.contains { $0.timestamp >= cutoff }
+    }
+
+    /// True in the early-morning window when the user has an established dawn
+    /// pattern — so a pre-breakfast high is attributed to dawn rather than a
+    /// generic high. Uses the same detector as Analize over the 21-day window.
+    private func dawnRiseLikelyForLesson() -> Bool {
+        let hour = Calendar.current.component(.hour, from: Date())
+        guard (3..<10).contains(hour) else { return false }
+        return DawnPhenomenonDetector.analyze(readings)?.isPresent == true
     }
 
     /// The top-right range picker (3h / 6h / 12h / 24h / custom).

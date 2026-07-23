@@ -55,4 +55,31 @@ final class ContextualLessonTests: XCTestCase {
                                            hadRecentMeal: true)
         XCTAssertEqual(lesson?.situation, .recentLow)
     }
+
+    func testMorningHighWithDawnPatternPointsToDawn() {
+        // No meal yet, a high, and a dawn pattern is present → the dawn article.
+        let lesson = ContextualLesson.make(recentMgdL: [140, 195],
+                                           targetLow: 70, targetHigh: 180,
+                                           hadRecentMeal: false,
+                                           dawnRiseLikely: true)
+        XCTAssertEqual(lesson?.situation, .dawnRise)
+        XCTAssertEqual(lesson?.articleID, "dawn-phenomenon")
+    }
+
+    func testAMealOutranksDawnForAMorningHigh() {
+        // If you did eat, attribute the high to carbs rather than dawn.
+        let lesson = ContextualLesson.make(recentMgdL: [140, 195],
+                                           targetLow: 70, targetHigh: 180,
+                                           hadRecentMeal: true,
+                                           dawnRiseLikely: true)
+        XCTAssertEqual(lesson?.situation, .postMealHigh)
+    }
+
+    func testHighWithoutDawnOrMealStaysGeneric() {
+        let lesson = ContextualLesson.make(recentMgdL: [140, 195],
+                                           targetLow: 70, targetHigh: 180,
+                                           hadRecentMeal: false,
+                                           dawnRiseLikely: false)
+        XCTAssertEqual(lesson?.situation, .recentHigh)
+    }
 }

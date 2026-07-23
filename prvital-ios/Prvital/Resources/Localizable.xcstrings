@@ -93291,6 +93291,65 @@
           }
         }
       }
+    },
+    "A morning rise — this may be why": {
+      "extractionState": "manual",
+      "localizations": {
+        "ro": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "O creștere de dimineață — poate din acest motiv"
+          }
+        },
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Ein morgendlicher Anstieg – das könnte der Grund sein"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Una subida matutina: puede ser por esto"
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Une hausse matinale — voici peut-être pourquoi"
+          }
+        },
+        "it": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Un aumento mattutino — forse è per questo"
+          }
+        },
+        "nl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Een ochtendstijging — dit kan de reden zijn"
+          }
+        },
+        "pl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Poranny wzrost — to może być przyczyna"
+          }
+        },
+        "pt": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Uma subida matinal — pode ser por isto"
+          }
+        },
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Утренний подъём — возможно, поэтому"
+          }
+        }
+      }
     }
   },
   "version": "1.0"
