@@ -48,111 +48,45 @@ struct StatisticsView: View {
 
     private var unit: GlucoseUnit { env.preferences.glucoseUnit }
     private var thresholds: GlucoseThresholds { env.preferences.thresholds }
-    private var range: ClosedRange<Date> { interval.dateRange() }
 
-    // MARK: Filtered data
+    // MARK: Derived (computed once per data change in `.task`, cached below)
+    //
+    // Previously each of these was a computed property that re-filtered up to a
+    // year of CGM readings (~100k) and re-ran its analyzer on EVERY body render —
+    // and several were read 3–4 times per render (e.g. `stats`, via `hasAnyData`,
+    // `timeInRangeBar` and `statsGrid`). That made the Statistics pane load slowly
+    // and stutter. Now the whole batch is computed once, off the first-paint path,
+    // into `derived`; these thin accessors just read the cached results, so the
+    // body and every card builder stay unchanged.
 
-    private var activeReadings: [GlucoseReading] {
-        glucose.filter { $0.isActive && range.contains($0.timestamp) }
-    }
-    private var filteredInsulin: [InsulinDose] {
-        insulin.filter { range.contains($0.timestamp) }
-    }
-    private var filteredCarbs: [CarbEntry] {
-        carbs.filter { range.contains($0.timestamp) }
-    }
-    private var filteredActivity: [ActivityEntry] {
-        activity.filter { range.contains($0.startTimestamp) }
-    }
+    @State private var derived = StatisticsDerived()
 
-    /// The enriched summary for the current window.
-    private var stats: PeriodStatistics {
-        let base = StatisticsEngine.glucose(activeReadings, thresholds: thresholds)
-        return StatisticsEngine.enrich(
-            base,
-            insulin: filteredInsulin,
-            carbs: filteredCarbs,
-            activity: filteredActivity
-        )
-    }
+    private var stats: PeriodStatistics { derived.stats }
+    private var hasAnyData: Bool { derived.hasAnyData }
+    private var hypoRecovery: HypoRecoveryStats? { derived.hypoRecovery }
+    private var gmiTrend: [GMIPoint] { derived.gmiTrend }
+    private var labResultsInRange: [LabResult] { derived.labResultsInRange }
+    private var latestReconciliation: A1cReconciliation? { derived.latestReconciliation }
+    private var a1cProjection: A1cProjectionResult? { derived.a1cProjection }
+    private var sensorAccuracy: SensorAccuracyResult? { derived.sensorAccuracy }
+    private var tirTrend: [TIRPoint] { derived.tirTrend }
+    private var dataGaps: GapStats? { derived.dataGaps }
+    private var insulinSummary: InsulinSummary? { derived.insulinSummary }
+    private var dailyDays: [DayTIR] { derived.dailyDays }
+    private var overnightStats: PeriodStatistics? { derived.overnightStats }
+    private var carbsByMeal: [MealTypeCarbs] { derived.carbsByMeal }
+    private var periodTIRs: [PeriodTIR] { derived.periodTIRs }
 
-    private var hasAnyData: Bool {
-        stats.hasGlucose
-            || !filteredInsulin.isEmpty
-            || !filteredCarbs.isEmpty
-            || !filteredActivity.isEmpty
-    }
-
-    private var hypoRecovery: HypoRecoveryStats? {
-        HypoRecoveryAnalyzer.analyze(activeReadings, thresholds: thresholds)
-    }
-
-    private var gmiTrend: [GMIPoint] {
-        GMITrend.weekly(activeReadings)
-    }
-
-    /// Real clinic HbA1c results dated within the selected window — plotted over
-    /// the estimated-A1c trend for comparison.
-    private var labResultsInRange: [LabResult] {
-        labResults.filter { range.contains($0.timestamp) }
-    }
-
-    /// Reconciliation of the most recent lab A1c against the CGM estimate over
-    /// the ~90 days it reflects. Uses the full reading history (not the selected
-    /// interval) so the comparison window is always the clinically correct one.
-    private var latestReconciliation: A1cReconciliation? {
-        guard let latest = labResults.first else { return nil } // sorted newest-first
-        return A1cReconciler.reconcile(lab: latest, readings: glucose, thresholds: thresholds)
-    }
-
-    /// Least-squares trajectory of the weekly GMI series, kept only when the
-    /// fit is confident (enough weeks, small residuals) — a shaky trend line
-    /// is worse than none.
-    private var a1cProjection: A1cProjectionResult? {
-        guard let projection = A1cProjection.project(gmiTrend),
-              projection.confidence == .ok else { return nil }
-        return projection
-    }
-
-    /// Personal sensor-vs-meter agreement for the window. Fed *all* readings in
-    /// range — including conflict-superseded ones — because a finger stick that
-    /// lost conflict resolution to a near-simultaneous sensor value is exactly
-    /// the comparison pair the analyzer needs.
-    private var sensorAccuracy: SensorAccuracyResult? {
-        SensorAccuracyAnalyzer.analyze(glucose.filter { range.contains($0.timestamp) })
-    }
-
-    private var tirTrend: [TIRPoint] {
-        TIRTrend.weekly(activeReadings, thresholds: thresholds)
-    }
-
-    private var dataGaps: GapStats? {
-        DataGapDetector.analyze(activeReadings)
-    }
-
-    private var insulinSummary: InsulinSummary? {
-        InsulinAnalyzer.summary(filteredInsulin)
-    }
-
-    private var dailyDays: [DayTIR] {
-        DailyBreakdown.perDay(activeReadings, thresholds: thresholds)
-    }
-
-    private var overnightStats: PeriodStatistics? {
-        OvernightStability.analyze(activeReadings, thresholds: thresholds)
-    }
-
-    private var carbsByMeal: [MealTypeCarbs] {
-        CarbDistribution.byMealType(filteredCarbs)
-    }
-
-    /// Time-in-range split across the four parts of the day, each against its
-    /// (optionally per-period) target.
-    private var periodTIRs: [PeriodTIR] {
-        PeriodTIRAnalyzer.breakdown(
-            activeReadings,
+    /// Cheap, Equatable fingerprint — reruns the rebuild only when data is
+    /// added/removed or the interval switches, not on ordinary re-renders.
+    private var signature: StatisticsSignature {
+        StatisticsSignature(
+            interval: interval,
+            glucose: glucose.count, insulin: insulin.count, carbs: carbs.count,
+            activity: activity.count, labs: labResults.count,
+            newest: glucose.first?.timestamp,
             thresholds: thresholds,
-            targets: env.preferences.periodTIRTargets,
+            periodTargets: env.preferences.periodTIRTargets,
             globalTargetPercent: env.preferences.glucoseGoals.targetTIRPercent)
     }
 
@@ -166,7 +100,9 @@ struct StatisticsView: View {
     var body: some View {
         ScrollView {
             VStack(spacing: 20) {
-                if hasAnyData {
+                if !derived.ready {
+                    loadingPlaceholder
+                } else if hasAnyData {
                     if stats.hasGlucose { timeInRangeBar.appearTransition(delay: 0) }
                     statsGrid.appearTransition(delay: 0.06)
                     if let insulin = insulinSummary { insulinBalanceCard(insulin).appearTransition(delay: 0.12) }
@@ -198,6 +134,25 @@ struct StatisticsView: View {
         }
         .background(Theme.background)
         .sheet(isPresented: $showingLogLab) { LogLabA1cSheet() }
+        .task(id: signature) {
+            await derived.rebuild(
+                glucose: glucose, insulin: insulin, carbs: carbs, activity: activity,
+                labResults: labResults, range: interval.dateRange(), thresholds: thresholds,
+                periodTargets: env.preferences.periodTIRTargets,
+                globalTargetPercent: env.preferences.glucoseGoals.targetTIRPercent)
+        }
+    }
+
+    private var loadingPlaceholder: some View {
+        VStack(spacing: 16) {
+            ProgressView()
+                .controlSize(.large)
+            Text("Crunching your numbers…")
+                .font(.subheadline)
+                .foregroundStyle(Theme.textSecondary)
+        }
+        .frame(maxWidth: .infinity, minHeight: 320)
+        .glassCard()
     }
 
     // MARK: Carbs by meal
@@ -913,6 +868,111 @@ struct LogLabA1cSheet: View {
         try? modelContext.save()
         Haptics.play(.success)
         dismiss()
+    }
+}
+
+// MARK: - Derived (computed once per data change, off the render path)
+
+/// A cheap fingerprint of the Statistics inputs. `.task(id:)` reruns the rebuild
+/// only when this changes, so scrolls/animations/sheet toggles never recompute.
+struct StatisticsSignature: Equatable {
+    let interval: InsightsInterval
+    let glucose: Int
+    let insulin: Int
+    let carbs: Int
+    let activity: Int
+    let labs: Int
+    let newest: Date?
+    let thresholds: GlucoseThresholds
+    let periodTargets: PeriodTIRTargets
+    let globalTargetPercent: Double
+}
+
+/// Holds the prepared statistics for the current window. Rebuilt once per data
+/// change on the main actor (SwiftData objects are main-actor bound), with a
+/// yield after the initial filter so the pane can paint its loading state before
+/// the heavier analyzers run. Behaviour-identical to the former per-render
+/// computed properties — only *when* and *how often* they run has changed.
+@MainActor
+@Observable
+final class StatisticsDerived {
+    var ready = false
+    var stats = PeriodStatistics()
+    var hasAnyData = false
+    var hypoRecovery: HypoRecoveryStats?
+    var gmiTrend: [GMIPoint] = []
+    var labResultsInRange: [LabResult] = []
+    var latestReconciliation: A1cReconciliation?
+    var a1cProjection: A1cProjectionResult?
+    var sensorAccuracy: SensorAccuracyResult?
+    var tirTrend: [TIRPoint] = []
+    var dataGaps: GapStats?
+    var insulinSummary: InsulinSummary?
+    var dailyDays: [DayTIR] = []
+    var overnightStats: PeriodStatistics?
+    var carbsByMeal: [MealTypeCarbs] = []
+    var periodTIRs: [PeriodTIR] = []
+
+    func rebuild(
+        glucose: [GlucoseReading], insulin: [InsulinDose], carbs: [CarbEntry],
+        activity: [ActivityEntry], labResults: [LabResult], range: ClosedRange<Date>,
+        thresholds: GlucoseThresholds, periodTargets: PeriodTIRTargets,
+        globalTargetPercent: Double
+    ) async {
+        let active = glucose.filter { $0.isActive && range.contains($0.timestamp) }
+        let fInsulin = insulin.filter { range.contains($0.timestamp) }
+        let fCarbs = carbs.filter { range.contains($0.timestamp) }
+        let fActivity = activity.filter { range.contains($0.startTimestamp) }
+        // Sensor accuracy is fed *all* readings in range (incl. conflict-superseded
+        // ones), matching the previous behaviour.
+        let inRangeGlucose = glucose.filter { range.contains($0.timestamp) }
+        let labsInRange = labResults.filter { range.contains($0.timestamp) }
+
+        // Let the loading placeholder paint before the heavier analyzers run.
+        await Task.yield()
+
+        let base = StatisticsEngine.glucose(active, thresholds: thresholds)
+        let summary = StatisticsEngine.enrich(base, insulin: fInsulin, carbs: fCarbs, activity: fActivity)
+        let anyData = summary.hasGlucose || !fInsulin.isEmpty || !fCarbs.isEmpty || !fActivity.isEmpty
+
+        let gmi = GMITrend.weekly(active)
+        // Reconciliation uses the full reading history (not the window) so its
+        // ~90-day comparison is always the clinically correct one.
+        let recon: A1cReconciliation? = labResults.first.flatMap {
+            A1cReconciler.reconcile(lab: $0, readings: glucose, thresholds: thresholds)
+        }
+        let projection: A1cProjectionResult? = {
+            guard let p = A1cProjection.project(gmi), p.confidence == .ok else { return nil }
+            return p
+        }()
+        let sensor = SensorAccuracyAnalyzer.analyze(inRangeGlucose)
+        let tir = TIRTrend.weekly(active, thresholds: thresholds)
+        let gaps = DataGapDetector.analyze(active)
+        let insulinSum = InsulinAnalyzer.summary(fInsulin)
+        let days = DailyBreakdown.perDay(active, thresholds: thresholds)
+        let overnight = OvernightStability.analyze(active, thresholds: thresholds)
+        let byMeal = CarbDistribution.byMealType(fCarbs)
+        let hypo = HypoRecoveryAnalyzer.analyze(active, thresholds: thresholds)
+        let pTIRs = PeriodTIRAnalyzer.breakdown(
+            active, thresholds: thresholds,
+            targets: periodTargets, globalTargetPercent: globalTargetPercent)
+
+        self.stats = summary
+        self.hasAnyData = anyData
+        self.hypoRecovery = hypo
+        self.gmiTrend = gmi
+        self.labResultsInRange = labsInRange
+        self.latestReconciliation = recon
+        self.a1cProjection = projection
+        self.sensorAccuracy = sensor
+        self.tirTrend = tir
+        self.dataGaps = gaps
+        self.insulinSummary = insulinSum
+        self.dailyDays = days
+        self.overnightStats = overnight
+        self.carbsByMeal = byMeal
+        self.periodTIRs = pTIRs
+        self.ready = true
     }
 }
 

@@ -48,23 +48,24 @@ struct InsightsView: View {
     /// The last 30 days — enough history for the analyzers, recent enough to act on.
     private var feedRange: ClosedRange<Date> { InsightsInterval.month.dateRange() }
 
-    /// The ranked, capped feed. Pure aggregation lives in `InsightFeed`; the view
-    /// only filters to the window and renders.
-    private var insightCards: [InsightCard] {
-        InsightFeed.build(
-            readings: glucose.filter { $0.isActive && feedRange.contains($0.timestamp) },
-            insulin: insulin.filter { feedRange.contains($0.timestamp) },
-            carbs: carbs.filter { feedRange.contains($0.timestamp) },
-            activity: activity.filter { feedRange.contains($0.startTimestamp) },
-            thresholds: env.preferences.thresholds
-        )
+    /// The ranked feed, computed once per data change (off the render path) into
+    /// `feed` — not on every parent re-render. Running the six analyzers over a
+    /// 45-day window on each render was part of what made the tab feel heavy.
+    @State private var feed = InsightsFeedModel()
+
+    private var feedSignature: InsightsFeedSignature {
+        InsightsFeedSignature(
+            glucose: glucose.count, insulin: insulin.count,
+            carbs: carbs.count, activity: activity.count,
+            newest: glucose.first?.timestamp,
+            thresholds: env.preferences.thresholds)
     }
 
     var body: some View {
         NavigationStack {
             VStack(spacing: 0) {
-                if !feedDismissed, !insightCards.isEmpty {
-                    InsightsFeedSection(cards: insightCards) {
+                if !feedDismissed, !feed.cards.isEmpty {
+                    InsightsFeedSection(cards: feed.cards) {
                         withAnimation(.snappy) { feedDismissed = true }
                         Haptics.play(.light)
                     }
@@ -82,6 +83,11 @@ struct InsightsView: View {
             }
             .prvitalTabBackground()
             .navigationTitle("Insights")
+            .task(id: feedSignature) {
+                await feed.rebuild(
+                    glucose: glucose, insulin: insulin, carbs: carbs, activity: activity,
+                    range: feedRange, thresholds: env.preferences.thresholds)
+            }
             .toolbar {
                 // The view (Charts/Statistics/AGP) and the period (Day/Week/Month/
                 // Year) both live in ONE top-left menu instead of two segmented bars
@@ -342,6 +348,39 @@ enum InsightsInterval: String, CaseIterable, Identifiable {
         let currentStart = dateRange(now: now).lowerBound
         let previousStart = dateRange(now: currentStart).lowerBound
         return min(previousStart, currentStart)...currentStart
+    }
+}
+
+// MARK: - Feed model (computed once per data change, off the render path)
+
+struct InsightsFeedSignature: Equatable {
+    let glucose: Int
+    let insulin: Int
+    let carbs: Int
+    let activity: Int
+    let newest: Date?
+    let thresholds: GlucoseThresholds
+}
+
+/// Runs the InsightFeed analyzers once per data change into `cards`, on the main
+/// actor (SwiftData objects are main-actor bound), yielding first so the tab can
+/// paint before the analyzers run.
+@MainActor
+@Observable
+final class InsightsFeedModel {
+    var cards: [InsightCard] = []
+
+    func rebuild(
+        glucose: [GlucoseReading], insulin: [InsulinDose], carbs: [CarbEntry],
+        activity: [ActivityEntry], range: ClosedRange<Date>, thresholds: GlucoseThresholds
+    ) async {
+        let readings = glucose.filter { $0.isActive && range.contains($0.timestamp) }
+        let ins = insulin.filter { range.contains($0.timestamp) }
+        let crb = carbs.filter { range.contains($0.timestamp) }
+        let act = activity.filter { range.contains($0.startTimestamp) }
+        await Task.yield()
+        self.cards = InsightFeed.build(readings: readings, insulin: ins, carbs: crb,
+                                       activity: act, thresholds: thresholds)
     }
 }
 
