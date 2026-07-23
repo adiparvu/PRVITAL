@@ -7,6 +7,13 @@ struct LearnView: View {
     private let articles = LearnLibrary.articles
     private let recipes = LearnLibrary.recipes
 
+    /// Reading progress, persisted on-device as a tab-joined list of article IDs.
+    /// `ArticleDetailView` writes to the same key, so returning here re-renders the
+    /// checkmarks and the count without any manual notification.
+    @AppStorage("learn.readArticleIDs") private var readStore: String = ""
+    private var progress: LearnProgress { LearnProgress.decode(readStore) }
+    private var articleIDs: [String] { articles.map(\.id) }
+
     var body: some View {
         NavigationStack {
             ScrollView {
@@ -76,18 +83,37 @@ struct LearnView: View {
     }
 
     private var articlesSection: some View {
-        SectionCard("Encyclopedia", systemImage: "book.fill") {
+        SectionCard("Encyclopedia", systemImage: "book.fill", accessory: encyclopediaAccessory) {
             VStack(spacing: 0) {
+                if !articles.isEmpty {
+                    LearnProgressBar(fraction: progress.fraction(among: articleIDs))
+                        .padding(.bottom, 12)
+                }
                 ForEach(Array(articles.enumerated()), id: \.element.id) { index, article in
-                    NavigationLink { ArticleDetailView(article: article) } label: { articleRow(article) }
-                        .buttonStyle(PressableCardStyle())
+                    NavigationLink { ArticleDetailView(article: article) } label: {
+                        articleRow(article, isRead: progress.isRead(article.id))
+                    }
+                    .buttonStyle(PressableCardStyle())
                     if index < articles.count - 1 { Divider().overlay(Theme.hairline).padding(.leading, 44) }
                 }
             }
         }
     }
 
-    private func articleRow(_ article: EncyclopediaArticle) -> some View {
+    /// A compact "read / total" tally in the section header — the visible cue that
+    /// the encyclopedia is a library to work through, not just a flat list.
+    private var encyclopediaAccessory: AnyView {
+        let read = progress.readCount(among: articleIDs)
+        return AnyView(
+            Text(verbatim: "\(read)/\(articles.count)")
+                .font(.caption.weight(.semibold))
+                .foregroundStyle(read == articles.count && !articles.isEmpty ? Theme.zoneInRange : Theme.textSecondary)
+                .monospacedDigit()
+                .accessibilityLabel(Text("\(read) of \(articles.count) read"))
+        )
+    }
+
+    private func articleRow(_ article: EncyclopediaArticle, isRead: Bool) -> some View {
         HStack(spacing: 12) {
             Image(systemName: article.symbol)
                 .font(.title3)
@@ -99,6 +125,12 @@ struct LearnView: View {
                     .lineLimit(2)
             }
             Spacer()
+            if isRead {
+                Image(systemName: "checkmark.circle.fill")
+                    .font(.caption)
+                    .foregroundStyle(Theme.zoneInRange)
+                    .accessibilityLabel(Text("Read"))
+            }
             Image(systemName: "chevron.right").font(.caption).foregroundStyle(Theme.textTertiary)
         }
         .padding(.vertical, 10)
@@ -209,6 +241,10 @@ struct RuleDetailView: View {
 struct ArticleDetailView: View {
     let article: EncyclopediaArticle
 
+    /// Same key as `LearnView` — opening an article marks it read, and the hub
+    /// reflects it the moment the reader navigates back.
+    @AppStorage("learn.readArticleIDs") private var readStore: String = ""
+
     var body: some View {
         ScrollView {
             VStack(alignment: .leading, spacing: 18) {
@@ -240,6 +276,16 @@ struct ArticleDetailView: View {
         .background(Theme.background)
         .navigationTitle(LocalizedStringKey(article.title))
         .navigationBarTitleDisplayMode(.inline)
+        .task { markRead() }
+    }
+
+    /// Records this article as read the first time it's opened. Cheap and idempotent:
+    /// only writes when the ID isn't already stored.
+    private func markRead() {
+        var progress = LearnProgress.decode(readStore)
+        guard !progress.isRead(article.id) else { return }
+        progress.markRead(article.id)
+        readStore = progress.encoded()
     }
 
     private var sourcesCard: some View {
@@ -372,6 +418,27 @@ struct LearnStepRow: View {
                 .fixedSize(horizontal: false, vertical: true)
             Spacer(minLength: 0)
         }
+    }
+}
+
+/// A slim capsule progress bar for the encyclopedia — the "how far through the
+/// library am I" cue. Purely decorative (the header count carries the number for
+/// VoiceOver), animated so it slides forward when a new article is marked read.
+private struct LearnProgressBar: View {
+    let fraction: Double
+
+    var body: some View {
+        GeometryReader { geo in
+            ZStack(alignment: .leading) {
+                Capsule().fill(Theme.accentSoft)
+                Capsule()
+                    .fill(Theme.accent)
+                    .frame(width: max(0, min(1, fraction)) * geo.size.width)
+            }
+        }
+        .frame(height: 6)
+        .animation(.snappy, value: fraction)
+        .accessibilityHidden(true)
     }
 }
 
