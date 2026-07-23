@@ -34,6 +34,11 @@ struct GlucoseSnapshot: Codable, Equatable, Sendable {
     var forecastMgdL: Double?
     /// When the projected reading lands (last reading time + horizon).
     var forecastAt: Date?
+    /// The honest plausible range around `forecastMgdL` (from `GlucoseForecast`), so
+    /// a chart can fan a faint uncertainty cone out to the horizon. Nil when there's
+    /// no forecast.
+    var forecastLowMgdL: Double?
+    var forecastHighMgdL: Double?
 
     var lastInsulinText: String?
     var lastMealText: String?

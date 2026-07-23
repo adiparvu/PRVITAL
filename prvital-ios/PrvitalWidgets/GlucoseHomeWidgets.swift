@@ -166,7 +166,7 @@ private struct WidgetGlucoseLarge: View {
                 }
             }
 
-            WidgetGlucoseChart(snapshot: snapshot)
+            WidgetGlucoseChart(snapshot: snapshot, showsForecastBand: true)
                 .frame(height: 110)
 
             // The forecast where you glance: an imminent low/high warning, shown
@@ -289,11 +289,19 @@ private struct WidgetOnBoardStrip: View {
 
 private struct WidgetGlucoseChart: View {
     let snapshot: GlucoseSnapshot
+    /// Only the large family has the horizontal room to render the forecast's
+    /// uncertainty cone; the medium chart is too narrow for it to read as anything
+    /// but noise, so it shows just the central dashed tail.
+    var showsForecastBand: Bool = false
     private var zoneColor: Color { Color(hex: snapshot.zoneColorHex) }
 
     private var yDomain: ClosedRange<Double> {
         var values = snapshot.points.map(\.mgdL) + [snapshot.targetLowerMgdL, snapshot.targetUpperMgdL]
         if let forecast = snapshot.forecastMgdL { values.append(forecast) }
+        if showsForecastBand {
+            if let low = snapshot.forecastLowMgdL { values.append(low) }
+            if let high = snapshot.forecastHighMgdL { values.append(high) }
+        }
         guard let lo = values.min(), let hi = values.max(), hi > lo else { return 40...200 }
         let pad = max((hi - lo) * 0.12, 8)
         return (lo - pad)...(hi + pad)
@@ -379,6 +387,40 @@ private struct WidgetGlucoseChart: View {
                     )
                     .foregroundStyle(zoneColor.opacity(0.6))
                     .symbolSize(20)
+
+                    // The honest uncertainty cone: faint bounds fanning from the
+                    // last reading (zero spread) out to the projected low/high at
+                    // the horizon. Large family only — see showsForecastBand.
+                    if showsForecastBand,
+                       let low = snapshot.forecastLowMgdL,
+                       let high = snapshot.forecastHighMgdL {
+                        ForEach([
+                            GlucoseSnapshot.Point(date: last.date, mgdL: last.mgdL),
+                            GlucoseSnapshot.Point(date: forecastAt, mgdL: low)
+                        ]) { point in
+                            LineMark(
+                                x: .value("Time", point.date),
+                                y: .value("Glucose", point.mgdL),
+                                series: .value("Series", "forecastLow")
+                            )
+                            .interpolationMethod(.linear)
+                            .foregroundStyle(zoneColor.opacity(0.28))
+                            .lineStyle(StrokeStyle(lineWidth: 1, dash: [2, 3]))
+                        }
+                        ForEach([
+                            GlucoseSnapshot.Point(date: last.date, mgdL: last.mgdL),
+                            GlucoseSnapshot.Point(date: forecastAt, mgdL: high)
+                        ]) { point in
+                            LineMark(
+                                x: .value("Time", point.date),
+                                y: .value("Glucose", point.mgdL),
+                                series: .value("Series", "forecastHigh")
+                            )
+                            .interpolationMethod(.linear)
+                            .foregroundStyle(zoneColor.opacity(0.28))
+                            .lineStyle(StrokeStyle(lineWidth: 1, dash: [2, 3]))
+                        }
+                    }
                 }
             }
             .chartYScale(domain: yDomain)

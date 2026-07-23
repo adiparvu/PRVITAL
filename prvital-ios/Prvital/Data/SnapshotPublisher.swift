@@ -84,6 +84,8 @@ final class SnapshotPublisher {
                 if abs(forecast.projectedMgdL - current.valueMgdL) >= 5 {
                     snapshot.forecastMgdL = forecast.projectedMgdL
                     snapshot.forecastAt = current.timestamp.addingTimeInterval(Double(horizonMinutes) * 60)
+                    snapshot.forecastLowMgdL = forecast.lowMgdL
+                    snapshot.forecastHighMgdL = forecast.highMgdL
                 }
             }
         }
