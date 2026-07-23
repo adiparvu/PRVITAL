@@ -20,7 +20,7 @@ struct HealthHubView: View {
                 if model.cards.isEmpty && model.loaded {
                     EmptyStateView(systemImage: "heart.text.square",
                                    title: "No Health data yet",
-                                   message: "Connect Apple Health in Settings → Sources and grant access, then your metrics appear here.")
+                                   message: "Allow access when Apple Health asks, then your metrics appear. Many — resting heart rate, energy, exercise, sleep — are recorded by an Apple Watch; steps come from iPhone.")
                         .glassCard()
                 } else {
                     LazyVGrid(columns: columns, spacing: 12) {
@@ -33,8 +33,19 @@ struct HealthHubView: View {
         .prvitalScreenBackground()
         .navigationTitle("Health")
         .navigationBarTitleDisplayMode(.inline)
-        .task { await model.load(env.healthKit) }
-        .refreshable { await model.load(env.healthKit) }
+        .task {
+            // Ask for the expanded read types (steps, sleep, HRV, energy, …). If
+            // Apple Health was connected before these were added, they're still
+            // "not determined", so nothing loads until we request them here — which
+            // is why iOS never re-prompted. This triggers the sheet for the new
+            // types, then loads.
+            try? await env.healthKit.requestAuthorization()
+            await model.load(env.healthKit)
+        }
+        .refreshable {
+            try? await env.healthKit.requestAuthorization()
+            await model.load(env.healthKit)
+        }
     }
 }
 
