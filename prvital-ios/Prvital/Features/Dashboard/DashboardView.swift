@@ -110,6 +110,8 @@ struct DashboardView: View {
                     }
                     trendSection(summary: summary, thresholds: thresholds, unit: unit)
                         .appearTransition(delay: 0.06)
+                    contextualLessonCard(thresholds: thresholds)
+                        .appearTransition(delay: 0.08)
                     if todayStats.hasGlucose {
                         todayCard(todayStats,
                                   forecast: tirForecast(thresholds: thresholds),
@@ -506,6 +508,65 @@ struct DashboardView: View {
             let start = Date().addingTimeInterval(-trendRange.hours * 3600)
             return active.filter { $0.timestamp >= start }
         }
+    }
+
+    /// A contextual lesson: the Panou points you to the encyclopedia article that
+    /// fits what your glucose just did — the connective tissue between the data and
+    /// Învață. Hidden when there's nothing recent to teach from.
+    @ViewBuilder
+    private func contextualLessonCard(thresholds: GlucoseThresholds) -> some View {
+        if let lesson = ContextualLesson.make(
+                recentMgdL: recentMgdLForLesson(),
+                targetLow: thresholds.targetLower,
+                targetHigh: thresholds.targetUpper),
+           let article = LearnLibrary.articles.first(where: { $0.id == lesson.articleID }) {
+            NavigationLink {
+                ArticleDetailView(article: article)
+            } label: {
+                HStack(spacing: 14) {
+                    Image(systemName: article.symbol)
+                        .font(.title2)
+                        .foregroundStyle(Theme.accent)
+                        .frame(width: 46, height: 46)
+                        .background(Theme.accentSoft, in: .circle)
+                    VStack(alignment: .leading, spacing: 3) {
+                        Text(lessonReason(lesson.situation))
+                            .font(.caption2.weight(.semibold))
+                            .foregroundStyle(Theme.accent)
+                            .textCase(.uppercase)
+                        Text(LocalizedStringKey(article.title))
+                            .font(.headline)
+                            .foregroundStyle(Theme.textPrimary)
+                            .lineLimit(1)
+                        Text(LocalizedStringKey(article.summary))
+                            .font(.caption)
+                            .foregroundStyle(Theme.textSecondary)
+                            .lineLimit(2)
+                    }
+                    Spacer(minLength: 8)
+                    Image(systemName: "chevron.right").font(.subheadline).foregroundStyle(Theme.textTertiary)
+                }
+                .frame(maxWidth: .infinity, alignment: .leading)
+                .glassCard(cornerRadius: 20, padding: 14)
+                .contentShape(.rect)
+            }
+            .buttonStyle(PressableCardStyle())
+        }
+    }
+
+    private func lessonReason(_ situation: ContextualLesson.Situation) -> LocalizedStringKey {
+        switch situation {
+        case .recentLow:  return "Because you had a low earlier"
+        case .recentHigh: return "Because you had a high earlier"
+        case .steady:     return "You've been steady — here's why that matters"
+        }
+    }
+
+    /// The active glucose values (mg/dL) from the last six hours — the window the
+    /// contextual lesson reasons over.
+    private func recentMgdLForLesson() -> [Double] {
+        let cutoff = Date().addingTimeInterval(-6 * 3600)
+        return readings.filter { $0.isActive && $0.timestamp >= cutoff }.map(\.valueMgdL)
     }
 
     /// The top-right range picker (3h / 6h / 12h / 24h / custom).
