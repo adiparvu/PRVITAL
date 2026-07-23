@@ -18,6 +18,9 @@ struct GlucoseActivityAttributes: ActivityAttributes, Sendable {
         var updatedAt: Date
         var isStale: Bool
         var predictionText: String?
+        /// Insulin- and carbs-on-board, pre-formatted (e.g. "1.2 U", "45 g").
+        var iobText: String?
+        var cobText: String?
 
         // Extra context the Dynamic Island uses for its live mini-chart and its
         // out-of-range pulse. The Lock Screen banner ignores these.

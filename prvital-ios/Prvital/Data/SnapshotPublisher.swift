@@ -79,6 +79,20 @@ final class SnapshotPublisher {
         if let meal = summary.lastMeal {
             snapshot.lastMealText = String(localized: "\(meal.grams.formatted()) g · \(meal.mealType.label)")
         }
+
+        // Insulin- and carbs-on-board for the Live Activity / Dynamic Island.
+        let bolus = preferences.bolusParameters
+        if bolus.isValid {
+            let iob = InsulinMath.activeInsulin(doses: recentInsulinDoses(now: now), at: now, parameters: bolus)
+            if iob >= 0.05 {
+                snapshot.iobText = String(localized: "\(iob.formatted(.number.precision(.fractionLength(1)))) U")
+            }
+        }
+        let cob = CarbMath.carbsOnBoard(entries: recentCarbEntries(now: now), at: now)
+        if cob >= 0.5 {
+            snapshot.cobText = String(localized: "\(cob.formatted(.number.precision(.fractionLength(0)))) g")
+        }
+
         snapshot.recentEntries = Self.recentLines(summary: summary, unit: unit, now: now)
 
         // Reload the widgets only when the reading actually changed. Without any
@@ -192,6 +206,24 @@ final class SnapshotPublisher {
             sortBy: [SortDescriptor(\.startTimestamp, order: .reverse)])
         descriptor.fetchLimit = 1
         return (try? context.fetch(descriptor))?.first
+    }
+
+    /// Insulin doses within one duration-of-action of now — the set that can still
+    /// contribute insulin-on-board.
+    private func recentInsulinDoses(now: Date) -> [InsulinDose] {
+        let cutoff = now.addingTimeInterval(-preferences.bolusParameters.durationHours * 3600)
+        let descriptor = FetchDescriptor<InsulinDose>(
+            predicate: #Predicate { $0.timestamp >= cutoff && $0.timestamp <= now })
+        return (try? context.fetch(descriptor)) ?? []
+    }
+
+    /// Carb entries within the last few hours — the set that can still contribute
+    /// carbs-on-board.
+    private func recentCarbEntries(now: Date) -> [CarbEntry] {
+        let cutoff = now.addingTimeInterval(-4 * 3600)
+        let descriptor = FetchDescriptor<CarbEntry>(
+            predicate: #Predicate { $0.timestamp >= cutoff && $0.timestamp <= now })
+        return (try? context.fetch(descriptor)) ?? []
     }
 
     /// Localized imminent-projection text, reusing the dashboard's catalog keys.

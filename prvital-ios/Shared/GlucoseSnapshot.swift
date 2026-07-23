@@ -32,6 +32,10 @@ struct GlucoseSnapshot: Codable, Equatable, Sendable {
     var nextReminderText: String?
     /// A localized "Low/High predicted in ~N min" when a low or high is imminent.
     var predictionText: String?
+    /// Insulin- and carbs-on-board, pre-formatted (e.g. "1.2 U", "45 g"), for the
+    /// Live Activity / Dynamic Island. Nil when there's none (or the calculator is off).
+    var iobText: String?
+    var cobText: String?
     var recentEntries: [String] = []
 
     /// The honest "no data" state: an em-dash, neutral grey, already stale. This is

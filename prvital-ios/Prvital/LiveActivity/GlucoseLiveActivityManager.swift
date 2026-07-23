@@ -38,6 +38,8 @@ final class GlucoseLiveActivityManager {
             updatedAt: snapshot.updatedAt,
             isStale: snapshot.isStale,
             predictionText: snapshot.predictionText,
+            iobText: snapshot.iobText,
+            cobText: snapshot.cobText,
             targetLowerMgdL: snapshot.targetLowerMgdL,
             targetUpperMgdL: snapshot.targetUpperMgdL,
             isOutOfRange: outOfRange,

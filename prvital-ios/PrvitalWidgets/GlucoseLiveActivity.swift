@@ -86,6 +86,19 @@ struct GlucoseLiveActivity: Widget {
                                 Spacer(minLength: 0)
                             }
                         }
+                        if state.iobText != nil || state.cobText != nil {
+                            HStack(spacing: 10) {
+                                if let iob = state.iobText {
+                                    Label(iob, systemImage: "syringe.fill")
+                                        .font(.caption2).foregroundStyle(.secondary).lineLimit(1)
+                                }
+                                if let cob = state.cobText {
+                                    Label(cob, systemImage: "fork.knife")
+                                        .font(.caption2).foregroundStyle(.secondary).lineLimit(1)
+                                }
+                                Spacer(minLength: 0)
+                            }
+                        }
                     }
                     .padding(.horizontal, 6)
                     .animation(.spring(response: 0.4, dampingFraction: 0.85), value: state.mgdL)
@@ -148,6 +161,18 @@ struct GlucoseLiveActivity: Widget {
                     .foregroundStyle(.white.opacity(0.85))
                     .lineLimit(1)
                     .minimumScaleFactor(0.8)
+            }
+            if state.iobText != nil || state.cobText != nil {
+                HStack(spacing: 12) {
+                    if let iob = state.iobText {
+                        Label(iob, systemImage: "syringe.fill")
+                            .font(.caption2).foregroundStyle(.white.opacity(0.85)).lineLimit(1)
+                    }
+                    if let cob = state.cobText {
+                        Label(cob, systemImage: "fork.knife")
+                            .font(.caption2).foregroundStyle(.white.opacity(0.85)).lineLimit(1)
+                    }
+                }
             }
         }
         .frame(maxWidth: .infinity)
