@@ -169,6 +169,18 @@ private struct WidgetGlucoseLarge: View {
             WidgetGlucoseChart(snapshot: snapshot)
                 .frame(height: 110)
 
+            // The forecast where you glance: an imminent low/high warning, shown
+            // only when the app predicts one. Same neutral, triangle-marked
+            // treatment as the Live Activity, so the prediction reads identically
+            // on the Lock Screen banner, the Dynamic Island, and here.
+            if let prediction = snapshot.predictionText {
+                Label(prediction, systemImage: "exclamationmark.triangle.fill")
+                    .font(.caption)
+                    .foregroundStyle(.secondary)
+                    .lineLimit(1)
+                    .minimumScaleFactor(0.85)
+            }
+
             WidgetOnBoardStrip(snapshot: snapshot)
 
             if let reminder = snapshot.nextReminderText {
