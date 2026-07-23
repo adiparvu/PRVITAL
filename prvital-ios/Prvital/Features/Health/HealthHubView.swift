@@ -1,22 +1,38 @@
 import SwiftUI
+import SwiftData
 import Charts
 import Observation
 
 /// The Health hub — an Apple-Health / Revolut-inspired overview of everything the
 /// app reads from Apple Health: three activity rings up top (Move / Exercise /
-/// Steps) and a grid of metric cards (heart, sleep, blood pressure, weight, …),
-/// each with today's value and a 7-day sparkline. Data is loaded off the main
-/// thread from `HealthKitService`; the view only renders the prepared model.
+/// Steps), a "what moves your glucose" panel that correlates steps / sleep / HRV
+/// with daily glucose, and a grid of metric cards (heart, sleep, blood pressure,
+/// weight, …), each with today's value and a 7-day sparkline. Data is loaded off
+/// the main thread from `HealthKitService`; the view only renders the model.
 struct HealthHubView: View {
     @Environment(AppEnvironment.self) private var env
     @State private var model = HealthHubModel()
 
+    // Recent glucose, bounded, used only to correlate daily-average glucose with
+    // the daily Apple Health metrics (steps / sleep / HRV).
+    @Query private var glucose: [GlucoseReading]
+
     private let columns = [GridItem(.flexible(), spacing: 12), GridItem(.flexible(), spacing: 12)]
+
+    init() {
+        let cutoff = Calendar.current.date(byAdding: .day, value: -35, to: Date())
+            ?? Date().addingTimeInterval(-35 * 86_400)
+        _glucose = Query(filter: #Predicate<GlucoseReading> { $0.timestamp >= cutoff },
+                         sort: \.timestamp, order: .reverse)
+    }
 
     var body: some View {
         ScrollView {
             VStack(spacing: 16) {
                 ActivityRingsCard(rings: model.rings)
+                if !model.correlations.isEmpty {
+                    CorrelationsSection(items: model.correlations)
+                }
                 if model.cards.isEmpty && model.loaded {
                     EmptyStateView(systemImage: "heart.text.square",
                                    title: "No Health data yet",
@@ -40,12 +56,30 @@ struct HealthHubView: View {
             // is why iOS never re-prompted. This triggers the sheet for the new
             // types, then loads.
             try? await env.healthKit.requestAuthorization()
-            await model.load(env.healthKit)
+            await model.load(env.healthKit, glucoseDaily: Self.dailyAverageGlucose(glucose))
         }
         .refreshable {
             try? await env.healthKit.requestAuthorization()
-            await model.load(env.healthKit)
+            await model.load(env.healthKit, glucoseDaily: Self.dailyAverageGlucose(glucose))
         }
+    }
+
+    /// Collapses the recent readings into one average per calendar day — the
+    /// series the correlations are computed against.
+    static func dailyAverageGlucose(_ readings: [GlucoseReading]) -> [DailyMetric] {
+        let calendar = Calendar.current
+        var sum: [Date: Double] = [:]
+        var count: [Date: Int] = [:]
+        for reading in readings where reading.isActive {
+            let day = calendar.startOfDay(for: reading.timestamp)
+            sum[day, default: 0] += reading.valueMgdL
+            count[day, default: 0] += 1
+        }
+        return sum.compactMap { day, total -> DailyMetric? in
+            guard let n = count[day], n > 0 else { return nil }
+            return DailyMetric(day: day, value: total / Double(n))
+        }
+        .sorted { $0.day < $1.day }
     }
 }
 
@@ -80,6 +114,7 @@ struct MetricCard: Identifiable {
 final class HealthHubModel {
     var rings: [ActivityRing] = []
     var cards: [MetricCard] = []
+    var correlations: [HealthGlucoseCorrelation] = []
     var loaded = false
 
     // Daily goals (sensible defaults; personalisation comes later).
@@ -87,7 +122,7 @@ final class HealthHubModel {
     private let moveGoal = 500.0      // kcal active energy
     private let exerciseGoal = 30.0   // minutes
 
-    func load(_ hk: HealthKitService) async {
+    func load(_ hk: HealthKitService, glucoseDaily: [DailyMetric]) async {
         async let stepsD = hk.dailyMetric(.steps, days: 7)
         async let energyD = hk.dailyMetric(.activeEnergy, days: 7)
         async let exerciseD = hk.dailyMetric(.exercise, days: 7)
@@ -98,6 +133,10 @@ final class HealthHubModel {
         async let weightD = hk.dailyMetric(.weight, days: 30)
         async let sleepD = hk.sleepHoursByNight(days: 7)
         async let bp = hk.latestBloodPressure()
+        // 30-day series feed the "what moves your glucose" correlations.
+        async let stepsCorrD = hk.dailyMetric(.steps, days: 30)
+        async let hrvCorrD = hk.dailyMetric(.hrv, days: 30)
+        async let sleepCorrD = hk.sleepHoursByNight(days: 30)
 
         let steps = await stepsD, energy = await energyD, exercise = await exerciseD
         let restingHR = await restingHRD, hrv = await hrvD, resp = await respD
@@ -150,6 +189,19 @@ final class HealthHubModel {
             "kg", "", Theme.textSecondary, weight, cumulative: false)
 
         self.cards = cards
+
+        // Correlate each daily Apple Health series with daily-average glucose, and
+        // keep only the associations with enough days and a real signal.
+        let stepsMonth = await stepsCorrD, hrvMonth = await hrvCorrD, sleepMonth = await sleepCorrD
+        var found: [HealthGlucoseCorrelation] = []
+        for candidate in [
+            HealthGlucoseCorrelator.correlate(kind: .steps, health: stepsMonth, glucose: glucoseDaily),
+            HealthGlucoseCorrelator.correlate(kind: .sleep, health: sleepMonth, glucose: glucoseDaily),
+            HealthGlucoseCorrelator.correlate(kind: .hrv, health: hrvMonth, glucose: glucoseDaily),
+        ] {
+            if let c = candidate, c.isMeaningful { found.append(c) }
+        }
+        self.correlations = found
         self.loaded = true
     }
 
@@ -272,5 +324,87 @@ private struct MetricCardView: View {
         } else {
             Color.clear
         }
+    }
+}
+
+// MARK: - "What moves your glucose" correlations
+
+private struct CorrelationsSection: View {
+    let items: [HealthGlucoseCorrelation]
+
+    var body: some View {
+        VStack(alignment: .leading, spacing: 12) {
+            Label("What moves your glucose", systemImage: "sparkles")
+                .font(.headline)
+                .foregroundStyle(Theme.textPrimary)
+            ForEach(items) { CorrelationCardView(correlation: $0) }
+        }
+        .frame(maxWidth: .infinity, alignment: .leading)
+    }
+}
+
+/// One association: a plain sentence, a strength bar, and how many days back it.
+/// Green when the metric and lower glucose move together, amber otherwise.
+private struct CorrelationCardView: View {
+    let correlation: HealthGlucoseCorrelation
+
+    var body: some View {
+        let tint = correlation.favourable ? Theme.zoneInRange : Theme.zoneHigh
+        VStack(alignment: .leading, spacing: 10) {
+            HStack(spacing: 8) {
+                Image(systemName: icon).font(.subheadline.weight(.semibold)).foregroundStyle(tint)
+                Text(title).font(.subheadline.weight(.semibold)).foregroundStyle(Theme.textPrimary)
+                Spacer()
+            }
+            Text(sentence)
+                .font(.callout)
+                .foregroundStyle(Theme.textPrimary)
+                .fixedSize(horizontal: false, vertical: true)
+            GeometryReader { geo in
+                ZStack(alignment: .leading) {
+                    Capsule().fill(Theme.hairline)
+                    Capsule().fill(tint)
+                        .frame(width: max(6, geo.size.width * min(abs(correlation.coefficient), 1)))
+                }
+            }
+            .frame(height: 6)
+            Text(caption).font(.caption2).foregroundStyle(Theme.textTertiary)
+        }
+        .padding(14)
+        .frame(maxWidth: .infinity, alignment: .leading)
+        .background(GlassListRowBackground().clipShape(RoundedRectangle(cornerRadius: 18, style: .continuous)))
+        .overlay(RoundedRectangle(cornerRadius: 18, style: .continuous).strokeBorder(Theme.hairline, lineWidth: 1))
+    }
+
+    private var icon: String {
+        switch correlation.kind {
+        case .steps: return "figure.walk"
+        case .sleep: return "bed.double.fill"
+        case .hrv:   return "waveform.path.ecg"
+        }
+    }
+
+    private var title: LocalizedStringKey {
+        switch correlation.kind {
+        case .steps: return "Steps"
+        case .sleep: return "Sleep"
+        case .hrv:   return "Heart rate variability"
+        }
+    }
+
+    private var sentence: LocalizedStringKey {
+        switch (correlation.kind, correlation.favourable) {
+        case (.steps, true):  return "On more active days, your glucose tends to run lower."
+        case (.steps, false): return "On more active days, your glucose tends to run higher."
+        case (.sleep, true):  return "After more sleep, your glucose tends to run lower."
+        case (.sleep, false): return "After more sleep, your glucose tends to run higher."
+        case (.hrv, true):    return "When your HRV is higher, your glucose tends to run lower."
+        case (.hrv, false):   return "When your HRV is higher, your glucose tends to run higher."
+        }
+    }
+
+    private var caption: String {
+        String(format: NSLocalizedString("Based on %@ days — a pattern, not proof of cause.", comment: ""),
+               "\(correlation.sampleSize)")
     }
 }

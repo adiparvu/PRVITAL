@@ -90931,6 +90931,478 @@
           }
         }
       }
+    },
+    "What moves your glucose": {
+      "extractionState": "manual",
+      "localizations": {
+        "ro": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Ce îți influențează glicemia"
+          }
+        },
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Was deinen Glukosewert beeinflusst"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Qué influye en tu glucosa"
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Ce qui influence votre glycémie"
+          }
+        },
+        "it": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Cosa influenza la tua glicemia"
+          }
+        },
+        "nl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Wat je glucose beïnvloedt"
+          }
+        },
+        "pl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Co wpływa na Twoją glikemię"
+          }
+        },
+        "pt": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "O que influencia a tua glicose"
+          }
+        },
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Что влияет на вашу глюкозу"
+          }
+        }
+      }
+    },
+    "On more active days, your glucose tends to run lower.": {
+      "extractionState": "manual",
+      "localizations": {
+        "ro": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "În zilele mai active, glicemia tinde să fie mai mică."
+          }
+        },
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "An aktiveren Tagen ist dein Glukosewert tendenziell niedriger."
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "En los días más activos, tu glucosa suele ser más baja."
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Les jours plus actifs, votre glycémie a tendance à être plus basse."
+          }
+        },
+        "it": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Nei giorni più attivi, la glicemia tende a essere più bassa."
+          }
+        },
+        "nl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Op actievere dagen is je glucose meestal lager."
+          }
+        },
+        "pl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "W bardziej aktywne dni glikemia zwykle jest niższa."
+          }
+        },
+        "pt": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Nos dias mais ativos, a tua glicose tende a ser mais baixa."
+          }
+        },
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "В более активные дни глюкоза обычно ниже."
+          }
+        }
+      }
+    },
+    "On more active days, your glucose tends to run higher.": {
+      "extractionState": "manual",
+      "localizations": {
+        "ro": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "În zilele mai active, glicemia tinde să fie mai mare."
+          }
+        },
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "An aktiveren Tagen ist dein Glukosewert tendenziell höher."
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "En los días más activos, tu glucosa suele ser más alta."
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Les jours plus actifs, votre glycémie a tendance à être plus élevée."
+          }
+        },
+        "it": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Nei giorni più attivi, la glicemia tende a essere più alta."
+          }
+        },
+        "nl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Op actievere dagen is je glucose meestal hoger."
+          }
+        },
+        "pl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "W bardziej aktywne dni glikemia zwykle jest wyższa."
+          }
+        },
+        "pt": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Nos dias mais ativos, a tua glicose tende a ser mais alta."
+          }
+        },
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "В более активные дни глюкоза обычно выше."
+          }
+        }
+      }
+    },
+    "After more sleep, your glucose tends to run lower.": {
+      "extractionState": "manual",
+      "localizations": {
+        "ro": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "După mai mult somn, glicemia tinde să fie mai mică."
+          }
+        },
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Nach mehr Schlaf ist dein Glukosewert tendenziell niedriger."
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Tras dormir más, tu glucosa suele ser más baja."
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Après plus de sommeil, votre glycémie a tendance à être plus basse."
+          }
+        },
+        "it": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Dopo aver dormito di più, la glicemia tende a essere più bassa."
+          }
+        },
+        "nl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Na meer slaap is je glucose meestal lager."
+          }
+        },
+        "pl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Po dłuższym śnie glikemia zwykle jest niższa."
+          }
+        },
+        "pt": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Depois de dormir mais, a tua glicose tende a ser mais baixa."
+          }
+        },
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "После более долгого сна глюкоза обычно ниже."
+          }
+        }
+      }
+    },
+    "After more sleep, your glucose tends to run higher.": {
+      "extractionState": "manual",
+      "localizations": {
+        "ro": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "După mai mult somn, glicemia tinde să fie mai mare."
+          }
+        },
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Nach mehr Schlaf ist dein Glukosewert tendenziell höher."
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Tras dormir más, tu glucosa suele ser más alta."
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Après plus de sommeil, votre glycémie a tendance à être plus élevée."
+          }
+        },
+        "it": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Dopo aver dormito di più, la glicemia tende a essere più alta."
+          }
+        },
+        "nl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Na meer slaap is je glucose meestal hoger."
+          }
+        },
+        "pl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Po dłuższym śnie glikemia zwykle jest wyższa."
+          }
+        },
+        "pt": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Depois de dormir mais, a tua glicose tende a ser mais alta."
+          }
+        },
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "После более долгого сна глюкоза обычно выше."
+          }
+        }
+      }
+    },
+    "When your HRV is higher, your glucose tends to run lower.": {
+      "extractionState": "manual",
+      "localizations": {
+        "ro": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Când HRV-ul e mai mare, glicemia tinde să fie mai mică."
+          }
+        },
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Wenn deine HRV höher ist, ist dein Glukosewert tendenziell niedriger."
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Cuando tu VFC es más alta, tu glucosa suele ser más baja."
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Quand votre VFC est plus élevée, votre glycémie a tendance à être plus basse."
+          }
+        },
+        "it": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Quando la tua HRV è più alta, la glicemia tende a essere più bassa."
+          }
+        },
+        "nl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Als je HRV hoger is, is je glucose meestal lager."
+          }
+        },
+        "pl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Gdy Twoja HRV jest wyższa, glikemia zwykle jest niższa."
+          }
+        },
+        "pt": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Quando a tua VFC é mais alta, a tua glicose tende a ser mais baixa."
+          }
+        },
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Когда ваша ВСР выше, глюкоза обычно ниже."
+          }
+        }
+      }
+    },
+    "When your HRV is higher, your glucose tends to run higher.": {
+      "extractionState": "manual",
+      "localizations": {
+        "ro": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Când HRV-ul e mai mare, glicemia tinde să fie mai mare."
+          }
+        },
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Wenn deine HRV höher ist, ist dein Glukosewert tendenziell höher."
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Cuando tu VFC es más alta, tu glucosa suele ser más alta."
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Quand votre VFC est plus élevée, votre glycémie a tendance à être plus élevée."
+          }
+        },
+        "it": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Quando la tua HRV è più alta, la glicemia tende a essere più alta."
+          }
+        },
+        "nl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Als je HRV hoger is, is je glucose meestal hoger."
+          }
+        },
+        "pl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Gdy Twoja HRV jest wyższa, glikemia zwykle jest wyższa."
+          }
+        },
+        "pt": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Quando a tua VFC é mais alta, a tua glicose tende a ser mais alta."
+          }
+        },
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Когда ваша ВСР выше, глюкоза обычно выше."
+          }
+        }
+      }
+    },
+    "Based on %@ days — a pattern, not proof of cause.": {
+      "extractionState": "manual",
+      "localizations": {
+        "ro": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Pe baza a %@ zile — un tipar, nu o dovadă de cauzalitate."
+          }
+        },
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Basierend auf %@ Tagen – ein Muster, kein Kausalitätsbeweis."
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Basado en %@ días: un patrón, no una prueba de causa."
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "D’après %@ jours — une tendance, pas une preuve de cause."
+          }
+        },
+        "it": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Basato su %@ giorni — uno schema, non una prova di causa."
+          }
+        },
+        "nl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Op basis van %@ dagen — een patroon, geen bewijs van oorzaak."
+          }
+        },
+        "pl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Na podstawie %@ dni — wzorzec, nie dowód przyczyny."
+          }
+        },
+        "pt": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Com base em %@ dias — um padrão, não prova de causa."
+          }
+        },
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "На основе %@ дней — закономерность, а не доказательство причины."
+          }
+        }
+      }
     }
   },
   "version": "1.0"
