@@ -13,13 +13,10 @@ struct LiveVitalsStrip: View {
     var body: some View {
         let cells = cells
         if !cells.isEmpty {
-            ScrollView(.horizontal, showsIndicators: false) {
-                HStack(spacing: 18) {
-                    ForEach(cells) { VitalCell(model: $0, monochrome: monochrome) }
-                }
-                .padding(.horizontal, 2)
+            VStack(alignment: .leading, spacing: 6) {
+                ForEach(cells) { VitalRow(model: $0, monochrome: monochrome) }
             }
-            .scrollBounceBehavior(.basedOnSize)
+            .frame(maxWidth: .infinity, alignment: .leading)
             .transition(.opacity)
         }
     }
@@ -71,32 +68,31 @@ private struct VitalCellModel: Identifiable {
     let label: String
 }
 
-private struct VitalCell: View {
+private struct VitalRow: View {
     let model: VitalCellModel
     var monochrome: Bool = false
 
     var body: some View {
-        // Plain text column — no card behind it. Nicely aligned icon, value, label.
-        VStack(alignment: .leading, spacing: 3) {
+        // Everything on one line: icon, value, then the label — no card.
+        HStack(alignment: .firstTextBaseline, spacing: 7) {
             Image(systemName: model.icon)
                 .font(.system(size: 12, weight: .semibold))
                 .foregroundStyle(monochrome ? Theme.textSecondary : model.tint)
+                .frame(width: 18, alignment: .leading)
                 .accessibilityHidden(true)
-            HStack(alignment: .firstTextBaseline, spacing: 2) {
-                Text(model.value)
-                    .font(.system(size: 17, weight: .semibold, design: .rounded))
-                    .foregroundStyle(Theme.textPrimary)
-                    .monospacedDigit()
-                if let unit = model.unit {
-                    Text(unit).font(.caption2).foregroundStyle(Theme.textSecondary)
-                }
+            Text(model.value)
+                .font(.system(size: 15, weight: .semibold, design: .rounded))
+                .foregroundStyle(Theme.textPrimary)
+                .monospacedDigit()
+            if let unit = model.unit {
+                Text(unit).font(.caption2).foregroundStyle(Theme.textSecondary)
             }
             Text(model.label)
-                .font(.caption2)
+                .font(.caption)
                 .foregroundStyle(Theme.textSecondary)
                 .lineLimit(1)
+            Spacer(minLength: 0)
         }
-        .frame(minWidth: 66, alignment: .leading)
         .contentTransition(.numericText())
         .accessibilityElement(children: .combine)
         .accessibilityLabel("\(model.label): \(model.value)\(model.unit.map { " " + $0 } ?? "")")
