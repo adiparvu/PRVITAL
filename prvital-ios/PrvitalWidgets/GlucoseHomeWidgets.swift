@@ -352,6 +352,23 @@ private struct WidgetGlucoseChart: View {
                 }
 
                 if let last = snapshot.points.last {
+                    // A soft "live" glow around the current reading. Home Screen
+                    // widgets render as static timeline snapshots and can't run the
+                    // app's repeating pulse, so two translucent halo rings layered
+                    // under the solid dot stand in for it — the point still reads as
+                    // the living "now", just without the motion.
+                    PointMark(
+                        x: .value("Time", last.date),
+                        y: .value("Glucose", last.mgdL)
+                    )
+                    .foregroundStyle(zoneColor.opacity(0.14))
+                    .symbolSize(230)
+                    PointMark(
+                        x: .value("Time", last.date),
+                        y: .value("Glucose", last.mgdL)
+                    )
+                    .foregroundStyle(zoneColor.opacity(0.30))
+                    .symbolSize(110)
                     PointMark(
                         x: .value("Time", last.date),
                         y: .value("Glucose", last.mgdL)

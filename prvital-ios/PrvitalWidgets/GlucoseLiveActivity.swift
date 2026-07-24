@@ -218,6 +218,16 @@ private struct IslandSparkline: View {
             }
 
             if let last = values.indices.last {
+                // A soft glow halo under the current reading, mirroring the widget
+                // and the in-app chart. The genuine *pulse* is layered on top as a
+                // chartOverlay symbolEffect below — the one animation kind Live
+                // Activities actually run.
+                PointMark(
+                    x: .value("Reading", last),
+                    y: .value("Glucose", values[last])
+                )
+                .foregroundStyle(tint.opacity(0.22))
+                .symbolSize(90)
                 PointMark(
                     x: .value("Reading", last),
                     y: .value("Glucose", values[last])
@@ -249,6 +259,27 @@ private struct IslandSparkline: View {
         .chartXAxis(.hidden)
         .chartYAxis(.hidden)
         .chartLegend(.hidden)
+        // The live pulse: a tinted dot over the current reading that breathes
+        // continuously via `.symbolEffect(.pulse)` — the same "it's alive" beat as
+        // the in-app trend chart's PulsingLiveDot, expressed with the one animation
+        // API that runs inside a Live Activity / Dynamic Island. Positioned exactly
+        // on the last data point through the chart proxy.
+        .chartOverlay { proxy in
+            GeometryReader { geo in
+                if let last = values.indices.last,
+                   let plot = proxy.plotFrame,
+                   let px = proxy.position(forX: last),
+                   let py = proxy.position(forY: values[last]) {
+                    let frame = geo[plot]
+                    Image(systemName: "circle.fill")
+                        .font(.system(size: 9))
+                        .foregroundStyle(tint)
+                        .symbolEffect(.pulse, options: .repeating, isActive: true)
+                        .position(x: frame.minX + px, y: frame.minY + py)
+                        .allowsHitTesting(false)
+                }
+            }
+        }
         .padding(.vertical, 2)
         .background(
             RoundedRectangle(cornerRadius: 10, style: .continuous)
