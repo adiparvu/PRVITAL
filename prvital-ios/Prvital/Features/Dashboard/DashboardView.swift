@@ -110,8 +110,10 @@ struct DashboardView: View {
                     }
                     trendSection(summary: summary, thresholds: thresholds, unit: unit)
                         .appearTransition(delay: 0.06)
-                    contextualLessonCard(thresholds: thresholds)
-                        .appearTransition(delay: 0.08)
+                    if env.preferences.showContextualLessons {
+                        contextualLessonCard(thresholds: thresholds)
+                            .appearTransition(delay: 0.08)
+                    }
                     if todayStats.hasGlucose {
                         todayCard(todayStats,
                                   forecast: tirForecast(thresholds: thresholds),
@@ -274,11 +276,19 @@ struct DashboardView: View {
             quickAction = action
         } label: {
             VStack(spacing: 6) {
-                Image(systemName: icon)
-                    .font(.system(size: 18, weight: .semibold))
-                    .foregroundStyle(tint)
-                    .frame(width: 50, height: 50)
-                    .background(tint.opacity(0.14), in: .circle)
+                if env.preferences.minimalistIcons {
+                    // Minimalist: a plain monochrome glyph, no filled circle.
+                    Image(systemName: icon)
+                        .font(.system(size: 24, weight: .regular))
+                        .foregroundStyle(Theme.textPrimary)
+                        .frame(width: 50, height: 50)
+                } else {
+                    Image(systemName: icon)
+                        .font(.system(size: 18, weight: .semibold))
+                        .foregroundStyle(tint)
+                        .frame(width: 50, height: 50)
+                        .background(tint.opacity(0.14), in: .circle)
+                }
                 Text(label)
                     .font(.caption2)
                     .foregroundStyle(Theme.textSecondary)
@@ -340,7 +350,7 @@ struct DashboardView: View {
                     cgmCadenceMinutes: 5,
                     insulin: insulin, carbs: carbs,
                     bolus: env.preferences.bolusParameters)
-                LiveVitalsStrip(vitals: vitals)
+                LiveVitalsStrip(vitals: vitals, monochrome: env.preferences.minimalistIcons)
                     .animation(.snappy, value: vitals)
 
                 if let warning = projectionWarning(summary: summary, thresholds: thresholds) {

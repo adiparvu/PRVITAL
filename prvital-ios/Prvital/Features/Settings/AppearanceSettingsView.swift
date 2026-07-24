@@ -97,10 +97,24 @@ struct AppearanceSettingsView: View {
                 .onChange(of: prefs.showDailyCompanion) { _, isOn in
                     if isOn { Haptics.play(.selection) }
                 }
+
+                Toggle(isOn: $prefs.showContextualLessons) {
+                    Text("Contextual lessons")
+                }
+                .onChange(of: prefs.showContextualLessons) { _, isOn in
+                    if isOn { Haptics.play(.selection) }
+                }
+
+                Toggle(isOn: $prefs.minimalistIcons) {
+                    Text("Minimalist icons")
+                }
+                .onChange(of: prefs.minimalistIcons) { _, isOn in
+                    if isOn { Haptics.play(.selection) }
+                }
             } header: {
                 Text("Display")
             } footer: {
-                Text("Text size and background apply to Prvital only. Haptics add a gentle tap to key actions. The daily companion is a friendly, encouraging note at the top of your dashboard.")
+                Text("Text size and background apply to Prvital only. Haptics add a gentle tap to key actions. The daily companion is a friendly, encouraging note at the top of your dashboard. Contextual lessons suggest a relevant article after a low or high. Minimalist icons drop the coloured circles for plain, monochrome glyphs.")
                     .font(.footnote)
                     .foregroundStyle(Theme.textTertiary)
             }

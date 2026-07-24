@@ -39,6 +39,8 @@ final class Preferences {
         self.textSizeRaw = self.defaults.string(forKey: Keys.textSize) ?? AppTextSize.large.rawValue
         self.hapticsEnabled = (self.defaults.object(forKey: Keys.hapticsEnabled) as? Bool) ?? true
         self.showDailyCompanion = (self.defaults.object(forKey: Keys.showDailyCompanion) as? Bool) ?? true
+        self.showContextualLessons = (self.defaults.object(forKey: Keys.showContextualLessons) as? Bool) ?? true
+        self.minimalistIcons = (self.defaults.object(forKey: Keys.minimalistIcons) as? Bool) ?? false
         self.backgroundKindRaw = self.defaults.string(forKey: Keys.backgroundKind) ?? AppBackgroundKind.standard.rawValue
         self.backgroundGradientRaw = self.defaults.string(forKey: Keys.backgroundGradient) ?? BackgroundGradient.aurora.rawValue
         self.backgroundPhotoData = self.defaults.data(forKey: Keys.backgroundPhoto)
@@ -226,6 +228,18 @@ final class Preferences {
         didSet { defaults.set(showDailyCompanion, forKey: Keys.showDailyCompanion) }
     }
 
+    /// Whether the Dashboard surfaces the contextual education card ("Because you
+    /// had a low earlier → Understanding lows"). On by default; can be switched off.
+    var showContextualLessons: Bool {
+        didSet { defaults.set(showContextualLessons, forKey: Keys.showContextualLessons) }
+    }
+
+    /// Minimalist iconography: monochrome, unfilled glyphs instead of the tinted,
+    /// filled circles — a cleaner, Apple-plain look. Off by default.
+    var minimalistIcons: Bool {
+        didSet { defaults.set(minimalistIcons, forKey: Keys.minimalistIcons) }
+    }
+
     /// Background: standard surface, a gradient preset, or the user's photo.
     var backgroundKindRaw: String {
         didSet { defaults.set(backgroundKindRaw, forKey: Keys.backgroundKind) }
@@ -290,6 +304,8 @@ final class Preferences {
         static let textSize = AppTextSize.preferenceKey
         static let hapticsEnabled = "pref.hapticsEnabled"
         static let showDailyCompanion = "pref.showDailyCompanion"
+        static let showContextualLessons = "pref.showContextualLessons"
+        static let minimalistIcons = "pref.minimalistIcons"
         static let backgroundKind = AppBackgroundKind.preferenceKey
         static let backgroundGradient = BackgroundGradient.preferenceKey
         static let backgroundPhoto = AppBackgroundKind.photoKey

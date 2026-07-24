@@ -93822,6 +93822,183 @@
           }
         }
       }
+    },
+    "Contextual lessons": {
+      "extractionState": "manual",
+      "localizations": {
+        "ro": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Lecții contextuale"
+          }
+        },
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Kontextbezogene Lektionen"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Lecciones contextuales"
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Leçons contextuelles"
+          }
+        },
+        "it": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Lezioni contestuali"
+          }
+        },
+        "nl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Contextuele lessen"
+          }
+        },
+        "pl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Lekcje kontekstowe"
+          }
+        },
+        "pt": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Lições contextuais"
+          }
+        },
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Контекстные уроки"
+          }
+        }
+      }
+    },
+    "Minimalist icons": {
+      "extractionState": "manual",
+      "localizations": {
+        "ro": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Iconițe minimaliste"
+          }
+        },
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Minimalistische Symbole"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Iconos minimalistas"
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Icônes minimalistes"
+          }
+        },
+        "it": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Icone minimaliste"
+          }
+        },
+        "nl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Minimalistische pictogrammen"
+          }
+        },
+        "pl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Minimalistyczne ikony"
+          }
+        },
+        "pt": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Ícones minimalistas"
+          }
+        },
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Минималистичные значки"
+          }
+        }
+      }
+    },
+    "Text size and background apply to Prvital only. Haptics add a gentle tap to key actions. The daily companion is a friendly, encouraging note at the top of your dashboard. Contextual lessons suggest a relevant article after a low or high. Minimalist icons drop the coloured circles for plain, monochrome glyphs.": {
+      "extractionState": "manual",
+      "localizations": {
+        "ro": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Mărimea textului și fundalul se aplică doar în Prvital. Vibrațiile adaugă o atingere ușoară la acțiunile importante. Însoțitorul zilnic este o notă prietenoasă și încurajatoare în capul panoului. Lecțiile contextuale sugerează un articol relevant după o hipoglicemie sau o hiperglicemie. Iconițele minimaliste renunță la cercurile colorate în favoarea unor simboluri simple, monocrome."
+          }
+        },
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Textgröße und Hintergrund gelten nur für Prvital. Haptik fügt wichtigen Aktionen ein sanftes Tippen hinzu. Der tägliche Begleiter ist eine freundliche, ermutigende Notiz oben im Dashboard. Kontextbezogene Lektionen schlagen nach einem Tief oder Hoch einen passenden Artikel vor. Minimalistische Symbole verzichten auf die farbigen Kreise zugunsten schlichter, einfarbiger Glyphen."
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "El tamaño del texto y el fondo se aplican solo a Prvital. La vibración añade un toque suave a las acciones clave. El acompañante diario es una nota amable y alentadora en la parte superior del panel. Las lecciones contextuales sugieren un artículo relevante tras una bajada o una subida. Los iconos minimalistas quitan los círculos de color por glifos simples y monocromos."
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "La taille du texte et l’arrière-plan s’appliquent uniquement à Prvital. Le retour haptique ajoute une légère vibration aux actions clés. Le compagnon quotidien est une note amicale et encourageante en haut du tableau de bord. Les leçons contextuelles suggèrent un article pertinent après une hypo ou une hyper. Les icônes minimalistes abandonnent les cercles colorés au profit de glyphes simples et monochromes."
+          }
+        },
+        "it": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "La dimensione del testo e lo sfondo si applicano solo a Prvital. Il feedback aptico aggiunge un tocco leggero alle azioni principali. Il compagno quotidiano è una nota amichevole e incoraggiante in cima alla dashboard. Le lezioni contestuali suggeriscono un articolo pertinente dopo un valore basso o alto. Le icone minimaliste rinunciano ai cerchi colorati a favore di semplici simboli monocromatici."
+          }
+        },
+        "nl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Tekstgrootte en achtergrond gelden alleen voor Prvital. Haptiek voegt een zachte tik toe aan belangrijke acties. De dagelijkse metgezel is een vriendelijke, bemoedigende notitie boven aan je dashboard. Contextuele lessen stellen een relevant artikel voor na een lage of hoge waarde. Minimalistische pictogrammen laten de gekleurde cirkels vallen voor eenvoudige, monochrome symbolen."
+          }
+        },
+        "pl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Rozmiar tekstu i tło dotyczą tylko Prvital. Wibracje dodają delikatne stuknięcie przy kluczowych czynnościach. Codzienny towarzysz to przyjazna, zachęcająca notatka u góry panelu. Lekcje kontekstowe proponują odpowiedni artykuł po niskim lub wysokim poziomie. Minimalistyczne ikony rezygnują z kolorowych kółek na rzecz prostych, monochromatycznych symboli."
+          }
+        },
+        "pt": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "O tamanho do texto e o fundo aplicam-se apenas ao Prvital. O retorno tátil adiciona um toque suave às ações principais. O companheiro diário é uma nota amigável e encorajadora no topo do painel. As lições contextuais sugerem um artigo relevante após uma baixa ou uma alta. Os ícones minimalistas dispensam os círculos coloridos por símbolos simples e monocromáticos."
+          }
+        },
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Размер текста и фон применяются только в Prvital. Тактильная отдача добавляет мягкое касание к ключевым действиям. Ежедневный спутник — это дружелюбная, ободряющая заметка вверху панели. Контекстные уроки предлагают подходящую статью после понижения или повышения. Минималистичные значки убирают цветные кружки в пользу простых монохромных символов."
+          }
+        }
+      }
     }
   },
   "version": "1.0"

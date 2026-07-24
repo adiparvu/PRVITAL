@@ -7,13 +7,15 @@ import SwiftUI
 /// stays quiet when there's nothing to say.
 struct LiveVitalsStrip: View {
     let vitals: LiveVitals
+    /// When true, icons render monochrome (the minimalist appearance setting).
+    var monochrome: Bool = false
 
     var body: some View {
         let cells = cells
         if !cells.isEmpty {
             ScrollView(.horizontal, showsIndicators: false) {
-                HStack(spacing: 8) {
-                    ForEach(cells) { VitalCell(model: $0) }
+                HStack(spacing: 18) {
+                    ForEach(cells) { VitalCell(model: $0, monochrome: monochrome) }
                 }
                 .padding(.horizontal, 2)
             }
@@ -71,12 +73,14 @@ private struct VitalCellModel: Identifiable {
 
 private struct VitalCell: View {
     let model: VitalCellModel
+    var monochrome: Bool = false
 
     var body: some View {
+        // Plain text column — no card behind it. Nicely aligned icon, value, label.
         VStack(alignment: .leading, spacing: 3) {
             Image(systemName: model.icon)
                 .font(.system(size: 12, weight: .semibold))
-                .foregroundStyle(model.tint)
+                .foregroundStyle(monochrome ? Theme.textSecondary : model.tint)
                 .accessibilityHidden(true)
             HStack(alignment: .firstTextBaseline, spacing: 2) {
                 Text(model.value)
@@ -92,10 +96,7 @@ private struct VitalCell: View {
                 .foregroundStyle(Theme.textSecondary)
                 .lineLimit(1)
         }
-        .padding(.vertical, 9)
-        .padding(.horizontal, 12)
-        .frame(minWidth: 88, alignment: .leading)
-        .background(Theme.surface, in: .rect(cornerRadius: 14))
+        .frame(minWidth: 66, alignment: .leading)
         .contentTransition(.numericText())
         .accessibilityElement(children: .combine)
         .accessibilityLabel("\(model.label): \(model.value)\(model.unit.map { " " + $0 } ?? "")")
