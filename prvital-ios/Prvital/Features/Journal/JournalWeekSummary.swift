@@ -11,6 +11,9 @@ struct JournalWeekSummary: Equatable, Sendable {
     let timeInRange: Double
     /// How many days with glucose fed this week's average.
     let dayCount: Int
+    /// This week's per-day TIR fractions, oldest → newest — the sparkbar series, so
+    /// a glance shows whether the week was consistent or all over the place.
+    let dailyTimeInRange: [Double]
     /// Change vs the prior seven logged days, in TIR fraction points (this − prior).
     let delta: Double
     /// Whether there was a prior week to compare against.
@@ -65,9 +68,12 @@ struct JournalWeekSummary: Equatable, Sendable {
             trend = .steady
         }
 
+        let series = thisWeek.sorted { $0.day < $1.day }.map(\.timeInRange)
+
         return JournalWeekSummary(
             timeInRange: thisAvg,
             dayCount: thisWeek.count,
+            dailyTimeInRange: series,
             delta: delta,
             hasComparison: priorAvg != nil,
             trend: trend

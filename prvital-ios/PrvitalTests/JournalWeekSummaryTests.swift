@@ -51,4 +51,12 @@ final class JournalWeekSummaryTests: XCTestCase {
         XCTAssertEqual(s?.trend, .steady)
         XCTAssertEqual(s?.hasComparison, true)
     }
+
+    func testDailySeriesIsOldestToNewestAndThisWeekOnly() {
+        // Passed newest-first; the series must come back oldest → newest and exclude
+        // the prior-week day.
+        let days = [day(0, tir: 0.90), day(2, tir: 0.50), day(1, tir: 0.70), day(9, tir: 0.10)]
+        let s = JournalWeekSummary.make(days: days, now: now, calendar: cal)
+        XCTAssertEqual(s?.dailyTimeInRange, [0.50, 0.70, 0.90]) // day -2, -1, 0
+    }
 }

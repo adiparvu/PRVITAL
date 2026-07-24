@@ -189,24 +189,32 @@ struct JournalView: View {
     /// compares to the seven days before. Distinct from the detailed weekly digest —
     /// this is the at-a-glance version that lives right on the feed.
     private func weekSummaryStrip(_ summary: JournalWeekSummary) -> some View {
-        HStack(spacing: 14) {
-            VStack(alignment: .leading, spacing: 2) {
-                Text("This week")
-                    .font(.caption.weight(.semibold))
-                    .foregroundStyle(Theme.textSecondary)
-                    .textCase(.uppercase)
-                HStack(alignment: .firstTextBaseline, spacing: 4) {
-                    Text(verbatim: "\(Int((summary.timeInRange * 100).rounded()))%")
-                        .font(.system(size: 30, weight: .bold, design: .rounded))
-                        .foregroundStyle(Theme.textPrimary)
-                    Text("in range")
-                        .font(.caption)
+        VStack(alignment: .leading, spacing: 12) {
+            HStack(spacing: 14) {
+                VStack(alignment: .leading, spacing: 2) {
+                    Text("This week")
+                        .font(.caption.weight(.semibold))
                         .foregroundStyle(Theme.textSecondary)
+                        .textCase(.uppercase)
+                    HStack(alignment: .firstTextBaseline, spacing: 4) {
+                        Text(verbatim: "\(Int((summary.timeInRange * 100).rounded()))%")
+                            .font(.system(size: 30, weight: .bold, design: .rounded))
+                            .foregroundStyle(Theme.textPrimary)
+                        Text("in range")
+                            .font(.caption)
+                            .foregroundStyle(Theme.textSecondary)
+                    }
+                }
+                Spacer(minLength: 8)
+                if summary.hasComparison {
+                    weekTrendChip(summary)
                 }
             }
-            Spacer(minLength: 8)
-            if summary.hasComparison {
-                weekTrendChip(summary)
+            // A per-day TIR bar for the week, so a glance shows consistency vs a few
+            // good days dragging the average up (or down).
+            if summary.dailyTimeInRange.count >= 2 {
+                WeekSparkbar(values: summary.dailyTimeInRange)
+                    .frame(height: 26)
             }
         }
         .frame(maxWidth: .infinity, alignment: .leading)
@@ -294,6 +302,33 @@ private enum JournalMode: String, CaseIterable, Identifiable {
 private struct JournalEditTarget: Identifiable {
     let id = UUID()
     let item: JournalTimelineItem
+}
+
+/// A tiny per-day time-in-range bar row for the "This week" strip. Each bar's
+/// height is that day's TIR; its colour is the zone the day landed in. Oldest day
+/// on the left. Purely decorative — the strip's headline carries the number.
+private struct WeekSparkbar: View {
+    /// Per-day TIR fractions (0...1), oldest → newest.
+    let values: [Double]
+
+    var body: some View {
+        HStack(alignment: .bottom, spacing: 5) {
+            ForEach(Array(values.enumerated()), id: \.offset) { _, value in
+                Capsule()
+                    .fill(tint(value))
+                    .frame(maxWidth: .infinity)
+                    .frame(height: max(4, CGFloat(min(max(value, 0), 1)) * 26))
+            }
+        }
+        .frame(maxWidth: .infinity, minHeight: 26, maxHeight: 26, alignment: .bottom)
+        .accessibilityHidden(true)
+    }
+
+    private func tint(_ value: Double) -> Color {
+        if value >= 0.70 { return Theme.zoneInRange }
+        if value >= 0.50 { return Theme.accent }
+        return Theme.zoneWarning
+    }
 }
 
 #Preview {
