@@ -142,6 +142,12 @@ struct JournalView: View {
     private var daysContent: some View {
         let density = self.density
         let buckets = self.buckets
+        let weekSummary = JournalWeekSummary.make(
+            days: buckets
+                .filter { $0.stats.hasGlucose }
+                .map { JournalWeekSummary.Day(day: $0.day, timeInRange: $0.stats.timeInRange) },
+            now: Date()
+        )
         return Group {
             if buckets.isEmpty {
                 ScrollView {
@@ -155,6 +161,10 @@ struct JournalView: View {
             } else {
                 ScrollView {
                     LazyVStack(alignment: .leading, spacing: 20) {
+                        if let weekSummary {
+                            weekSummaryStrip(weekSummary)
+                                .appearTransition(delay: 0)
+                        }
                         ForEach(Array(buckets.enumerated()), id: \.element.id) { index, bucket in
                             JournalDayCard(
                                 bucket: bucket,
@@ -165,13 +175,64 @@ struct JournalView: View {
                                 Haptics.play(.selection)
                                 editTarget = JournalEditTarget(item: item)
                             }
-                            .appearTransition(delay: Double(min(index, 6)) * 0.05)
+                            .appearTransition(delay: Double(min(index + 1, 6)) * 0.05)
                         }
                     }
                     .padding()
                     .animation(.snappy, value: density)
                 }
             }
+        }
+    }
+
+    /// A compact "your week" lead-in: this week's average time in range and how it
+    /// compares to the seven days before. Distinct from the detailed weekly digest —
+    /// this is the at-a-glance version that lives right on the feed.
+    private func weekSummaryStrip(_ summary: JournalWeekSummary) -> some View {
+        HStack(spacing: 14) {
+            VStack(alignment: .leading, spacing: 2) {
+                Text("This week")
+                    .font(.caption.weight(.semibold))
+                    .foregroundStyle(Theme.textSecondary)
+                    .textCase(.uppercase)
+                HStack(alignment: .firstTextBaseline, spacing: 4) {
+                    Text(verbatim: "\(Int((summary.timeInRange * 100).rounded()))%")
+                        .font(.system(size: 30, weight: .bold, design: .rounded))
+                        .foregroundStyle(Theme.textPrimary)
+                    Text("in range")
+                        .font(.caption)
+                        .foregroundStyle(Theme.textSecondary)
+                }
+            }
+            Spacer(minLength: 8)
+            if summary.hasComparison {
+                weekTrendChip(summary)
+            }
+        }
+        .frame(maxWidth: .infinity, alignment: .leading)
+        .glassCard(cornerRadius: 20, padding: 16)
+        .accessibilityElement(children: .combine)
+    }
+
+    private func weekTrendChip(_ summary: JournalWeekSummary) -> some View {
+        let points = Int((summary.delta * 100).rounded())
+        let symbol: String
+        let tint: Color
+        switch summary.trend {
+        case .up:     symbol = "arrow.up.right";   tint = Theme.zoneInRange
+        case .down:   symbol = "arrow.down.right"; tint = Theme.zoneWarning
+        case .steady: symbol = "arrow.right";      tint = Theme.textSecondary
+        }
+        return VStack(alignment: .trailing, spacing: 2) {
+            HStack(spacing: 3) {
+                Image(systemName: symbol).font(.caption.weight(.bold))
+                Text(verbatim: points >= 0 ? "+\(points)%" : "\(points)%")
+                    .font(.subheadline.weight(.semibold))
+            }
+            .foregroundStyle(tint)
+            Text("vs last week")
+                .font(.caption2)
+                .foregroundStyle(Theme.textSecondary)
         }
     }
 
