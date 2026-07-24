@@ -41,6 +41,7 @@ struct JournalView: View {
 
     @State private var editTarget: JournalEditTarget?
     @State private var showingQuickEntry = false
+    @State private var showingWeeklyDigest = false
     @State private var mode: JournalMode = .days
     // Apple Health's daily exercise minutes (appleExerciseTime), merged into each
     // day card's "activity" so the Watch's Move-ring activity shows even on days
@@ -131,6 +132,9 @@ struct JournalView: View {
             .sheet(isPresented: $showingQuickEntry) {
                 QuickEntrySheet()
             }
+            .sheet(isPresented: $showingWeeklyDigest) {
+                WeeklyDigestView()
+            }
             .sheet(item: $editTarget) { target in
                 editorSheet(for: target.item)
             }
@@ -162,8 +166,14 @@ struct JournalView: View {
                 ScrollView {
                     LazyVStack(alignment: .leading, spacing: 20) {
                         if let weekSummary {
-                            weekSummaryStrip(weekSummary)
-                                .appearTransition(delay: 0)
+                            Button {
+                                Haptics.play(.light)
+                                showingWeeklyDigest = true
+                            } label: {
+                                weekSummaryStrip(weekSummary)
+                            }
+                            .buttonStyle(PressableCardStyle())
+                            .appearTransition(delay: 0)
                         }
                         ForEach(Array(buckets.enumerated()), id: \.element.id) { index, bucket in
                             JournalDayCard(
@@ -209,6 +219,9 @@ struct JournalView: View {
                 if summary.hasComparison {
                     weekTrendChip(summary)
                 }
+                Image(systemName: "chevron.right")
+                    .font(.caption)
+                    .foregroundStyle(Theme.textTertiary)
             }
             // A per-day TIR bar for the week, so a glance shows consistency vs a few
             // good days dragging the average up (or down).
