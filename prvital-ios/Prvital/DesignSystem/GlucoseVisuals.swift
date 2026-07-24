@@ -76,6 +76,28 @@ struct GlucoseGaugeRing: View {
 /// also fills the curve with a gradient, lets you scrub with a finger to read
 /// any point, and fades in on appear. The compact variant keeps a tiny y-axis
 /// and a simple dot, with no annotations.
+
+/// A live, breathing ring for the latest reading: a soft ping that keeps expanding
+/// and fading out around the current point, so the chart reads as alive. Drawn over
+/// the existing static "now" dot, so the dot stays put and only the halo animates.
+private struct PulsingLiveDot: View {
+    let color: Color
+    @State private var pulsing = false
+
+    var body: some View {
+        Circle()
+            .stroke(color.opacity(0.6), lineWidth: 2)
+            .frame(width: 12, height: 12)
+            .scaleEffect(pulsing ? 2.6 : 0.7)
+            .opacity(pulsing ? 0 : 0.85)
+            .onAppear {
+                withAnimation(.easeOut(duration: 1.8).repeatForever(autoreverses: false)) {
+                    pulsing = true
+                }
+            }
+    }
+}
+
 struct GlucoseTrendChart: View {
     let readings: [GlucoseReading]
     let thresholds: GlucoseThresholds
@@ -332,6 +354,22 @@ struct GlucoseTrendChart: View {
         .chartXSelection(value: interactive ? $selectedDate : .constant(nil))
         .chartXScale(domain: xDomain)
         .chartYScale(domain: yDomain)
+        // A live, pulsing "now" ring at the latest reading — a soft ping that keeps
+        // expanding and fading so the current point visibly breathes. Drawn in a
+        // real SwiftUI overlay (not a static chart symbol) so the animation runs.
+        .chartOverlay { proxy in
+            GeometryReader { geo in
+                if let last = sorted.last,
+                   let plotFrame = proxy.plotFrame,
+                   let x = proxy.position(forX: last.timestamp),
+                   let y = proxy.position(forY: last.valueMgdL) {
+                    let rect = geo[plotFrame]
+                    PulsingLiveDot(color: zoneColor(last.valueMgdL))
+                        .position(x: rect.minX + x, y: rect.minY + y)
+                }
+            }
+            .allowsHitTesting(false)
+        }
         // The full-size chart hides the y-axis entirely — the on-curve extreme
         // labels carry the values, tide-chart style. Only the compact variant
         // (no annotations) keeps a small axis. Conditional CONTENT rather than a
