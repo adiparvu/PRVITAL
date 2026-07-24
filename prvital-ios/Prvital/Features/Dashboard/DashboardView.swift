@@ -310,7 +310,7 @@ struct DashboardView: View {
                             unit: unit,
                             trend: current.trend
                         )
-                        ZonePill(zone: zone)
+                        ZonePill(zone: zone, plain: true)
                     }
                 }
                 .buttonStyle(PressableCardStyle())
@@ -424,14 +424,14 @@ struct DashboardView: View {
         case .high(let minutes):
             text = Text("High predicted in ~\(minutes) min"); tint = Theme.zoneHigh; icon = "arrow.up.forward"
         }
+        // Plain tinted text, no filled chip — the colour and arrow carry the
+        // meaning without a capsule sitting under the gauge.
         return Label { text } icon: { Image(systemName: icon) }
             .font(.caption.weight(.semibold))
             .foregroundStyle(tint)
-            .padding(.horizontal, 10)
-            .padding(.vertical, 5)
-            .background(tint.opacity(0.14), in: .capsule)
+            .padding(.vertical, 2)
             .accessibilityElement(children: .combine)
-            .transition(.move(edge: .top).combined(with: .opacity))
+            .transition(.opacity)
             .onAppear { Haptics.play(.warning) }
     }
 

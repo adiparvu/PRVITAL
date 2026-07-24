@@ -22,16 +22,24 @@ struct PressableChipStyle: ButtonStyle {
 /// Coloured pill showing a glucose zone ("In range", "Low"…).
 struct ZonePill: View {
     let zone: GlucoseZone
+    /// When true, renders as plain tinted text with no filled capsule behind it.
+    var plain: Bool = false
+
     var body: some View {
-        Text(zone.label)
+        let label = Text(zone.label)
             .font(.caption.weight(.semibold))
-            .padding(.horizontal, 10)
-            .padding(.vertical, 4)
-            .background(zone.color.opacity(0.16), in: .capsule)
             .foregroundStyle(zone.color)
             .contentTransition(.opacity)
             .animation(.smooth, value: zone)
             .accessibilityLabel("Zone: \(zone.label)")
+        if plain {
+            label
+        } else {
+            label
+                .padding(.horizontal, 10)
+                .padding(.vertical, 4)
+                .background(zone.color.opacity(0.16), in: .capsule)
+        }
     }
 }
 
