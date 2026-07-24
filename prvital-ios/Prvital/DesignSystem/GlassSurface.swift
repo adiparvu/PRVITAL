@@ -64,19 +64,29 @@ extension View {
 
 /// The frosted-glass fill behind a settings list row.
 ///
-/// Uses `.regularMaterial` (not `.ultraThinMaterial`): the regular material is
-/// noticeably more opaque, so labels and captions stay legible even over a busy
-/// photo/gradient app background — the "text must be visible everywhere"
-/// requirement — while still reading as adaptive frosted glass in light and dark.
-/// A hairline keeps each row defined where the material blends into the backdrop.
+/// Matches the cards (`glassCard`): the native Liquid Glass effect on iOS/watchOS
+/// 26, with an `.ultraThinMaterial` fallback — the more translucent material the
+/// companion card uses, so menus read as the same frosted glass that lets the app
+/// background show through, rather than a more opaque panel. A hairline keeps each
+/// row defined where the glass blends into the backdrop.
 struct GlassListRowBackground: View {
     var body: some View {
-        Rectangle()
-            .fill(.regularMaterial)
-            .overlay(Theme.surface.opacity(0.06))
+        glass
             .overlay(alignment: .bottom) {
                 Rectangle().fill(Theme.hairline.opacity(0.5)).frame(height: 0.5)
             }
+    }
+
+    @ViewBuilder private var glass: some View {
+        #if os(iOS) || os(watchOS)
+        if #available(iOS 26, watchOS 26, *) {
+            Color.clear.glassEffect(.regular, in: .rect(cornerRadius: 0))
+        } else {
+            Rectangle().fill(.ultraThinMaterial)
+        }
+        #else
+        Rectangle().fill(.ultraThinMaterial)
+        #endif
     }
 }
 
