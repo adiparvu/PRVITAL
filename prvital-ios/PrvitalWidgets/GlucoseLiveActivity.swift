@@ -50,6 +50,10 @@ struct GlucoseLiveActivity: Widget {
                     VStack(alignment: .trailing, spacing: 1) {
                         Image(systemName: state.trendSymbol)
                             .font(.title3.weight(.bold)).foregroundStyle(tint)
+                            // The arrow morphs into its new direction when the trend
+                            // changes (rising → flat → falling) instead of hard-cutting.
+                            .contentTransition(.symbolEffect(.replace))
+                            .animation(.smooth, value: state.trendSymbol)
                         Text(state.trendLabel)
                             .font(.caption2).foregroundStyle(.secondary)
                             .lineLimit(1)
@@ -99,6 +103,11 @@ struct GlucoseLiveActivity: Widget {
                                 }
                                 Spacer(minLength: 0)
                             }
+                        }
+                        // The "sensor heartbeat": a slim bar that fills on its own
+                        // toward the next expected reading.
+                        if let next = state.nextReadingAt {
+                            NextReadingProgress(from: state.updatedAt, to: next, tint: tint)
                         }
                     }
                     .padding(.horizontal, 6)
@@ -150,6 +159,8 @@ struct GlucoseLiveActivity: Widget {
                 Spacer(minLength: 8)
                 VStack(alignment: .trailing, spacing: 4) {
                     Image(systemName: state.trendSymbol).font(.title2.weight(.bold)).foregroundStyle(tint)
+                        .contentTransition(.symbolEffect(.replace))
+                        .animation(.smooth, value: state.trendSymbol)
                     Text(state.trendLabel).font(.caption2).foregroundStyle(.white.opacity(0.7))
                 }
             }
@@ -175,8 +186,37 @@ struct GlucoseLiveActivity: Widget {
                     }
                 }
             }
+            // The "sensor heartbeat": a slim tinted bar that fills on its own
+            // toward the next expected reading — live motion on the Lock Screen
+            // between data pushes.
+            if let next = state.nextReadingAt {
+                NextReadingProgress(from: state.updatedAt, to: next, tint: tint)
+                    .padding(.top, 2)
+            }
         }
         .frame(maxWidth: .infinity)
+    }
+}
+
+/// A slim bar that fills on its own toward the next expected CGM reading — the one
+/// kind of self-driven motion a Live Activity keeps showing between data pushes.
+/// `ProgressView(timerInterval:)` is animated by ActivityKit without a state update,
+/// so it reads as a live "sensor heartbeat" counting toward the next sample.
+private struct NextReadingProgress: View {
+    let from: Date
+    let to: Date
+    let tint: Color
+
+    var body: some View {
+        ProgressView(timerInterval: from...to, countsDown: false) {
+            EmptyView()
+        } currentValueLabel: {
+            EmptyView()
+        }
+        .progressViewStyle(.linear)
+        .tint(tint)
+        .frame(height: 3)
+        .accessibilityLabel("Time until next reading")
     }
 }
 

@@ -27,6 +27,19 @@ final class GlucoseLiveActivityManager {
         // Capped small so the activity's content payload stays well within budget.
         let recent = snapshot.points.suffix(16).map(\.mgdL)
 
+        // The measured sensor cadence — the gap between the two most recent
+        // readings, clamped to a sane 1–15 min — drives the "next reading" bar that
+        // fills on its own in the Live Activity. Measuring it from the data makes it
+        // correct for any source (Dexcom ~5 min, Libre ~1 min) with no assumption;
+        // falls back to 5 min when there aren't two points to measure from.
+        let cadence: TimeInterval = {
+            let pts = snapshot.points
+            guard pts.count >= 2 else { return 5 * 60 }
+            let gap = pts[pts.count - 1].date.timeIntervalSince(pts[pts.count - 2].date)
+            return min(max(gap, 60), 15 * 60)
+        }()
+        let nextReadingAt = snapshot.updatedAt.addingTimeInterval(cadence)
+
         let state = GlucoseActivityAttributes.ContentState(
             mgdL: snapshot.mgdL,
             valueText: snapshot.valueText,
@@ -44,7 +57,8 @@ final class GlucoseLiveActivityManager {
             targetUpperMgdL: snapshot.targetUpperMgdL,
             isOutOfRange: outOfRange,
             recentMgdL: recent,
-            forecastMgdL: snapshot.forecastMgdL
+            forecastMgdL: snapshot.forecastMgdL,
+            nextReadingAt: nextReadingAt
         )
         let staleDate = snapshot.updatedAt.addingTimeInterval(30 * 60)
         let store = self.store

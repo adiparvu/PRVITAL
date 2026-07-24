@@ -35,6 +35,11 @@ struct GlucoseActivityAttributes: ActivityAttributes, Sendable {
         /// A short-horizon projected value drawn as a dashed continuation past the
         /// last reading on the sparkline. Nil when there's no moving projection.
         var forecastMgdL: Double? = nil
+        /// When the next CGM sample is expected (last reading + the measured
+        /// sensor cadence). Lets the Live Activity fill a progress bar toward it on
+        /// its own — one of the few things ActivityKit animates between data
+        /// pushes. Nil when the cadence is unknown or on decoded older activities.
+        var nextReadingAt: Date? = nil
     }
 
     var title: String = "Glucose"
