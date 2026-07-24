@@ -119,17 +119,24 @@ final class SnapshotPublisher {
         // don't update" bug); reloading on *every* poll would instead burn
         // WidgetKit's refresh budget, so gate it on the value/time changing —
         // roughly CGM cadence, well within budget.
-        #if canImport(WidgetKit)
         let previous = SharedStore.load()
         SharedStore.save(snapshot)
+        #if canImport(WidgetKit)
         if previous.updatedAt != snapshot.updatedAt || previous.mgdL != snapshot.mgdL {
             WidgetCenter.shared.reloadAllTimelines()
         }
-        #else
-        SharedStore.save(snapshot)
         #endif
         WatchSessionManager.shared.updateSnapshot(snapshot)
         GlucoseLiveActivityManager.shared.sync(with: snapshot)
+
+        // The sensor link came back after a gap: a fresh reading where the last
+        // published one had gone stale. Announced once, right after the sync so
+        // it takes the Island from the live reading rather than the other way
+        // round. `previous.updatedAt != .distantPast` keeps a first-ever reading
+        // from reading as a "reconnection".
+        if previous.isStale, !snapshot.isStale, previous.updatedAt != .distantPast {
+            GlucoseLiveActivityManager.shared.presentSensorReconnected(sourceName: snapshot.sourceName)
+        }
 
         // Reactive glucose alerts, evaluated only on fresh readings.
         alerts.evaluate(

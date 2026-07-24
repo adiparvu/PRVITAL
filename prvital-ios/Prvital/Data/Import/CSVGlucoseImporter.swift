@@ -248,12 +248,16 @@ enum CSVGlucoseImporter {
             case let .glucose(mgdL, measurement, trend):
                 store.addGlucose(mgdL: mgdL, timestamp: row.timestamp,
                                  measurementType: measurement, trend: trend, source: .manual)
+            // `announces: false` — an import replays history; it must never flash
+            // a "just logged" confirmation or start a countdown in the Island.
             case let .insulin(units, type, context, name):
                 store.addInsulin(units: units, timestamp: row.timestamp, type: type,
-                                 name: name, context: context, note: importedNote)
+                                 name: name, context: context, note: importedNote,
+                                 announces: false)
             case let .carbs(grams, meal, food):
                 store.addCarbs(grams: grams, timestamp: row.timestamp,
-                               mealType: meal, foodDescription: food, note: importedNote)
+                               mealType: meal, foodDescription: food, note: importedNote,
+                               announces: false)
             case let .activity(type, minutes, intensity):
                 store.addActivity(type: type, start: row.timestamp,
                                   durationSeconds: minutes * 60, intensity: intensity, note: importedNote)

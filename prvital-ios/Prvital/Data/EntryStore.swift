@@ -18,6 +18,9 @@ final class EntryStore {
     private let registry: SourceRegistry
     /// Called after any change so the environment can republish the snapshot.
     var onChange: () -> Void = {}
+    /// Supplies the user's insulin duration of action, so a logged dose hands over
+    /// to a correctly-sized "active insulin" countdown in the Dynamic Island.
+    var insulinDurationHours: () -> Double = { BolusParameters.default.durationHours }
 
     init(
         context: ModelContext,
@@ -67,7 +70,8 @@ final class EntryStore {
         name: String? = nil,
         deliveryMethod: InsulinDeliveryMethod = .pen,
         context doseContext: InsulinDoseContext = .mealBolus,
-        note: String? = nil
+        note: String? = nil,
+        announces: Bool = true
     ) -> InsulinDose {
         let dose = InsulinDose(
             units: units, timestamp: timestamp, insulinType: type, insulinName: name,
@@ -79,6 +83,14 @@ final class EntryStore {
             let hk = healthKit
             Task { try? await hk.saveInsulin(units: units, isBasal: type.isBasal, at: timestamp) }
         }
+        // Flash the confirmation in the Dynamic Island, then hand over to the
+        // active-insulin countdown. Only for a dose logged *now* — back-dating an
+        // entry (or importing one) must not start a live countdown.
+        if announces, Self.isLive(timestamp) {
+            GlucoseLiveActivityManager.shared.presentInsulinLogged(
+                units: units,
+                clearsAt: timestamp.addingTimeInterval(insulinDurationHours() * 3600))
+        }
         return dose
     }
 
@@ -88,7 +100,8 @@ final class EntryStore {
         timestamp: Date = Date(),
         mealType: MealType = .lunch,
         foodDescription: String? = nil,
-        note: String? = nil
+        note: String? = nil,
+        announces: Bool = true
     ) -> CarbEntry {
         let entry = CarbEntry(
             grams: grams, timestamp: timestamp, mealType: mealType,
@@ -100,7 +113,16 @@ final class EntryStore {
             let hk = healthKit
             Task { try? await hk.saveCarbs(grams: grams, at: timestamp) }
         }
+        if announces, Self.isLive(timestamp) {
+            GlucoseLiveActivityManager.shared.presentMealLogged(grams: grams)
+        }
         return entry
+    }
+
+    /// Whether an entry is being logged "now" rather than back-dated or imported.
+    /// Only a live entry earns a Dynamic Island confirmation.
+    private static func isLive(_ timestamp: Date, now: Date = Date()) -> Bool {
+        abs(now.timeIntervalSince(timestamp)) <= 15 * 60
     }
 
     @discardableResult

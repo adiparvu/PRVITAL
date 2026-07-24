@@ -70,6 +70,11 @@ final class AppEnvironment {
             publisher.refresh()
             self?.rescheduleContextualReminders()
         }
+        // So a logged dose hands over to an "active insulin" countdown sized by
+        // the user's own duration of action, not a generic default.
+        entryStore.insulinDurationHours = { [weak prefs] in
+            prefs?.bolusParameters.durationHours ?? BolusParameters.default.durationHours
+        }
         sync.onChange = { [weak self] in
             publisher.refresh()
             self?.rescheduleContextualReminders()

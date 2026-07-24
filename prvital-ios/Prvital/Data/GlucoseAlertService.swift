@@ -34,7 +34,14 @@ final class GlucoseAlertService {
             reading: current, thresholds: thresholds, preferences: preferences,
             unit: unit, last: loadState(), now: now
         )
-        if let alert = decision.alert { fire(alert) }
+        if let alert = decision.alert {
+            fire(alert)
+            // The same moment, on the Lock Screen and in the Dynamic Island: the
+            // loud alert presentation with what to do about it, holding the Island
+            // for a couple of minutes before the live reading takes it back.
+            GlucoseLiveActivityManager.shared.presentGlucoseAlert(
+                isLow: alert.level == .urgentLow || alert.level == .low)
+        }
         saveState(decision.state)
 
         // Critical-low escalation (opt-in "repeat until acknowledged"):
