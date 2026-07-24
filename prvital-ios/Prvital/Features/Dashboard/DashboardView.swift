@@ -352,15 +352,19 @@ struct DashboardView: View {
                         Haptics.play(.warning)
                         showRuleOf15 = true
                     } label: {
+                        // Plain tinted text, no filled button — the zone colour and
+                        // the medical-kit icon carry the urgency without a heavy
+                        // orange bar dominating the hero.
                         Label("Treat low (Rule of 15)", systemImage: "cross.case.fill")
                             .font(.headline)
+                            .foregroundStyle(zone.color)
                             .frame(maxWidth: .infinity)
-                            .padding(.vertical, 6)
+                            .padding(.vertical, 4)
                     }
-                    .buttonStyle(.borderedProminent)
-                    .tint(zone.color)
+                    .buttonStyle(.plain)
+                    .contentShape(.rect)
                     .accessibilityHint("Opens a guided low-glucose treatment")
-                    .transition(.move(edge: .bottom).combined(with: .opacity))
+                    .transition(.opacity)
                 }
             } else {
                 Button {
