@@ -14421,6 +14421,65 @@
         }
       }
     },
+    "All" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Alle"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Todas"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Toutes"
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Tutte"
+          }
+        },
+        "nl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Alles"
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Wszystkie"
+          }
+        },
+        "pt" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Todas"
+          }
+        },
+        "ro" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Toate"
+          }
+        },
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Все"
+          }
+        }
+      }
+    },
     "All optional — kept only for your own record and the clinician report. Prvital never uses them to calculate or suggest doses." : {
       "extractionState" : "manual",
       "localizations" : {
@@ -77478,6 +77537,65 @@
         }
       }
     },
+    "Sensor readings are hidden — turn them on from the filter menu." : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Sensorwerte sind ausgeblendet – aktiviere sie im Filtermenü."
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Las lecturas del sensor están ocultas: actívalas desde el menú de filtros."
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Les lectures du capteur sont masquées — activez-les depuis le menu des filtres."
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Le letture del sensore sono nascoste — attivale dal menu dei filtri."
+          }
+        },
+        "nl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Sensormetingen zijn verborgen — zet ze aan via het filtermenu."
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Odczyty sensora są ukryte — włącz je w menu filtrów."
+          }
+        },
+        "pt" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "As leituras do sensor estão ocultas — ative-as no menu de filtros."
+          }
+        },
+        "ro" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Citirile senzorului sunt ascunse — activează-le din meniul de filtrare."
+          }
+        },
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Показания датчика скрыты — включите их в меню фильтров."
+          }
+        }
+      }
+    },
     "Sensor reconnected" : {
       "extractionState" : "manual",
       "localizations" : {
@@ -78723,6 +78841,65 @@
         }
       }
     },
+    "Show more" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Mehr anzeigen"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Mostrar más"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Afficher plus"
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Mostra altro"
+          }
+        },
+        "nl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Meer tonen"
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Pokaż więcej"
+          }
+        },
+        "pt" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Mostrar mais"
+          }
+        },
+        "ro" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Arată mai multe"
+          }
+        },
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Показать ещё"
+          }
+        }
+      }
+    },
     "Show on chart" : {
       "extractionState" : "manual",
       "localizations" : {
@@ -78778,6 +78955,65 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Показывать на графике"
+          }
+        }
+      }
+    },
+    "Show sensor readings" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Sensorwerte anzeigen"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Mostrar lecturas del sensor"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Afficher les lectures du capteur"
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Mostra le letture del sensore"
+          }
+        },
+        "nl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Sensormetingen tonen"
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Pokaż odczyty sensora"
+          }
+        },
+        "pt" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Mostrar leituras do sensor"
+          }
+        },
+        "ro" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Arată citirile senzorului"
+          }
+        },
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Показывать показания датчика"
           }
         }
       }
@@ -78896,65 +79132,6 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Показывает уровень глюкозы и позволяет вносить данные об инсулине и углеводах прямо с запястья. Ничего не покидает ваши сопряжённые устройства."
-          }
-        }
-      }
-    },
-    "Showing the most recent %@. Narrow the range to see the rest." : {
-      "extractionState" : "manual",
-      "localizations" : {
-        "de" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Es werden die neuesten %@ angezeigt. Grenze den Zeitraum ein, um die übrigen zu sehen."
-          }
-        },
-        "es" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Mostrando los %@ más recientes. Acota el periodo para ver el resto."
-          }
-        },
-        "fr" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Affichage des %@ plus récents. Restreins la période pour voir le reste."
-          }
-        },
-        "it" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Mostrando i %@ più recenti. Restringi il periodo per vedere il resto."
-          }
-        },
-        "nl" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "De recentste %@ worden getoond. Beperk de periode om de rest te zien."
-          }
-        },
-        "pl" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Pokazano %@ najnowszych. Zawęź zakres, aby zobaczyć resztę."
-          }
-        },
-        "pt" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "A mostrar os %@ mais recentes. Restringe o período para ver o resto."
-          }
-        },
-        "ro" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Se afișează cele mai recente %@. Restrânge intervalul ca să le vezi pe restul."
-          }
-        },
-        "ru" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Показаны %@ последних. Сузь диапазон, чтобы увидеть остальные."
           }
         }
       }

@@ -1,102 +1,49 @@
 import SwiftUI
 import SwiftData
 
-/// History: the same entries as the Journal, but framed as a searchable ledger.
+/// History: the Journal's "List" mode, reframed as *the user's* ledger.
 ///
-/// A range filter (Today / Yesterday / This week / This month / Custom) and a
-/// newest⇄oldest sort toggle drive a flat list. Rows swipe to delete through
-/// `env.entryStore` and tap to edit, exactly like the Journal.
-/// The History ledger's content, without its own `NavigationStack`/title, so the
-/// Journal tab embeds it as its "List" mode (Faza 1).
+/// A CGM writes ~288 readings a day; as a flat list that is noise, not a
+/// ledger — the sensor's story already lives in the chart, Days and Insights.
+/// So by default this list shows only what the person logged themselves:
+/// insulin, meals, fingerstick/manual/lab glucose, activity and notes. The
+/// sensor stream stays available behind a toggle in the filter menu, and a
+/// chip row narrows the list to one record family.
+///
+/// Performance contract: the SwiftData queries are bounded to the *selected
+/// range* (not a year), sensor readings are excluded in the predicate itself
+/// when hidden (so 100k rows are never materialised), the merged timeline is
+/// built once per data change behind `.task(id:)`, and rendering is paged
+/// ("Show more") instead of hard-capped.
 struct HistoryContent: View {
     @Environment(AppEnvironment.self) private var env
 
-    @Query private var glucose: [GlucoseReading]
-    @Query private var insulin: [InsulinDose]
-    @Query private var carbs: [CarbEntry]
-    @Query private var activity: [ActivityEntry]
-    @Query private var observations: [ObservationEntry]
-
-    /// Bounded to the same ~year window as the Register mode. These queries were
-    /// the last truly unbounded ones in the app: after a full-history import,
-    /// switching the Journal to List mode materialised every row ever stored on
-    /// the main thread. The list's ranges (week / month / custom) all fit well
-    /// inside a year; older records remain reachable via Calendar and Export.
-    init() {
-        let cutoff = Calendar.current.date(byAdding: .day, value: -370, to: Date())
-            ?? Date().addingTimeInterval(-370 * 86_400)
-        _glucose = Query(filter: #Predicate<GlucoseReading> { $0.timestamp >= cutoff },
-                         sort: \.timestamp, order: .reverse)
-        _insulin = Query(filter: #Predicate<InsulinDose> { $0.timestamp >= cutoff },
-                         sort: \.timestamp, order: .reverse)
-        _carbs = Query(filter: #Predicate<CarbEntry> { $0.timestamp >= cutoff },
-                       sort: \.timestamp, order: .reverse)
-        _activity = Query(filter: #Predicate<ActivityEntry> { $0.startTimestamp >= cutoff },
-                          sort: \.startTimestamp, order: .reverse)
-        _observations = Query(filter: #Predicate<ObservationEntry> { $0.timestamp >= cutoff },
-                              sort: \.timestamp, order: .reverse)
-    }
-
     @State private var range: HistoryRange = .thisWeek
+    @State private var kindFilter: HistoryKindFilter = .all
+    @State private var showSensor = false
     @State private var sortNewestFirst = true
     @State private var showingCustomRange = false
     @State private var customStart = Calendar.current.date(byAdding: .day, value: -7, to: Date()) ?? Date()
     @State private var customEnd = Date()
-    @State private var editTarget: HistoryEditTarget?
 
-    private var unit: GlucoseUnit { env.preferences.glucoseUnit }
-    private var thresholds: GlucoseThresholds { env.preferences.thresholds }
-
-    /// The most rows we ever hand to the `List`. A CGM logs ~288 readings/day, so
-    /// "This month" (or a full-history import) can be tens of thousands of items;
-    /// binding all of them into `List { ForEach }` makes SwiftUI hash and lay out
-    /// every id on the main thread, which watchdog-kills the app. We render the
-    /// most recent `renderCap` and tell the user to narrow the range for more.
-    private static let renderCap = 500
-
-    private var filteredItems: [JournalTimelineItem] {
-        let interval = dateInterval
-        // Narrow each table to the selected range BEFORE building the merged
-        // timeline. Building first and filtering after ran the merge over every
-        // fetched row (a year of CGM ≈ 100k) on each render, just to keep a week.
-        func within<T>(_ rows: [T], _ date: (T) -> Date) -> [T] {
-            guard let interval else { return rows }
-            return rows.filter { interval.contains(date($0)) }
-        }
-        return JournalTimelineItem.build(
-            glucose: within(glucose, \.timestamp),
-            insulin: within(insulin, \.timestamp),
-            carbs: within(carbs, \.timestamp),
-            activity: within(activity, \.startTimestamp),
-            observations: within(observations, \.timestamp)
-        )
-        .sorted { sortNewestFirst ? $0.date > $1.date : $0.date < $1.date }
-    }
-
-    /// The rendered items, always capped to the most-recent `renderCap` so the
-    /// footer's "most recent" promise holds even when the list is sorted
-    /// oldest-first (where the newest items are the tail).
-    private var visibleItems: [JournalTimelineItem] {
-        guard filteredItems.count > Self.renderCap else { return filteredItems }
-        return sortNewestFirst
-            ? Array(filteredItems.prefix(Self.renderCap))
-            : Array(filteredItems.suffix(Self.renderCap))
-    }
-
-    /// The half-open date interval selected by the current filter.
-    private var dateInterval: DateInterval? {
+    /// The half-open day-aligned interval selected by the current filter.
+    private var dateInterval: DateInterval {
         let calendar = Calendar.current
         let now = Date()
         switch range {
         case .today:
             return calendar.dateInterval(of: .day, for: now)
+                ?? DateInterval(start: calendar.startOfDay(for: now), duration: 86_400)
         case .yesterday:
-            guard let yesterday = calendar.date(byAdding: .day, value: -1, to: now) else { return nil }
+            let yesterday = calendar.date(byAdding: .day, value: -1, to: now) ?? now
             return calendar.dateInterval(of: .day, for: yesterday)
+                ?? DateInterval(start: calendar.startOfDay(for: yesterday), duration: 86_400)
         case .thisWeek:
             return calendar.dateInterval(of: .weekOfYear, for: now)
+                ?? DateInterval(start: calendar.startOfDay(for: now), duration: 7 * 86_400)
         case .thisMonth:
             return calendar.dateInterval(of: .month, for: now)
+                ?? DateInterval(start: calendar.startOfDay(for: now), duration: 30 * 86_400)
         case .custom:
             let lower = calendar.startOfDay(for: customStart)
             let upperDay = calendar.startOfDay(for: customEnd)
@@ -105,69 +52,20 @@ struct HistoryContent: View {
         }
     }
 
-    private var summaryText: String {
-        let count = filteredItems.count
-        return count == 1
-            ? String(localized: "\(count) entry · \(range.label)")
-            : String(localized: "\(count) entries · \(range.label)")
-    }
-
     var body: some View {
-        Group {
-                if filteredItems.isEmpty {
-                    ScrollView {
-                        VStack(spacing: 8) {
-                            Text(summaryText)
-                                .font(.footnote)
-                                .foregroundStyle(Theme.textSecondary)
-                                .frame(maxWidth: .infinity, alignment: .leading)
-                                .padding(.horizontal, 4)
-                            EmptyStateView(
-                                systemImage: "clock.arrow.circlepath",
-                                title: "Nothing in this range",
-                                message: "Choose a different period, or add a new entry."
-                            )
-                        }
-                        .padding()
-                    }
-                } else {
-                    List {
-                        Section {
-                            ForEach(visibleItems) { item in
-                                JournalEntryRow(item: item, unit: unit, thresholds: thresholds)
-                                    .listRowBackground(Theme.surface)
-                                    .listRowSeparatorTint(Theme.hairline)
-                                    .contentShape(.rect)
-                                    .onTapGesture {
-                                        Haptics.play(.selection)
-                                        editTarget = HistoryEditTarget(item: item)
-                                    }
-                                    .swipeActions(edge: .trailing) {
-                                        Button(role: .destructive) {
-                                            delete(item)
-                                        } label: {
-                                            Label("Delete", systemImage: "trash")
-                                        }
-                                    }
-                            }
-                        } header: {
-                            Text(summaryText)
-                                .font(.footnote)
-                                .foregroundStyle(Theme.textSecondary)
-                                .textCase(nil)
-                        } footer: {
-                            if filteredItems.count > Self.renderCap {
-                                Text("Showing the most recent \(Self.renderCap.formatted()). Narrow the range to see the rest.")
-                                    .font(.footnote)
-                                    .foregroundStyle(Theme.textSecondary)
-                            }
-                        }
-                    }
-                    .listStyle(.insetGrouped)
-                    .scrollContentBackground(.hidden)
-                }
-            }
-            .animation(.snappy, value: sortNewestFirst)
+        let interval = dateInterval
+        VStack(spacing: 0) {
+            chipRow
+            HistoryListView(
+                start: interval.start, end: interval.end, showSensor: showSensor,
+                kindFilter: kindFilter, sortNewestFirst: sortNewestFirst,
+                rangeLabel: range.label
+            )
+            // New identity per window / sensor choice → the bounded queries are
+            // rebuilt for exactly that slice, and pagination starts over.
+            .id("\(interval.start.timeIntervalSince1970)|\(interval.end.timeIntervalSince1970)|\(showSensor)")
+        }
+            .animation(.snappy, value: kindFilter)
             .animation(.default, value: range)
             .background(Theme.background)
             .toolbar {
@@ -194,6 +92,10 @@ struct HistoryContent: View {
                                 Label("Edit dates", systemImage: "calendar")
                             }
                         }
+                        Divider()
+                        Toggle(isOn: $showSensor) {
+                            Label("Show sensor readings", systemImage: "sensor.tag.radiowaves.forward")
+                        }
                     } label: {
                         Label(range.label, systemImage: "line.3.horizontal.decrease.circle")
                     }
@@ -205,9 +107,35 @@ struct HistoryContent: View {
             .sheet(isPresented: $showingCustomRange) {
                 customRangeSheet
             }
-            .sheet(item: $editTarget) { target in
-                editorSheet(for: target.item)
+    }
+
+    /// One-tap record-family filter: All / Insulin / Meals / Glucose / Activity
+    /// / Notes. Purely in-memory — switching chips never refetches.
+    private var chipRow: some View {
+        ScrollView(.horizontal, showsIndicators: false) {
+            HStack(spacing: 8) {
+                ForEach(HistoryKindFilter.allCases) { filter in
+                    let selected = kindFilter == filter
+                    Button {
+                        kindFilter = filter
+                        Haptics.play(.selection)
+                    } label: {
+                        Label(filter.label, systemImage: filter.symbol)
+                            .font(.footnote.weight(.semibold))
+                            .labelStyle(.titleAndIcon)
+                            .foregroundStyle(selected ? Color.white : Theme.textSecondary)
+                            .padding(.horizontal, 12)
+                            .padding(.vertical, 7)
+                            .background(
+                                Capsule().fill(selected ? Theme.accent : Theme.surface)
+                            )
+                    }
+                    .buttonStyle(.plain)
+                }
             }
+            .padding(.horizontal)
+            .padding(.vertical, 8)
+        }
     }
 
     private var customRangeSheet: some View {
@@ -225,6 +153,179 @@ struct HistoryContent: View {
             }
         }
         .presentationDetents([.medium])
+    }
+}
+
+// MARK: - Bounded list
+
+/// The list itself, created fresh per (window, sensor) choice so its SwiftData
+/// queries cover exactly the selected slice — a month of CGM is ~8.6k rows and
+/// a week of *logged* entries is a few dozen, never a year of anything.
+private struct HistoryListView: View {
+    @Environment(AppEnvironment.self) private var env
+
+    @Query private var glucose: [GlucoseReading]
+    @Query private var insulin: [InsulinDose]
+    @Query private var carbs: [CarbEntry]
+    @Query private var activity: [ActivityEntry]
+    @Query private var observations: [ObservationEntry]
+
+    let kindFilter: HistoryKindFilter
+    let sortNewestFirst: Bool
+    let rangeLabel: String
+    private let showSensor: Bool
+
+    /// The merged timeline, newest first — built once per data change in
+    /// `.task(id:)`, never inline in `body` (a computed property here used to
+    /// re-run the whole merge three or four times per render).
+    @State private var items: [JournalTimelineItem] = []
+    /// How many rows are rendered; "Show more" grows it page by page.
+    @State private var visibleCount = HistoryListView.pageSize
+    /// Bumped when the editor sheet closes, so in-place edits rebuild the list
+    /// even though no record count moved.
+    @State private var dataVersion = 0
+    @State private var editTarget: HistoryEditTarget?
+
+    private static let pageSize = 200
+
+    init(start: Date, end: Date, showSensor: Bool,
+         kindFilter: HistoryKindFilter, sortNewestFirst: Bool, rangeLabel: String) {
+        self.showSensor = showSensor
+        self.kindFilter = kindFilter
+        self.sortNewestFirst = sortNewestFirst
+        self.rangeLabel = rangeLabel
+
+        // Sensor readings are excluded in the predicate itself when hidden, so
+        // SwiftData never materialises the 5-minute stream just to drop it.
+        let cgmRaw = GlucoseMeasurementType.cgm.rawValue
+        if showSensor {
+            _glucose = Query(filter: #Predicate<GlucoseReading> {
+                $0.timestamp >= start && $0.timestamp < end
+            }, sort: \.timestamp, order: .reverse)
+        } else {
+            _glucose = Query(filter: #Predicate<GlucoseReading> {
+                $0.timestamp >= start && $0.timestamp < end && $0.measurementTypeRaw != cgmRaw
+            }, sort: \.timestamp, order: .reverse)
+        }
+        _insulin = Query(filter: #Predicate<InsulinDose> {
+            $0.timestamp >= start && $0.timestamp < end
+        }, sort: \.timestamp, order: .reverse)
+        _carbs = Query(filter: #Predicate<CarbEntry> {
+            $0.timestamp >= start && $0.timestamp < end
+        }, sort: \.timestamp, order: .reverse)
+        _activity = Query(filter: #Predicate<ActivityEntry> {
+            $0.startTimestamp >= start && $0.startTimestamp < end
+        }, sort: \.startTimestamp, order: .reverse)
+        _observations = Query(filter: #Predicate<ObservationEntry> {
+            $0.timestamp >= start && $0.timestamp < end
+        }, sort: \.timestamp, order: .reverse)
+    }
+
+    private var unit: GlucoseUnit { env.preferences.glucoseUnit }
+    private var thresholds: GlucoseThresholds { env.preferences.thresholds }
+
+    private var buildKey: String {
+        "\(glucose.count)|\(insulin.count)|\(carbs.count)|\(activity.count)|\(observations.count)|\(dataVersion)"
+    }
+
+    /// The chip-filtered timeline in display order. Cheap: it maps over the
+    /// cached array, no re-merge and no re-sort beyond an optional reverse.
+    private var filteredItems: [JournalTimelineItem] {
+        let matching = kindFilter == .all
+            ? items
+            : items.filter { kindFilter.matches($0.kind) }
+        return sortNewestFirst ? matching : matching.reversed()
+    }
+
+    var body: some View {
+        let filtered = filteredItems
+        let visible = Array(filtered.prefix(visibleCount))
+        let summary = summaryText(count: filtered.count)
+
+        Group {
+            if filtered.isEmpty {
+                ScrollView {
+                    VStack(spacing: 8) {
+                        Text(summary)
+                            .font(.footnote)
+                            .foregroundStyle(Theme.textSecondary)
+                            .frame(maxWidth: .infinity, alignment: .leading)
+                            .padding(.horizontal, 4)
+                        EmptyStateView(
+                            systemImage: "clock.arrow.circlepath",
+                            title: "Nothing in this range",
+                            message: "Choose a different period, or add a new entry."
+                        )
+                    }
+                    .padding()
+                }
+            } else {
+                List {
+                    Section {
+                        ForEach(visible) { item in
+                            JournalEntryRow(item: item, unit: unit, thresholds: thresholds)
+                                .listRowBackground(Theme.surface)
+                                .listRowSeparatorTint(Theme.hairline)
+                                .contentShape(.rect)
+                                .onTapGesture {
+                                    Haptics.play(.selection)
+                                    editTarget = HistoryEditTarget(item: item)
+                                }
+                                .swipeActions(edge: .trailing) {
+                                    Button(role: .destructive) {
+                                        delete(item)
+                                    } label: {
+                                        Label("Delete", systemImage: "trash")
+                                    }
+                                }
+                        }
+                        if filtered.count > visibleCount {
+                            Button {
+                                visibleCount += Self.pageSize
+                                Haptics.play(.selection)
+                            } label: {
+                                Text("Show more")
+                                    .font(.subheadline.weight(.semibold))
+                                    .foregroundStyle(Theme.accent)
+                                    .frame(maxWidth: .infinity)
+                            }
+                            .listRowBackground(Theme.surface)
+                        }
+                    } header: {
+                        Text(summary)
+                            .font(.footnote)
+                            .foregroundStyle(Theme.textSecondary)
+                            .textCase(nil)
+                    } footer: {
+                        if !showSensor {
+                            Text("Sensor readings are hidden — turn them on from the filter menu.")
+                                .font(.footnote)
+                                .foregroundStyle(Theme.textTertiary)
+                        }
+                    }
+                }
+                .listStyle(.insetGrouped)
+                .scrollContentBackground(.hidden)
+            }
+        }
+        .task(id: buildKey) {
+            // Yield first so tab/mode switches present before the merge runs.
+            await Task.yield()
+            items = JournalTimelineItem.build(
+                glucose: glucose, insulin: insulin, carbs: carbs,
+                activity: activity, observations: observations
+            )
+            .sorted { $0.date > $1.date }
+        }
+        .sheet(item: $editTarget, onDismiss: { dataVersion += 1 }) { target in
+            editorSheet(for: target.item)
+        }
+    }
+
+    private func summaryText(count: Int) -> String {
+        count == 1
+            ? String(localized: "\(count) entry · \(rangeLabel)")
+            : String(localized: "\(count) entries · \(rangeLabel)")
     }
 
     private func delete(_ item: JournalTimelineItem) {
@@ -285,6 +386,46 @@ private enum HistoryRange: String, CaseIterable, Identifiable {
         case .thisWeek: return "calendar"
         case .thisMonth: return "calendar.badge.clock"
         case .custom: return "slider.horizontal.3"
+        }
+    }
+}
+
+/// The chip row's record-family filter.
+private enum HistoryKindFilter: String, CaseIterable, Identifiable {
+    case all, insulin, meals, glucose, activity, notes
+
+    var id: String { rawValue }
+
+    var label: LocalizedStringKey {
+        switch self {
+        case .all: "All"
+        case .insulin: "Insulin"
+        case .meals: "Meals"
+        case .glucose: "Glucose"
+        case .activity: "Activity"
+        case .notes: "Notes"
+        }
+    }
+
+    var symbol: String {
+        switch self {
+        case .all: "line.3.horizontal"
+        case .insulin: "syringe"
+        case .meals: "fork.knife"
+        case .glucose: "drop"
+        case .activity: "figure.walk"
+        case .notes: "note.text"
+        }
+    }
+
+    func matches(_ kind: JournalTimelineItem.Kind) -> Bool {
+        switch self {
+        case .all: true
+        case .insulin: kind == .insulin
+        case .meals: kind == .carbs
+        case .glucose: kind == .glucose
+        case .activity: kind == .activity
+        case .notes: kind == .observation
         }
     }
 }
