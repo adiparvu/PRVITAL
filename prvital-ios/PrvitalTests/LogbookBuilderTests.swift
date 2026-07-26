@@ -68,16 +68,26 @@ final class LogbookBuilderTests: XCTestCase {
         XCTAssertNil(result[0].afterBreakfast.mgdL)
     }
 
-    func testSlotWindowIsPlusMinusSeventyFiveMinutes() {
-        // 06:10 is 80 min before the 07:30 anchor — outside the window; the day
-        // still gets a (slot-empty) row because it has data.
-        let outside = rows(readings: [reading(1, 6, 10)])
-        XCTAssertEqual(outside.count, 1)
-        XCTAssertNil(outside[0].beforeBreakfast.mgdL)
-
-        // 06:20 is 70 min before — inside.
-        let inside = rows(readings: [reading(1, 6, 20, 95)])
+    func testBeforeSlotLooksBackwardFromTheMeal() {
+        // The "before" window reaches 90 min back from the 07:30 anchor…
+        let inside = rows(readings: [reading(1, 6, 10, 95)])
         XCTAssertEqual(inside[0].beforeBreakfast.mgdL, 95)
+
+        // …but only 10 min past it: a value from after eating can never be
+        // "before" (07:45 is outside; the day still gets a row).
+        let after = rows(readings: [reading(1, 7, 45)])
+        XCTAssertEqual(after.count, 1)
+        XCTAssertNil(after[0].beforeBreakfast.mgdL)
+    }
+
+    func testAfterSlotWindowIsPlusMinusSeventyFiveMinutes() {
+        // "2h after breakfast" targets 09:30: 10:50 (80 min) is outside,
+        // 10:40 (70 min) is inside.
+        let outside = rows(readings: [reading(1, 10, 50)])
+        XCTAssertNil(outside[0].afterBreakfast.mgdL)
+
+        let inside = rows(readings: [reading(1, 10, 40, 175)])
+        XCTAssertEqual(inside[0].afterBreakfast.mgdL, 175)
     }
 
     func testAfterSlotTargetsAnchorPlusTwoHours() {
@@ -89,8 +99,8 @@ final class LogbookBuilderTests: XCTestCase {
     }
 
     func testFingerstickPreferredOverCloserCGM() {
-        let cgm = reading(1, 7, 30, 140, type: .cgm)
-        let stick = reading(1, 8, 30, 118, type: .fingerstick)   // 60 min away, still in window
+        let cgm = reading(1, 7, 30, 140, type: .cgm)             // dead on the anchor
+        let stick = reading(1, 6, 30, 118, type: .fingerstick)   // 60 min before, in window
         let result = rows(readings: [cgm, stick])
         XCTAssertEqual(result[0].beforeBreakfast.mgdL, 118)
         XCTAssertEqual(result[0].beforeBreakfast.readingID, stick.id)
@@ -104,11 +114,11 @@ final class LogbookBuilderTests: XCTestCase {
     }
 
     func testReadingFillsAtMostOneSlot() {
-        // 14:00 is inside both "before lunch" (13:00) and "2h after lunch"
-        // (15:00) windows; the earlier slot claims it, the later stays empty.
-        let result = rows(readings: [reading(1, 14, 0, 130)])
-        XCTAssertEqual(result[0].beforeLunch.mgdL, 130)
-        XCTAssertNil(result[0].afterLunch.mgdL)
+        // 21:30 is inside both "2h after dinner" (21:00 ±75) and "bedtime"
+        // (22:30 ±75); the earlier slot claims it, the later stays empty.
+        let result = rows(readings: [reading(1, 21, 30, 130)])
+        XCTAssertEqual(result[0].afterDinner.mgdL, 130)
+        XCTAssertNil(result[0].bedtime.mgdL)
     }
 
     func testInactiveReadingsAreIgnored() {
@@ -119,8 +129,8 @@ final class LogbookBuilderTests: XCTestCase {
 
     // MARK: Meal anchors
 
-    func testCarbEntryReanchorsTheMeal() {
-        // Breakfast carb at 06:30 (inside ±120 min of 07:30) moves the anchor:
+    func testDeclaredMealAnchorsTheColumns() {
+        // An entry DECLARED breakfast at 06:30 anchors the meal there:
         // "before" targets 06:30 and "2h after" targets 08:30.
         let carb = CarbEntry(grams: 40, timestamp: date(1, 6, 30), mealType: .breakfast)
         let before = reading(1, 6, 25, 96)
@@ -130,6 +140,28 @@ final class LogbookBuilderTests: XCTestCase {
         XCTAssertEqual(result[0].beforeBreakfast.slotDate, date(1, 6, 30))
         XCTAssertEqual(result[0].afterBreakfast.mgdL, 170)
         XCTAssertEqual(result[0].afterBreakfast.slotDate, date(1, 8, 30))
+    }
+
+    func testDeclaredMealFarFromTimetableStillAnchorsExactly() {
+        // A late lunch declared at 15:30 — far outside the old ±120 window —
+        // now anchors the lunch columns at the real meal.
+        let carb = CarbEntry(grams: 55, timestamp: date(1, 15, 30), mealType: .lunch)
+        let before = reading(1, 15, 0, 104)
+        let after = reading(1, 17, 30, 152)
+        let result = rows(readings: [before, after], carbs: [carb])
+        XCTAssertEqual(result[0].beforeLunch.mgdL, 104)
+        XCTAssertEqual(result[0].beforeLunch.slotDate, date(1, 15, 30))
+        XCTAssertEqual(result[0].afterLunch.mgdL, 152)
+    }
+
+    func testSnackNeverMovesAMealAnchor() {
+        // A morning snack near breakfast time must not re-anchor breakfast:
+        // the timetable (07:30) stays, so 07:00 still lands "before breakfast".
+        let snack = CarbEntry(grams: 15, timestamp: date(1, 6, 30), mealType: .morningSnack)
+        let before = reading(1, 7, 0, 101)
+        let result = rows(readings: [before], carbs: [snack])
+        XCTAssertEqual(result[0].beforeBreakfast.slotDate, date(1, 7, 30))
+        XCTAssertEqual(result[0].beforeBreakfast.mgdL, 101)
     }
 
     func testFixedAnchorUsedWhenNoCarbEntry() {

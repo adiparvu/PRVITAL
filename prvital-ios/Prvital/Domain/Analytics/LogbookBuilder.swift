@@ -8,22 +8,22 @@ import Foundation
 // SwiftData queries — the view hands in the already-fetched records.
 //
 // Slot rules (documented here because they ARE the feature):
-//   • Meal anchors default to breakfast 07:30, lunch 13:00, dinner 19:00 and
-//     bedtime 22:30. When the user has a glucose schedule (Settings → glucose
-//     routine) its enabled slots override the defaults, bucketed by time of
-//     day: 04:00–10:59 → breakfast, 11:00–15:59 → lunch, 16:00–20:59 → dinner,
-//     21:00 onwards (or before 04:00) → bedtime; the earliest slot in a band
-//     wins and bands without a slot keep the default.
-//   • Per day, if the day has a carb entry within ±120 min of a meal's anchor
-//     (and that anchor is the nearest of the three), the meal re-anchors on the
-//     earliest such carb entry — the register should reflect when the person
-//     actually ate, not the timetable.
-//   • A "before X" glucose slot targets the meal anchor; "2h after X" targets
-//     anchor + 2 h; bedtime targets the bedtime anchor. The representative
-//     reading is the one closest to the target within ±75 min. Fingerstick /
-//     manual / lab readings are preferred over CGM whenever any is inside the
-//     window — the paper register is meant for discrete checks — with CGM used
-//     only as a fallback. A reading fills at most one slot (closest first, in
+//   • Meal anchors come from the user's OWN word first: the day's earliest
+//     carb entry DECLARED as breakfast / lunch / dinner anchors that meal at
+//     the moment it was actually eaten. Snacks never move a meal. Only when a
+//     day has no declared entry for a meal does the clock take over: breakfast
+//     07:30, lunch 13:00, dinner 19:00, bedtime 22:30 — overridden by the
+//     glucose schedule's enabled slots, bucketed by time of day
+//     (04:00–10:59 → breakfast, 11:00–15:59 → lunch, 16:00–20:59 → dinner,
+//     21:00 onwards or before 04:00 → bedtime; earliest slot in a band wins).
+//   • A "before X" glucose slot looks BACKWARD from the meal: the nearest
+//     reading in the 90 minutes leading up to the first bite (with a 10-minute
+//     grace after it, for logging order) — a value from well after eating can
+//     never be "before". "2h after X" targets anchor + 2 h and bedtime targets
+//     its anchor, both within ±75 min. Fingerstick / manual / lab readings are
+//     preferred over CGM whenever any is inside the window — the paper
+//     register is meant for discrete checks — with CGM used only as a
+//     fallback. A reading fills at most one slot (closest first, in
 //     chronological slot order).
 //   • Insulin per meal is the sum of *bolus* doses (anything except basal: a
 //     dose is excluded when its context is `.basal` or its insulin type is
@@ -154,12 +154,15 @@ struct LogbookAnchors: Equatable, Sendable {
 
 /// Builds the register rows. Pure and deterministic — safe to unit-test.
 enum LogbookBuilder {
-    /// Half-width of the glucose slot window (±75 min around the target).
+    /// Half-width of the symmetric glucose windows (±75 min around the target)
+    /// used by the "2h after" and bedtime slots.
     static let glucoseWindow: TimeInterval = 75 * 60
+    /// How far BACK a "before meal" slot looks from the meal anchor (90 min)…
+    static let beforeMealLookback: TimeInterval = 90 * 60
+    /// …and the little grace after the anchor for measure-then-log ordering.
+    static let beforeMealGrace: TimeInterval = 10 * 60
     /// Half-width of the insulin meal window (±90 min around the anchor).
     static let insulinWindow: TimeInterval = 90 * 60
-    /// Half-width of the carb window used to re-anchor a meal (±120 min).
-    static let carbAnchorWindow: TimeInterval = 120 * 60
     /// "After X" targets the meal anchor plus two hours.
     static let afterMealOffset: TimeInterval = 2 * 60 * 60
     /// Low readings closer than this group into one comment marker.
@@ -213,37 +216,38 @@ enum LogbookBuilder {
         var rows: [LogbookRow] = []
 
         for day in days {
-            // Resolve the day's meal anchors: schedule/default time, replaced by
-            // the earliest carb entry inside the meal's window when one exists.
+            // Resolve the day's meal anchors: the user's own word first — the
+            // earliest entry DECLARED as this meal anchors it at the moment it
+            // was actually eaten (snacks never move a meal). The schedule /
+            // default timetable is only the fallback for undeclared days.
             let base = [
                 date(day, minutes: anchors.breakfastMinutes, calendar: calendar),
                 date(day, minutes: anchors.lunchMinutes, calendar: calendar),
                 date(day, minutes: anchors.dinnerMinutes, calendar: calendar),
             ]
             let dayCarbs = (carbsByDay[day] ?? []).sorted { $0.timestamp < $1.timestamp }
+            let declaredTypes: [MealType] = [.breakfast, .lunch, .dinner]
             let mealAnchors = (0..<3).map { meal -> Date in
-                let anchored = dayCarbs.first { entry in
-                    abs(entry.timestamp.timeIntervalSince(base[meal])) <= carbAnchorWindow
-                        && nearestIndex(of: entry.timestamp, in: base) == meal
-                }
-                return anchored?.timestamp ?? base[meal]
+                dayCarbs.first { $0.mealType == declaredTypes[meal] }?.timestamp ?? base[meal]
             }
             let bedtimeAnchor = date(day, minutes: anchors.bedtimeMinutes, calendar: calendar)
 
-            // Glucose slots, chronological, each claiming its reading exactly once.
-            let targets: [(LogbookGlucoseSlot, Date)] = [
-                (.beforeBreakfast, mealAnchors[0]),
-                (.afterBreakfast, mealAnchors[0].addingTimeInterval(afterMealOffset)),
-                (.beforeLunch, mealAnchors[1]),
-                (.afterLunch, mealAnchors[1].addingTimeInterval(afterMealOffset)),
-                (.beforeDinner, mealAnchors[2]),
-                (.afterDinner, mealAnchors[2].addingTimeInterval(afterMealOffset)),
-                (.bedtime, bedtimeAnchor),
+            // Glucose slots, chronological, each claiming its reading exactly
+            // once. "Before" slots look backward from the meal; the rest keep
+            // the symmetric window.
+            let targets: [(LogbookGlucoseSlot, Date, TimeInterval, TimeInterval)] = [
+                (.beforeBreakfast, mealAnchors[0], beforeMealLookback, beforeMealGrace),
+                (.afterBreakfast, mealAnchors[0].addingTimeInterval(afterMealOffset), glucoseWindow, glucoseWindow),
+                (.beforeLunch, mealAnchors[1], beforeMealLookback, beforeMealGrace),
+                (.afterLunch, mealAnchors[1].addingTimeInterval(afterMealOffset), glucoseWindow, glucoseWindow),
+                (.beforeDinner, mealAnchors[2], beforeMealLookback, beforeMealGrace),
+                (.afterDinner, mealAnchors[2].addingTimeInterval(afterMealOffset), glucoseWindow, glucoseWindow),
+                (.bedtime, bedtimeAnchor, glucoseWindow, glucoseWindow),
             ]
             var cells: [LogbookGlucoseSlot: LogbookCell] = [:]
-            for (slot, target) in targets {
+            for (slot, target, lookback, lookahead) in targets {
                 let cell = representative(
-                    around: target,
+                    around: target, lookback: lookback, lookahead: lookahead,
                     readings: sortedReadings, times: readingTimes,
                     excluding: usedReadingIDs
                 )
@@ -310,17 +314,19 @@ enum LogbookBuilder {
         return best
     }
 
-    /// The representative reading for a slot: closest to `target` within
-    /// ±`glucoseWindow`, preferring discrete (non-CGM) measurements, skipping
-    /// readings already claimed by an earlier slot.
+    /// The representative reading for a slot: closest to `target` inside the
+    /// slot's own (possibly asymmetric) window, preferring discrete (non-CGM)
+    /// measurements, skipping readings already claimed by an earlier slot.
     private static func representative(
         around target: Date,
+        lookback: TimeInterval,
+        lookahead: TimeInterval,
         readings: [GlucoseReading],
         times: [Date],
         excluding used: Set<UUID>
     ) -> LogbookCell {
-        let lower = target.addingTimeInterval(-glucoseWindow)
-        let upper = target.addingTimeInterval(glucoseWindow)
+        let lower = target.addingTimeInterval(-lookback)
+        let upper = target.addingTimeInterval(lookahead)
 
         // Binary search for the first reading at/after the window start; the
         // window is short, so the scan after it touches only a handful of rows.
