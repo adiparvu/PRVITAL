@@ -72,14 +72,17 @@ private struct CompactLeading: View {
     }
 
     var body: some View {
+        // Deliberately small: the compact pill should hug the sensor housing,
+        // not stretch into a banner (device feedback — it sat "always big").
         Group {
             if state.kind == .insulinOnBoard {
                 // Active insulin reads as a lettered badge in the design, not a glyph.
                 Text("IOB")
-                    .font(.system(size: 11, weight: .heavy, design: .rounded))
+                    .font(.system(size: 9, weight: .heavy, design: .rounded))
                     .foregroundStyle(tint)
             } else {
                 Image(systemName: state.iconName)
+                    .font(.footnote)
                     .foregroundStyle(tint)
                     .symbolEffect(.breathe, options: .repeating, isActive: !isUrgent)
                     .symbolEffect(.pulse, options: .repeating, isActive: isUrgent)
@@ -104,27 +107,22 @@ private struct CompactTrailing: View {
     }
 
     var body: some View {
+        // Arrow + value, nothing else, at footnote size — the earlier version
+        // (larger type plus a mini sparkline) kept the pill permanently wide.
         if showsReading {
-            HStack(spacing: 3) {
+            HStack(spacing: 2) {
                 Image(systemName: state.trendSymbol)
-                    .font(.caption2.weight(.bold))
+                    .font(.system(size: 9, weight: .bold))
                     .contentTransition(.symbolEffect(.replace))
                     .animation(.smooth, value: state.trendSymbol)
                 Text(state.valueText)
-                    .fontWeight(.semibold)
+                    .font(.footnote.weight(.semibold))
                     .contentTransition(.numericText(value: state.mgdL))
-                // The live squiggle belongs to the calm pill only; an alert should
-                // not compete with itself for the eye.
-                if state.kind == .glucose, state.recentMgdL.count >= 3 {
-                    MiniSquiggle(values: state.recentMgdL)
-                        .stroke(tint.opacity(0.85), style: StrokeStyle(lineWidth: 1.6, lineCap: .round, lineJoin: .round))
-                        .frame(width: 15, height: 9)
-                }
             }
             .foregroundStyle(tint)
         } else if let compact = state.eventCompactText {
             Text(compact)
-                .fontWeight(.semibold)
+                .font(.footnote.weight(.semibold))
                 .foregroundStyle(tint)
                 .monospacedDigit()
                 .lineLimit(1)
@@ -143,39 +141,21 @@ private struct MinimalPresentation: View {
         switch state.kind {
         case .glucose, .alertLow, .alertHigh:
             Text(state.valueText)
-                .fontWeight(.semibold)
+                .font(.footnote.weight(.semibold))
                 .foregroundStyle(tint)
                 .contentTransition(.numericText(value: state.mgdL))
         default:
             // An action or countdown shows its own number; a state with none
             // (a reconnected sensor) falls back to the glyph.
             if let compact = state.eventCompactText {
-                Text(compact).fontWeight(.semibold).foregroundStyle(tint).monospacedDigit()
+                Text(compact)
+                    .font(.footnote.weight(.semibold))
+                    .foregroundStyle(tint)
+                    .monospacedDigit()
             } else {
-                Image(systemName: state.iconName).foregroundStyle(tint)
+                Image(systemName: state.iconName).font(.footnote).foregroundStyle(tint)
             }
         }
-    }
-}
-
-/// The little live squiggle beside the compact value — the recent readings
-/// normalised into a tiny path, so the pill carries the shape of the trend.
-private struct MiniSquiggle: Shape {
-    let values: [Double]
-
-    func path(in rect: CGRect) -> Path {
-        var path = Path()
-        let points = values.suffix(8)
-        guard points.count >= 2, let lo = points.min(), let hi = points.max() else { return path }
-        let span = max(hi - lo, 1)
-        let step = rect.width / CGFloat(points.count - 1)
-        for (i, value) in points.enumerated() {
-            let x = rect.minX + CGFloat(i) * step
-            // Flip: a higher reading sits higher in the rect.
-            let y = rect.maxY - CGFloat((value - lo) / span) * rect.height
-            if i == 0 { path.move(to: CGPoint(x: x, y: y)) } else { path.addLine(to: CGPoint(x: x, y: y)) }
-        }
-        return path
     }
 }
 
