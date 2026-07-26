@@ -341,13 +341,17 @@ struct BackgroundSettingsView: View {
 
             if prefs.backgroundKind == .photo {
                 Section {
+                    // Copied into a `let` first: the PhotosPicker label closure
+                    // is @Sendable and must not capture the mutable `prefs`.
+                    let photoData = prefs.backgroundPhotoData
+                    let thumb = BackgroundPhotoStore.shared.image(matching: photoData)
                     PhotosPicker(selection: $photoItem, matching: .images, photoLibrary: .shared()) {
                         HStack(spacing: 12) {
                             tile("photo.badge.plus")
-                            Text(prefs.backgroundPhotoData == nil ? "Choose photo" : "Change photo")
+                            Text(photoData == nil ? "Choose photo" : "Change photo")
                                 .foregroundStyle(Theme.textPrimary)
                             Spacer()
-                            if let thumb = BackgroundPhotoStore.shared.image(matching: prefs.backgroundPhotoData) {
+                            if let thumb {
                                 Image(uiImage: thumb)
                                     .resizable()
                                     .scaledToFill()
