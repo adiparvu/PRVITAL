@@ -392,7 +392,11 @@ struct DashboardView: View {
             }
         }
         .frame(maxWidth: .infinity)
-        .glassCard(cornerRadius: 26, padding: 20)
+        // No card around the hero (device feedback): the ring and its captions
+        // float directly on the app background, like the rest of the plain-text
+        // hero elements. A touch of vertical padding keeps the breathing room
+        // the card's padding used to provide.
+        .padding(.vertical, 8)
         // Animate the stale / prediction chips in and out as new readings land.
         .animation(.smooth(duration: 0.3), value: summary.current?.valueMgdL)
     }

@@ -8,11 +8,14 @@ struct GlucoseGaugeRing: View {
     let zone: GlucoseZone
     let unit: GlucoseUnit
     var trend: GlucoseTrend?
-    var diameter: CGFloat = 200
+    /// Sized for the card-less hero: with no frame around it, the ring can own
+    /// the top of the screen (device feedback: "bigger, more refined").
+    var diameter: CGFloat = 248
 
     /// Display scale for the ring sweep (clamped).
     private let scaleLow = 40.0
     private let scaleHigh = 320.0
+    private let ringWidth: CGFloat = 16
 
     @State private var pulse = false
     @State private var appeared = false
@@ -26,24 +29,49 @@ struct GlucoseGaugeRing: View {
         ZStack {
             // Soft glow that breathes behind the ring, tinted by the zone.
             Circle()
-                .stroke(zone.color.opacity(0.35), lineWidth: 14)
-                .blur(radius: 11)
+                .stroke(zone.color.opacity(0.35), lineWidth: ringWidth)
+                .blur(radius: 12)
                 .scaleEffect(pulse ? 1.05 : 0.97)
                 .opacity(pulse ? 0.8 : 0.4)
 
+            // A faint instrument tick ring just inside the track — the quiet
+            // "dial" detail that makes the gauge read as crafted, not generic.
+            ForEach(0..<60, id: \.self) { index in
+                Rectangle()
+                    .fill(Theme.textSecondary.opacity(index.isMultiple(of: 15) ? 0.35 : 0.16))
+                    .frame(width: 1.5, height: index.isMultiple(of: 15) ? 7 : 4)
+                    .offset(y: -diameter / 2 + ringWidth + 13)
+                    .rotationEffect(.degrees(Double(index) * 6))
+            }
+
             Circle()
-                .stroke(Theme.hairline, style: StrokeStyle(lineWidth: 14, lineCap: .round))
+                .stroke(Theme.hairline.opacity(0.7), style: StrokeStyle(lineWidth: ringWidth, lineCap: .round))
+            // The sweep brightens toward its tip, giving the arc direction.
             Circle()
                 .trim(from: 0, to: appeared ? fraction : 0)
-                .stroke(zone.color.gradient, style: StrokeStyle(lineWidth: 14, lineCap: .round))
+                .stroke(
+                    AngularGradient(
+                        colors: [zone.color.opacity(0.45), zone.color],
+                        center: .center,
+                        startAngle: .degrees(0),
+                        endAngle: .degrees(fraction * 360)
+                    ),
+                    style: StrokeStyle(lineWidth: ringWidth, lineCap: .round)
+                )
                 .rotationEffect(.degrees(-90))
                 .animation(.smooth, value: fraction)
 
+            // A bright cap at the arc's tip — the "you are here" of the scale.
+            tipDot
+
             VStack(spacing: 2) {
                 Text(GlucoseFormatting.string(mgdL: mgdL, unit: unit))
-                    .font(.system(size: 54, weight: .bold, design: .rounded))
+                    .font(.system(size: 62, weight: .bold, design: .rounded))
                     .foregroundStyle(Theme.textPrimary)
                     .contentTransition(.numericText())
+                    .lineLimit(1)
+                    .minimumScaleFactor(0.6)
+                    .padding(.horizontal, 34)
                 Text(unit.rawValue).font(.subheadline).foregroundStyle(Theme.textSecondary)
                 if let trend {
                     TrendBadge(trend: trend, showsLabel: true).padding(.top, 2)
@@ -63,6 +91,20 @@ struct GlucoseGaugeRing: View {
         .accessibilityElement(children: .ignore)
         .accessibilityLabel("Glucose \(GlucoseFormatting.labeled(mgdL: mgdL, unit: unit)), \(zone.label)"
                             + (trend.map { ", \($0.label)" } ?? ""))
+    }
+
+    /// The glowing endpoint of the sweep, riding exactly on the arc's tip.
+    private var tipDot: some View {
+        let angle = (fraction * 360 - 90) * .pi / 180
+        let radius = diameter / 2
+        return Circle()
+            .fill(zone.color)
+            .frame(width: ringWidth - 4, height: ringWidth - 4)
+            .overlay(Circle().stroke(.white.opacity(0.85), lineWidth: 1.5))
+            .shadow(color: zone.color.opacity(0.8), radius: 5)
+            .offset(x: cos(angle) * radius, y: sin(angle) * radius)
+            .opacity(appeared ? 1 : 0)
+            .animation(.smooth, value: fraction)
     }
 }
 
