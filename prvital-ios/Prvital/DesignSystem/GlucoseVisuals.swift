@@ -140,6 +140,32 @@ private struct PulsingLiveDot: View {
     }
 }
 
+/// The ⓘ chart-markers button + its legend sheet, host-agnostic: full-size
+/// charts overlay it on the plot by default, while a screen can instead place
+/// it in its own header (the Dashboard puts it right after the range picker).
+struct ChartLegendButton: View {
+    let visible: Binding<Set<ChartEventKind>>
+    @State private var showingLegend = false
+
+    var body: some View {
+        Button {
+            Haptics.play(.light)
+            showingLegend = true
+        } label: {
+            Image(systemName: "info.circle")
+                .font(.system(size: 15))
+                .foregroundStyle(Theme.textTertiary)
+                .padding(6)
+                .contentShape(.rect)
+        }
+        .buttonStyle(.plain)
+        .accessibilityLabel("Chart markers")
+        .sheet(isPresented: $showingLegend) {
+            ChartEventLegend(visible: visible)
+        }
+    }
+}
+
 struct GlucoseTrendChart: View {
     let readings: [GlucoseReading]
     let thresholds: GlucoseThresholds
@@ -150,6 +176,11 @@ struct GlucoseTrendChart: View {
     var visibleEventKinds: Set<ChartEventKind> = []
     /// When provided (full-size charts), an ⓘ button opens the show/hide legend.
     var eventKindsBinding: Binding<Set<ChartEventKind>>? = nil
+    /// Whether the chart draws its own ⓘ overlay in the top-right of the plot.
+    /// Screens that host the button in their own header (the Dashboard places
+    /// it beside the range picker, per device feedback) pass false and render
+    /// `ChartLegendButton` themselves.
+    var inlineLegendButton = true
     /// When true, events are shown as a slim lane BELOW the chart (aligned to the
     /// same time axis) instead of tiny badges on the curve — which get lost
     /// against the area fill. Per device feedback ("a band under the chart").
@@ -161,7 +192,6 @@ struct GlucoseTrendChart: View {
 
     @State private var selectedDate: Date?
     @State private var appeared = false
-    @State private var showingLegend = false
     /// Drives the one-shot left-to-right draw-on sweep.
     @State private var drawn = false
     /// The zone under the finger during a scrub, so crossing into/out of the
@@ -277,24 +307,11 @@ struct GlucoseTrendChart: View {
         return d.lowerBound + (d.upperBound - d.lowerBound) * 0.05
     }
 
-    /// The ⓘ legend/toggle button — only on full-size charts given a binding.
+    /// The ⓘ legend/toggle button — only on full-size charts given a binding,
+    /// and only when the host hasn't taken the button into its own header.
     @ViewBuilder private var legendButton: some View {
-        if let eventKindsBinding, !compact {
-            Button {
-                Haptics.play(.light)
-                showingLegend = true
-            } label: {
-                Image(systemName: "info.circle")
-                    .font(.system(size: 15))
-                    .foregroundStyle(Theme.textTertiary)
-                    .padding(6)
-                    .contentShape(.rect)
-            }
-            .buttonStyle(.plain)
-            .accessibilityLabel("Chart markers")
-            .sheet(isPresented: $showingLegend) {
-                ChartEventLegend(visible: eventKindsBinding)
-            }
+        if let eventKindsBinding, !compact, inlineLegendButton {
+            ChartLegendButton(visible: eventKindsBinding)
         }
     }
 
@@ -453,6 +470,9 @@ struct GlucoseTrendChart: View {
         .chartXSelection(value: interactive ? $selectedDate : .constant(nil))
         .chartXScale(domain: xDomain)
         .chartYScale(domain: yDomain)
+        // When the ceiling jumps to the next tier (a spike crossed into new
+        // territory), glide there instead of snapping — the Dexcom rescale.
+        .animation(reduceMotion ? nil : .smooth(duration: 0.6), value: yDomain)
         // A live, pulsing "now" ring at the latest reading — a soft ping that keeps
         // expanding and fading so the current point visibly breathes. Drawn in a
         // real SwiftUI overlay (not a static chart symbol) so the animation runs.
@@ -621,13 +641,23 @@ struct GlucoseTrendChart: View {
     }
 
     private var yDomain: ClosedRange<Double> {
-        // The full-size chart pads a little extra so the extreme labels
-        // (drawn above peaks and below valleys) have head- and foot-room.
-        let pad: Double = compact ? 20 : 30
+        // Dexcom-style stepped scale. The old domain tracked the data max plus a
+        // small pad, so a spike above the high-limit line hugged the frame edge
+        // and looked like it was escaping the plot. The ceiling now snaps to the
+        // next fixed tier (200 → 250 → … → 400) the moment the data or the
+        // target line needs it — the whole chart visibly rescales with real
+        // headroom, and stays put between tiers instead of drifting with every
+        // reading. The floor snaps down to a 20 mg/dL step for the same
+        // stability. Yesterday's ghost line deliberately does NOT drive the
+        // scale (it's context; an outlier there just clips).
+        let pad: Double = compact ? 20 : 30   // room for the extreme labels
         let values = sorted.map(\.valueMgdL)
-        let low = min(values.min() ?? thresholds.targetLower, thresholds.targetLower) - pad
-        let high = max(values.max() ?? thresholds.targetUpper, thresholds.targetUpper) + pad
-        return max(0, low)...high
+        let dataHigh = max(values.max() ?? thresholds.targetUpper, thresholds.targetUpper)
+        let dataLow = min(values.min() ?? thresholds.targetLower, thresholds.targetLower)
+        let tiers: [Double] = [200, 250, 300, 350, 400]
+        let high = tiers.first { $0 >= dataHigh + pad } ?? (dataHigh + pad)
+        let low = max(0, ((dataLow - pad) / 20).rounded(.down) * 20)
+        return low...high
     }
 
     /// Hours between hour-aligned x-axis ticks, scaled to keep ~4–6 readable,

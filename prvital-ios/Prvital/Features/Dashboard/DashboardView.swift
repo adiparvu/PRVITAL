@@ -520,7 +520,13 @@ struct DashboardView: View {
         return SectionCard(
             trendRange.titleKey,
             systemImage: "waveform.path.ecg",
-            accessory: AnyView(trendRangeMenu)
+            // Range picker + the chart-markers ⓘ side by side in the header —
+            // the ⓘ used to float inside the plot, where it read as part of
+            // the chart (moved up here per device feedback).
+            accessory: AnyView(HStack(spacing: 10) {
+                trendRangeMenu
+                ChartLegendButton(visible: eventKindsBinding)
+            })
         ) {
             // The most *local* velocity available — the tightest window (hence the
             // most precise recent rate) that still has enough points, so the line
@@ -555,6 +561,7 @@ struct DashboardView: View {
                     events: trendEvents(in: windowReadings),
                     visibleEventKinds: env.preferences.chartEventKinds,
                     eventKindsBinding: eventKindsBinding,
+                    inlineLegendButton: false,
                     eventBand: true,
                     yesterday: yesterdayTrendReadings()
                 )
