@@ -15,12 +15,12 @@ struct PrvioIconTile: View {
 
     var body: some View {
         Image(systemName: systemImage)
-            .font(.system(size: 15, weight: .semibold))
+            .font(.system(size: 14, weight: .semibold))
             .foregroundStyle(emphasis ?? Theme.textPrimary.opacity(0.92))
-            .frame(width: 32, height: 32)
+            .frame(width: 30, height: 30)
             .background(
                 Theme.textPrimary.opacity(0.08),
-                in: .rect(cornerRadius: 9, style: .continuous)
+                in: .rect(cornerRadius: 8, style: .continuous)
             )
             .accessibilityHidden(true)
     }
@@ -39,7 +39,7 @@ struct PrvioRow: View {
     var body: some View {
         HStack(spacing: 12) {
             PrvioIconTile(systemImage: systemImage, emphasis: emphasis)
-            VStack(alignment: .leading, spacing: 2) {
+            VStack(alignment: .leading, spacing: 1) {
                 Text(title)
                     .font(.body)
                     .foregroundStyle(Theme.textPrimary)
@@ -47,11 +47,12 @@ struct PrvioRow: View {
                     Text(subtitle)
                         .font(.caption)
                         .foregroundStyle(Theme.textSecondary)
+                        .lineLimit(1)
                 }
             }
             Spacer(minLength: 0)
         }
-        .padding(.vertical, 6)
+        .padding(.vertical, 2)
         .accessibilityElement(children: .combine)
     }
 }
@@ -76,9 +77,20 @@ struct PrvioListRowBackground: View {
 }
 
 extension View {
-    /// Prvio-style dark-glass background for a settings list row.
+    /// Prvio-style dark-glass background for a settings list row, with the
+    /// reference app's tighter row insets — the frames match Prvio's height
+    /// (device feedback: "the frames the same size as in Prvio").
     func prvioListRow() -> some View {
         listRowBackground(PrvioListRowBackground())
+            .listRowInsets(EdgeInsets(top: 8, leading: 16, bottom: 8, trailing: 16))
+    }
+
+    /// Prvio-style quiet section header: small, grey, sentence case — never
+    /// the big bold title the default header ends up as under scaled type.
+    func prvioSectionHeader() -> some View {
+        font(.subheadline.weight(.medium))
+            .foregroundStyle(Theme.textSecondary)
+            .textCase(nil)
     }
 }
 
@@ -94,9 +106,9 @@ struct PrvioChipLabel: View {
     @Environment(\.colorScheme) private var colorScheme
 
     var body: some View {
-        VStack(spacing: 6) {
+        VStack(spacing: 4) {
             Image(systemName: systemImage)
-                .font(.system(size: 17, weight: .semibold))
+                .font(.system(size: 16, weight: .semibold))
                 .foregroundStyle(tint)
             Text(title)
                 .font(.caption.weight(.medium))
@@ -105,20 +117,20 @@ struct PrvioChipLabel: View {
                 .minimumScaleFactor(0.7)
         }
         .frame(maxWidth: .infinity)
-        .padding(.vertical, 13)
+        .padding(.vertical, 10)
         .background {
             ZStack {
-                RoundedRectangle(cornerRadius: 18, style: .continuous)
+                RoundedRectangle(cornerRadius: 16, style: .continuous)
                     .fill(.ultraThinMaterial)
-                RoundedRectangle(cornerRadius: 18, style: .continuous)
+                RoundedRectangle(cornerRadius: 16, style: .continuous)
                     .fill(Color.black.opacity(colorScheme == .dark ? 0.22 : 0.05))
             }
         }
         .overlay(
-            RoundedRectangle(cornerRadius: 18, style: .continuous)
+            RoundedRectangle(cornerRadius: 16, style: .continuous)
                 .strokeBorder(Theme.hairline.opacity(0.5), lineWidth: 1)
         )
-        .contentShape(.rect(cornerRadius: 18, style: .continuous))
+        .contentShape(.rect(cornerRadius: 16, style: .continuous))
         .accessibilityElement(children: .combine)
     }
 }

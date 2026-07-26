@@ -141,6 +141,7 @@ struct SettingsView: View {
                     }
                 } header: {
                     Text("Help & feedback")
+                        .prvioSectionHeader()
                 } footer: {
                     Text("Prvital \(AppInfo.versionBuild)")
                         .font(.footnote)
