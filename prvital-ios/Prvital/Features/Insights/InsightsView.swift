@@ -18,12 +18,7 @@ struct InsightsView: View {
     // selected interval, the lightest possible fetch — no ~100k-row materialisation
     // blocking the first navigation into the tab.
     @State private var interval: InsightsInterval = .day
-    @State private var showingWeeklyDigest = false
-    @State private var showingPlainSummary = false
-    @State private var showingExport = false
     @State private var showingLearn = false
-    @State private var showingDoctorMode = false
-    @State private var showingHealth = false
     // Session-only: the user can dismiss the pinned insights card with its X; it
     // is intentionally NOT persisted, so it returns the next time the app opens.
     @State private var feedDismissed = false
@@ -107,13 +102,10 @@ struct InsightsView: View {
                     .onChange(of: interval) { _, _ in Haptics.play(.selection) }
                     .accessibilityLabel("View and period")
                 }
-                // The three actions — plain-language summary, week-in-review and
-                // export — live in one overflow menu so the header stays clean
-                // (per device feedback: "all of these into one menu button").
-                // History moved to the Journal tab (its "List" mode); Insights is
-                // trends + reports only now.
                 // Learn lost its tab (device-approved plan): the whole education
-                // hub now lives one tap away, here on Insights.
+                // hub lives one tap away, here on Insights. The doctor-mode /
+                // health / plain-words / week-in-review / export menu moved to
+                // the Dashboard toolbar (device feedback: one button on page 1).
                 ToolbarItem(placement: .topBarTrailing) {
                     Button {
                         Haptics.play(.selection)
@@ -123,77 +115,11 @@ struct InsightsView: View {
                     }
                     .accessibilityLabel("Learn")
                 }
-                ToolbarItem(placement: .topBarTrailing) {
-                    Menu {
-                        Button {
-                            Haptics.play(.selection)
-                            showingDoctorMode = true
-                        } label: {
-                            Label("Doctor visit mode", systemImage: "stethoscope")
-                        }
-                        Button {
-                            Haptics.play(.selection)
-                            showingHealth = true
-                        } label: {
-                            Label("Health", systemImage: "heart.text.square")
-                        }
-                        Button {
-                            Haptics.play(.selection)
-                            showingPlainSummary = true
-                        } label: {
-                            Label("In plain words", systemImage: "text.quote")
-                        }
-                        Button {
-                            Haptics.play(.selection)
-                            showingWeeklyDigest = true
-                        } label: {
-                            Label("Week in review", systemImage: "calendar.badge.clock")
-                        }
-                        Button {
-                            Haptics.play(.selection)
-                            showingExport = true
-                        } label: {
-                            Label("Export a report", systemImage: "square.and.arrow.up")
-                        }
-                    } label: {
-                        Image(systemName: "ellipsis.circle")
-                    }
-                    .accessibilityLabel("More")
-                }
             }
-            .sheet(isPresented: $showingWeeklyDigest) { WeeklyDigestView() }
+            // The doctor-mode / health / plain-words / week-in-review / export
+            // menu moved to the Dashboard's toolbar (device feedback: "all of
+            // these in one button on the first page").
             .sheet(isPresented: $showingLearn) { LearnView() }
-            .fullScreenCover(isPresented: $showingDoctorMode) { DoctorVisitModeView() }
-            .sheet(isPresented: $showingPlainSummary) {
-                NavigationStack {
-                    PlainLanguageSummaryView()
-                        .toolbar {
-                            ToolbarItem(placement: .confirmationAction) {
-                                Button("Done") { showingPlainSummary = false }
-                            }
-                        }
-                }
-            }
-            .sheet(isPresented: $showingExport) {
-                NavigationStack {
-                    ExportView()
-                        .toolbar {
-                            ToolbarItem(placement: .confirmationAction) {
-                                Button("Done") { showingExport = false }
-                            }
-                        }
-                }
-            }
-            .sheet(isPresented: $showingHealth) {
-                NavigationStack {
-                    HealthHubView()
-                        .toolbar {
-                            ToolbarItem(placement: .confirmationAction) {
-                                Button("Done") { showingHealth = false }
-                            }
-                        }
-                }
-            }
         }
     }
 }

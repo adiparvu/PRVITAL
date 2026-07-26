@@ -3,6 +3,8 @@ import SwiftUI
 /// The Learn hub: actionable diabetes rules, a short encyclopedia and
 /// diabetes-friendly recipes. All general education — never medical advice.
 struct LearnView: View {
+    @Environment(\.dismiss) private var dismiss
+
     private let rules = LearnLibrary.rules
     private let articles = LearnLibrary.articles
     private let recipes = LearnLibrary.recipes
@@ -29,6 +31,17 @@ struct LearnView: View {
             }
             .prvitalTabBackground()
             .navigationTitle("Learn")
+            // Presented as a sheet from Insights — without this the only way
+            // back was the swipe-down nobody discovers (device feedback:
+            // "it needs a back button").
+            .toolbar {
+                ToolbarItem(placement: .confirmationAction) {
+                    Button("Done") {
+                        Haptics.play(.light)
+                        dismiss()
+                    }
+                }
+            }
         }
     }
 

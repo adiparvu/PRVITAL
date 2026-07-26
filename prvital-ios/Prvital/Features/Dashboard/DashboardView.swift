@@ -64,6 +64,13 @@ struct DashboardView: View {
     @State private var showGoalsEditor = false
     @State private var showCustomize = false
     @State private var showRuleOf15 = false
+    // The reports/tools menu (moved here from Analize — device feedback:
+    // "all of these in one button on the first page").
+    @State private var showDoctorMode = false
+    @State private var showHealthHub = false
+    @State private var showPlainSummary = false
+    @State private var showWeeklyDigest = false
+    @State private var showExport = false
     /// The quick-action row's active entry sheet (glucose / carbs / insulin / …).
     @State private var quickAction: DashboardQuickAction?
     @State private var syncFailure: String?
@@ -163,6 +170,45 @@ struct DashboardView: View {
                     }
                     .accessibilityLabel("Customize page")
                 }
+                // One button for every report/tool — doctor mode, Health,
+                // plain words, week in review, export — on the first page.
+                ToolbarItem(placement: .topBarTrailing) {
+                    Menu {
+                        Button {
+                            Haptics.play(.selection)
+                            showDoctorMode = true
+                        } label: {
+                            Label("Doctor visit mode", systemImage: "stethoscope")
+                        }
+                        Button {
+                            Haptics.play(.selection)
+                            showHealthHub = true
+                        } label: {
+                            Label("Health", systemImage: "heart.text.square")
+                        }
+                        Button {
+                            Haptics.play(.selection)
+                            showPlainSummary = true
+                        } label: {
+                            Label("In plain words", systemImage: "text.quote")
+                        }
+                        Button {
+                            Haptics.play(.selection)
+                            showWeeklyDigest = true
+                        } label: {
+                            Label("Week in review", systemImage: "calendar.badge.clock")
+                        }
+                        Button {
+                            Haptics.play(.selection)
+                            showExport = true
+                        } label: {
+                            Label("Export a report", systemImage: "square.and.arrow.up")
+                        }
+                    } label: {
+                        Image(systemName: "ellipsis.circle")
+                    }
+                    .accessibilityLabel("More")
+                }
                 ToolbarItem(placement: .primaryAction) {
                     Button {
                         Haptics.play(.selection)
@@ -202,6 +248,38 @@ struct DashboardView: View {
                 GlucoseEntrySheet()
             }
             .sheet(isPresented: $showCustomize) { DashboardCustomizeView() }
+            .fullScreenCover(isPresented: $showDoctorMode) { DoctorVisitModeView() }
+            .sheet(isPresented: $showWeeklyDigest) { WeeklyDigestView() }
+            .sheet(isPresented: $showHealthHub) {
+                NavigationStack {
+                    HealthHubView()
+                        .toolbar {
+                            ToolbarItem(placement: .confirmationAction) {
+                                Button("Done") { showHealthHub = false }
+                            }
+                        }
+                }
+            }
+            .sheet(isPresented: $showPlainSummary) {
+                NavigationStack {
+                    PlainLanguageSummaryView()
+                        .toolbar {
+                            ToolbarItem(placement: .confirmationAction) {
+                                Button("Done") { showPlainSummary = false }
+                            }
+                        }
+                }
+            }
+            .sheet(isPresented: $showExport) {
+                NavigationStack {
+                    ExportView()
+                        .toolbar {
+                            ToolbarItem(placement: .confirmationAction) {
+                                Button("Done") { showExport = false }
+                            }
+                        }
+                }
+            }
             .sheet(isPresented: $showGoalsEditor) {
                 GoalsEditorSheet()
             }
