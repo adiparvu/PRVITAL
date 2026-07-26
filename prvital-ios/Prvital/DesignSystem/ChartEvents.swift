@@ -170,14 +170,60 @@ struct ChartEventDetailSheet: View {
 }
 
 /// The ⓘ legend + show/hide toggles, presented from the chart. Reads and writes
-/// the shared visibility set so a choice sticks across the app.
+/// the shared visibility set so a choice sticks across the app. Also hosts the
+/// Dexcom-style sliders for the chart's target-band lines — dragging them moves
+/// the lines live on the chart behind the sheet.
 struct ChartEventLegend: View {
     @Binding var visible: Set<ChartEventKind>
+    @Environment(AppEnvironment.self) private var env
     @Environment(\.dismiss) private var dismiss
+
+    private var unit: GlucoseUnit { env.preferences.glucoseUnit }
+
+    /// Writing through these keeps the threshold invariants intact: the band
+    /// stays at least 10 mg/dL tall, and the very-low / very-high boundaries
+    /// are pushed outward when a line would cross them.
+    private var upperLine: Binding<Double> {
+        Binding(
+            get: { env.preferences.thresholds.targetUpper },
+            set: { value in
+                var t = env.preferences.thresholds
+                t.targetUpper = max(value, t.targetLower + 10)
+                t.high = max(t.high, t.targetUpper + 10)
+                env.preferences.thresholds = t
+            }
+        )
+    }
+
+    private var lowerLine: Binding<Double> {
+        Binding(
+            get: { env.preferences.thresholds.targetLower },
+            set: { value in
+                var t = env.preferences.thresholds
+                t.targetLower = min(value, t.targetUpper - 10)
+                t.veryLow = min(t.veryLow, t.targetLower - 5)
+                env.preferences.thresholds = t
+            }
+        )
+    }
 
     var body: some View {
         NavigationStack {
             List {
+                Section {
+                    ChartLineSliderRow(title: "Upper line", tint: Theme.zoneWarning,
+                                       mgdL: upperLine, range: 120...250, unit: unit)
+                    ChartLineSliderRow(title: "Lower line", tint: Theme.zoneCritical,
+                                       mgdL: lowerLine, range: 60...110, unit: unit)
+                } header: {
+                    Text("Chart lines")
+                } footer: {
+                    Text("The lines bound the shaded target band on the chart — and set the target range used by Time in Range and statistics across the app.")
+                        .font(.footnote)
+                        .foregroundStyle(Theme.textTertiary)
+                }
+                .glassListRow()
+
                 Section {
                     ForEach(ChartEventKind.allCases) { kind in
                         Toggle(isOn: binding(for: kind)) {
@@ -223,5 +269,35 @@ struct ChartEventLegend: View {
                 if on { visible.insert(kind) } else { visible.remove(kind) }
             }
         )
+    }
+}
+
+/// One Dexcom-style line control: the line's name, its live value in the user's
+/// unit, and a slider that moves it in 5 mg/dL notches.
+private struct ChartLineSliderRow: View {
+    let title: LocalizedStringKey
+    let tint: Color
+    @Binding var mgdL: Double
+    let range: ClosedRange<Double>
+    let unit: GlucoseUnit
+
+    var body: some View {
+        VStack(alignment: .leading, spacing: 6) {
+            HStack {
+                Text(title).foregroundStyle(Theme.textPrimary)
+                Spacer()
+                Text(GlucoseFormatting.labeled(mgdL: mgdL, unit: unit))
+                    .font(.subheadline.weight(.semibold))
+                    .foregroundStyle(tint)
+                    .monospacedDigit()
+                    .contentTransition(.numericText())
+            }
+            Slider(value: $mgdL, in: range, step: 5) { editing in
+                if !editing { Haptics.play(.selection) }
+            }
+            .tint(tint)
+        }
+        .padding(.vertical, 2)
+        .animation(.snappy(duration: 0.2), value: mgdL)
     }
 }

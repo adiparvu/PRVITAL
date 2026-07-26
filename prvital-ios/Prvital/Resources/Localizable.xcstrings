@@ -20682,6 +20682,65 @@
         }
       }
     },
+    "Chart lines" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Diagrammlinien"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Líneas del gráfico"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Lignes du graphique"
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Linee del grafico"
+          }
+        },
+        "nl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Grafieklijnen"
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Linie wykresu"
+          }
+        },
+        "pt" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Linhas do gráfico"
+          }
+        },
+        "ro" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Liniile graficului"
+          }
+        },
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Линии графика"
+          }
+        }
+      }
+    },
     "Chart markers" : {
       "extractionState" : "manual",
       "localizations" : {
@@ -51759,6 +51818,65 @@
         }
       }
     },
+    "Lower line" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Untere Linie"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Línea inferior"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ligne inférieure"
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Linea inferiore"
+          }
+        },
+        "nl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Onderste lijn"
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Dolna linia"
+          }
+        },
+        "pt" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Linha inferior"
+          }
+        },
+        "ro" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Linia de jos"
+          }
+        },
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Нижняя линия"
+          }
+        }
+      }
+    },
     "Lowest" : {
       "extractionState" : "manual",
       "localizations" : {
@@ -81851,6 +81969,65 @@
         }
       }
     },
+    "The lines bound the shaded target band on the chart — and set the target range used by Time in Range and statistics across the app." : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Die Linien begrenzen das schattierte Zielband im Diagramm — und legen den Zielbereich fest, den Zeit im Zielbereich und die Statistiken in der ganzen App verwenden."
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Las líneas delimitan la banda objetivo sombreada del gráfico — y definen el rango objetivo que usan el Tiempo en rango y las estadísticas en toda la app."
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Les lignes délimitent la bande cible ombrée du graphique — et définissent la plage cible utilisée par le Temps dans la cible et les statistiques dans toute l'app."
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Le linee delimitano la banda obiettivo ombreggiata del grafico — e definiscono l'intervallo obiettivo usato dal Tempo nell'intervallo e dalle statistiche in tutta l'app."
+          }
+        },
+        "nl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "De lijnen begrenzen de gearceerde doelband in de grafiek — en bepalen het doelbereik dat Tijd binnen bereik en de statistieken in de hele app gebruiken."
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Linie wyznaczają zacieniowane pasmo docelowe na wykresie — i ustalają zakres docelowy używany przez Czas w zakresie i statystyki w całej aplikacji."
+          }
+        },
+        "pt" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "As linhas delimitam a banda-alvo sombreada do gráfico — e definem o intervalo-alvo usado pelo Tempo no intervalo e pelas estatísticas em toda a aplicação."
+          }
+        },
+        "ro" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Liniile delimitează banda țintă umbrită de pe grafic — și stabilesc intervalul țintă folosit de Timpul în interval și de statistici în toată aplicația."
+          }
+        },
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Линии ограничивают затенённую целевую полосу на графике — и задают целевой диапазон, который используют «Время в диапазоне» и статистика во всём приложении."
+          }
+        }
+      }
+    },
     "The numbers" : {
       "extractionState" : "manual",
       "localizations" : {
@@ -88231,6 +88408,65 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Отправлять мои записи"
+          }
+        }
+      }
+    },
+    "Upper line" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Obere Linie"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Línea superior"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ligne supérieure"
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Linea superiore"
+          }
+        },
+        "nl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Bovenste lijn"
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Górna linia"
+          }
+        },
+        "pt" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Linha superior"
+          }
+        },
+        "ro" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Linia de sus"
+          }
+        },
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Верхняя линия"
           }
         }
       }
