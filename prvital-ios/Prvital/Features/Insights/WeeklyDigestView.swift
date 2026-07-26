@@ -82,6 +82,7 @@ struct WeeklyDigestView: View {
                     }
 
                     notificationCard
+                    insightNotificationCard
                 }
                 .padding()
             }
@@ -289,6 +290,31 @@ struct WeeklyDigestView: View {
                 Task { _ = await env.notifications.requestAuthorization() }
             }
             WeeklyDigestScheduler().update(enabled: enabled)
+        }
+    }
+
+    /// The Sunday-evening "insight of the week" opt-in. Unlike the Monday
+    /// invite, its notification carries the top pattern's headline — so the
+    /// footer says exactly that, and it stays a separate switch.
+    private var insightNotificationCard: some View {
+        @Bindable var prefs = env.preferences
+        return SectionCard("Sunday insight", systemImage: "lightbulb.max") {
+            VStack(alignment: .leading, spacing: 10) {
+                Toggle("Notify me Sundays at 7 PM", isOn: $prefs.weeklyInsightEnabled)
+                    .tint(Theme.accent)
+                Text("Carries the week's main pattern as its headline — for example \u{201C}Often low overnight\u{201D}, never a number. Composed on your device.")
+                    .font(.caption)
+                    .foregroundStyle(Theme.textSecondary)
+                    .fixedSize(horizontal: false, vertical: true)
+            }
+            .frame(maxWidth: .infinity, alignment: .leading)
+        }
+        .onChange(of: prefs.weeklyInsightEnabled) { _, enabled in
+            Haptics.play(.selection)
+            if enabled {
+                Task { _ = await env.notifications.requestAuthorization() }
+            }
+            env.rearmWeeklyInsight()
         }
     }
 

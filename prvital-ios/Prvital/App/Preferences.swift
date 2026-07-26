@@ -30,6 +30,7 @@ final class Preferences {
         self.emergencyInfo = Self.readEmergencyInfo(self.defaults)
         self.criticalAlarm = Self.readCriticalAlarm(self.defaults)
         self.weeklyDigestEnabled = self.defaults.bool(forKey: Keys.weeklyDigest)
+        self.weeklyInsightEnabled = self.defaults.bool(forKey: Keys.weeklyInsight)
         self.nightscoutUploadEnabled = self.defaults.bool(forKey: Keys.nightscoutUpload)
         self.accentThemeRaw = self.defaults.string(forKey: Keys.accentTheme) ?? "default"
         self.journalCardDensityRaw = self.defaults.string(forKey: Keys.journalCardDensity) ?? "standard"
@@ -182,6 +183,12 @@ final class Preferences {
         didSet { defaults.set(weeklyDigestEnabled, forKey: Keys.weeklyDigest) }
     }
 
+    /// Sunday-evening notification carrying the week's top insight headline.
+    /// Off by default.
+    var weeklyInsightEnabled: Bool {
+        didSet { defaults.set(weeklyInsightEnabled, forKey: Keys.weeklyInsight) }
+    }
+
     /// Mirror the user's entries up to their own Nightscout site. Off by default.
     /// A separate key (not a field on `NightscoutConfig`) so enabling it can
     /// never invalidate an already-stored connection config.
@@ -315,6 +322,7 @@ final class Preferences {
         static let emergencyInfo = "pref.emergencyInfo"
         static let criticalAlarm = "pref.criticalAlarm"
         static let weeklyDigest = "pref.weeklyDigestEnabled"
+        static let weeklyInsight = "pref.weeklyInsightEnabled"
         static let nightscoutUpload = "pref.nightscoutUploadEnabled"
         static let accentTheme = "pref.accentTheme"
         static let journalCardDensity = "pref.journalCardDensity"

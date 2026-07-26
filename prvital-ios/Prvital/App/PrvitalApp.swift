@@ -120,6 +120,9 @@ struct RootView: View {
                 // Keep the audit trail lean without waiting for a cold launch —
                 // throttled internally to at most once a day.
                 env.audit.pruneIfDue()
+                // Refresh the Sunday notification's headline with the current
+                // top insight (no-op unless the user opted in).
+                env.rearmWeeklyInsight()
             }
     }
 }

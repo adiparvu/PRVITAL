@@ -93,8 +93,10 @@ final class NotificationScheduler {
         // notifications; rebuild the ones still due from their persisted
         // anchor so a settings change can never silently disarm the alarm.
         CriticalAlarmScheduler.restorePendingRepeats()
-        // Same for the Monday "week in review" invitation.
+        // Same for the Monday "week in review" invitation and the Sunday
+        // insight notification (generic body; the next activation refreshes it).
         WeeklyDigestScheduler.restoreFromDefaults()
+        WeeklyInsightScheduler.restoreFromDefaults()
         #endif
     }
 

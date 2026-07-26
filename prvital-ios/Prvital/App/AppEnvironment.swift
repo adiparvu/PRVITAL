@@ -133,8 +133,28 @@ final class AppEnvironment {
                                  medicationPlan: preferences.medicationPlan)
         rescheduleContextualReminders()
         WeeklyDigestScheduler().update(enabled: preferences.weeklyDigestEnabled)
+        rearmWeeklyInsight()
         scheduleBackgroundRefresh()
         startHealthKitBackgroundDelivery()
+    }
+
+    /// Re-arms the Sunday-evening insight notification with the CURRENT top
+    /// insight headline. Local notifications are static once scheduled, so the
+    /// body is refreshed on every launch and foreground activation — the same
+    /// bounded off-main feed build the Insights tab runs, and only when the
+    /// user has opted in.
+    func rearmWeeklyInsight() {
+        guard preferences.weeklyInsightEnabled else {
+            WeeklyInsightScheduler().update(enabled: false, topInsightTitle: nil)
+            return
+        }
+        let builder = InsightsFeedBuilder(modelContainer: modelContainer)
+        let thresholds = preferences.thresholds
+        Task {
+            let cards = await builder.build(
+                range: InsightsInterval.month.dateRange(), thresholds: thresholds)
+            WeeklyInsightScheduler().update(enabled: true, topInsightTitle: cards.first?.title)
+        }
     }
 
     /// Wires Apple Health background delivery: while the user has granted the

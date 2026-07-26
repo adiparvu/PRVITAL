@@ -20322,6 +20322,65 @@
         }
       }
     },
+    "Carries the week's main pattern as its headline — for example “Often low overnight”, never a number. Composed on your device.": {
+      "extractionState": "manual",
+      "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Trägt als Überschrift das Hauptmuster der Woche — zum Beispiel „Nachts oft niedrig“, nie einen Messwert. Erstellt auf deinem Gerät."
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Lleva como titular el patrón principal de la semana — por ejemplo, “A menudo baja por la noche”, nunca un valor. Se compone en tu dispositivo."
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Affiche en titre la tendance principale de la semaine — par exemple « Souvent bas la nuit », jamais une valeur. Composée sur votre appareil."
+          }
+        },
+        "it": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Riporta come titolo lo schema principale della settimana — ad esempio “Spesso bassa di notte”, mai un valore. Composta sul tuo dispositivo."
+          }
+        },
+        "nl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Toont als kop het belangrijkste patroon van de week — bijvoorbeeld “’s Nachts vaak laag”, nooit een getal. Samengesteld op je apparaat."
+          }
+        },
+        "pl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "W nagłówku niesie główny wzorzec tygodnia — na przykład „Często niski w nocy”, nigdy wartość. Tworzona na Twoim urządzeniu."
+          }
+        },
+        "pt": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Traz como título o padrão principal da semana — por exemplo, “Muitas vezes baixa durante a noite”, nunca um valor. Composta no seu dispositivo."
+          }
+        },
+        "ro": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Are ca titlu tiparul principal al săptămânii — de exemplu „Deseori scăzut noaptea”, niciodată o valoare. Compus pe dispozitivul tău."
+          }
+        },
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "В заголовке — главная закономерность недели, например «Часто низкий ночью», и никогда конкретное значение. Формируется на вашем устройстве."
+          }
+        }
+      }
+    },
     "Catch a steep rise or fall early, whatever the value. Around 2–3 mg/dL per minute matches the classic \"rising/falling fast\" trend arrows.": {
       "extractionState": "manual",
       "localizations": {
@@ -42962,6 +43021,65 @@
         }
       }
     },
+    "Insight of the week": {
+      "extractionState": "manual",
+      "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Erkenntnis der Woche"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "El patrón de la semana"
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "La tendance de la semaine"
+          }
+        },
+        "it": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "La tendenza della settimana"
+          }
+        },
+        "nl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Inzicht van de week"
+          }
+        },
+        "pl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Wniosek tygodnia"
+          }
+        },
+        "pt": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Tendência da semana"
+          }
+        },
+        "ro": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Tiparul săptămânii"
+          }
+        },
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Вывод недели"
+          }
+        }
+      }
+    },
     "Insights": {
       "extractionState": "manual",
       "localizations": {
@@ -59204,6 +59322,65 @@
         }
       }
     },
+    "Notify me Sundays at 7 PM": {
+      "extractionState": "manual",
+      "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Sonntags um 19 Uhr benachrichtigen"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Avísame los domingos a las 19:00"
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Me prévenir le dimanche à 19 h"
+          }
+        },
+        "it": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Avvisami la domenica alle 19"
+          }
+        },
+        "nl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Stuur me zondag om 19:00 een melding"
+          }
+        },
+        "pl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Powiadamiaj mnie w niedziele o 19:00"
+          }
+        },
+        "pt": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Notificar-me aos domingos às 19:00"
+          }
+        },
+        "ro": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Notifică-mă duminica la 19:00"
+          }
+        },
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Уведомлять по воскресеньям в 19:00"
+          }
+        }
+      }
+    },
     "Notify me about": {
       "extractionState": "manual",
       "localizations": {
@@ -71283,6 +71460,65 @@
         }
       }
     },
+    "See what stood out in your glucose this week.": {
+      "extractionState": "manual",
+      "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Sieh dir an, was bei deinem Blutzucker diese Woche auffiel."
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Mira qué destacó en tu glucosa esta semana."
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Découvrez ce qui a marqué votre glycémie cette semaine."
+          }
+        },
+        "it": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Scopri cosa è emerso dalla tua glicemia questa settimana."
+          }
+        },
+        "nl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Bekijk wat er deze week opviel aan je glucose."
+          }
+        },
+        "pl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Zobacz, co wyróżniało się w Twojej glikemii w tym tygodniu."
+          }
+        },
+        "pt": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Veja o que se destacou na sua glicose esta semana."
+          }
+        },
+        "ro": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Vezi ce a ieșit în evidență la glicemia ta săptămâna aceasta."
+          }
+        },
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Посмотрите, что выделялось в вашей глюкозе на этой неделе."
+          }
+        }
+      }
+    },
     "Self-hosted": {
       "extractionState": "manual",
       "localizations": {
@@ -77386,6 +77622,65 @@
           "stringUnit": {
             "state": "translated",
             "value": "Сульфонилмочевина"
+          }
+        }
+      }
+    },
+    "Sunday insight": {
+      "extractionState": "manual",
+      "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Erkenntnis am Sonntag"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Hallazgo del domingo"
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Tendance du dimanche"
+          }
+        },
+        "it": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Tendenza della domenica"
+          }
+        },
+        "nl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Inzicht op zondag"
+          }
+        },
+        "pl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Wniosek w niedzielę"
+          }
+        },
+        "pt": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Tendência ao domingo"
+          }
+        },
+        "ro": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Insight-ul de duminică"
+          }
+        },
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Вывод по воскресеньям"
           }
         }
       }
