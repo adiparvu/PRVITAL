@@ -10,9 +10,10 @@ enum DashboardCard: String, CaseIterable, Identifiable, Codable {
     case companion
     case trend
     case lessons
+    /// One whole: today's time-in-range + outlook, the goals/streak row and
+    /// the daily rings, folded into a single card (the separate `goals` and
+    /// `rings` cards were removed; `order(from:)` drops their persisted ids).
     case today
-    case goals
-    case rings
     case schedule
     case onBoard
     case timeline
@@ -27,8 +28,6 @@ enum DashboardCard: String, CaseIterable, Identifiable, Codable {
         case .trend: "Trend"
         case .lessons: "Contextual lessons"
         case .today: "Today"
-        case .goals: "Goals"
-        case .rings: "Rings"
         case .schedule: "Logging schedule"
         case .onBoard: "On board"
         case .timeline: "Timeline"
@@ -42,8 +41,6 @@ enum DashboardCard: String, CaseIterable, Identifiable, Codable {
         case .trend: "waveform.path.ecg"
         case .lessons: "book"
         case .today: "clock"
-        case .goals: "target"
-        case .rings: "circle.circle"
         case .schedule: "clock.badge.checkmark"
         case .onBoard: "syringe"
         case .timeline: "calendar.day.timeline.left"

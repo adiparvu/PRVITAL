@@ -439,18 +439,10 @@ struct DashboardView: View {
         case .lessons:
             contextualLessonCard(thresholds: thresholds)
         case .today:
-            if todayStats.hasGlucose {
+            if todayStats.hasGlucose || env.preferences.glucoseGoals.enabled {
                 todayCard(todayStats,
                           forecast: tirForecast(thresholds: thresholds),
-                          goalFraction: env.preferences.glucoseGoals.targetTIRFraction)
-            }
-        case .goals:
-            if env.preferences.glucoseGoals.enabled {
-                goalsCard(todayStats, thresholds: thresholds)
-            }
-        case .rings:
-            if todayStats.hasGlucose {
-                ringsCard(thresholds: thresholds)
+                          thresholds: thresholds)
             }
         case .schedule:
             let scheduleStatuses = glucoseScheduleStatuses
@@ -779,39 +771,66 @@ struct DashboardView: View {
 
     // MARK: - Today's time in range
 
-    private func todayCard(_ stats: PeriodStatistics, forecast: TIRForecast, goalFraction: Double) -> some View {
+    /// One whole for the day: today's time-in-range bar + outlook, then the
+    /// goals/streak row (when goals are on) and the daily-rings row — three
+    /// former cards fused into one, separated by hairlines.
+    private func todayCard(_ stats: PeriodStatistics, forecast: TIRForecast, thresholds: GlucoseThresholds) -> some View {
+        let goals = env.preferences.glucoseGoals
+        let goalFraction = goals.targetTIRFraction
         let pct = (stats.timeInRange * 100).formatted(.number.precision(.fractionLength(0))) + "%"
-        return SectionCard("Today's time in range", systemImage: "target") {
-            VStack(alignment: .leading, spacing: 14) {
-                VStack(alignment: .leading, spacing: 8) {
-                    GeometryReader { geo in
-                        HStack(spacing: 1) {
-                            todayBand(geo, stats.timeBelowRange, Theme.zoneWarning)
-                            todayBand(geo, stats.timeInRange, Theme.zoneInRange)
-                            todayBand(geo, stats.timeAboveRange, Theme.zoneHigh)
-                        }
-                        .clipShape(RoundedRectangle(cornerRadius: 5))
-                    }
-                    .frame(height: 14)
+        let editButton: AnyView? = goals.enabled ? AnyView(
+            Button {
+                Haptics.play(.selection)
+                showGoalsEditor = true
+            } label: {
+                Image(systemName: "slider.horizontal.3")
+                    .font(.subheadline.weight(.semibold))
+                    .foregroundStyle(Theme.accent)
+            }
+            .accessibilityLabel("Edit goals")
+        ) : nil
 
-                    HStack {
-                        Text("\(pct) in range")
-                            .font(.subheadline.weight(.semibold))
-                            .foregroundStyle(Theme.zoneInRange)
-                        Spacer()
-                        Text("\(stats.readingCount) readings")
-                            .font(.caption)
-                            .foregroundStyle(Theme.textSecondary)
+        return SectionCard("Today", systemImage: "target", accessory: editButton) {
+            VStack(alignment: .leading, spacing: 14) {
+                if stats.hasGlucose {
+                    VStack(alignment: .leading, spacing: 8) {
+                        GeometryReader { geo in
+                            HStack(spacing: 1) {
+                                todayBand(geo, stats.timeBelowRange, Theme.zoneWarning)
+                                todayBand(geo, stats.timeInRange, Theme.zoneInRange)
+                                todayBand(geo, stats.timeAboveRange, Theme.zoneHigh)
+                            }
+                            .clipShape(RoundedRectangle(cornerRadius: 5))
+                        }
+                        .frame(height: 14)
+
+                        HStack {
+                            Text("\(pct) in range")
+                                .font(.subheadline.weight(.semibold))
+                                .foregroundStyle(Theme.zoneInRange)
+                            Spacer()
+                            Text("\(stats.readingCount) readings")
+                                .font(.caption)
+                                .foregroundStyle(Theme.textSecondary)
+                        }
+                    }
+                    .accessibilityElement(children: .combine)
+                    .accessibilityLabel("Today's time in range \(pct), \(stats.readingCount) readings")
+
+                    if forecast.hasData {
+                        Divider().overlay(Theme.hairline)
+                        forecastRow(forecast, goalFraction: goalFraction)
                     }
                 }
-                .accessibilityElement(children: .combine)
-                .accessibilityLabel("Today's time in range \(pct), \(stats.readingCount) readings")
 
-                // The end-of-day outlook, folded in so today's time-in-range lives
-                // in one card instead of two adjacent ones.
-                if forecast.hasData {
+                if goals.enabled {
+                    if stats.hasGlucose { Divider().overlay(Theme.hairline) }
+                    goalsRow(stats, thresholds: thresholds)
+                }
+
+                if stats.hasGlucose {
                     Divider().overlay(Theme.hairline)
-                    forecastRow(forecast, goalFraction: goalFraction)
+                    ringsRow(thresholds: thresholds)
                 }
             }
         }
@@ -932,10 +951,10 @@ struct DashboardView: View {
 
     // MARK: - Daily rings
 
-    /// A compact three-ring summary (In range / Active / Sensor) that opens the
-    /// full Daily goals screen — where the rings are broken down and the data
-    /// sources' live status is shown.
-    private func ringsCard(thresholds: GlucoseThresholds) -> some View {
+    /// The three-ring row (In range / Active / Sensor) inside the Today card;
+    /// opens the full Daily goals screen — where the rings are broken down and
+    /// the data sources' live status is shown.
+    private func ringsRow(thresholds: GlucoseThresholds) -> some View {
         let rings = DailyRings.make(
             readings: readings,
             activity: activity,
@@ -949,10 +968,10 @@ struct DashboardView: View {
             DailyGoalsView()
         } label: {
             HStack(spacing: 16) {
-                ActivityRingsGauge(rings: rings, diameter: 66, thicknessRatio: 0.13, gapRatio: 0.05)
+                ActivityRingsGauge(rings: rings, diameter: 58, thicknessRatio: 0.13, gapRatio: 0.05)
                 VStack(alignment: .leading, spacing: 4) {
                     Text("Daily rings")
-                        .font(.headline)
+                        .font(.subheadline.weight(.semibold))
                         .foregroundStyle(Theme.textPrimary)
                     Text(ringsSummary(rings))
                         .font(.caption)
@@ -968,9 +987,9 @@ struct DashboardView: View {
                 Image(systemName: "chevron.right").font(.caption).foregroundStyle(Theme.textTertiary)
             }
             .frame(maxWidth: .infinity, alignment: .leading)
-            .glassCard()
+            .contentShape(.rect)
         }
-        .buttonStyle(PressableCardStyle())
+        .buttonStyle(.plain)
         .accessibilityElement(children: .combine)
         .accessibilityLabel("Daily rings, \(ringsSummary(rings))")
         .accessibilityHint("Opens your daily goals and source status")
@@ -996,10 +1015,10 @@ struct DashboardView: View {
 
     // MARK: - Goals & streak
 
-    /// A compact goals card: a ring for today's progress toward the target
-    /// time-in-range, the current "days meeting your TIR goal" streak, and the
-    /// target A1c against today's estimate. Shown only when goals are enabled.
-    private func goalsCard(_ stats: PeriodStatistics, thresholds: GlucoseThresholds) -> some View {
+    /// The goals row inside the Today card: a ring for today's progress toward
+    /// the target time-in-range, the current streak, and the target A1c against
+    /// today's estimate. Rendered only when goals are enabled.
+    private func goalsRow(_ stats: PeriodStatistics, thresholds: GlucoseThresholds) -> some View {
         let goals = env.preferences.glucoseGoals
         let targetFraction = goals.targetTIRFraction
         let streak = StreakCalculator.evaluate(
@@ -1013,57 +1032,43 @@ struct DashboardView: View {
         let targetPct = goals.targetTIRPercent.formatted(.number.precision(.fractionLength(0)))
         let estA1c = stats.glucoseManagementIndicator
 
-        let editButton = AnyView(
-            Button {
-                Haptics.play(.selection)
-                showGoalsEditor = true
-            } label: {
-                Image(systemName: "slider.horizontal.3")
-                    .font(.subheadline.weight(.semibold))
-                    .foregroundStyle(Theme.accent)
-            }
-            .accessibilityLabel("Edit goals")
-        )
-
-        return SectionCard("Goals", systemImage: "target", accessory: editButton) {
-            HStack(spacing: 18) {
-                GoalProgressRing(
-                    progress: progress,
-                    centerText: "\(tirPct)%",
-                    met: metToday
-                )
-                VStack(alignment: .leading, spacing: 10) {
-                    HStack(spacing: 8) {
-                        Image(systemName: "flame.fill")
-                            .font(.title3)
-                            .foregroundStyle(streak.current > 0 ? Theme.zoneWarning : Theme.textTertiary)
-                        VStack(alignment: .leading, spacing: 1) {
-                            Text(streakText(streak.current))
-                                .font(.subheadline.weight(.semibold))
-                                .foregroundStyle(Theme.textPrimary)
-                                .contentTransition(.numericText())
-                            Text(streak.best > 0 ? "Best \(streak.best) · Goal \(targetPct)% TIR" : "Goal \(targetPct)% in range")
-                                .font(.caption2)
-                                .foregroundStyle(Theme.textSecondary)
-                        }
-                    }
-                    HStack(spacing: 8) {
-                        Image(systemName: "cross.case")
-                            .font(.subheadline)
-                            .foregroundStyle(Theme.accent)
-                        Text(a1cText(target: goals.targetA1c, estimate: estA1c, hasGlucose: stats.hasGlucose))
-                            .font(.caption)
+        return HStack(spacing: 18) {
+            GoalProgressRing(
+                progress: progress,
+                centerText: "\(tirPct)%",
+                met: metToday
+            )
+            VStack(alignment: .leading, spacing: 10) {
+                HStack(spacing: 8) {
+                    Image(systemName: "flame.fill")
+                        .font(.title3)
+                        .foregroundStyle(streak.current > 0 ? Theme.zoneWarning : Theme.textTertiary)
+                    VStack(alignment: .leading, spacing: 1) {
+                        Text(streakText(streak.current))
+                            .font(.subheadline.weight(.semibold))
+                            .foregroundStyle(Theme.textPrimary)
+                            .contentTransition(.numericText())
+                        Text(streak.best > 0 ? "Best \(streak.best) · Goal \(targetPct)% TIR" : "Goal \(targetPct)% in range")
+                            .font(.caption2)
                             .foregroundStyle(Theme.textSecondary)
                     }
                 }
-                Spacer(minLength: 0)
+                HStack(spacing: 8) {
+                    Image(systemName: "cross.case")
+                        .font(.subheadline)
+                        .foregroundStyle(Theme.accent)
+                    Text(a1cText(target: goals.targetA1c, estimate: estA1c, hasGlucose: stats.hasGlucose))
+                        .font(.caption)
+                        .foregroundStyle(Theme.textSecondary)
+                }
             }
-            .accessibilityElement(children: .combine)
-            .accessibilityLabel(goalsAccessibilityLabel(
-                tirPct: tirPct, targetPct: targetPct, streak: streak,
-                target: goals.targetA1c, estimate: estA1c, hasGlucose: stats.hasGlucose
-            ))
+            Spacer(minLength: 0)
         }
+        .accessibilityElement(children: .combine)
+        .accessibilityLabel(goalsAccessibilityLabel(
+            tirPct: tirPct, targetPct: targetPct, streak: streak,
+            target: goals.targetA1c, estimate: estA1c, hasGlucose: stats.hasGlucose
+        ))
     }
 
     private func streakText(_ current: Int) -> String {
