@@ -467,16 +467,9 @@ struct EmergencyInfo: Codable, Equatable, Sendable {
     }
 }
 
-/// Repeat-until-acknowledged escalation for urgent-low alerts. Off by default;
-/// when on, the urgent-low notification re-fires every `repeatMinutes` until the
-/// user acknowledges it or `maxRepeats` is reached.
-struct CriticalAlarmPreferences: Codable, Equatable, Sendable {
-    var escalationEnabled: Bool = false
-    var repeatMinutes: Int = 5
-    var maxRepeats: Int = 6
-
-    static let `default` = CriticalAlarmPreferences()
-}
+// NOTE: `CriticalAlarmPreferences` moved to CriticalAlarmPlanner.swift
+// (Domain/Alerts) so the widget target — which evaluates alerts from its
+// self-fetched readings — can compile it without this file.
 
 /// Opt-in glucose goals: a target Time-in-Range percentage and target A1c, with
 /// a streak of days meeting the TIR goal. Off by default and stored under its own

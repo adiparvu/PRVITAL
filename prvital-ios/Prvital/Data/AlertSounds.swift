@@ -117,7 +117,9 @@ enum AlertSoundStore {
     static let key = "pref.alertSounds"
 
     static func load() -> AlertSoundPreferences {
-        let defaults = UserDefaults(suiteName: AppSchema.appGroupIdentifier) ?? .standard
+        // SharedStore's group id (not AppSchema's) so this file also compiles
+        // in the widget target, whose alert delivery reads the same choice.
+        let defaults = UserDefaults(suiteName: SharedStore.appGroupIdentifier) ?? .standard
         guard let data = defaults.data(forKey: key),
               let value = try? JSONDecoder().decode(AlertSoundPreferences.self, from: data)
         else { return .default }

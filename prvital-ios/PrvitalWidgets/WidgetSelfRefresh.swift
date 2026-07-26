@@ -24,8 +24,13 @@ enum WidgetSelfRefresh {
     /// credentialed source returns a genuinely newer reading; nil otherwise.
     static func refreshIfStale(_ snapshot: GlucoseSnapshot, now: Date = Date()) async -> GlucoseSnapshot? {
         guard now.timeIntervalSince(snapshot.updatedAt) > snapshotFreshFor else { return nil }
-        guard let sample = await latestSample(preferring: snapshot.sourceRaw),
-              sample.timestamp > snapshot.updatedAt else { return nil }
+        guard let sample = await latestSample(preferring: snapshot.sourceRaw) else { return nil }
+        // Alerts run on every fetched reading, not only display-worthy ones:
+        // the shared state dedupes against the app, and a recovered reading
+        // must stand the urgent-low escalation down even when nothing new
+        // needs rendering.
+        WidgetAlertCenter.evaluate(sample: sample, now: now)
+        guard sample.timestamp > snapshot.updatedAt else { return nil }
         return refreshed(snapshot, with: sample, now: now)
     }
 

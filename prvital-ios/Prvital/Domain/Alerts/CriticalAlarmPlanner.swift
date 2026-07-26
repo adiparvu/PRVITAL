@@ -1,5 +1,17 @@
 import Foundation
 
+/// Repeat-until-acknowledged escalation for urgent-low alerts. Off by default;
+/// when on, the urgent-low notification re-fires every `repeatMinutes` until the
+/// user acknowledges it or `maxRepeats` is reached. Lives here (not in
+/// Preferences.swift) so the widget's alert evaluation can compile it too.
+struct CriticalAlarmPreferences: Codable, Equatable, Sendable {
+    var escalationEnabled: Bool = false
+    var repeatMinutes: Int = 5
+    var maxRepeats: Int = 6
+
+    static let `default` = CriticalAlarmPreferences()
+}
+
 /// A snapshot of an armed critical-low escalation: when the urgent-low alert
 /// fired and the repeat cadence configured at that moment. Persisted (as JSON
 /// in the shared defaults) so the pending repeats can be rebuilt after the
