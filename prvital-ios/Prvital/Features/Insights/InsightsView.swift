@@ -22,6 +22,7 @@ struct InsightsView: View {
     @State private var showingPlainSummary = false
     @State private var showingExport = false
     @State private var showingLearn = false
+    @State private var showingDoctorMode = false
     @State private var showingHealth = false
     // Session-only: the user can dismiss the pinned insights card with its X; it
     // is intentionally NOT persisted, so it returns the next time the app opens.
@@ -126,6 +127,12 @@ struct InsightsView: View {
                     Menu {
                         Button {
                             Haptics.play(.selection)
+                            showingDoctorMode = true
+                        } label: {
+                            Label("Doctor visit mode", systemImage: "stethoscope")
+                        }
+                        Button {
+                            Haptics.play(.selection)
                             showingHealth = true
                         } label: {
                             Label("Health", systemImage: "heart.text.square")
@@ -156,6 +163,7 @@ struct InsightsView: View {
             }
             .sheet(isPresented: $showingWeeklyDigest) { WeeklyDigestView() }
             .sheet(isPresented: $showingLearn) { LearnView() }
+            .fullScreenCover(isPresented: $showingDoctorMode) { DoctorVisitModeView() }
             .sheet(isPresented: $showingPlainSummary) {
                 NavigationStack {
                     PlainLanguageSummaryView()

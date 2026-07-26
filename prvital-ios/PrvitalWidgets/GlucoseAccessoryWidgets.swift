@@ -1,5 +1,6 @@
 import SwiftUI
 import WidgetKit
+import Charts
 import Foundation
 
 /// Lock Screen / StandBy accessory glucose widget: circular, rectangular, and
@@ -78,7 +79,14 @@ private struct WidgetAccessoryCircular: View {
 private struct WidgetAccessoryRectangular: View {
     let snapshot: GlucoseSnapshot
 
+    /// The last ~2 hours as a tiny sparkline beside the value — the watch
+    /// complication finally shows the *shape* of the trend, not just a number.
+    private var sparkPoints: [GlucoseSnapshot.Point] {
+        Array(snapshot.points.suffix(24))
+    }
+
     var body: some View {
+        HStack(alignment: .center, spacing: 8) {
         VStack(alignment: .leading, spacing: 2) {
             HStack(alignment: .firstTextBaseline, spacing: 4) {
                 Text(snapshot.valueText)
@@ -122,6 +130,23 @@ private struct WidgetAccessoryRectangular: View {
                     .foregroundStyle(.secondary)
                     .lineLimit(1)
             }
+        }
+
+        if sparkPoints.count >= 3 {
+            Chart(sparkPoints) { point in
+                LineMark(
+                    x: .value("Time", point.date),
+                    y: .value("Glucose", point.mgdL)
+                )
+                .interpolationMethod(.catmullRom)
+                .lineStyle(StrokeStyle(lineWidth: 1.8, lineCap: .round))
+            }
+            .chartXAxis(.hidden)
+            .chartYAxis(.hidden)
+            .chartLegend(.hidden)
+            .frame(width: 52, height: 30)
+            .accessibilityHidden(true)
+        }
         }
         .frame(maxWidth: .infinity, alignment: .leading)
         .containerBackground(.clear, for: .widget)
