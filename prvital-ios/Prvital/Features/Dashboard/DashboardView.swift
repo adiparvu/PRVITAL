@@ -59,7 +59,6 @@ struct DashboardView: View {
         Calendar.current.date(byAdding: .day, value: -Self.windowDays, to: Date()) ?? Date()
     }
 
-    @State private var showQuickEntry = false
     @State private var showGlucoseEntry = false
     @State private var showGoalsEditor = false
     @State private var showCustomize = false
@@ -72,7 +71,6 @@ struct DashboardView: View {
     @State private var showWeeklyDigest = false
     @State private var showExport = false
     /// The quick-action row's active entry sheet (glucose / carbs / insulin / …).
-    @State private var quickAction: DashboardQuickAction?
     @State private var syncFailure: String?
     @State private var trendRange: DashboardTrendRange = .threeHours
     @State private var showCustomRange = false
@@ -102,8 +100,6 @@ struct DashboardView: View {
                 VStack(spacing: 20) {
                     hero(summary: summary, thresholds: thresholds, unit: unit)
                         .appearTransition(delay: 0)
-                    quickActionsRow()
-                        .appearTransition(delay: 0.01)
 
                     // Safety banners stay pinned above the customisable deck.
                     if env.preferences.sickDayEnabled {
@@ -209,15 +205,6 @@ struct DashboardView: View {
                     }
                     .accessibilityLabel("More")
                 }
-                ToolbarItem(placement: .primaryAction) {
-                    Button {
-                        Haptics.play(.selection)
-                        showQuickEntry = true
-                    } label: {
-                        Image(systemName: "plus")
-                    }
-                    .accessibilityLabel("Add entry")
-                }
             }
             .refreshable {
                 // Surface genuine source/network failures (not "source not set up"
@@ -241,9 +228,6 @@ struct DashboardView: View {
                 }
             }
             .animation(.spring(response: 0.4, dampingFraction: 0.85), value: syncFailure)
-            .sheet(isPresented: $showQuickEntry) {
-                QuickEntrySheet()
-            }
             .sheet(isPresented: $showGlucoseEntry) {
                 GlucoseEntrySheet()
             }
@@ -286,15 +270,6 @@ struct DashboardView: View {
             .sheet(isPresented: $showRuleOf15) {
                 RuleOf15Sheet()
             }
-            .sheet(item: $quickAction) { action in
-                switch action {
-                case .glucose: GlucoseEntrySheet()
-                case .carbs: CarbEntrySheet()
-                case .insulin: InsulinEntrySheet()
-                case .activity: ActivityEntrySheet()
-                case .note: ObservationEntrySheet()
-                }
-            }
             .task {
                 // Fold any freshly-earned achievements into the (monotonic) store
                 // so the badge count stays current even without opening the gallery.
@@ -317,52 +292,6 @@ struct DashboardView: View {
     }
 
     // MARK: - Quick actions
-
-    /// The one-tap logging row — glucose, carbs, insulin, activity, note — each
-    /// opening its entry sheet directly, so the most common action is never more
-    /// than a single tap from the home screen.
-    private func quickActionsRow() -> some View {
-        HStack(spacing: 8) {
-            quickActionButton(.glucose, icon: "drop.fill", tint: Theme.accent, label: "Glucose")
-            quickActionButton(.carbs, icon: "fork.knife", tint: Theme.zoneHigh, label: "Carbs")
-            quickActionButton(.insulin, icon: "syringe.fill", tint: Theme.accent, label: "Insulin")
-            quickActionButton(.activity, icon: "figure.walk", tint: Theme.zoneInRange, label: "Activity")
-            quickActionButton(.note, icon: "square.and.pencil", tint: Theme.textSecondary, label: "Note")
-        }
-    }
-
-    private func quickActionButton(_ action: DashboardQuickAction, icon: String,
-                                   tint: Color, label: LocalizedStringKey) -> some View {
-        Button {
-            Haptics.play(.light)
-            quickAction = action
-        } label: {
-            VStack(spacing: 6) {
-                if env.preferences.minimalistIcons {
-                    // Minimalist: a plain monochrome glyph, no filled circle.
-                    Image(systemName: icon)
-                        .font(.system(size: 24, weight: .regular))
-                        .foregroundStyle(Theme.textPrimary)
-                        .frame(width: 50, height: 50)
-                } else {
-                    Image(systemName: icon)
-                        .font(.system(size: 18, weight: .semibold))
-                        .foregroundStyle(tint)
-                        .frame(width: 50, height: 50)
-                        .background(tint.opacity(0.14), in: .circle)
-                }
-                Text(label)
-                    .font(.caption2)
-                    .foregroundStyle(Theme.textSecondary)
-                    .lineLimit(1)
-            }
-            .frame(maxWidth: .infinity)
-            .contentShape(.rect)
-        }
-        .buttonStyle(.plain)
-        .accessibilityLabel(label)
-        .accessibilityHint("Log a new entry")
-    }
 
     // MARK: - Hero
 
@@ -1388,12 +1317,6 @@ struct DashboardView: View {
 }
 
 /// The selectable window for the dashboard trend chart.
-/// The dashboard quick-action row's five entry types, driving `.sheet(item:)`.
-enum DashboardQuickAction: String, Identifiable {
-    case glucose, carbs, insulin, activity, note
-    var id: String { rawValue }
-}
-
 private enum DashboardTrendRange: String, CaseIterable, Identifiable {
     case threeHours, sixHours, twelveHours, twentyFourHours, custom
     var id: String { rawValue }
