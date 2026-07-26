@@ -51,6 +51,11 @@ final class GlucoseReading: MedicalRecord {
     /// Human-readable reason the active reading in the group was selected.
     var resolutionReason: String?
 
+    /// The register slot the user explicitly pinned this reading to, if any.
+    /// Optional and defaulted so the addition is CloudKit-safe; nil means the
+    /// logbook places the reading automatically.
+    var logbookSlotRaw: String?
+
     var recordType: RecordType { .glucose }
 
     // Typed accessors over the persisted raw values.
@@ -65,6 +70,10 @@ final class GlucoseReading: MedicalRecord {
     var measurementType: GlucoseMeasurementType {
         get { GlucoseMeasurementType(rawValue: measurementTypeRaw) ?? .manual }
         set { measurementTypeRaw = newValue.rawValue }
+    }
+    var logbookSlot: LogbookGlucoseSlot? {
+        get { logbookSlotRaw.flatMap(LogbookGlucoseSlot.init(rawValue:)) }
+        set { logbookSlotRaw = newValue?.rawValue }
     }
 
     init(

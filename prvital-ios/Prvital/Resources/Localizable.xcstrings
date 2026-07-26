@@ -16339,6 +16339,65 @@
         }
       }
     },
+    "Automatic" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Automatisch"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Automático"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Automatique"
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Automatico"
+          }
+        },
+        "nl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Automatisch"
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Automatycznie"
+          }
+        },
+        "pt" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Automático"
+          }
+        },
+        "ro" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Automat"
+          }
+        },
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Автоматически"
+          }
+        }
+      }
+    },
     "Avatar" : {
       "extractionState" : "manual",
       "localizations" : {
@@ -29775,6 +29834,65 @@
         }
       }
     },
+    "Doses at this meal" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Dosen zu dieser Mahlzeit"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Dosis de esta comida"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Doses de ce repas"
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Dosi di questo pasto"
+          }
+        },
+        "nl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Doses bij deze maaltijd"
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Dawki przy tym posiłku"
+          }
+        },
+        "pt" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Doses desta refeição"
+          }
+        },
+        "ro" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Dozele acestei mese"
+          }
+        },
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Дозы этого приёма пищи"
+          }
+        }
+      }
+    },
     "Drag to reorder. The glucose ring, quick actions and safety banners always stay at the top." : {
       "extractionState" : "manual",
       "localizations" : {
@@ -30892,6 +31010,65 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Изменить наблюдение"
+          }
+        }
+      }
+    },
+    "Edit reading" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Messung bearbeiten"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Editar la medición"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Modifier la mesure"
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Modifica la misurazione"
+          }
+        },
+        "nl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Meting bewerken"
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Edytuj pomiar"
+          }
+        },
+        "pt" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Editar a medição"
+          }
+        },
+        "ro" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Editează măsurarea"
+          }
+        },
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Изменить измерение"
           }
         }
       }
@@ -34963,6 +35140,65 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Продукт (необязательно)"
+          }
+        }
+      }
+    },
+    "For" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Für"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Para"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Pour"
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Per"
+          }
+        },
+        "nl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Voor"
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Dla"
+          }
+        },
+        "pt" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Para"
+          }
+        },
+        "ro" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Pentru"
+          }
+        },
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Для"
           }
         }
       }
@@ -68031,6 +68267,124 @@
         }
       }
     },
+    "Pinned to this column by you" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Von dir an diese Spalte geheftet"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Fijada por ti en esta columna"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Épinglée par vous dans cette colonne"
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Fissata da te in questa colonna"
+          }
+        },
+        "nl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Door jou aan deze kolom vastgezet"
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Przypięte przez Ciebie do tej kolumny"
+          }
+        },
+        "pt" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Fixada por si nesta coluna"
+          }
+        },
+        "ro" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Fixată de tine în această coloană"
+          }
+        },
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Закреплено вами в этом столбце"
+          }
+        }
+      }
+    },
+    "Placed automatically, nearest to this column's time" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Automatisch platziert, am nächsten an der Zeit dieser Spalte"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Colocada automáticamente, la más cercana a la hora de esta columna"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Placée automatiquement, au plus près de l'heure de cette colonne"
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Inserita automaticamente, la più vicina all'orario di questa colonna"
+          }
+        },
+        "nl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Automatisch geplaatst, het dichtst bij de tijd van deze kolom"
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Umieszczone automatycznie, najbliżej pory tej kolumny"
+          }
+        },
+        "pt" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Colocada automaticamente, a mais próxima da hora desta coluna"
+          }
+        },
+        "ro" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Plasată automat, cea mai apropiată de ora acestei coloane"
+          }
+        },
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Размещено автоматически — ближайшее к времени этого столбца"
+          }
+        }
+      }
+    },
     "Plain monochrome glyphs instead of coloured circles." : {
       "extractionState" : "manual",
       "localizations" : {
@@ -72470,6 +72824,65 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Регион"
+          }
+        }
+      }
+    },
+    "Register slot" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Feld im Register"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Casilla del registro"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Case du registre"
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Casella del registro"
+          }
+        },
+        "nl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Vak in het register"
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Pole w dzienniku"
+          }
+        },
+        "pt" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Casa do registo"
+          }
+        },
+        "ro" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Slot în registru"
+          }
+        },
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ячейка журнала"
           }
         }
       }
@@ -78251,6 +78664,65 @@
         }
       }
     },
+    "Show in column" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "In Spalte anzeigen"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Mostrar en la columna"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Afficher dans la colonne"
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Mostra nella colonna"
+          }
+        },
+        "nl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Tonen in kolom"
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Pokaż w kolumnie"
+          }
+        },
+        "pt" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Mostrar na coluna"
+          }
+        },
+        "ro" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Afișează în coloana"
+          }
+        },
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Показывать в столбце"
+          }
+        }
+      }
+    },
     "Show on chart" : {
       "extractionState" : "manual",
       "localizations" : {
@@ -84000,6 +84472,65 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Нажмите «Принять», когда примете дозу. Это записывается в ваш дневник."
+          }
+        }
+      }
+    },
+    "Tap a dose to edit it — including which meal it belongs to." : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Tippe auf eine Dosis, um sie zu bearbeiten – auch, zu welcher Mahlzeit sie gehört."
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Toca una dosis para editarla, incluida la comida a la que pertenece."
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Touchez une dose pour la modifier, y compris le repas auquel elle appartient."
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Tocca una dose per modificarla, incluso il pasto a cui appartiene."
+          }
+        },
+        "nl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Tik op een dosis om die te bewerken — ook bij welke maaltijd die hoort."
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Stuknij dawkę, aby ją edytować — także posiłek, do którego należy."
+          }
+        },
+        "pt" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Toque numa dose para a editar — incluindo a refeição a que pertence."
+          }
+        },
+        "ro" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Atinge o doză ca s-o editezi — inclusiv masa căreia îi aparține."
+          }
+        },
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Нажмите на дозу, чтобы изменить её — в том числе к какому приёму пищи она относится."
           }
         }
       }
@@ -93616,61 +94147,61 @@
         }
       }
     },
-    "Values are matched to each slot from your entries (fingerstick checks preferred; sensor readings fill in). Tap any cell to add or edit. Sharing opens the system sheet, where Print is available." : {
+    "Values are matched to each slot from your entries (fingerstick checks preferred; sensor readings fill in). Tap a filled cell to pin it to a column or edit it; doses tagged with a meal always land in that meal's column. Sharing opens the system sheet, where Print is available." : {
       "extractionState" : "manual",
       "localizations" : {
         "de" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Die Werte werden aus deinen Einträgen den einzelnen Feldern zugeordnet (Fingerstich-Messungen bevorzugt; Sensorwerte ergänzen). Auf eine Zelle tippen, um hinzuzufügen oder zu bearbeiten. Beim Teilen öffnet sich das Systemmenü mit der Option „Drucken“."
+            "value" : "Die Werte werden aus deinen Einträgen den Feldern zugeordnet (Fingerstich-Messungen bevorzugt; Sensorwerte füllen auf). Tippe auf eine gefüllte Zelle, um sie an eine Spalte zu heften oder zu bearbeiten; Dosen mit Mahlzeiten-Markierung landen immer in der Spalte dieser Mahlzeit. Teilen öffnet das System-Menü, dort ist auch Drucken verfügbar."
           }
         },
         "es" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Los valores se asignan a cada casilla a partir de tus entradas (se prefieren las mediciones capilares; las lecturas del sensor completan). Toca cualquier celda para añadir o editar. Al compartir se abre la hoja del sistema, donde está disponible Imprimir."
+            "value" : "Los valores se asignan a cada casilla a partir de tus registros (se prefieren las mediciones capilares; las lecturas del sensor completan). Toca una celda con valor para fijarla en una columna o editarla; las dosis etiquetadas con una comida siempre van a la columna de esa comida. Compartir abre la hoja del sistema, donde está disponible Imprimir."
           }
         },
         "fr" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Les valeurs sont associées à chaque case à partir de vos entrées (mesures capillaires privilégiées ; les valeurs du capteur complètent). Touchez une cellule pour ajouter ou modifier. Le partage ouvre la feuille système, où Imprimer est disponible."
+            "value" : "Les valeurs sont associées à chaque case à partir de vos saisies (mesures capillaires privilégiées ; les lectures du capteur complètent). Touchez une case remplie pour l'épingler dans une colonne ou la modifier ; les doses étiquetées avec un repas vont toujours dans la colonne de ce repas. Le partage ouvre la feuille système, où l'impression est disponible."
           }
         },
         "it" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "I valori vengono assegnati a ogni casella dalle tue voci (preferite le misurazioni capillari; le letture del sensore completano). Tocca una cella per aggiungere o modificare. La condivisione apre il menu di sistema, dove è disponibile Stampa."
+            "value" : "I valori vengono abbinati a ogni casella dalle tue registrazioni (preferite le misurazioni capillari; le letture del sensore completano). Tocca una cella compilata per fissarla in una colonna o modificarla; le dosi etichettate con un pasto finiscono sempre nella colonna di quel pasto. La condivisione apre il pannello di sistema, dove è disponibile Stampa."
           }
         },
         "nl" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Waarden worden per vak aan je invoer gekoppeld (vingerprikmetingen hebben voorrang; sensormetingen vullen aan). Tik op een cel om toe te voegen of te bewerken. Delen opent het systeemvenster met de optie Afdrukken."
+            "value" : "Waarden worden per vak gekoppeld op basis van je invoer (vingerprikmetingen hebben voorrang; sensormetingen vullen aan). Tik op een gevuld vak om het aan een kolom vast te zetten of te bewerken; doses met een maaltijdlabel komen altijd in de kolom van die maaltijd. Delen opent het systeemmenu, waar ook Afdrukken beschikbaar is."
           }
         },
         "pl" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Wartości są dopasowywane do każdej komórki na podstawie Twoich wpisów (preferowane pomiary z palca; odczyty z sensora uzupełniają). Dotknij komórki, aby dodać lub edytować. Udostępnianie otwiera arkusz systemowy z opcją Drukuj."
+            "value" : "Wartości są dopasowywane do pól na podstawie Twoich wpisów (pomiary z palca mają pierwszeństwo; odczyty sensora uzupełniają). Stuknij wypełnioną komórkę, aby przypiąć ją do kolumny lub edytować; dawki oznaczone posiłkiem zawsze trafiają do kolumny tego posiłku. Udostępnianie otwiera arkusz systemowy, w którym dostępne jest Drukowanie."
           }
         },
         "pt" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Os valores são associados a cada espaço a partir das tuas entradas (dá-se preferência às medições capilares; as leituras do sensor completam). Toca em qualquer célula para adicionar ou editar. Ao partilhar abre-se a folha do sistema, onde está disponível Imprimir."
+            "value" : "Os valores são associados a cada casa a partir dos seus registos (as medições capilares têm prioridade; as leituras do sensor completam). Toque numa célula preenchida para a fixar numa coluna ou editar; as doses etiquetadas com uma refeição vão sempre para a coluna dessa refeição. Partilhar abre a folha do sistema, onde a Impressão está disponível."
           }
         },
         "ro" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Valorile sunt asociate fiecărei căsuțe pe baza intrărilor tale (se preferă măsurătorile din deget; citirile senzorului completează). Atinge orice celulă pentru a adăuga sau edita. Partajarea deschide foaia de sistem, unde este disponibilă opțiunea Tipărire."
+            "value" : "Valorile sunt potrivite fiecărui slot din înregistrările tale (testele din deget au prioritate; citirile senzorului completează). Atinge o celulă completată ca s-o fixezi într-o coloană sau s-o editezi; dozele etichetate cu o masă ajung mereu în coloana acelei mese. Distribuirea deschide foaia de sistem, unde e disponibilă și Tipărirea."
           }
         },
         "ru" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Значения подставляются в каждую ячейку из ваших записей (предпочтительны измерения из пальца; данные сенсора дополняют). Коснитесь ячейки, чтобы добавить или изменить. Меню «Поделиться» открывает системную панель с опцией «Печать»."
+            "value" : "Значения подбираются для каждой ячейки из ваших записей (приоритет у измерений из пальца; показания датчика дополняют). Нажмите на заполненную ячейку, чтобы закрепить её в столбце или изменить; дозы с меткой приёма пищи всегда попадают в столбец этого приёма. Кнопка «Поделиться» открывает системное меню, где доступна печать."
           }
         }
       }

@@ -337,6 +337,32 @@ enum InsulinDoseContext: String, Codable, CaseIterable, Sendable {
     }
 }
 
+/// The user's explicit "this dose is for…" word on a meal bolus. The register
+/// trusts it over any time-window guess; `snack` keeps a dose out of the three
+/// meal columns entirely.
+enum DoseMealTag: String, Codable, CaseIterable, Sendable {
+    case breakfast, lunch, dinner, snack
+
+    var label: String {
+        switch self {
+        case .breakfast: return String(localized: "Breakfast")
+        case .lunch: return String(localized: "Lunch")
+        case .dinner: return String(localized: "Dinner")
+        case .snack: return String(localized: "Snack")
+        }
+    }
+
+    /// Column index in the register (breakfast/lunch/dinner); nil for snack.
+    var mealIndex: Int? {
+        switch self {
+        case .breakfast: return 0
+        case .lunch: return 1
+        case .dinner: return 2
+        case .snack: return nil
+        }
+    }
+}
+
 /// Meal category for carbohydrate entries.
 enum MealType: String, Codable, CaseIterable, Sendable, Identifiable {
     case breakfast

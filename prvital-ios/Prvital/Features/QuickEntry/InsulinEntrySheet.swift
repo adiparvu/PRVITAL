@@ -14,6 +14,7 @@ struct InsulinEntrySheet: View {
     @State private var name = ""
     @State private var delivery: InsulinDeliveryMethod = .pen
     @State private var context: InsulinDoseContext = .mealBolus
+    @State private var mealTag: DoseMealTag?
     @State private var note = ""
     /// The connected glucose story for an existing dose (before → after + IOB).
     @State private var impact: EventInsight?
@@ -53,6 +54,17 @@ struct InsulinEntrySheet: View {
                     }
                     Picker("Context", selection: $context) {
                         ForEach(InsulinDoseContext.allCases, id: \.self) { Text($0.label).tag($0) }
+                    }
+                    // "For: breakfast / lunch / dinner / snack" — the register
+                    // trusts this word over any time-window guess. Only a meal
+                    // bolus carries it; corrections/basal never join a meal.
+                    if context == .mealBolus {
+                        Picker("For", selection: $mealTag) {
+                            Text("Automatic").tag(DoseMealTag?.none)
+                            ForEach(DoseMealTag.allCases, id: \.self) {
+                                Text($0.label).tag(Optional($0))
+                            }
+                        }
                     }
                     Picker("Delivery", selection: $delivery) {
                         ForEach(InsulinDeliveryMethod.allCases, id: \.self) { Text($0.label).tag($0) }
@@ -108,10 +120,13 @@ struct InsulinEntrySheet: View {
 
     private func load() {
         guard let existing else {
-            // A fresh dose starts with the profile's preset for the type.
+            // A fresh dose starts with the profile's preset for the type and a
+            // meal suggestion from the clock — one glance to confirm, one tap
+            // to correct, and the register gets the user's explicit word.
             if name.isEmpty, let preset = presetName, !preset.isEmpty {
                 name = preset
             }
+            mealTag = Self.suggestedMealTag(for: timestamp)
             return
         }
         units = existing.units
@@ -120,8 +135,20 @@ struct InsulinEntrySheet: View {
         name = existing.insulinName ?? ""
         delivery = existing.deliveryMethod
         context = existing.doseContext
+        mealTag = existing.mealTag
         note = existing.note ?? ""
         computeImpact(for: existing)
+    }
+
+    /// The meal a dose at this hour is most likely for, using the same time
+    /// bands the register's fallback anchors use (04–11 / 11–16 / 16–22).
+    static func suggestedMealTag(for date: Date) -> DoseMealTag {
+        switch Calendar.current.component(.hour, from: date) {
+        case 4..<11: return .breakfast
+        case 11..<16: return .lunch
+        case 16..<22: return .dinner
+        default: return .snack
+        }
     }
 
     /// Reads the glucose around this dose and the insulin already active at its
@@ -146,6 +173,8 @@ struct InsulinEntrySheet: View {
     }
 
     private func save() {
+        // The meal word only makes sense on a meal bolus.
+        let tag = context == .mealBolus ? mealTag : nil
         if let existing {
             existing.units = units
             existing.timestamp = timestamp
@@ -153,13 +182,14 @@ struct InsulinEntrySheet: View {
             existing.insulinName = name.isEmpty ? nil : name
             existing.deliveryMethod = delivery
             existing.doseContext = context
+            existing.mealTag = tag
             existing.note = note.isEmpty ? nil : note
             env.entryStore.touch(existing)
         } else {
             env.entryStore.addInsulin(
                 units: units, timestamp: timestamp, type: type,
                 name: name.isEmpty ? nil : name, deliveryMethod: delivery,
-                context: context, note: note.isEmpty ? nil : note
+                context: context, mealTag: tag, note: note.isEmpty ? nil : note
             )
         }
         Haptics.play(.success)

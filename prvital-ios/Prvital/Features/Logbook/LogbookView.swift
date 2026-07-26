@@ -52,6 +52,10 @@ struct LogbookContent: View {
     // `.task` lets the sheet present first, then fills the table in.
     @State private var rows: [LogbookRow] = []
     @State private var isBuilding = false
+    /// Bumped when an editor sheet closes, so in-place edits (value changes,
+    /// slot pins, meal re-tags) rebuild the table even though the record
+    /// counts — the rest of `rebuildKey` — did not move.
+    @State private var dataVersion = 0
 
     // Fixed metrics keep the pinned date column and the scrolling grid aligned.
     private static let rowHeight: CGFloat = 44
@@ -76,7 +80,7 @@ struct LogbookContent: View {
     /// Changes whenever the window or the underlying data does, so `.task(id:)`
     /// rebuilds exactly then — not on every scroll or animation frame.
     private var rebuildKey: String {
-        "\(range.rawValue)|\(glucose.count)|\(insulin.count)|\(carbs.count)|\(observations.count)|\(locale.identifier)"
+        "\(range.rawValue)|\(glucose.count)|\(insulin.count)|\(carbs.count)|\(observations.count)|\(locale.identifier)|\(dataVersion)"
     }
 
     /// Rebuilds the register. Yields first so the sheet finishes presenting, then
@@ -136,7 +140,9 @@ struct LogbookContent: View {
                     .accessibilityLabel("Share logbook PDF")
                 }
             }
-            .sheet(item: $sheetTarget) { target in editorSheet(for: target) }
+            .sheet(item: $sheetTarget, onDismiss: { dataVersion += 1 }) { target in
+                editorSheet(for: target)
+            }
             .sheet(item: $shareItem) { item in
                 LogbookSharePanel(url: item.url)
                     .presentationDetents([.height(250)])
@@ -231,7 +237,7 @@ struct LogbookContent: View {
     private func gridRow(_ row: LogbookRow) -> some View {
         HStack(spacing: 0) {
             ForEach(LogbookGlucoseSlot.allCases, id: \.self) { slot in
-                glucoseCell(row.cell(for: slot))
+                glucoseCell(row.cell(for: slot), slot: slot)
             }
             ForEach(0..<3, id: \.self) { meal in
                 insulinCell(row, meal: meal)
@@ -246,12 +252,13 @@ struct LogbookContent: View {
     }
 
     /// Zone-tinted glucose value, or an em-dash. Tapping an existing reading
-    /// edits it; tapping an empty cell opens a blank glucose sheet.
-    private func glucoseCell(_ cell: LogbookCell) -> some View {
+    /// opens the slot sheet (provenance + move + edit); tapping an empty cell
+    /// opens a blank glucose sheet. A pinned reading carries a small pin.
+    private func glucoseCell(_ cell: LogbookCell, slot: LogbookGlucoseSlot) -> some View {
         Button {
             Haptics.play(.selection)
             if let id = cell.readingID, let reading = fetchReading(id) {
-                sheetTarget = LogbookSheetTarget(kind: .glucose(reading))
+                sheetTarget = LogbookSheetTarget(kind: .slot(reading, slot))
             } else {
                 sheetTarget = LogbookSheetTarget(kind: .glucose(nil))
             }
@@ -266,6 +273,15 @@ struct LogbookContent: View {
                 }
             }
             .frame(width: Self.glucoseColumnWidth, height: Self.rowHeight)
+            .overlay(alignment: .topTrailing) {
+                if cell.isPinned {
+                    Image(systemName: "pin.fill")
+                        .font(.system(size: 7, weight: .semibold))
+                        .foregroundStyle(Theme.textTertiary)
+                        .padding(.top, 5)
+                        .padding(.trailing, 5)
+                }
+            }
             .contentShape(.rect)
         }
         .buttonStyle(.plain)
@@ -275,8 +291,11 @@ struct LogbookContent: View {
         let column = row.insulinColumns[meal]
         return Button {
             Haptics.play(.selection)
-            if column.doseIDs.count == 1, let dose = fetchDose(column.doseIDs[0]) {
-                sheetTarget = LogbookSheetTarget(kind: .insulin(dose))
+            let doses = column.doseIDs.compactMap(fetchDose)
+            if doses.count == 1 {
+                sheetTarget = LogbookSheetTarget(kind: .insulin(doses[0]))
+            } else if doses.count > 1 {
+                sheetTarget = LogbookSheetTarget(kind: .doses(doses))
             } else {
                 sheetTarget = LogbookSheetTarget(kind: .insulin(nil))
             }
@@ -332,7 +351,7 @@ struct LogbookContent: View {
     }
 
     private var footnote: some View {
-        Text("Values are matched to each slot from your entries (fingerstick checks preferred; sensor readings fill in). Tap any cell to add or edit. Sharing opens the system sheet, where Print is available.")
+        Text("Values are matched to each slot from your entries (fingerstick checks preferred; sensor readings fill in). Tap a filled cell to pin it to a column or edit it; doses tagged with a meal always land in that meal's column. Sharing opens the system sheet, where Print is available.")
             .font(.caption2)
             .foregroundStyle(Theme.textTertiary)
             .frame(maxWidth: .infinity, alignment: .leading)
@@ -363,6 +382,16 @@ struct LogbookContent: View {
             InsulinEntrySheet(existing: dose)
         case .observation(let entry):
             ObservationEntrySheet(existing: entry)
+        case .slot(let reading, let slot):
+            LogbookSlotSheet(reading: reading, slot: slot, unit: unit, thresholds: thresholds) {
+                sheetTarget = LogbookSheetTarget(kind: .glucose(reading))
+            }
+            .presentationDetents([.medium, .large])
+        case .doses(let doses):
+            LogbookDoseListSheet(doses: doses) { dose in
+                sheetTarget = LogbookSheetTarget(kind: .insulin(dose))
+            }
+            .presentationDetents([.medium, .large])
         }
     }
 
@@ -442,6 +471,10 @@ private struct LogbookSheetTarget: Identifiable {
         case glucose(GlucoseReading?)
         case insulin(InsulinDose?)
         case observation(ObservationEntry?)
+        /// The slot sheet for a filled glucose cell: provenance + move + edit.
+        case slot(GlucoseReading, LogbookGlucoseSlot)
+        /// The dose list behind a multi-dose insulin cell.
+        case doses([InsulinDose])
     }
     let id = UUID()
     let kind: Kind
@@ -450,6 +483,166 @@ private struct LogbookSheetTarget: Identifiable {
 private struct LogbookShareItem: Identifiable {
     let url: URL
     var id: URL { url }
+}
+
+/// The sheet behind a filled glucose cell: the reading, whether it was pinned
+/// here or placed automatically, one-tap moves to another column (which write
+/// the explicit pin), and a door into the full editor.
+private struct LogbookSlotSheet: View {
+    @Environment(AppEnvironment.self) private var env
+    @Environment(\.dismiss) private var dismiss
+
+    let reading: GlucoseReading
+    let slot: LogbookGlucoseSlot
+    let unit: GlucoseUnit
+    let thresholds: GlucoseThresholds
+    /// Asks the parent to swap this sheet for the full glucose editor.
+    var onEdit: () -> Void
+
+    var body: some View {
+        NavigationStack {
+            List {
+                Section {
+                    HStack(alignment: .firstTextBaseline, spacing: 6) {
+                        Text(GlucoseFormatting.string(mgdL: reading.valueMgdL, unit: unit))
+                            .font(.system(size: 32, weight: .bold, design: .rounded))
+                            .foregroundStyle(thresholds.zone(forMgdL: reading.valueMgdL).color)
+                        Text(verbatim: unit.rawValue)
+                            .font(.subheadline)
+                            .foregroundStyle(Theme.textSecondary)
+                        Spacer(minLength: 0)
+                        VStack(alignment: .trailing, spacing: 2) {
+                            Text(reading.timestamp.formatted(date: .abbreviated, time: .shortened))
+                                .font(.footnote.weight(.semibold))
+                                .foregroundStyle(Theme.textPrimary)
+                            Text(verbatim: PrvitalString(reading.measurementType.label))
+                                .font(.caption2)
+                                .foregroundStyle(Theme.textSecondary)
+                        }
+                    }
+                    Label {
+                        // if/else (not a ternary) so each literal stays a
+                        // LocalizedStringKey — a ternary would collapse them
+                        // into a plain String and skip the catalog.
+                        Group {
+                            if reading.logbookSlot != nil {
+                                Text("Pinned to this column by you")
+                            } else {
+                                Text("Placed automatically, nearest to this column's time")
+                            }
+                        }
+                        .font(.footnote)
+                        .foregroundStyle(Theme.textSecondary)
+                    } icon: {
+                        Image(systemName: reading.logbookSlot != nil ? "pin.fill" : "wand.and.stars")
+                            .foregroundStyle(Theme.accent)
+                    }
+                }
+                .prvioListRow()
+
+                Section("Show in column") {
+                    slotRow(title: String(localized: "Automatic"),
+                            selected: reading.logbookSlot == nil) { pin(nil) }
+                    ForEach(LogbookGlucoseSlot.allCases, id: \.self) { candidate in
+                        slotRow(title: candidate.title,
+                                selected: reading.logbookSlot == candidate) { pin(candidate) }
+                    }
+                }
+                .prvioListRow()
+
+                Section {
+                    Button {
+                        onEdit()
+                    } label: {
+                        Label("Edit reading", systemImage: "pencil")
+                    }
+                }
+                .prvioListRow()
+            }
+            .scrollContentBackground(.hidden)
+            .prvitalTabBackground()
+            .navigationTitle("Register slot")
+            .navigationBarTitleDisplayMode(.inline)
+            .toolbar {
+                ToolbarItem(placement: .confirmationAction) { Button("Done") { dismiss() } }
+            }
+        }
+    }
+
+    private func slotRow(title: String, selected: Bool, action: @escaping () -> Void) -> some View {
+        Button(action: action) {
+            HStack {
+                Text(verbatim: PrvitalString(title))
+                    .foregroundStyle(Theme.textPrimary)
+                Spacer(minLength: 0)
+                if selected {
+                    Image(systemName: "checkmark")
+                        .font(.footnote.weight(.bold))
+                        .foregroundStyle(Theme.accent)
+                }
+            }
+        }
+    }
+
+    /// Writes the explicit pin (or clears it back to automatic) and closes.
+    private func pin(_ newSlot: LogbookGlucoseSlot?) {
+        reading.logbookSlot = newSlot
+        env.entryStore.touch(reading)
+        Haptics.play(.success)
+        dismiss()
+    }
+}
+
+/// The dose list behind a multi-dose insulin cell: every dose that counted
+/// toward the column, each one tap away from the full editor (where its meal
+/// tag can be changed).
+private struct LogbookDoseListSheet: View {
+    @Environment(\.dismiss) private var dismiss
+
+    let doses: [InsulinDose]
+    /// Asks the parent to swap this sheet for the dose editor.
+    var onSelect: (InsulinDose) -> Void
+
+    var body: some View {
+        NavigationStack {
+            List {
+                Section {
+                    ForEach(doses, id: \.id) { dose in
+                        Button {
+                            onSelect(dose)
+                        } label: {
+                            HStack {
+                                VStack(alignment: .leading, spacing: 2) {
+                                    Text(verbatim: "\(dose.units.formatted()) U")
+                                        .font(.body.weight(.semibold))
+                                        .foregroundStyle(Theme.textPrimary)
+                                    Text(dose.timestamp.formatted(date: .omitted, time: .shortened))
+                                        .font(.caption)
+                                        .foregroundStyle(Theme.textSecondary)
+                                }
+                                Spacer(minLength: 0)
+                                Text(verbatim: PrvitalString(dose.mealTag?.label ?? dose.doseContext.label))
+                                    .font(.caption.weight(.semibold))
+                                    .foregroundStyle(Theme.accent)
+                            }
+                        }
+                    }
+                } footer: {
+                    Text("Tap a dose to edit it — including which meal it belongs to.")
+                        .font(.footnote)
+                        .foregroundStyle(Theme.textTertiary)
+                }
+                .prvioListRow()
+            }
+            .scrollContentBackground(.hidden)
+            .prvitalTabBackground()
+            .navigationTitle("Doses at this meal")
+            .navigationBarTitleDisplayMode(.inline)
+            .toolbar {
+                ToolbarItem(placement: .confirmationAction) { Button("Done") { dismiss() } }
+            }
+        }
+    }
 }
 
 /// The post-generation panel, mirroring ExportView's ShareLink mechanism: the

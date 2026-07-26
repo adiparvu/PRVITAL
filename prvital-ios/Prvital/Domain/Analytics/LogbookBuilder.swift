@@ -16,6 +16,9 @@ import Foundation
 //     glucose schedule's enabled slots, bucketed by time of day
 //     (04:00–10:59 → breakfast, 11:00–15:59 → lunch, 16:00–20:59 → dinner,
 //     21:00 onwards or before 04:00 → bedtime; earliest slot in a band wins).
+//   • A reading the user PINNED to a slot (`logbookSlot`) claims that slot
+//     outright, whatever the clock says, and never drifts into any other
+//     column. Unpinned readings fill the remaining slots by time:
 //   • A "before X" glucose slot looks BACKWARD from the meal: the nearest
 //     reading in the 90 minutes leading up to the first bite (with a 10-minute
 //     grace after it, for logging order) — a value from well after eating can
@@ -25,10 +28,11 @@ import Foundation
 //     register is meant for discrete checks — with CGM used only as a
 //     fallback. A reading fills at most one slot (closest first, in
 //     chronological slot order).
-//   • Insulin per meal is the sum of *bolus* doses (anything except basal: a
-//     dose is excluded when its context is `.basal` or its insulin type is
-//     basal/long-acting) within ±90 min of the meal's anchor; each dose counts
-//     toward its nearest anchor only. `nil` means no dose.
+//   • Insulin: a dose TAGGED "for breakfast/lunch/dinner" always lands in that
+//     column; a dose tagged "snack" and any explicit correction stay out of
+//     the meal columns. Untagged boluses (anything except basal: excluded when
+//     the context is `.basal` or the insulin type is basal/long-acting) fall
+//     back to the nearest meal anchor within ±90 min. `nil` means no dose.
 //   • The comment joins the day's observation texts, then appends short
 //     markers for lows below the threshold (default 70 mg/dL), e.g.
 //     "Low 47 at 02:51". Consecutive low readings within 30 min group into one
@@ -42,10 +46,14 @@ struct LogbookCell: Equatable, Sendable {
     var mgdL: Double?
     var readingID: UUID?
     var slotDate: Date
+    /// True when the reading was pinned here by the user's explicit word
+    /// rather than picked automatically by the time window.
+    var isPinned: Bool = false
 }
 
-/// The seven glucose columns of the register, in paper order.
-enum LogbookGlucoseSlot: CaseIterable, Sendable {
+/// The seven glucose columns of the register, in paper order. Raw values are
+/// persisted on `GlucoseReading.logbookSlotRaw` when the user pins a reading.
+enum LogbookGlucoseSlot: String, Codable, CaseIterable, Sendable {
     case beforeBreakfast, afterBreakfast, beforeLunch, afterLunch
     case beforeDinner, afterDinner, bedtime
 
@@ -244,8 +252,26 @@ enum LogbookBuilder {
                 (.afterDinner, mealAnchors[2].addingTimeInterval(afterMealOffset), glucoseWindow, glucoseWindow),
                 (.bedtime, bedtimeAnchor, glucoseWindow, glucoseWindow),
             ]
+            // Pinned readings first: the user's explicit word claims its slot
+            // outright, and a pinned reading never drifts into another column
+            // (so every pinned reading is marked used before the window scan).
+            var pinnedBySlot: [LogbookGlucoseSlot: [GlucoseReading]] = [:]
+            for reading in readingsByDay[day] ?? [] {
+                guard let slot = reading.logbookSlot else { continue }
+                pinnedBySlot[slot, default: []].append(reading)
+                usedReadingIDs.insert(reading.id)
+            }
+
             var cells: [LogbookGlucoseSlot: LogbookCell] = [:]
             for (slot, target, lookback, lookahead) in targets {
+                if let pinnedReading = pinnedBySlot[slot]?.min(by: {
+                    abs($0.timestamp.timeIntervalSince(target)) < abs($1.timestamp.timeIntervalSince(target))
+                }) {
+                    cells[slot] = LogbookCell(
+                        mgdL: pinnedReading.valueMgdL, readingID: pinnedReading.id,
+                        slotDate: target, isPinned: true)
+                    continue
+                }
                 let cell = representative(
                     around: target, lookback: lookback, lookahead: lookahead,
                     readings: sortedReadings, times: readingTimes,
@@ -255,13 +281,22 @@ enum LogbookBuilder {
                 cells[slot] = cell
             }
 
-            // Insulin: each bolus dose counts toward its nearest meal anchor,
-            // and only when it lands inside that anchor's ±90 min window.
+            // Insulin: an explicit meal tag always wins (snack-tagged doses and
+            // explicit corrections stay out of the columns); untagged boluses
+            // fall back to the nearest meal anchor within its ±90 min window.
             var mealUnits: [Double?] = [nil, nil, nil]
             var mealDoseIDs: [[UUID]] = [[], [], []]
             for dose in (bolusByDay[day] ?? []).sorted(by: { $0.timestamp < $1.timestamp }) {
-                let meal = nearestIndex(of: dose.timestamp, in: mealAnchors)
-                guard abs(dose.timestamp.timeIntervalSince(mealAnchors[meal])) <= insulinWindow else { continue }
+                let meal: Int
+                if let tag = dose.mealTag {
+                    guard let tagged = tag.mealIndex else { continue }   // snack
+                    meal = tagged
+                } else {
+                    guard dose.doseContext != .correction else { continue }
+                    let nearest = nearestIndex(of: dose.timestamp, in: mealAnchors)
+                    guard abs(dose.timestamp.timeIntervalSince(mealAnchors[nearest])) <= insulinWindow else { continue }
+                    meal = nearest
+                }
                 mealUnits[meal] = (mealUnits[meal] ?? 0) + dose.units
                 mealDoseIDs[meal].append(dose.id)
             }

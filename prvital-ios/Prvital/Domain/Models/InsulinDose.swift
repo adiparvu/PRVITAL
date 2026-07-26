@@ -26,6 +26,9 @@ final class InsulinDose: MedicalRecord {
     var insulinName: String?
     var deliveryMethodRaw: String = InsulinDeliveryMethod.pen.rawValue
     var doseContextRaw: String = InsulinDoseContext.mealBolus.rawValue
+    /// The user's explicit "for breakfast / lunch / dinner / snack" word, if
+    /// given. Optional and defaulted so the addition is CloudKit-safe.
+    var mealTagRaw: String?
     var note: String?
 
     var recordType: RecordType { .insulin }
@@ -46,6 +49,10 @@ final class InsulinDose: MedicalRecord {
         get { InsulinDoseContext(rawValue: doseContextRaw) ?? .mealBolus }
         set { doseContextRaw = newValue.rawValue }
     }
+    var mealTag: DoseMealTag? {
+        get { mealTagRaw.flatMap(DoseMealTag.init(rawValue:)) }
+        set { mealTagRaw = newValue?.rawValue }
+    }
 
     init(
         id: UUID = UUID(),
@@ -55,6 +62,7 @@ final class InsulinDose: MedicalRecord {
         insulinName: String? = nil,
         deliveryMethod: InsulinDeliveryMethod = .pen,
         doseContext: InsulinDoseContext = .mealBolus,
+        mealTag: DoseMealTag? = nil,
         source: DataSource = .manual,
         note: String? = nil,
         timeZone: TimeZone = .current
@@ -66,6 +74,7 @@ final class InsulinDose: MedicalRecord {
         self.insulinName = insulinName
         self.deliveryMethodRaw = deliveryMethod.rawValue
         self.doseContextRaw = doseContext.rawValue
+        self.mealTagRaw = mealTag?.rawValue
         self.sourceRaw = source.rawValue
         self.note = note
         self.timeZoneIdentifier = timeZone.identifier

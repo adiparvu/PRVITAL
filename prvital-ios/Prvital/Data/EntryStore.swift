@@ -70,12 +70,14 @@ final class EntryStore {
         name: String? = nil,
         deliveryMethod: InsulinDeliveryMethod = .pen,
         context doseContext: InsulinDoseContext = .mealBolus,
+        mealTag: DoseMealTag? = nil,
         note: String? = nil,
         announces: Bool = true
     ) -> InsulinDose {
         let dose = InsulinDose(
             units: units, timestamp: timestamp, insulinType: type, insulinName: name,
-            deliveryMethod: deliveryMethod, doseContext: doseContext, note: note
+            deliveryMethod: deliveryMethod, doseContext: doseContext, mealTag: mealTag,
+            note: note
         )
         context.insert(dose)
         finish(.manualEdit, detail: "Insulin \(units) U logged")

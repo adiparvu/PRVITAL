@@ -34,10 +34,11 @@ final class LogbookBuilderTests: XCTestCase {
         units: Double,
         type: InsulinType = .rapidActing,
         context: InsulinDoseContext = .mealBolus,
+        tag: DoseMealTag? = nil,
         id: UUID = UUID()
     ) -> InsulinDose {
         InsulinDose(id: id, units: units, timestamp: date(day, hour, minute),
-                    insulinType: type, doseContext: context)
+                    insulinType: type, doseContext: context, mealTag: tag)
     }
 
     private func rows(
@@ -195,15 +196,44 @@ final class LogbookBuilderTests: XCTestCase {
     // MARK: Insulin
 
     func testInsulinSumsBolusDosesWithinNinetyMinutes() {
-        let meal = dose(1, 7, 0, units: 4)                          // 30 min before anchor
-        let correction = dose(1, 8, 50, units: 2, context: .correction) // 80 min after anchor
-        let tooLate = dose(1, 10, 0, units: 6)                      // 150 min → dropped
-        let result = rows(insulin: [meal, correction, tooLate])
+        let meal = dose(1, 7, 0, units: 4)         // 30 min before anchor
+        let second = dose(1, 8, 50, units: 2)      // 80 min after anchor
+        let tooLate = dose(1, 10, 0, units: 6)     // 150 min → dropped
+        let result = rows(insulin: [meal, second, tooLate])
         XCTAssertEqual(result.count, 1)
         XCTAssertEqual(result[0].breakfastUnits, 6)
-        XCTAssertEqual(Set(result[0].breakfastDoseIDs), Set([meal.id, correction.id]))
+        XCTAssertEqual(Set(result[0].breakfastDoseIDs), Set([meal.id, second.id]))
         XCTAssertNil(result[0].lunchUnits)
         XCTAssertNil(result[0].dinnerUnits)
+    }
+
+    func testExplicitMealTagWinsOverTheClock() {
+        // 12:40 is squarely "lunch" by the clock (13:00 anchor), but the user
+        // said this dose was for breakfast — their word wins.
+        let tagged = dose(1, 12, 40, units: 5, tag: .breakfast)
+        let result = rows(insulin: [tagged])
+        XCTAssertEqual(result[0].breakfastUnits, 5)
+        XCTAssertEqual(result[0].breakfastDoseIDs, [tagged.id])
+        XCTAssertNil(result[0].lunchUnits)
+    }
+
+    func testSnackTaggedDoseStaysOutOfMealColumns() {
+        // A dose for a snack near lunchtime must not inflate "Insulin lunch".
+        let snack = dose(1, 12, 50, units: 2, tag: .snack)
+        let result = rows(insulin: [snack])
+        XCTAssertEqual(result.count, 1)   // the day still gets a row
+        XCTAssertNil(result[0].breakfastUnits)
+        XCTAssertNil(result[0].lunchUnits)
+        XCTAssertNil(result[0].dinnerUnits)
+    }
+
+    func testUntaggedCorrectionStaysOutOfMealColumns() {
+        // An explicit correction is not "insulin for lunch", even at 13:10.
+        let correction = dose(1, 13, 10, units: 2, context: .correction)
+        let bolus = dose(1, 13, 0, units: 6)
+        let result = rows(insulin: [correction, bolus])
+        XCTAssertEqual(result[0].lunchUnits, 6)
+        XCTAssertEqual(result[0].lunchDoseIDs, [bolus.id])
     }
 
     func testBasalDosesAreExcluded() {
@@ -223,6 +253,33 @@ final class LogbookBuilderTests: XCTestCase {
         XCTAssertEqual(result[0].lunchUnits, 5)
         XCTAssertEqual(result[0].lunchDoseIDs, [lunch.id])
         XCTAssertNil(result[0].breakfastUnits)
+    }
+
+    // MARK: Pinned readings
+
+    func testPinnedReadingClaimsItsSlotWhateverTheClockSays() {
+        // 12:20 would auto-fill "before lunch", but the user pinned it to
+        // "2h after breakfast" (09:30 target, far outside the ±75 window).
+        let pinned = reading(1, 12, 20, 150)
+        pinned.logbookSlot = .afterBreakfast
+        let result = rows(readings: [pinned])
+        XCTAssertEqual(result[0].afterBreakfast.mgdL, 150)
+        XCTAssertTrue(result[0].afterBreakfast.isPinned)
+        XCTAssertNil(result[0].beforeLunch.mgdL)
+    }
+
+    func testPinnedReadingBeatsACloserAutomaticCandidate() {
+        // The pin wins the column even when an unpinned reading sits right on
+        // the slot's target; auto placement is only for what's left.
+        let pinned = reading(1, 10, 0, 88)
+        pinned.logbookSlot = .beforeBreakfast
+        let auto = reading(1, 7, 20, 130)
+        let result = rows(readings: [pinned, auto])
+        XCTAssertEqual(result[0].beforeBreakfast.mgdL, 88)
+        XCTAssertTrue(result[0].beforeBreakfast.isPinned)
+        // 07:20 fits no other window (after-breakfast starts 08:15) → unused.
+        XCTAssertNil(result[0].afterBreakfast.mgdL)
+        XCTAssertFalse(result[0].beforeLunch.isPinned)
     }
 
     // MARK: Comments
