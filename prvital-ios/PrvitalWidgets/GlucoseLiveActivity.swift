@@ -382,15 +382,15 @@ private struct LockScreenBanner: View {
 
     @ViewBuilder private var glucoseBody: some View {
         HStack(spacing: 14) {
-            VStack(alignment: .leading, spacing: 3) {
-                HStack(alignment: .firstTextBaseline, spacing: 4) {
+            VStack(alignment: .leading, spacing: 2) {
+                HStack(alignment: .firstTextBaseline, spacing: 5) {
                     Text(state.valueText)
-                        .font(.system(size: 40, weight: .bold, design: .rounded))
+                        .font(.system(size: 46, weight: .bold, design: .rounded))
                         .foregroundStyle(tint)
                         .minimumScaleFactor(0.7)
                         .lineLimit(1)
                         .contentTransition(.numericText(value: state.mgdL))
-                    Text(state.unitText).font(.caption).foregroundStyle(.white.opacity(0.7))
+                    Text(state.unitText).font(.caption).foregroundStyle(.white.opacity(0.65))
                 }
                 // The value and arrow carry the state colour; the headline reads
                 // calmer in white.
@@ -399,12 +399,19 @@ private struct LockScreenBanner: View {
                     .lineLimit(1).minimumScaleFactor(0.8)
             }
             Spacer(minLength: 8)
-            VStack(alignment: .trailing, spacing: 4) {
-                Image(systemName: state.trendSymbol).font(.title2.weight(.bold)).foregroundStyle(tint)
+            // The trend as a quiet glass chip — reads as one object, not a
+            // floating arrow with a stray caption.
+            VStack(spacing: 3) {
+                Image(systemName: state.trendSymbol)
+                    .font(.headline.weight(.bold)).foregroundStyle(tint)
                     .contentTransition(.symbolEffect(.replace))
                     .animation(.smooth, value: state.trendSymbol)
-                Text(state.trendLabel).font(.caption2).foregroundStyle(.white.opacity(0.7))
+                Text(state.trendLabel).font(.system(size: 10, weight: .medium))
+                    .foregroundStyle(.white.opacity(0.7))
+                    .lineLimit(1).minimumScaleFactor(0.7)
             }
+            .padding(.horizontal, 10).padding(.vertical, 7)
+            .background(.white.opacity(0.08), in: .rect(cornerRadius: 12, style: .continuous))
         }
         // The prediction gets its own full-width line so the (often long)
         // localized text is never truncated.
@@ -520,8 +527,9 @@ private struct SelfFillingBar: View {
                 EmptyView()
             }
             .progressViewStyle(.linear)
-            .tint(tint)
-            .frame(height: 3)
+            // Quieter than the value it sits under — a heartbeat, not a headline.
+            .tint(tint.opacity(0.8))
+            .frame(height: 2.5)
             .accessibilityLabel("Time remaining")
         }
     }

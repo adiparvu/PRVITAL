@@ -12,6 +12,9 @@ struct PrvitalWidgetsBundle: WidgetBundle {
     var body: some Widget {
         GlucoseWidget()
         GlucoseAccessoryWidget()
+        // Control Center quick actions: log an entry / open the emergency card.
+        QuickLogControl()
+        EmergencyControl()
         #if canImport(ActivityKit)
         GlucoseLiveActivity()
         #endif

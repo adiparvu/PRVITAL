@@ -46,6 +46,7 @@ struct RootView: View {
     @Environment(\.scenePhase) private var scenePhase
     @State private var showOnboarding = false
     @State private var showQuickEntry = false
+    @State private var showEmergency = false
     @State private var showWhatsNew = false
 
     /// Follows the system Dynamic Type when the user leaves "Use system size" on;
@@ -83,10 +84,16 @@ struct RootView: View {
             }
             .sheet(isPresented: $showQuickEntry) { QuickEntrySheet() }
             .onOpenURL { url in
-                // Deep link from the widget: open the quick-entry hub.
-                if url.scheme == "prvital", url.host == "log" {
-                    showQuickEntry = true
+                // Deep links from widgets / Control Center controls.
+                guard url.scheme == "prvital" else { return }
+                switch url.host {
+                case "log": showQuickEntry = true
+                case "emergency": showEmergency = true
+                default: break
                 }
+            }
+            .sheet(isPresented: $showEmergency) {
+                NavigationStack { EmergencyCardView() }
             }
             // Live foreground polling: while the app is open, refresh connected
             // CGM sources on the user's chosen cadence (default ~1 min) so the

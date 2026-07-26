@@ -376,22 +376,42 @@ final class GlucoseLiveActivityManager {
 /// the single stored handle is effectively serialized in practice.
 private final class LiveActivityStore: @unchecked Sendable {
     private var activity: Activity<GlucoseActivityAttributes>?
+    /// The live activity's id, persisted so a relaunch re-adopts the SAME
+    /// activity instead of racing ActivityKit's async restore.
+    private static let idKey = "liveActivity.currentID"
+    private var defaults: UserDefaults {
+        UserDefaults(suiteName: SharedStore.appGroupIdentifier) ?? .standard
+    }
 
     func upsert(state: GlucoseActivityAttributes.ContentState, staleDate: Date) async {
         let content = ActivityContent(state: state, staleDate: staleDate)
 
-        // Re-adopt an activity started in a previous launch. The in-memory handle
-        // is lost when the app is killed, but the Live Activity itself keeps
-        // running — so without this we'd `request` a brand-new one on every
-        // launch and they'd stack up on the Lock Screen (the "old one stays and a
-        // new one appears" bug). Adopt the first existing activity and end any
-        // extras a prior build may already have stacked.
+        // Re-adopt the activity from a previous launch. Two hard-won rules:
+        //
+        //  1. `Activity.activities` is restored ASYNCHRONOUSLY after a cold
+        //     launch — checking it once, seeing it empty, and requesting a new
+        //     activity is exactly how the "two stacked banners" bug happened
+        //     (the old one lived on, frozen, next to the new one). When the
+        //     persisted id says an activity should exist, give ActivityKit a
+        //     few beats to surface it before concluding it's gone.
+        //  2. Converge on EXACTLY one activity on every pass, not just the
+        //     first — any duplicate that slips in dies at the next update.
         if activity == nil {
-            let existing = Activity<GlucoseActivityAttributes>.activities
-            activity = existing.first
-            for extra in existing.dropFirst() {
-                await extra.end(nil, dismissalPolicy: .immediate)
+            let storedID = defaults.string(forKey: Self.idKey)
+            for attempt in 0..<4 {
+                let existing = Activity<GlucoseActivityAttributes>.activities
+                if !existing.isEmpty {
+                    activity = existing.first { $0.id == storedID } ?? existing.first
+                    break
+                }
+                if storedID == nil { break }
+                if attempt < 3 { try? await Task.sleep(for: .milliseconds(400)) }
             }
+        }
+
+        let currentID = activity?.id
+        for extra in Activity<GlucoseActivityAttributes>.activities where extra.id != currentID {
+            await extra.end(nil, dismissalPolicy: .immediate)
         }
 
         if let activity {
@@ -399,6 +419,7 @@ private final class LiveActivityStore: @unchecked Sendable {
         } else {
             activity = try? Activity.request(attributes: GlucoseActivityAttributes(), content: content)
         }
+        defaults.set(activity?.id, forKey: Self.idKey)
     }
 
     func finish() async {
@@ -409,6 +430,7 @@ private final class LiveActivityStore: @unchecked Sendable {
         }
         await activity?.end(nil, dismissalPolicy: .immediate)
         activity = nil
+        defaults.removeObject(forKey: Self.idKey)
     }
 }
 #endif
