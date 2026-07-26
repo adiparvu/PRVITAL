@@ -22,11 +22,14 @@ struct JournalView: View {
 
     /// The Journal shows at most the 14 most-recent days *with data*, so the
     /// queries only need a recent window — never the whole (potentially 100k-row,
-    /// post-import) history. Without this bound, every CGM sync re-materialised
-    /// the entire table on the main thread just to bucket the last two weeks.
+    /// post-import) history. 45 days covers 14 days-with-data even for someone
+    /// logging every few days, at a fraction of the old 120-day window's cost —
+    /// for a CGM user that window alone was ~35k readings re-materialised on the
+    /// main thread on every store change. Older days stay reachable through the
+    /// Calendar mode, which loads months on demand.
     init() {
-        let cutoff = Calendar.current.date(byAdding: .day, value: -120, to: Date())
-            ?? Date().addingTimeInterval(-120 * 86_400)
+        let cutoff = Calendar.current.date(byAdding: .day, value: -45, to: Date())
+            ?? Date().addingTimeInterval(-45 * 86_400)
         _glucose = Query(filter: #Predicate<GlucoseReading> { $0.timestamp >= cutoff },
                          sort: \.timestamp, order: .reverse)
         _insulin = Query(filter: #Predicate<InsulinDose> { $0.timestamp >= cutoff },

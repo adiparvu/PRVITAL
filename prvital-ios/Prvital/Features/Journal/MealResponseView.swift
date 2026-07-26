@@ -15,7 +15,7 @@ struct MealResponseView: View {
 
     @Query private var glucose: [GlucoseReading]
     @Query private var insulin: [InsulinDose]
-    @Query(sort: \CarbEntry.timestamp, order: .reverse) private var allMeals: [CarbEntry]
+    @Query private var allMeals: [CarbEntry]
 
     @State private var showEditor = false
 
@@ -31,6 +31,13 @@ struct MealResponseView: View {
         _insulin = Query(
             filter: #Predicate<InsulinDose> { $0.timestamp >= start && $0.timestamp <= end },
             sort: \.timestamp, order: .forward)
+        // The "previous comparable meal" search only looks back a few months;
+        // an unbounded meals query pulled every carb entry ever stored just to
+        // find one recent match.
+        let mealsCutoff = meal.timestamp.addingTimeInterval(-120 * 86_400)
+        _allMeals = Query(
+            filter: #Predicate<CarbEntry> { $0.timestamp >= mealsCutoff },
+            sort: \.timestamp, order: .reverse)
     }
 
     private var unit: GlucoseUnit { env.preferences.glucoseUnit }

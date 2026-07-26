@@ -25,7 +25,7 @@ enum ExternalCSVFormat: Equatable, Sendable {
 
 /// Detects and decodes third-party CGM exports — Dexcom Clarity and LibreView
 /// CSVs — into the same `ParsedRow` model the Prvital CSV importer uses, so all
-/// three formats funnel through the one `CSVGlucoseImporter.importRows(_:into:alreadySkipped:)`
+/// three formats funnel through the one `EntryStore.bulkImport(_:...)`
 /// write path.
 ///
 /// Deduplication is deliberately **not** implemented here: rows are written

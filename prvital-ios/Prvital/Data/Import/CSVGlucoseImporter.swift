@@ -18,7 +18,7 @@ enum ParsedRecord: Equatable, Sendable {
 struct ParsedRow: Equatable, Sendable {
     var timestamp: Date
     /// The source named in the CSV. Imports are written as `.manual` regardless
-    /// (see `CSVGlucoseImporter`); this is retained for provenance / testing.
+    /// (see `EntryStore.bulkImport`); this is retained for provenance / testing.
     var source: DataSource
     var record: ParsedRecord
 }
@@ -214,58 +214,5 @@ enum CSVImportParser {
         // Flush a trailing field/row that wasn't newline-terminated.
         if !field.isEmpty || !row.isEmpty { endRow() }
         return rows
-    }
-}
-
-// MARK: - @MainActor importer
-
-/// Writes parsed CSV rows into the app through `EntryStore`, so deduplication,
-/// the audit trail and (for glucose) Apple Health mirroring all apply exactly as
-/// they do for a hand-typed entry.
-///
-/// Imported rows are treated as **manual** entries per the app's provenance
-/// rules: glucose is stored with `source: .manual`, and insulin / carbs /
-/// activity carry an "Imported" note.
-@MainActor
-enum CSVGlucoseImporter {
-    private static let importedNote = "Imported"
-
-    /// Parses `text` and imports every valid row, returning the counts.
-    @discardableResult
-    static func importCSV(_ text: String, into store: EntryStore) -> ImportSummary {
-        let result = CSVImportParser.parse(text)
-        return importRows(result.rows, into: store, alreadySkipped: result.skipped)
-    }
-
-    /// Inserts already-parsed rows through the `EntryStore`. `alreadySkipped`
-    /// carries forward rows the parser could not decode so the summary reflects
-    /// the whole document.
-    @discardableResult
-    static func importRows(_ rows: [ParsedRow], into store: EntryStore, alreadySkipped: Int = 0) -> ImportSummary {
-        var imported = 0
-        for row in rows {
-            switch row.record {
-            case let .glucose(mgdL, measurement, trend):
-                store.addGlucose(mgdL: mgdL, timestamp: row.timestamp,
-                                 measurementType: measurement, trend: trend, source: .manual)
-            // `announces: false` — an import replays history; it must never flash
-            // a "just logged" confirmation or start a countdown in the Island.
-            case let .insulin(units, type, context, name):
-                store.addInsulin(units: units, timestamp: row.timestamp, type: type,
-                                 name: name, context: context, note: importedNote,
-                                 announces: false)
-            case let .carbs(grams, meal, food):
-                store.addCarbs(grams: grams, timestamp: row.timestamp,
-                               mealType: meal, foodDescription: food, note: importedNote,
-                               announces: false)
-            case let .activity(type, minutes, intensity):
-                store.addActivity(type: type, start: row.timestamp,
-                                  durationSeconds: minutes * 60, intensity: intensity, note: importedNote)
-            case let .observation(tags, text):
-                store.addObservation(tags: tags, text: text, timestamp: row.timestamp)
-            }
-            imported += 1
-        }
-        return ImportSummary(imported: imported, skipped: alreadySkipped)
     }
 }

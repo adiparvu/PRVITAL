@@ -11,11 +11,31 @@ import SwiftData
 struct HistoryContent: View {
     @Environment(AppEnvironment.self) private var env
 
-    @Query(sort: \GlucoseReading.timestamp, order: .reverse) private var glucose: [GlucoseReading]
-    @Query(sort: \InsulinDose.timestamp, order: .reverse) private var insulin: [InsulinDose]
-    @Query(sort: \CarbEntry.timestamp, order: .reverse) private var carbs: [CarbEntry]
-    @Query(sort: \ActivityEntry.startTimestamp, order: .reverse) private var activity: [ActivityEntry]
-    @Query(sort: \ObservationEntry.timestamp, order: .reverse) private var observations: [ObservationEntry]
+    @Query private var glucose: [GlucoseReading]
+    @Query private var insulin: [InsulinDose]
+    @Query private var carbs: [CarbEntry]
+    @Query private var activity: [ActivityEntry]
+    @Query private var observations: [ObservationEntry]
+
+    /// Bounded to the same ~year window as the Register mode. These queries were
+    /// the last truly unbounded ones in the app: after a full-history import,
+    /// switching the Journal to List mode materialised every row ever stored on
+    /// the main thread. The list's ranges (week / month / custom) all fit well
+    /// inside a year; older records remain reachable via Calendar and Export.
+    init() {
+        let cutoff = Calendar.current.date(byAdding: .day, value: -370, to: Date())
+            ?? Date().addingTimeInterval(-370 * 86_400)
+        _glucose = Query(filter: #Predicate<GlucoseReading> { $0.timestamp >= cutoff },
+                         sort: \.timestamp, order: .reverse)
+        _insulin = Query(filter: #Predicate<InsulinDose> { $0.timestamp >= cutoff },
+                         sort: \.timestamp, order: .reverse)
+        _carbs = Query(filter: #Predicate<CarbEntry> { $0.timestamp >= cutoff },
+                       sort: \.timestamp, order: .reverse)
+        _activity = Query(filter: #Predicate<ActivityEntry> { $0.startTimestamp >= cutoff },
+                          sort: \.startTimestamp, order: .reverse)
+        _observations = Query(filter: #Predicate<ObservationEntry> { $0.timestamp >= cutoff },
+                              sort: \.timestamp, order: .reverse)
+    }
 
     @State private var range: HistoryRange = .thisWeek
     @State private var sortNewestFirst = true
@@ -36,11 +56,20 @@ struct HistoryContent: View {
 
     private var filteredItems: [JournalTimelineItem] {
         let interval = dateInterval
+        // Narrow each table to the selected range BEFORE building the merged
+        // timeline. Building first and filtering after ran the merge over every
+        // fetched row (a year of CGM ≈ 100k) on each render, just to keep a week.
+        func within<T>(_ rows: [T], _ date: (T) -> Date) -> [T] {
+            guard let interval else { return rows }
+            return rows.filter { interval.contains(date($0)) }
+        }
         return JournalTimelineItem.build(
-            glucose: glucose, insulin: insulin, carbs: carbs,
-            activity: activity, observations: observations
+            glucose: within(glucose, \.timestamp),
+            insulin: within(insulin, \.timestamp),
+            carbs: within(carbs, \.timestamp),
+            activity: within(activity, \.startTimestamp),
+            observations: within(observations, \.timestamp)
         )
-        .filter { interval?.contains($0.date) ?? true }
         .sorted { sortNewestFirst ? $0.date > $1.date : $0.date < $1.date }
     }
 
