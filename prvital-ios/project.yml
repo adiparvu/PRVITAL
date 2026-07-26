@@ -23,7 +23,7 @@ settings:
   base:
     SWIFT_VERSION: "6.0"
     MARKETING_VERSION: "1.0.0"
-    CURRENT_PROJECT_VERSION: "130"
+    CURRENT_PROJECT_VERSION: "131"
     DEVELOPMENT_TEAM: "SU92TVZT8W" # Apple Developer Team ID
     ENABLE_USER_SCRIPT_SANDBOXING: YES
 
@@ -83,6 +83,13 @@ targets:
         NSCameraUsageDescription: >-
           Prvital uses the camera to scan food barcodes and look up their
           nutrition and carbohydrate content.
+        NSMicrophoneUsageDescription: >-
+          Prvital uses the microphone so you can log meals, insulin doses and
+          glucose readings by voice.
+        NSSpeechRecognitionUsageDescription: >-
+          Prvital uses on-device speech recognition to turn what you say into
+          journal entries — for example "60 grams, pizza". Your voice never
+          leaves the phone when on-device recognition is available.
         NSHealthShareUsageDescription: >-
           Prvital reads your glucose, insulin, carbohydrate and workout
           data from Apple Health so your journal stays complete automatically.
