@@ -23,7 +23,7 @@ settings:
   base:
     SWIFT_VERSION: "6.0"
     MARKETING_VERSION: "1.0.0"
-    CURRENT_PROJECT_VERSION: "146"
+    CURRENT_PROJECT_VERSION: "147"
     DEVELOPMENT_TEAM: "SU92TVZT8W" # Apple Developer Team ID
     ENABLE_USER_SCRIPT_SANDBOXING: YES
 
@@ -225,5 +225,4 @@ targets:
     settings:
       base:
         PRODUCT_BUNDLE_IDENTIFIER: com.prvital.app.watchkitapp.widgets
-        GENERATE_INFOPLIST_FILE: NO
         GENERATE_INFOPLIST_FILE: NO

@@ -47,7 +47,7 @@ struct MedicationEditorSheet: View {
                             .keyboardType(.decimalPad)
                             .multilineTextAlignment(.trailing)
                             .frame(maxWidth: 90)
-                        TextField("unit", text: $schedule.unitText)
+                        TextField("Unit", text: $schedule.unitText)
                             .textInputAutocapitalization(.never)
                             .autocorrectionDisabled()
                             .frame(maxWidth: 70)

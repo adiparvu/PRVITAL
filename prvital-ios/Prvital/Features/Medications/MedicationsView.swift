@@ -143,6 +143,7 @@ struct MedicationsView: View {
             from: env.preferences.reminders,
             glucoseSchedule: env.preferences.glucoseSchedule,
             medicationPlan: env.preferences.medicationPlan)
+        env.rescheduleContextualReminders()
     }
 }
 

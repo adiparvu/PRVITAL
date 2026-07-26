@@ -48,8 +48,8 @@ enum EntryEditorKind: String, Identifiable {
     }
 }
 
-/// Presents the editor for a given kind. Reused by Dashboard, Journal and
-/// History so editing is identical everywhere.
+/// Presents the editor for a given kind — used by the Add sheet's rows and by
+/// the deep links from the Island/Control Center buttons.
 struct EntryEditor: View {
     let kind: EntryEditorKind
     var body: some View {

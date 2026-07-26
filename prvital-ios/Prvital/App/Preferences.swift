@@ -302,9 +302,6 @@ final class Preferences {
         }
     }
 
-    /// Quick-add presets (the +1U … +10U row and 20g … 100g row).
-    let insulinPresets: [Double] = [1, 2, 4, 6, 8, 10]
-    let carbPresets: [Double] = [20, 40, 60, 80, 100]
     let activityDurations: [Int] = [15, 30, 45, 60, 90, 120]
 
     // MARK: Persistence

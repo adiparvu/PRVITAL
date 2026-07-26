@@ -138,6 +138,9 @@ struct RemindersSettingsView: View {
             env.preferences.reminders = newValue
             env.notifications.reschedule(from: newValue, glucoseSchedule: env.preferences.glucoseSchedule,
                                          medicationPlan: env.preferences.medicationPlan)
+            // The wholesale clear above also drops the contextual nudges;
+            // re-arm them now instead of waiting for the next data change.
+            env.rescheduleContextualReminders()
         }
     }
 

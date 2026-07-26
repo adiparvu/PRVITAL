@@ -47,6 +47,8 @@ struct RootView: View {
     @State private var showOnboarding = false
     @State private var showQuickEntry = false
     @State private var showEmergency = false
+    /// A specific editor requested by a deep link's path (prvital://log/meal…).
+    @State private var deepLinkEditor: EntryEditorKind?
     @State private var showWhatsNew = false
 
     /// Follows the system Dynamic Type when the user leaves "Use system size" on;
@@ -84,14 +86,24 @@ struct RootView: View {
             }
             .sheet(isPresented: $showQuickEntry) { QuickEntrySheet() }
             .onOpenURL { url in
-                // Deep links from widgets / Control Center controls.
+                // Deep links from widgets / Control Center controls. The path
+                // picks the exact editor (prvital://log/meal → the carb editor)
+                // — it used to be ignored, so every Island button opened the
+                // same generic Add sheet (audit finding).
                 guard url.scheme == "prvital" else { return }
                 switch url.host {
-                case "log": showQuickEntry = true
+                case "log":
+                    switch url.pathComponents.dropFirst().first {
+                    case "glucose": deepLinkEditor = .glucose
+                    case "insulin": deepLinkEditor = .insulin
+                    case "meal", "carbs": deepLinkEditor = .carbs
+                    default: showQuickEntry = true
+                    }
                 case "emergency": showEmergency = true
                 default: break
                 }
             }
+            .sheet(item: $deepLinkEditor) { EntryEditor(kind: $0) }
             .sheet(isPresented: $showEmergency) {
                 NavigationStack { EmergencyCardView() }
             }
