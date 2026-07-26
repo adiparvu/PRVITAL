@@ -77,7 +77,6 @@ struct QuickEntrySheet: View {
     @State private var showBolusCalculator = false
     @State private var showRuleOf15 = false
     @State private var showKetones = false
-    @State private var showVoiceLog = false
 
     init() {
         // Only the doses that can still carry insulin-on-board — bounded.
@@ -141,7 +140,6 @@ struct QuickEntrySheet: View {
             }
             .sheet(isPresented: $showRuleOf15) { RuleOf15Sheet() }
             .sheet(isPresented: $showKetones) { LogKetoneSheet() }
-            .sheet(isPresented: $showVoiceLog) { VoiceLogSheet() }
         }
         .presentationDetents([.medium, .large])
     }
@@ -227,11 +225,6 @@ struct QuickEntrySheet: View {
             entryRow(symbol: "drop.triangle.fill", tint: Theme.zoneWarning,
                      title: "Ketones", subtitle: "Blood or urine reading") {
                 showKetones = true
-            }
-            rowDivider
-            entryRow(symbol: "mic.fill", tint: Theme.accent,
-                     title: "Log by voice", subtitle: "Say a meal, a dose or a reading") {
-                showVoiceLog = true
             }
             if bolusParameters.isEnabled, bolusParameters.isValid {
                 rowDivider
