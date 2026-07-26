@@ -52,8 +52,13 @@ struct ChartEvent: Identifiable {
     let id: String
     let date: Date
     let kind: ChartEventKind
+    /// The headline figure for the long-press detail sheet ("50 g", "4 U").
+    var valueText: String?
+    /// Supporting context ("Lunch · Pizza", the note's text, "45 min · Moderate").
+    var detailText: String?
 
-    /// Maps the journal's record arrays into a flat, chart-ready event list.
+    /// Maps the journal's record arrays into a flat, chart-ready event list,
+    /// carrying enough display-ready text that a marker can explain itself.
     static func build(
         insulin: [InsulinDose] = [],
         meals: [CarbEntry] = [],
@@ -63,13 +68,104 @@ struct ChartEvent: Identifiable {
         notes: [ObservationEntry] = []
     ) -> [ChartEvent] {
         var out: [ChartEvent] = []
-        out += insulin.map { ChartEvent(id: "i-\($0.id)", date: $0.timestamp, kind: .insulin) }
-        out += meals.map { ChartEvent(id: "m-\($0.id)", date: $0.timestamp, kind: .meal) }
-        out += medications.map { ChartEvent(id: "d-\($0.id)", date: $0.timestamp, kind: .medication) }
-        out += activity.map { ChartEvent(id: "a-\($0.id)", date: $0.startTimestamp, kind: .activity) }
-        out += ketones.map { ChartEvent(id: "k-\($0.id)", date: $0.timestamp, kind: .ketone) }
-        out += notes.map { ChartEvent(id: "n-\($0.id)", date: $0.timestamp, kind: .note) }
+        out += insulin.map { dose in
+            ChartEvent(id: "i-\(dose.id)", date: dose.timestamp, kind: .insulin,
+                       valueText: String(localized: "\(dose.units.formatted()) U"),
+                       detailText: join(dose.insulinName ?? dose.insulinType.label, dose.note))
+        }
+        out += meals.map { meal in
+            ChartEvent(id: "m-\(meal.id)", date: meal.timestamp, kind: .meal,
+                       valueText: String(localized: "\(meal.grams.formatted()) g"),
+                       detailText: join(meal.mealType.label, meal.foodDescription, meal.note))
+        }
+        out += medications.map { med in
+            ChartEvent(id: "d-\(med.id)", date: med.timestamp, kind: .medication,
+                       valueText: med.name.isEmpty ? nil : med.name,
+                       detailText: join(med.amount > 0 ? "\(med.amount.formatted()) \(med.unitText)" : nil, med.note))
+        }
+        out += activity.map { entry in
+            ChartEvent(id: "a-\(entry.id)", date: entry.startTimestamp, kind: .activity,
+                       valueText: entry.activityType.label,
+                       detailText: join(entry.durationSeconds > 0
+                                            ? String(localized: "\(entry.durationSeconds / 60) min") : nil,
+                                        entry.note))
+        }
+        out += ketones.map { reading in
+            ChartEvent(id: "k-\(reading.id)", date: reading.timestamp, kind: .ketone,
+                       valueText: "\(reading.value.formatted()) mmol/L",
+                       detailText: join(reading.sample.label, reading.note))
+        }
+        out += notes.map { note in
+            ChartEvent(id: "n-\(note.id)", date: note.timestamp, kind: .note,
+                       valueText: nil,
+                       detailText: note.text)
+        }
         return out
+    }
+
+    private static func join(_ parts: String?...) -> String? {
+        let text = parts.compactMap { $0 }.filter { !$0.isEmpty }.joined(separator: " · ")
+        return text.isEmpty ? nil : text
+    }
+}
+
+/// What a long-press on an event marker opens: the action behind the icon,
+/// spelled out — kind, exact time, headline figure and any description/note.
+/// A read-only card, deliberately small (editing stays in the Journal).
+struct ChartEventDetailSheet: View {
+    let event: ChartEvent
+    @Environment(\.dismiss) private var dismiss
+
+    /// Singular title per kind (the legend's labels are plural categories).
+    private var title: LocalizedStringKey {
+        switch event.kind {
+        case .insulin:    return "Insulin"
+        case .meal:       return "Meal"
+        case .medication: return "Medication"
+        case .activity:   return "Activity"
+        case .ketone:     return "Ketones"
+        case .note:       return "Observation"
+        }
+    }
+
+    var body: some View {
+        VStack(spacing: 16) {
+            Capsule()
+                .fill(Theme.textTertiary.opacity(0.4))
+                .frame(width: 36, height: 5)
+                .padding(.top, 8)
+            Image(systemName: event.kind.symbol)
+                .font(.system(size: 22, weight: .bold))
+                .foregroundStyle(.white)
+                .frame(width: 52, height: 52)
+                .background(event.kind.color, in: .circle)
+            VStack(spacing: 4) {
+                Text(title)
+                    .font(.headline)
+                    .foregroundStyle(Theme.textPrimary)
+                Text(event.date, format: .dateTime.weekday(.wide).day().month().hour().minute())
+                    .font(.caption)
+                    .foregroundStyle(Theme.textSecondary)
+            }
+            if let valueText = event.valueText {
+                Text(valueText)
+                    .font(.system(size: 34, weight: .bold, design: .rounded))
+                    .foregroundStyle(event.kind.color)
+            }
+            if let detailText = event.detailText {
+                Text(detailText)
+                    .font(.subheadline)
+                    .foregroundStyle(Theme.textSecondary)
+                    .multilineTextAlignment(.center)
+                    .lineLimit(4)
+                    .padding(.horizontal, 24)
+            }
+            Spacer(minLength: 0)
+        }
+        .frame(maxWidth: .infinity)
+        .presentationDetents([.height(300)])
+        .presentationBackground(.ultraThinMaterial)
+        .presentationDragIndicator(.hidden)
     }
 }
 

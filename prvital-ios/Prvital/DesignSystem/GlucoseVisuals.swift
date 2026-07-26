@@ -192,6 +192,8 @@ struct GlucoseTrendChart: View {
 
     @State private var selectedDate: Date?
     @State private var appeared = false
+    /// The event marker held down in the band — presents its detail sheet.
+    @State private var heldEvent: ChartEvent?
     /// Drives the one-shot left-to-right draw-on sweep.
     @State private var drawn = false
     /// The zone under the finger during a scrub, so crossing into/out of the
@@ -581,12 +583,23 @@ struct GlucoseTrendChart: View {
                     PointMark(x: .value("Time", event.date), y: .value("Lane", 0))
                         .symbolSize(0)
                         .annotation(position: .overlay, alignment: .center, spacing: 0) {
+                            // A real view, so it can carry the hold gesture:
+                            // press-and-hold opens the marker's detail sheet.
                             Image(systemName: event.kind.symbol)
                                 .font(.system(size: 9, weight: .black))
                                 .foregroundStyle(.white)
                                 .frame(width: 19, height: 19)
                                 .background(event.kind.color, in: .circle)
                                 .overlay(Circle().strokeBorder(Theme.background, lineWidth: 1.5))
+                                .padding(4)          // a friendlier hit target
+                                .contentShape(.circle)
+                                .onLongPressGesture(minimumDuration: 0.3) {
+                                    Haptics.play(.light)
+                                    heldEvent = event
+                                }
+                                .accessibilityLabel(Text(event.kind.label))
+                                .accessibilityValue(Text(event.date, format: .dateTime.hour().minute()))
+                                .accessibilityAddTraits(.isButton)
                         }
                 }
             }
@@ -597,7 +610,9 @@ struct GlucoseTrendChart: View {
             .frame(height: 22)
         }
         .padding(.top, 4)
-        .accessibilityHidden(true)
+        .sheet(item: $heldEvent) { event in
+            ChartEventDetailSheet(event: event)
+        }
     }
 
     /// The two-line label attached to an annotated extreme: the value in the
