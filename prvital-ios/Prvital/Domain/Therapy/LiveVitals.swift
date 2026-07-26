@@ -43,8 +43,14 @@ struct LiveVitals: Equatable, Sendable {
 
         let diaSeconds = bolus.durationHours * 3600
         if diaSeconds > 0 {
+            // Rapid-acting only — the same doses `InsulinMath.activeInsulin`
+            // counts. A basal dose must never drive this timer: it works for
+            // ~a day in the background and is deliberately not part of the
+            // IOB, so "insulin ends" restarting after a basal shot (with the
+            // BOLUS duration, of all things) read as a bug.
             let activeDoses = insulin.filter {
-                $0.timestamp <= now && now.timeIntervalSince($0.timestamp) < diaSeconds
+                $0.insulinType == .rapidActing
+                    && $0.timestamp <= now && now.timeIntervalSince($0.timestamp) < diaSeconds
             }
             // Active insulin clears when the latest-starting active dose reaches its
             // duration of action — matching the doses that produce the IOB above.

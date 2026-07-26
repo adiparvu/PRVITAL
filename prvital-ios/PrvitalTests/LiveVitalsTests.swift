@@ -54,5 +54,22 @@ final class LiveVitalsTests: XCTestCase {
             latestReadingAt: now, sourceIsCGM: true, cgmCadenceMinutes: 5,
             insulin: insulin, carbs: [], bolus: params, now: now)
         XCTAssertNil(v.minutesSinceBolus, "a basal dose is not a bolus")
+        XCTAssertNil(v.minutesToInsulinClear, "a basal dose must not drive the clear timer")
+    }
+
+    func testFreshBasalDoesNotExtendInsulinClear() {
+        // Regression: a rapid bolus 4.5 h ago (30 min left of a 5 h DIA) plus a
+        // basal logged 3 minutes ago — the clear timer must track the BOLUS,
+        // not restart at ~5 h because of the basal.
+        let now = Date()
+        let insulin = [
+            InsulinDose(units: 6, timestamp: now.addingTimeInterval(-4.5 * 3600)),
+            InsulinDose(units: 14, timestamp: now.addingTimeInterval(-3 * 60),
+                        insulinType: .longActing),
+        ]
+        let v = LiveVitals.make(
+            latestReadingAt: now, sourceIsCGM: true, cgmCadenceMinutes: 5,
+            insulin: insulin, carbs: [], bolus: params, now: now)
+        XCTAssertEqual(v.minutesToInsulinClear, 30)
     }
 }
