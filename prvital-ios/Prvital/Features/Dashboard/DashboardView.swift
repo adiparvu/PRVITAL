@@ -90,6 +90,14 @@ struct DashboardView: View {
         return NavigationStack {
             ScrollView {
                 VStack(spacing: 20) {
+                    // The tide-style first screen: the glass dial + the day's
+                    // glucose wave fill the opening viewport; everything the
+                    // dashboard already shows follows on scroll, unchanged.
+                    if let current = summary.current, tideWavePoints.count >= 3 {
+                        tideHero(current: current, summary: summary, thresholds: thresholds, unit: unit)
+                            .containerRelativeFrame(.vertical) { length, _ in length * 0.86 }
+                            .appearTransition(delay: 0)
+                    }
                     hero(summary: summary, thresholds: thresholds, unit: unit)
                         .appearTransition(delay: 0)
                     quickActionsRow()
@@ -401,6 +409,74 @@ struct DashboardView: View {
         guard let minutes = summary.minutesSinceUpdate else { return String(localized: "Updated recently") }
         if minutes <= 0 { return String(localized: "Updated just now") }
         return String(localized: "Updated \(minutes) min ago")
+    }
+
+    // MARK: - Tide hero
+
+    /// The wave window: the last 12 hours of active readings, ascending — long
+    /// enough to read as a tide curve, short enough to stay a few dozen points.
+    private var tideWavePoints: [TidePoint] {
+        let windowStart = Date().addingTimeInterval(-12 * 3600)
+        return readings.reversed()
+            .filter { $0.isActive && $0.timestamp >= windowStart }
+            .map { TidePoint(date: $0.timestamp, mgdL: $0.valueMgdL) }
+    }
+
+    @ViewBuilder
+    private func tideHero(
+        current: GlucoseReading,
+        summary: DashboardSummary,
+        thresholds: GlucoseThresholds,
+        unit: GlucoseUnit
+    ) -> some View {
+        let zone = thresholds.zone(forMgdL: current.valueMgdL)
+        let bolus = env.preferences.bolusParameters
+        let now = Date()
+        let iob = bolus.isEnabled && bolus.isValid
+            ? InsulinMath.activeInsulin(doses: insulin, at: now, parameters: bolus) : 0
+        let cob = CarbMath.carbsOnBoard(entries: carbs, at: now)
+
+        // The dashed "future" tail: the same damped forecast the trend card
+        // shows, drawn only when there's a fresh reading with real movement.
+        let forecast: TidePoint? = {
+            guard !summary.isStale, let velocity = summary.velocity else { return nil }
+            let projection = GlucoseForecast.project(
+                currentMgdL: current.valueMgdL, velocityMgdLPerMin: velocity.mgdLPerMinute,
+                iob: iob, cob: cob, horizonMinutes: 30)
+            guard abs(projection.projectedMgdL - current.valueMgdL) >= 5 else { return nil }
+            return TidePoint(
+                date: current.timestamp.addingTimeInterval(30 * 60),
+                mgdL: projection.projectedMgdL)
+        }()
+
+        let caption: String = {
+            if let warning = projectionWarning(summary: summary, thresholds: thresholds) {
+                switch warning {
+                case .low(let minutes): return String(localized: "Low predicted in ~\(minutes) min")
+                case .high(let minutes): return String(localized: "High predicted in ~\(minutes) min")
+                }
+            }
+            return zone.label
+        }()
+
+        TideHeroSection(
+            valueText: GlucoseFormatting.string(mgdL: current.valueMgdL, unit: unit),
+            unitText: unit.rawValue,
+            trendSymbol: current.trend?.symbol ?? "arrow.right",
+            trendLabel: current.trend?.label ?? String(localized: "Stable"),
+            zoneColor: zone.color,
+            caption: caption,
+            currentMgdL: current.valueMgdL,
+            targetLowerMgdL: thresholds.targetLower,
+            targetUpperMgdL: thresholds.targetUpper,
+            iobText: iob >= 0.05
+                ? "\(iob.formatted(.number.precision(.fractionLength(1)))) U" : nil,
+            cobText: cob >= 0.5
+                ? "\(cob.formatted(.number.precision(.fractionLength(0)))) g" : nil,
+            points: tideWavePoints,
+            forecast: forecast,
+            unit: unit
+        )
     }
 
     // MARK: - Predictive warning
