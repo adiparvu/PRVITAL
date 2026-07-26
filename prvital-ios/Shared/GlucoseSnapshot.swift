@@ -20,6 +20,10 @@ struct GlucoseSnapshot: Codable, Equatable, Sendable {
     /// Zone colour as 0xRRGGBB so the extension can render without the palette.
     var zoneColorHex: UInt = 0x2FB86B
     var sourceName: String = "—"
+    /// The `DataSource` raw value behind `sourceName`, so the widget's
+    /// self-refresh knows which credentialed service to ask first. Optional and
+    /// additive — old snapshots decode with nil.
+    var sourceRaw: String?
     var updatedAt: Date = .distantPast
     var isStale: Bool = true
 

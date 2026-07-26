@@ -23,7 +23,7 @@ settings:
   base:
     SWIFT_VERSION: "6.0"
     MARKETING_VERSION: "1.0.0"
-    CURRENT_PROJECT_VERSION: "152"
+    CURRENT_PROJECT_VERSION: "153"
     DEVELOPMENT_TEAM: "SU92TVZT8W" # Apple Developer Team ID
     ENABLE_USER_SCRIPT_SANDBOXING: YES
 
@@ -67,6 +67,9 @@ targets:
         UILaunchScreen: {}
         ITSAppUsesNonExemptEncryption: false
         NSSupportsLiveActivities: true
+        # Raises ActivityKit's update budget so the Live Activity can follow the
+        # ~5-minute CGM cadence whenever the app gets background runtime.
+        NSSupportsLiveActivitiesFrequentUpdates: true
         CFBundleURLTypes:
           - CFBundleURLName: com.prvital.app
             CFBundleURLSchemes:
@@ -105,6 +108,11 @@ targets:
         # Lets urgent low/high alerts use the .timeSensitive interruption level so
         # they can break through Focus and scheduled summaries.
         com.apple.developer.usernotifications.time-sensitive: true
+        # Shared with the widget extension so its self-refresh can read the
+        # Dexcom/LibreLinkUp credentials. Profiles allow TEAMID.* by default,
+        # so no App ID capability toggle is needed.
+        keychain-access-groups:
+          - $(AppIdentifierPrefix)com.prvital.shared
         com.apple.security.application-groups:
           - group.com.prvital
         com.apple.developer.icloud-services:
@@ -139,6 +147,15 @@ targets:
       - path: Shared
       - path: Prvital/DesignSystem/Theme.swift # reuse the palette
       - path: Prvital/Resources/Localizable.xcstrings # shared string catalog
+      # The widget's self-refresh reuses the app's own source clients and the
+      # exact formatting/zone logic, so a widget-fetched reading renders
+      # identically to an app-published one.
+      - path: Prvital/Domain/Models/Enums.swift
+      - path: Prvital/Domain/GlucoseRanges.swift
+      - path: Prvital/Data/Integration/GlucoseSource.swift
+      - path: Prvital/Data/Integration/Credentials/SourceCredentialStore.swift
+      - path: Prvital/Data/Integration/Dexcom/DexcomShareClient.swift
+      - path: Prvital/Data/Integration/LibreLinkUp/LibreLinkUpClient.swift
     info:
       path: PrvitalWidgets/Info.plist
       properties:
@@ -150,6 +167,10 @@ targets:
       properties:
         com.apple.security.application-groups:
           - group.com.prvital
+        # Read access to the app's stored source credentials (see the app
+        # target's matching entry) for the widget's self-refresh.
+        keychain-access-groups:
+          - $(AppIdentifierPrefix)com.prvital.shared
     settings:
       base:
         PRODUCT_BUNDLE_IDENTIFIER: com.prvital.app.widgets

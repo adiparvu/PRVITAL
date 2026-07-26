@@ -175,7 +175,7 @@ struct LibreLinkUpClient: Sendable {
         // hand its serial + activation to the auto session tracker.
         if let sensor = response.data?.connection?.sensor,
            let serial = sensor.sn, let activated = sensor.a, activated > 0 {
-            SensorAutoTracker.reportLibreSensor(
+            LibreSensorSignal.report(
                 serial: serial, activatedAt: Date(timeIntervalSince1970: activated))
         }
 

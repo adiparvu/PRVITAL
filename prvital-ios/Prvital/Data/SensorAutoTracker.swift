@@ -7,34 +7,15 @@ import SwiftData
 ///
 /// Two signals, in order of trust:
 ///  1. **LibreLinkUp tells us outright.** The graph payload carries the current
-///     sensor's serial number and activation timestamp. The Libre source drops
-///     them here on every sync; a serial we haven't imported yet becomes a
-///     session with the EXACT insertion time.
+///     sensor's serial number and activation timestamp. The Libre client drops
+///     them into `LibreSensorSignal` on every fetch; a serial we haven't
+///     imported yet becomes a session with the EXACT insertion time.
 ///  2. **A replacement-shaped gap.** Dexcom Share and Apple Health expose no
 ///     session start, so once the tracked sensor has expired, a reading gap at
 ///     least one warm-up long — resuming near or after expiry — reads as "old
 ///     sensor off, new sensor warmed up": the next session starts
 ///     automatically with the same kind, backdated by the warm-up.
 enum SensorAutoTracker {
-
-    // MARK: LibreLinkUp side-channel
-
-    private static let libreSNKey = "sensor.libre.sn"
-    private static let libreActivatedKey = "sensor.libre.activatedAt"
-    private static let libreImportedSNKey = "sensor.libre.importedSN"
-
-    private nonisolated static var defaults: UserDefaults {
-        UserDefaults(suiteName: AppSchema.appGroupIdentifier) ?? .standard
-    }
-
-    /// Called by the LibreLinkUp client (off the main actor) whenever the API
-    /// reports the connection's current sensor. Just persists; the main-actor
-    /// importer consumes it on the next sync pass.
-    nonisolated static func reportLibreSensor(serial: String, activatedAt: Date) {
-        guard !serial.isEmpty, activatedAt.timeIntervalSince1970 > 0 else { return }
-        defaults.set(serial, forKey: libreSNKey)
-        defaults.set(activatedAt.timeIntervalSince1970, forKey: libreActivatedKey)
-    }
 
     // MARK: Restart heuristic (pure, tested)
 
@@ -90,21 +71,17 @@ enum SensorAutoTracker {
         let last = (try? context.fetch(descriptor))?.first
 
         // 1) Exact — LibreLinkUp reported the worn sensor.
-        if let serial = defaults.string(forKey: libreSNKey), !serial.isEmpty,
-           defaults.string(forKey: libreImportedSNKey) != serial {
-            let activated = Date(timeIntervalSince1970: defaults.double(forKey: libreActivatedKey))
-            if activated.timeIntervalSince1970 > 0, activated <= now {
-                // Reuse the Libre model the user last tracked; a first-ever
-                // session defaults to Libre 3 (the LibreLinkUp mainstay).
-                let kind: SensorKind = (last?.kind.isLibre == true) ? last!.kind : .freeStyleLibre3
-                if last == nil || activated > last!.startDate.addingTimeInterval(3600) {
-                    context.insert(SensorSession(startDate: activated, kind: kind))
-                    try? context.save()
-                }
-                // Mark consumed either way — an older serial must not retry forever.
-                defaults.set(serial, forKey: libreImportedSNKey)
-                return
+        if let pending = LibreSensorSignal.pending(), pending.activatedAt <= now {
+            // Reuse the Libre model the user last tracked; a first-ever
+            // session defaults to Libre 3 (the LibreLinkUp mainstay).
+            let kind: SensorKind = (last?.kind.isLibre == true) ? last!.kind : .freeStyleLibre3
+            if last == nil || pending.activatedAt > last!.startDate.addingTimeInterval(3600) {
+                context.insert(SensorSession(startDate: pending.activatedAt, kind: kind))
+                try? context.save()
             }
+            // Mark consumed either way — an older serial must not retry forever.
+            LibreSensorSignal.markImported(serial: pending.serial)
+            return
         }
 
         // 2) Heuristic — the tracked sensor expired and readings resumed

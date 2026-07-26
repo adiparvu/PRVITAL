@@ -141,6 +141,9 @@ struct RootView: View {
                 // the pending request — after which widgets and alerts only
                 // updated while the app was open.
                 env.scheduleBackgroundRefresh()
+                // Arms Health background delivery if consent arrived after
+                // bootstrap (e.g. granted during onboarding). No-op once armed.
+                env.startHealthKitBackgroundDelivery()
             }
     }
 }

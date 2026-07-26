@@ -26,15 +26,23 @@ struct SourceCredentialStore: Sendable {
     static let shared = SourceCredentialStore()
 
     private let service = "com.prvital.credentials"
+    /// Keychain access group shared with the widget extension, so the widget can
+    /// fetch a fresh reading by itself when the app hasn't run. The prefix is the
+    /// team identifier — it must match `$(AppIdentifierPrefix)` in the
+    /// entitlements. On builds signed by a different team (or unsigned CI runs)
+    /// every group operation fails with `errSecMissingEntitlement`, and the code
+    /// below falls back to the app-local item, exactly the pre-group behaviour.
+    private let sharedGroup = "SU92TVZT8W.com.prvital.shared"
 
     func save(_ credentials: SourceCredentials, for source: DataSource) {
         guard let data = try? JSONEncoder().encode(credentials) else { return }
         let account = source.rawValue
 
-        let query: [String: Any] = [
+        var query: [String: Any] = [
             kSecClass as String: kSecClassGenericPassword,
             kSecAttrService as String: service,
             kSecAttrAccount as String: account,
+            kSecAttrAccessGroup as String: sharedGroup,
         ]
         let attributes: [String: Any] = [
             kSecValueData as String: data,
@@ -42,10 +50,43 @@ struct SourceCredentialStore: Sendable {
         ]
 
         let status = SecItemUpdate(query as CFDictionary, attributes as CFDictionary)
-        if status == errSecItemNotFound {
+        switch status {
+        case errSecSuccess:
+            return
+        case errSecItemNotFound:
+            // Moving into the shared group: clear any pre-group copy first so a
+            // stale duplicate can't shadow the fresh item on group-less reads.
+            var legacy = query
+            legacy.removeValue(forKey: kSecAttrAccessGroup as String)
+            SecItemDelete(legacy as CFDictionary)
+
             var insert = query
             insert.merge(attributes) { _, new in new }
-            SecItemAdd(insert as CFDictionary, nil)
+            if SecItemAdd(insert as CFDictionary, nil) == errSecMissingEntitlement {
+                insert.removeValue(forKey: kSecAttrAccessGroup as String)
+                SecItemAdd(insert as CFDictionary, nil)
+            }
+        default:
+            // No group entitlement (unsigned/dev build): keep the original
+            // app-local upsert rather than dropping the credentials.
+            query.removeValue(forKey: kSecAttrAccessGroup as String)
+            let local = SecItemUpdate(query as CFDictionary, attributes as CFDictionary)
+            if local == errSecItemNotFound {
+                var insert = query
+                insert.merge(attributes) { _, new in new }
+                SecItemAdd(insert as CFDictionary, nil)
+            }
+        }
+    }
+
+    /// Re-saves every stored credential so it lands in the shared access group.
+    /// Called once at app bootstrap; a no-op after everything has moved (the
+    /// group-qualified update in `save` then succeeds immediately).
+    func migrateToSharedGroup() {
+        for source in DataSource.allCases {
+            if let credentials = read(for: source), credentials.isComplete {
+                save(credentials, for: source)
+            }
         }
     }
 

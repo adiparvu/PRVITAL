@@ -57,6 +57,7 @@ final class SnapshotPublisher {
             snapshot.zoneLabel = zone.label
             snapshot.zoneColorHex = Self.hex(for: zone)
             snapshot.sourceName = current.source.displayName
+            snapshot.sourceRaw = current.source.rawValue
             snapshot.updatedAt = current.timestamp
             snapshot.isStale = summary.isStale
 

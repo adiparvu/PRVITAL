@@ -40,7 +40,11 @@ enum SharedStore {
             .appending(path: "glucose-snapshot.json")
     }
 
-    static func save(_ snapshot: GlucoseSnapshot) {
+    /// `nudgeWidgets: false` skips the WidgetKit reload bookkeeping entirely —
+    /// used when the WIDGET itself writes a self-fetched snapshot from inside
+    /// `getTimeline` (it is already rendering; a reload would double-spend the
+    /// scarce budget).
+    static func save(_ snapshot: GlucoseSnapshot, nudgeWidgets: Bool = true) {
         guard let data = try? JSONEncoder().encode(snapshot) else { return }
         // Primary: the App Group file. Write atomically FIRST, then relax the
         // protection class as a separate step. Combining `.atomic` with a file
@@ -60,6 +64,7 @@ enum SharedStore {
         // Mirror into UserDefaults too, as a fallback reader for older extension
         // builds and to back the reload bookkeeping below.
         defaults.set(data, forKey: key)
+        guard nudgeWidgets else { return }
 
         // Spend the scarce reload budget on two lanes:
         //  - important lane: the zone-based signature changed (zone, staleness,

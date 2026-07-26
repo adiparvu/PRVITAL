@@ -38,24 +38,48 @@ struct GlucoseProvider: TimelineProvider {
     }
 
     func getTimeline(in context: Context, completion: @escaping (Timeline<GlucoseEntry>) -> Void) {
-        let now = Date()
-        let snapshot = SharedStore.load()
-        var entries = [GlucoseEntry(date: now, snapshot: snapshot)]
+        Task {
+            let now = Date()
+            var snapshot = SharedStore.load()
 
-        // If there's a real, fresh reading, add a later entry that marks it stale
-        // so the widget visibly dims once updates stop — even if the app can't run
-        // to republish. The relative "updated" text keeps advancing on its own.
-        if snapshot.updatedAt > .distantPast, !snapshot.isStale {
-            let staleAt = max(
-                now.addingTimeInterval(60),
-                snapshot.updatedAt.addingTimeInterval(Self.staleAfterMinutes * 60)
-            )
-            var stale = snapshot
-            stale.isStale = true
-            entries.append(GlucoseEntry(date: staleAt, snapshot: stale))
+            #if os(iOS)
+            var refreshAfterMinutes = Self.refreshMinutes
+            // When the app hasn't republished lately, fetch the newest reading
+            // directly (shared-Keychain credentials) so the widget updates itself
+            // even while iOS never wakes the app. Saved without a reload nudge —
+            // this timeline is already being built. Adaptive next-reload: just
+            // self-fetched → come back near the next CGM reading; could fetch but
+            // nothing newer → moderate; no credentials → the low-frequency
+            // backstop. iOS throttles to the daily budget either way, so these
+            // are requests, not promises.
+            if let refreshed = await WidgetSelfRefresh.refreshIfStale(snapshot, now: now) {
+                SharedStore.save(refreshed, nudgeWidgets: false)
+                snapshot = refreshed
+                refreshAfterMinutes = 7
+            } else if WidgetSelfRefresh.canFetch {
+                refreshAfterMinutes = 15
+            }
+            #else
+            let refreshAfterMinutes = Self.refreshMinutes
+            #endif
+
+            var entries = [GlucoseEntry(date: now, snapshot: snapshot)]
+
+            // If there's a real, fresh reading, add a later entry that marks it stale
+            // so the widget visibly dims once updates stop — even if the app can't run
+            // to republish. The relative "updated" text keeps advancing on its own.
+            if snapshot.updatedAt > .distantPast, !snapshot.isStale {
+                let staleAt = max(
+                    now.addingTimeInterval(60),
+                    snapshot.updatedAt.addingTimeInterval(Self.staleAfterMinutes * 60)
+                )
+                var stale = snapshot
+                stale.isStale = true
+                entries.append(GlucoseEntry(date: staleAt, snapshot: stale))
+            }
+
+            let refreshDate = now.addingTimeInterval(Double(refreshAfterMinutes) * 60)
+            completion(Timeline(entries: entries, policy: .after(refreshDate)))
         }
-
-        let refreshDate = now.addingTimeInterval(Double(Self.refreshMinutes) * 60)
-        completion(Timeline(entries: entries, policy: .after(refreshDate)))
     }
 }

@@ -114,6 +114,9 @@ final class AppEnvironment {
     func bootstrap() {
         audit.pruneExpired()
         DemoData.removeSeededDataOnce(from: modelContainer.mainContext)
+        // Move stored source credentials into the shared Keychain group so the
+        // widget's self-refresh can use them. No-op once migrated.
+        SourceCredentialStore.shared.migrateToSharedGroup()
 
         // Log quick entries sent from the Apple Watch through the normal path.
         WatchSessionManager.shared.onQuickEntry = { [weak self] kind, amount in
@@ -167,8 +170,14 @@ final class AppEnvironment {
     /// finished workout) wakes the app in the background to sync and republish the
     /// snapshot — so the journal, widgets and Live Activity update even when the
     /// app isn't open. The `BGAppRefreshTask` above stays as a periodic fallback.
-    private func startHealthKitBackgroundDelivery() {
-        guard consent.isGranted(.healthKit) else { return }
+    /// Armed at most once per launch. Internal (not just bootstrap-called): the
+    /// scene-active handler retries it, so a user who grants the Health scope
+    /// AFTER launch — right at the end of onboarding, say — gets background
+    /// wake-ups immediately instead of only after the next cold start.
+    private var healthDeliveryArmed = false
+    func startHealthKitBackgroundDelivery() {
+        guard consent.isGranted(.healthKit), !healthDeliveryArmed else { return }
+        healthDeliveryArmed = true
         BackgroundSyncBridge.environment = self
         let hk = healthKit
         Task { await hk.enableBackgroundDelivery() }
@@ -272,12 +281,13 @@ final class AppEnvironment {
         scheduleBackgroundRefresh()
     }
 
-    /// Asks the system to run the app again in ~15 minutes (a request, not a
-    /// guarantee — iOS decides the actual timing).
+    /// Asks the system to run the app again — earliest in ~5 minutes, matching
+    /// the CGM cadence. A request, not a guarantee: iOS decides the actual
+    /// timing from budget and usage, so real gaps are usually longer.
     func scheduleBackgroundRefresh() {
         #if canImport(BackgroundTasks) && os(iOS)
         let request = BGAppRefreshTaskRequest(identifier: Self.backgroundRefreshIdentifier)
-        request.earliestBeginDate = Date(timeIntervalSinceNow: 15 * 60)
+        request.earliestBeginDate = Date(timeIntervalSinceNow: 5 * 60)
         try? BGTaskScheduler.shared.submit(request)
         #endif
     }
