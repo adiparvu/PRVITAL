@@ -128,20 +128,22 @@ final class SnapshotPublisher {
 
         snapshot.recentEntries = Self.recentLines(summary: summary, unit: unit, now: now)
 
-        // Reload the widgets only when the reading actually changed. Without any
-        // reload the Home/Lock Screen widgets sat on a stale value (the "widgets
-        // don't update" bug); reloading on *every* poll would instead burn
-        // WidgetKit's refresh budget, so gate it on the value/time changing —
-        // roughly CGM cadence, well within budget.
+        // Reload the widgets whenever the published snapshot actually changed.
+        // Gating on the reading's value/time alone left every other widget field
+        // stale on the Home Screen — IOB after a bolus, COB after a meal, today's
+        // TIR/average, the forecast tail — until the *next* CGM reading happened
+        // to arrive. Equality still gates the no-change case (most quiet polls),
+        // so the reload cadence stays at "something visibly changed" — roughly
+        // CGM/logging cadence, well within WidgetKit's budget.
         let previous = SharedStore.load()
         // Rewrite the App Group file only when the snapshot actually changed —
         // an identical snapshot re-serialised to disk every refresh was pure churn.
-        if snapshot != previous { SharedStore.save(snapshot) }
-        #if canImport(WidgetKit)
-        if previous.updatedAt != snapshot.updatedAt || previous.mgdL != snapshot.mgdL {
+        if snapshot != previous {
+            SharedStore.save(snapshot)
+            #if canImport(WidgetKit)
             WidgetCenter.shared.reloadAllTimelines()
+            #endif
         }
-        #endif
         WatchSessionManager.shared.updateSnapshot(snapshot)
         GlucoseLiveActivityManager.shared.sync(with: snapshot)
 

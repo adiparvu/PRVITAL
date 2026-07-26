@@ -123,6 +123,12 @@ struct RootView: View {
                 // Refresh the Sunday notification's headline with the current
                 // top insight (no-op unless the user opted in).
                 env.rearmWeeklyInsight()
+                // Re-arm the ~15-minute background sync on every activation.
+                // Submitting is idempotent (same identifier replaces), and
+                // without this the chain silently dies whenever iOS discards
+                // the pending request — after which widgets and alerts only
+                // updated while the app was open.
+                env.scheduleBackgroundRefresh()
             }
     }
 }
