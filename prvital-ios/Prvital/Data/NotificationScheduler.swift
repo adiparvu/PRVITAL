@@ -140,7 +140,7 @@ final class NotificationScheduler {
         // The evaluator already returns localized, presentation-ready strings.
         content.title = reminder.title
         content.body = reminder.body
-        content.sound = .default
+        content.sound = AlertSoundStore.load().reminders.notificationSound
         content.relevanceScore = 0.5
         return content
     }
@@ -163,7 +163,7 @@ final class NotificationScheduler {
         // The call sites pass the English strings, which double as catalog keys.
         content.title = String(localized: String.LocalizationValue(stringLiteral: title))
         content.body = String(localized: String.LocalizationValue(stringLiteral: body))
-        content.sound = .default
+        content.sound = AlertSoundStore.load().reminders.notificationSound
         return content
     }
     #endif

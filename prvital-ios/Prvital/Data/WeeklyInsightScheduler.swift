@@ -39,7 +39,7 @@ final class WeeklyInsightScheduler {
         content.title = String(localized: "Insight of the week")
         content.body = topInsightTitle
             ?? String(localized: "See what stood out in your glucose this week.")
-        content.sound = .default
+        content.sound = AlertSoundStore.load().reminders.notificationSound
 
         var components = DateComponents()
         components.weekday = 1   // Sunday (Gregorian weekday: 1 = Sunday)

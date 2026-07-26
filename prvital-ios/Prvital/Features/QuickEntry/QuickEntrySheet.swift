@@ -79,6 +79,7 @@ struct QuickEntrySheet: View {
     @State private var showBolusCalculator = false
     @State private var showRuleOf15 = false
     @State private var showKetones = false
+    @State private var showVoiceLog = false
 
     private let columns = [GridItem(.flexible(), spacing: 12), GridItem(.flexible(), spacing: 12)]
 
@@ -120,6 +121,12 @@ struct QuickEntrySheet: View {
                     }
                     .appearTransition(delay: 0.14)
 
+                    Button { Haptics.play(.selection); showVoiceLog = true } label: {
+                        voiceLauncherRow
+                    }
+                    .buttonStyle(PressableCardStyle())
+                    .appearTransition(delay: 0.16)
+
                     launcherGrid
 
                     if env.preferences.bolusParameters.isEnabled, env.preferences.bolusParameters.isValid {
@@ -136,6 +143,7 @@ struct QuickEntrySheet: View {
             .sheet(isPresented: $showBolusCalculator) { BolusCalculatorView() }
             .sheet(isPresented: $showRuleOf15) { RuleOf15Sheet() }
             .sheet(isPresented: $showKetones) { LogKetoneSheet() }
+            .sheet(isPresented: $showVoiceLog) { VoiceLogSheet() }
         }
     }
 
@@ -265,6 +273,33 @@ struct QuickEntrySheet: View {
     }
 
     // MARK: Launchers
+
+    /// The voice-logging launcher: one sentence instead of three taps. Sits
+    /// right under the quick chips because it serves the same "log it in two
+    /// seconds" moment.
+    private var voiceLauncherRow: some View {
+        HStack(spacing: 12) {
+            Image(systemName: "mic.fill")
+                .font(.title3)
+                .foregroundStyle(Theme.accent)
+                .frame(width: 42, height: 42)
+                .background(Theme.accentSoft, in: .circle)
+            VStack(alignment: .leading, spacing: 1) {
+                Text("Log by voice")
+                    .font(.subheadline.weight(.semibold))
+                    .foregroundStyle(Theme.textPrimary)
+                Text("Say a meal, a dose or a reading")
+                    .font(.caption2)
+                    .foregroundStyle(Theme.textSecondary)
+            }
+            Spacer()
+            Image(systemName: "chevron.right")
+                .font(.caption)
+                .foregroundStyle(Theme.textTertiary)
+        }
+        .glassCard(cornerRadius: 18, padding: 14)
+        .accessibilityElement(children: .combine)
+    }
 
     private var launcherGrid: some View {
         VStack(spacing: 12) {

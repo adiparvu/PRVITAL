@@ -29,6 +29,7 @@ final class Preferences {
         self.sickDayStartedAt = self.defaults.object(forKey: Keys.sickDayStartedAt) as? Date
         self.emergencyInfo = Self.readEmergencyInfo(self.defaults)
         self.criticalAlarm = Self.readCriticalAlarm(self.defaults)
+        self.alertSounds = Self.readAlertSounds(self.defaults)
         self.weeklyDigestEnabled = self.defaults.bool(forKey: Keys.weeklyDigest)
         self.weeklyInsightEnabled = self.defaults.bool(forKey: Keys.weeklyInsight)
         self.nightscoutUploadEnabled = self.defaults.bool(forKey: Keys.nightscoutUpload)
@@ -178,6 +179,13 @@ final class Preferences {
         didSet { if let data = try? JSONEncoder().encode(criticalAlarm) { defaults.set(data, forKey: Keys.criticalAlarm) } }
     }
 
+    /// Per-category notification sound choices (critical / important /
+    /// reminders). Persisted as JSON in the shared defaults so the static
+    /// delivery sites (`AlertSoundStore`) read the same source of truth.
+    var alertSounds: AlertSoundPreferences {
+        didSet { if let data = try? JSONEncoder().encode(alertSounds) { defaults.set(data, forKey: Keys.alertSounds) } }
+    }
+
     /// Monday-morning "your week in review" summary. Off by default.
     var weeklyDigestEnabled: Bool {
         didSet { defaults.set(weeklyDigestEnabled, forKey: Keys.weeklyDigest) }
@@ -323,6 +331,8 @@ final class Preferences {
         static let criticalAlarm = "pref.criticalAlarm"
         static let weeklyDigest = "pref.weeklyDigestEnabled"
         static let weeklyInsight = "pref.weeklyInsightEnabled"
+        /// Must match `AlertSoundStore.key` (AlertSounds.swift).
+        static let alertSounds = "pref.alertSounds"
         static let nightscoutUpload = "pref.nightscoutUploadEnabled"
         static let accentTheme = "pref.accentTheme"
         static let journalCardDensity = "pref.journalCardDensity"
@@ -426,6 +436,13 @@ final class Preferences {
     private static func readCriticalAlarm(_ d: UserDefaults) -> CriticalAlarmPreferences {
         guard let data = d.data(forKey: Keys.criticalAlarm),
               let value = try? JSONDecoder().decode(CriticalAlarmPreferences.self, from: data)
+        else { return .default }
+        return value
+    }
+
+    private static func readAlertSounds(_ d: UserDefaults) -> AlertSoundPreferences {
+        guard let data = d.data(forKey: Keys.alertSounds),
+              let value = try? JSONDecoder().decode(AlertSoundPreferences.self, from: data)
         else { return .default }
         return value
     }

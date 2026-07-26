@@ -55,6 +55,8 @@ struct AlertsHubView: View {
                 sensorSection
                 snoozeSection
             }
+
+            soundsSection
         }
         .scrollContentBackground(.hidden)
         .prvitalScreenBackground()
@@ -209,6 +211,37 @@ struct AlertsHubView: View {
             Text("Sensor")
         } footer: {
             Text("Track your current sensor's warm-up and expiry so a change never catches you by surprise.")
+                .font(.footnote).foregroundStyle(Theme.textTertiary)
+        }
+        .glassListRow()
+    }
+
+    /// Sound & vibration per category. Outside the `prefs.enabled` block on
+    /// purpose: the reminders category applies even with glucose alerts off.
+    private var soundsSection: some View {
+        Section {
+            ForEach(AlertSoundCategory.allCases) { category in
+                NavigationLink {
+                    AlertSoundPickerView(category: category)
+                } label: {
+                    HStack(spacing: 12) {
+                        Image(systemName: category.symbol)
+                            .font(.system(size: 16, weight: .semibold))
+                            .foregroundStyle(category.tint)
+                            .frame(width: 28)
+                        Text(category.title)
+                            .foregroundStyle(Theme.textPrimary)
+                        Spacer()
+                        Text(env.preferences.alertSounds[keyPath: category.keyPath].summaryLabel)
+                            .font(.subheadline)
+                            .foregroundStyle(Theme.textSecondary)
+                    }
+                }
+            }
+        } header: {
+            Text("Sounds & vibration")
+        } footer: {
+            Text("Choose how each kind of notification sounds on this device.")
                 .font(.footnote).foregroundStyle(Theme.textTertiary)
         }
         .glassListRow()

@@ -37,7 +37,7 @@ final class WeeklyDigestScheduler {
         let content = UNMutableNotificationContent()
         content.title = String(localized: "Your week in review is ready")
         content.body = String(localized: "See last week's time in range, best day and more.")
-        content.sound = .default
+        content.sound = AlertSoundStore.load().reminders.notificationSound
 
         var components = DateComponents()
         components.weekday = 2   // Monday (Gregorian weekday: 1 = Sunday)

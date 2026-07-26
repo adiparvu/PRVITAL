@@ -168,7 +168,11 @@ final class GlucoseAlertService {
         let content = UNMutableNotificationContent()
         content.title = alert.title
         content.body = alert.body
-        content.sound = .default
+        // Urgent levels use the critical sound choice, the rest the important
+        // one — each category carries the user's mode (sound / vibration only /
+        // silent) and tone.
+        let sounds = AlertSoundStore.load()
+        content.sound = (alert.level.severity >= 2 ? sounds.critical : sounds.important).notificationSound
 
         // Urgent lows and highs are time-critical. Raising the interruption level
         // to .timeSensitive lets them break through Focus and scheduled-summary
@@ -206,7 +210,10 @@ final class GlucoseAlertService {
         let content = UNMutableNotificationContent()
         content.title = alert.title
         content.body = alert.body
-        content.sound = .default
+        // A fast fall can precede a hypo — it sounds like the critical
+        // category; a fast rise stays with the important one.
+        let sounds = AlertSoundStore.load()
+        content.sound = (alert.kind == .falling ? sounds.critical : sounds.important).notificationSound
         // A fast fall is treated as time-sensitive so it can break through Focus;
         // a fast rise stays at the default level.
         if alert.kind == .falling {
@@ -231,7 +238,7 @@ final class GlucoseAlertService {
         let content = UNMutableNotificationContent()
         content.title = alert.title
         content.body = alert.body
-        content.sound = .default
+        content.sound = AlertSoundStore.load().important.notificationSound
         content.relevanceScore = 0.4
         let request = UNNotificationRequest(
             identifier: "glucose-signal-loss",
@@ -247,7 +254,8 @@ final class GlucoseAlertService {
         let content = UNMutableNotificationContent()
         content.title = String(localized: "Low predicted")
         content.body = String(localized: "Your glucose may drop below range in about \(minutes) min. A quick check or a small snack can head it off.")
-        content.sound = .default
+        // An imminent low is lead time for a hypo — critical treatment.
+        content.sound = AlertSoundStore.load().critical.notificationSound
         content.interruptionLevel = .timeSensitive
         content.relevanceScore = 0.9
         let request = UNNotificationRequest(

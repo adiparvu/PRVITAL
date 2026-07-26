@@ -126,12 +126,13 @@ enum CriticalAlarmScheduler {
     #if canImport(UserNotifications)
     @MainActor
     private static func add(_ steps: [CriticalAlarmRepeatStep], total: Int, to center: UNUserNotificationCenter) {
+        let criticalSound = AlertSoundStore.load().critical.notificationSound
         for step in steps {
             let copy = CriticalAlarmPlanner.repeatContent(index: step.index, total: total)
             let content = UNMutableNotificationContent()
             content.title = copy.title
             content.body = copy.body
-            content.sound = .default
+            content.sound = criticalSound
             // Same treatment as the urgent alerts themselves: time-sensitive so
             // the repeats break through Focus and scheduled summaries (honoured
             // via the app's Time Sensitive Notifications entitlement), pinned
