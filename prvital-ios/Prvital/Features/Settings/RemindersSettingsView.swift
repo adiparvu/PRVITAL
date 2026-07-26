@@ -1,44 +1,42 @@
 import SwiftUI
+#if canImport(UserNotifications)
+import UserNotifications
+#endif
+#if canImport(UIKit)
+import UIKit
+#endif
 
-/// Reminders. Edits a working copy of the user's `ReminderPreferences` — daily
-/// journal / basal / meal / glucose-check times plus a hydration interval — and
-/// on every change writes it back and reschedules the local notifications. No
-/// reminder ever carries a medical value.
+/// Reminders, rebuilt: an honest permission card that reflects the REAL system
+/// state (allow / allowed / turned off in Settings), then one section per
+/// reminder — each localized, each revealing its times when enabled, with
+/// times addable and removable. Every change writes back immediately and
+/// reschedules the local notifications. No reminder ever carries a medical
+/// value.
 struct RemindersSettingsView: View {
     @Environment(AppEnvironment.self) private var env
+    @Environment(\.scenePhase) private var scenePhase
 
     @State private var reminders = ReminderPreferences.default
     @State private var loaded = false
+    #if canImport(UserNotifications)
+    @State private var authStatus: UNAuthorizationStatus?
+    #endif
+
+    /// At most this many times per reminder — enough for a full day without
+    /// letting the list (and the pending-notification budget) run away.
+    private static let maxTimes = 6
 
     var body: some View {
         Form {
-            Section {
-                Button {
-                    Haptics.play(.light)
-                    Task { _ = await env.notifications.requestAuthorization() }
-                } label: {
-                    Label("Allow notifications", systemImage: "bell.badge.fill")
-                        .foregroundStyle(Theme.accent)
-                }
-            } footer: {
-                Text("Reminders are delivered by the system as local notifications. Grant permission once so scheduled reminders can appear.")
-                    .font(.footnote)
-                    .foregroundStyle(Theme.textTertiary)
-            }
-            .glassListRow()
+            authorizationSection
 
             Section {
                 Toggle(isOn: $reminders.journalEnabled) {
                     RemindersLabel(title: "Journal check-ins", systemImage: "book.closed", tint: Theme.accent)
                 }
+                .tint(Theme.accent)
                 if reminders.journalEnabled {
-                    ForEach(reminders.journalTimes.indices, id: \.self) { index in
-                        DatePicker(
-                            "Time \(index + 1)",
-                            selection: arrayTimeBinding(\.journalTimes, index),
-                            displayedComponents: .hourAndMinute
-                        )
-                    }
+                    editableTimeRows(\.journalTimes, labelKey: "Time %lld")
                 }
             } footer: {
                 Text("A gentle nudge to log how you're doing.")
@@ -51,6 +49,7 @@ struct RemindersSettingsView: View {
                 Toggle(isOn: $reminders.basalEnabled) {
                     RemindersLabel(title: "Basal insulin", systemImage: "syringe", tint: Theme.zoneWarning)
                 }
+                .tint(Theme.accent)
                 if reminders.basalEnabled {
                     DatePicker("Time", selection: basalBinding, displayedComponents: .hourAndMinute)
                 }
@@ -65,14 +64,9 @@ struct RemindersSettingsView: View {
                 Toggle(isOn: $reminders.mealsEnabled) {
                     RemindersLabel(title: "Mealtimes", systemImage: "fork.knife", tint: Theme.zoneHigh)
                 }
+                .tint(Theme.accent)
                 if reminders.mealsEnabled {
-                    ForEach(reminders.mealTimes.indices, id: \.self) { index in
-                        DatePicker(
-                            "Meal \(index + 1)",
-                            selection: arrayTimeBinding(\.mealTimes, index),
-                            displayedComponents: .hourAndMinute
-                        )
-                    }
+                    editableTimeRows(\.mealTimes, labelKey: "Meal %lld")
                 }
             } footer: {
                 Text("Remember to log carbs and any bolus.")
@@ -85,14 +79,9 @@ struct RemindersSettingsView: View {
                 Toggle(isOn: $reminders.glucoseCheckEnabled) {
                     RemindersLabel(title: "Glucose checks", systemImage: "drop", tint: Theme.zoneInRange)
                 }
+                .tint(Theme.accent)
                 if reminders.glucoseCheckEnabled {
-                    ForEach(reminders.glucoseCheckTimes.indices, id: \.self) { index in
-                        DatePicker(
-                            "Check \(index + 1)",
-                            selection: arrayTimeBinding(\.glucoseCheckTimes, index),
-                            displayedComponents: .hourAndMinute
-                        )
-                    }
+                    editableTimeRows(\.glucoseCheckTimes, labelKey: "Check %lld")
                 }
             } footer: {
                 Text("Keep your trend complete with a quick reading.")
@@ -105,6 +94,7 @@ struct RemindersSettingsView: View {
                 Toggle(isOn: $reminders.hydrationEnabled) {
                     RemindersLabel(title: "Hydration", systemImage: "waterbottle", tint: Theme.accent)
                 }
+                .tint(Theme.accent)
                 if reminders.hydrationEnabled {
                     Stepper(value: $reminders.hydrationIntervalHours, in: 1...12) {
                         HStack {
@@ -130,9 +120,16 @@ struct RemindersSettingsView: View {
         .navigationTitle("Reminders")
         .navigationBarTitleDisplayMode(.inline)
         .onAppear {
-            guard !loaded else { return }
-            reminders = env.preferences.reminders
-            loaded = true
+            if !loaded {
+                reminders = env.preferences.reminders
+                loaded = true
+            }
+            refreshAuthorization()
+        }
+        // Coming back from the Settings app after flipping the permission —
+        // re-read the real state so the card is never stale.
+        .onChange(of: scenePhase) { _, phase in
+            if phase == .active { refreshAuthorization() }
         }
         .onChange(of: reminders) { _, newValue in
             env.preferences.reminders = newValue
@@ -141,6 +138,115 @@ struct RemindersSettingsView: View {
             // The wholesale clear above also drops the contextual nudges;
             // re-arm them now instead of waiting for the next data change.
             env.rescheduleContextualReminders()
+        }
+    }
+
+    // MARK: Permission card
+
+    @ViewBuilder
+    private var authorizationSection: some View {
+        Section {
+            #if canImport(UserNotifications)
+            switch authStatus {
+            case .authorized, .provisional, .ephemeral:
+                Label {
+                    Text("Notifications allowed").foregroundStyle(Theme.textPrimary)
+                } icon: {
+                    Image(systemName: "checkmark.circle.fill").foregroundStyle(Theme.zoneInRange)
+                }
+            case .denied:
+                Label {
+                    Text("Notifications are off for Prvital. Turn them on in Settings.")
+                        .foregroundStyle(Theme.textPrimary)
+                } icon: {
+                    Image(systemName: "bell.slash.fill").foregroundStyle(Theme.zoneWarning)
+                }
+                Button {
+                    Haptics.play(.light)
+                    #if canImport(UIKit)
+                    if let url = URL(string: UIApplication.openSettingsURLString) {
+                        UIApplication.shared.open(url)
+                    }
+                    #endif
+                } label: {
+                    Label("Open Settings", systemImage: "arrow.up.forward.app")
+                        .foregroundStyle(Theme.accent)
+                }
+            default:
+                Button {
+                    Haptics.play(.light)
+                    Task {
+                        _ = await env.notifications.requestAuthorization()
+                        refreshAuthorization()
+                    }
+                } label: {
+                    Label("Allow notifications", systemImage: "bell.badge.fill")
+                        .foregroundStyle(Theme.accent)
+                }
+            }
+            #endif
+        } footer: {
+            Text("Reminders are delivered by the system as local notifications. Grant permission once so scheduled reminders can appear.")
+                .font(.footnote)
+                .foregroundStyle(Theme.textTertiary)
+        }
+        .glassListRow()
+    }
+
+    private func refreshAuthorization() {
+        #if canImport(UserNotifications)
+        Task {
+            let settings = await UNUserNotificationCenter.current().notificationSettings()
+            authStatus = settings.authorizationStatus
+        }
+        #endif
+    }
+
+    // MARK: Time rows (add / remove)
+
+    /// The numbered time rows for one reminder, each removable (down to one),
+    /// plus an "Add time" row while under the cap.
+    @ViewBuilder
+    private func editableTimeRows(
+        _ keyPath: WritableKeyPath<ReminderPreferences, [Int]>, labelKey: String
+    ) -> some View {
+        ForEach(reminders[keyPath: keyPath].indices, id: \.self) { index in
+            HStack(spacing: 10) {
+                DatePicker(
+                    String(format: String(localized: String.LocalizationValue(labelKey)), index + 1),
+                    selection: arrayTimeBinding(keyPath, index),
+                    displayedComponents: .hourAndMinute
+                )
+                if reminders[keyPath: keyPath].count > 1 {
+                    Button {
+                        Haptics.play(.selection)
+                        var times = reminders[keyPath: keyPath]
+                        guard times.indices.contains(index) else { return }
+                        times.remove(at: index)
+                        reminders[keyPath: keyPath] = times
+                    } label: {
+                        Image(systemName: "minus.circle.fill")
+                            .font(.system(size: 18))
+                            .foregroundStyle(Theme.textTertiary)
+                    }
+                    .buttonStyle(.plain)
+                    .accessibilityLabel("Remove time")
+                }
+            }
+        }
+        if reminders[keyPath: keyPath].count < Self.maxTimes {
+            Button {
+                Haptics.play(.selection)
+                var times = reminders[keyPath: keyPath]
+                // A sensible next slot: an hour after the latest time, wrapping
+                // at midnight.
+                let next = ((times.max() ?? 11 * 60) + 60) % (24 * 60)
+                times.append(next)
+                reminders[keyPath: keyPath] = times
+            } label: {
+                Label("Add time", systemImage: "plus.circle.fill")
+                    .foregroundStyle(Theme.accent)
+            }
         }
     }
 
@@ -155,17 +261,26 @@ struct RemindersSettingsView: View {
 
     private func arrayTimeBinding(_ keyPath: WritableKeyPath<ReminderPreferences, [Int]>, _ index: Int) -> Binding<Date> {
         Binding(
-            get: { remindersDate(fromMinutes: reminders[keyPath: keyPath][index]) },
-            set: { reminders[keyPath: keyPath][index] = remindersMinutes(from: $0) }
+            get: {
+                let times = reminders[keyPath: keyPath]
+                guard times.indices.contains(index) else { return remindersDate(fromMinutes: 8 * 60) }
+                return remindersDate(fromMinutes: times[index])
+            },
+            set: { date in
+                guard reminders[keyPath: keyPath].indices.contains(index) else { return }
+                reminders[keyPath: keyPath][index] = remindersMinutes(from: date)
+            }
         )
     }
 }
 
 // MARK: - Private helpers
 
-/// A titled, tinted toggle label used by every reminder section.
+/// A titled, tinted toggle label used by every reminder section. The title is a
+/// `LocalizedStringKey` — as a plain `String` it silently skipped localization
+/// and the row names showed in English.
 private struct RemindersLabel: View {
-    let title: String
+    let title: LocalizedStringKey
     let systemImage: String
     let tint: Color
 

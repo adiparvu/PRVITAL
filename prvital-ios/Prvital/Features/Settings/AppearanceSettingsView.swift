@@ -4,10 +4,11 @@ import PhotosUI
 import UIKit
 #endif
 
-/// Appearance. The accent theme that tints buttons, glyphs and highlights, plus
-/// the light/dark mode, text size, haptics and the app background. The glucose
-/// zone colours (green / yellow / orange / red) are medical semantics and never
-/// change with any of these.
+/// Appearance, rebuilt as a quiet hub: the theme lives on its own page, the
+/// accent is a grid of colour swatches (same language as the avatar-ring
+/// picker), and each display toggle explains itself in a one-line caption. The
+/// glucose zone colours (green / yellow / orange / red) are medical semantics
+/// and never change with any of these.
 struct AppearanceSettingsView: View {
     @Environment(AppEnvironment.self) private var env
 
@@ -19,42 +20,34 @@ struct AppearanceSettingsView: View {
         @Bindable var prefs = env.preferences
 
         return Form {
+            // Theme (light / dark / system) on its own page.
             Section {
-                AccentPreviewCard(theme: selected)
-                    .listRowInsets(EdgeInsets())
-                    .listRowBackground(Color.clear)
-            } header: {
-                Text("Preview")
-            }
-
-            // Light / dark / system.
-            Section {
-                Picker("Theme", selection: $prefs.themeMode) {
-                    ForEach(ThemeMode.allCases) { mode in
-                        Label(mode.displayName, systemImage: mode.symbol).tag(mode)
+                NavigationLink {
+                    ThemeModeSettingsView()
+                } label: {
+                    LabeledContent {
+                        Text(prefs.themeMode.displayName)
+                    } label: {
+                        Label {
+                            Text("Theme").foregroundStyle(Theme.textPrimary)
+                        } icon: {
+                            Image(systemName: prefs.themeMode.symbol)
+                                .foregroundStyle(Theme.accent)
+                        }
                     }
                 }
-                .pickerStyle(.segmented)
-                .onChange(of: prefs.themeModeRaw) { _, _ in Haptics.play(.selection) }
-            } header: {
-                Text("Theme")
-            } footer: {
-                Text("Choose light or dark, or follow your device's setting.")
-                    .font(.footnote)
-                    .foregroundStyle(Theme.textTertiary)
             }
             .glassListRow()
 
+            // Accent: a grid of swatch circles, like the avatar-ring picker.
             Section {
-                ForEach(AccentTheme.allCases) { theme in
-                    Button {
-                        guard theme != selected else { return }
-                        Haptics.play(.selection)
-                        env.preferences.accentThemeRaw = theme.rawValue
-                    } label: {
-                        AccentThemeRow(theme: theme, isSelected: theme == selected)
-                    }
+                AccentSwatchGrid(selected: selected) { theme in
+                    guard theme != selected else { return }
+                    Haptics.play(.selection)
+                    env.preferences.accentThemeRaw = theme.rawValue
                 }
+                .listRowInsets(EdgeInsets(top: 8, leading: 8, bottom: 8, trailing: 8))
+                .listRowBackground(Color.clear)
             } header: {
                 Text("Accent colour")
             } footer: {
@@ -62,9 +55,8 @@ struct AppearanceSettingsView: View {
                     .font(.footnote)
                     .foregroundStyle(Theme.textTertiary)
             }
-            .glassListRow()
 
-            // Display: text size, background, haptics.
+            // Display: text size + background links.
             Section {
                 NavigationLink {
                     TextSizeSettingsView()
@@ -81,49 +73,33 @@ struct AppearanceSettingsView: View {
                         Text(backgroundSubtitle)
                     }
                 }
-
-                Toggle(isOn: $prefs.hapticsEnabled) {
-                    Text("Haptic feedback")
-                }
-                .onChange(of: prefs.hapticsEnabled) { _, isOn in
-                    // Only confirm turning it on — a tap that disables haptics
-                    // shouldn't itself buzz.
-                    if isOn { Haptics.play(.selection) }
-                }
-
-                Toggle(isOn: $prefs.showDailyCompanion) {
-                    Text("Daily companion")
-                }
-                .onChange(of: prefs.showDailyCompanion) { _, isOn in
-                    if isOn { Haptics.play(.selection) }
-                }
-
-                Toggle(isOn: $prefs.showContextualLessons) {
-                    Text("Contextual lessons")
-                }
-                .onChange(of: prefs.showContextualLessons) { _, isOn in
-                    if isOn { Haptics.play(.selection) }
-                }
-
-                Toggle(isOn: $prefs.minimalistIcons) {
-                    Text("Minimalist icons")
-                }
-                .onChange(of: prefs.minimalistIcons) { _, isOn in
-                    if isOn { Haptics.play(.selection) }
-                }
-
-                Toggle(isOn: $prefs.showYesterdayShadow) {
-                    Text("Yesterday's curve")
-                }
-                .onChange(of: prefs.showYesterdayShadow) { _, isOn in
-                    if isOn { Haptics.play(.selection) }
-                }
             } header: {
                 Text("Display")
             } footer: {
-                Text("Text size and background apply to Prvital only. Haptics add a gentle tap to key actions. The daily companion is a friendly, encouraging note at the top of your dashboard. Contextual lessons suggest a relevant article after a low or high. Minimalist icons drop the coloured circles for plain, monochrome glyphs. Yesterday's curve draws the previous day as a faint line under today's chart.")
+                Text("Text size and the background apply to Prvital only.")
                     .font(.footnote)
                     .foregroundStyle(Theme.textTertiary)
+            }
+            .glassListRow()
+
+            // Little extras, each with a one-line caption instead of one long
+            // footer paragraph.
+            Section {
+                captionedToggle("Haptic feedback",
+                                caption: "A gentle tap on key actions.",
+                                isOn: $prefs.hapticsEnabled)
+                captionedToggle("Daily companion",
+                                caption: "A friendly note at the top of the dashboard.",
+                                isOn: $prefs.showDailyCompanion)
+                captionedToggle("Contextual lessons",
+                                caption: "Suggests a relevant article after a low or high.",
+                                isOn: $prefs.showContextualLessons)
+                captionedToggle("Minimalist icons",
+                                caption: "Plain monochrome glyphs instead of coloured circles.",
+                                isOn: $prefs.minimalistIcons)
+                captionedToggle("Yesterday's curve",
+                                caption: "Yesterday drawn as a faint line under today's chart.",
+                                isOn: $prefs.showYesterdayShadow)
             }
             .glassListRow()
         }
@@ -133,12 +109,124 @@ struct AppearanceSettingsView: View {
         .navigationBarTitleDisplayMode(.inline)
     }
 
+    /// A toggle whose explanation lives right under its title.
+    private func captionedToggle(
+        _ title: LocalizedStringKey, caption: LocalizedStringKey, isOn: Binding<Bool>
+    ) -> some View {
+        Toggle(isOn: Binding(
+            get: { isOn.wrappedValue },
+            set: { value in
+                if value { Haptics.play(.selection) }
+                isOn.wrappedValue = value
+            }
+        )) {
+            VStack(alignment: .leading, spacing: 2) {
+                Text(title).foregroundStyle(Theme.textPrimary)
+                Text(caption).font(.caption).foregroundStyle(Theme.textSecondary)
+            }
+        }
+        .tint(Theme.accent)
+    }
+
     private var backgroundSubtitle: String {
         switch env.preferences.backgroundKind {
         case .standard: String(localized: "Standard")
         case .gradient: env.preferences.backgroundGradient.displayName
         case .photo: String(localized: "Your photo")
         }
+    }
+}
+
+/// The theme's own page: system / light / dark as tappable rows.
+struct ThemeModeSettingsView: View {
+    @Environment(AppEnvironment.self) private var env
+
+    var body: some View {
+        @Bindable var prefs = env.preferences
+
+        return Form {
+            Section {
+                ForEach(ThemeMode.allCases) { mode in
+                    Button {
+                        guard prefs.themeMode != mode else { return }
+                        Haptics.play(.selection)
+                        prefs.themeMode = mode
+                    } label: {
+                        HStack(spacing: 12) {
+                            Image(systemName: mode.symbol)
+                                .font(.system(size: 15, weight: .semibold))
+                                .foregroundStyle(Theme.accent)
+                                .frame(width: 26)
+                            Text(mode.displayName)
+                                .font(.body)
+                                .foregroundStyle(Theme.textPrimary)
+                            Spacer()
+                            if prefs.themeMode == mode {
+                                Image(systemName: "checkmark")
+                                    .font(.body.weight(.semibold))
+                                    .foregroundStyle(Theme.accent)
+                            }
+                        }
+                        .padding(.vertical, 2)
+                        .contentShape(.rect)
+                    }
+                    .buttonStyle(.plain)
+                    .accessibilityAddTraits(prefs.themeMode == mode ? [.isSelected] : [])
+                }
+            } footer: {
+                Text("Choose light or dark, or follow your device's setting.")
+                    .font(.footnote)
+                    .foregroundStyle(Theme.textTertiary)
+            }
+            .glassListRow()
+        }
+        .scrollContentBackground(.hidden)
+        .prvitalScreenBackground()
+        .navigationTitle("Theme")
+        .navigationBarTitleDisplayMode(.inline)
+    }
+}
+
+/// The accent swatches: circles in a four-column grid, a bold ring plus a
+/// checkmark on the current choice — the same visual language as the
+/// avatar-ring picker in Profile.
+private struct AccentSwatchGrid: View {
+    let selected: AccentTheme
+    let choose: (AccentTheme) -> Void
+
+    var body: some View {
+        LazyVGrid(columns: Array(repeating: GridItem(.flexible()), count: 4), spacing: 18) {
+            ForEach(AccentTheme.allCases) { theme in
+                Button {
+                    Haptics.play(.light)
+                    choose(theme)
+                } label: {
+                    VStack(spacing: 6) {
+                        ZStack {
+                            Circle().fill(theme.swatch).frame(width: 52, height: 52)
+                            if theme == selected {
+                                Circle()
+                                    .strokeBorder(Theme.textPrimary.opacity(0.9), lineWidth: 3)
+                                    .frame(width: 62, height: 62)
+                                Image(systemName: "checkmark")
+                                    .font(.system(size: 18, weight: .bold))
+                                    .foregroundStyle(.white)
+                            }
+                        }
+                        .frame(height: 64)
+                        Text(theme.displayName)
+                            .font(.caption2.weight(.medium))
+                            .foregroundStyle(theme == selected ? Theme.textPrimary : Theme.textSecondary)
+                            .lineLimit(1)
+                    }
+                }
+                .buttonStyle(.plain)
+                .accessibilityLabel(Text(theme.displayName))
+                .accessibilityAddTraits(theme == selected ? [.isSelected] : [])
+            }
+        }
+        .padding(.vertical, 4)
+        .animation(.snappy(duration: 0.2), value: selected)
     }
 }
 
@@ -368,87 +456,6 @@ struct BackgroundSettingsView: View {
             }
         }
         .padding(.vertical, 8)
-    }
-}
-
-// MARK: - Accent preview & rows
-
-/// A mock dashboard card — a Time-in-Range ring and a log pill — tinted with the
-/// chosen accent, so a theme change is visible before leaving the screen. Purely
-/// illustrative, so it's hidden from VoiceOver (the picker rows below carry the
-/// real selection).
-private struct AccentPreviewCard: View {
-    let theme: AccentTheme
-
-    var body: some View {
-        SectionCard("Today", systemImage: "heart.text.square") {
-            HStack(spacing: 16) {
-                ZStack {
-                    Circle()
-                        .stroke(theme.accent.opacity(0.18), lineWidth: 9)
-                    Circle()
-                        .trim(from: 0, to: 0.72)
-                        .stroke(theme.accent, style: StrokeStyle(lineWidth: 9, lineCap: .round))
-                        .rotationEffect(.degrees(-90))
-                    Text("72%")
-                        .font(.system(.subheadline, design: .rounded).weight(.semibold))
-                        .foregroundStyle(Theme.textPrimary)
-                }
-                .frame(width: 64, height: 64)
-
-                VStack(alignment: .leading, spacing: 3) {
-                    Text("Time in range")
-                        .font(.body.weight(.semibold))
-                        .foregroundStyle(Theme.textPrimary)
-                    Text("A sample card in your accent")
-                        .font(.caption)
-                        .foregroundStyle(Theme.textSecondary)
-                }
-
-                Spacer()
-
-                Text("Log")
-                    .font(.subheadline.weight(.semibold))
-                    .foregroundStyle(.white)
-                    .padding(.horizontal, 16)
-                    .padding(.vertical, 8)
-                    .background(theme.accent, in: .capsule)
-            }
-        }
-        .animation(.smooth, value: theme)
-        .accessibilityHidden(true)
-    }
-}
-
-/// One selectable theme: a swatch circle, the theme's name and a checkmark on
-/// the current choice.
-private struct AccentThemeRow: View {
-    let theme: AccentTheme
-    let isSelected: Bool
-
-    var body: some View {
-        HStack(spacing: 12) {
-            Circle()
-                .fill(theme.swatch)
-                .frame(width: 26, height: 26)
-                .overlay(Circle().strokeBorder(Theme.hairline, lineWidth: 1))
-                .accessibilityHidden(true)
-
-            Text(theme.displayName)
-                .font(.body)
-                .foregroundStyle(Theme.textPrimary)
-
-            Spacer()
-
-            if isSelected {
-                Image(systemName: "checkmark")
-                    .font(.body.weight(.semibold))
-                    .foregroundStyle(theme.accent)
-            }
-        }
-        .padding(.vertical, 2)
-        .accessibilityElement(children: .combine)
-        .accessibilityAddTraits(isSelected ? [.isSelected] : [])
     }
 }
 
