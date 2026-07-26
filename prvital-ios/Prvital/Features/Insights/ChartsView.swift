@@ -7,10 +7,15 @@ import Charts
 struct ChartsView: View {
     // Driven by the shared top-left menu in InsightsView.
     @Binding var interval: InsightsInterval
+    /// The Insights feed, rendered as the first scrolling element so it moves
+    /// with the page as one whole. No opaque background here either — the
+    /// tab's wallpaper shows through everything (device feedback).
+    var pinnedHeader: AnyView? = nil
 
     var body: some View {
         ScrollView {
             VStack(spacing: 20) {
+                if let pinnedHeader { pinnedHeader }
                 // Keyed on the interval so its windowed @Query re-initialises when
                 // the range changes — a freshly imported 100k-row history is never
                 // fully materialised, only the selected sub-range.
@@ -20,7 +25,6 @@ struct ChartsView: View {
             .padding()
             .animation(.smooth, value: interval)
         }
-        .background(Theme.background)
     }
 }
 

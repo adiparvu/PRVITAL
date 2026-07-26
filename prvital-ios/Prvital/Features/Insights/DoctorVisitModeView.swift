@@ -17,6 +17,9 @@ struct DoctorVisitModeView: View {
     var body: some View {
         NavigationStack {
             AGPReportView()
+                // The AGP no longer paints its own opaque background (it lives
+                // on the wallpapered Insights page) — full screen it needs one.
+                .prvitalTabBackground()
                 .toolbar {
                     ToolbarItem(placement: .confirmationAction) {
                         Button("Done") {

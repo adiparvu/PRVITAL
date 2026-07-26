@@ -6,12 +6,18 @@ import Charts
 /// percentile "modal day" curve (median + IQR + 10/90 lines over 24 hours), and
 /// the Time-in-Range bar.
 struct AGPReportView: View {
+    /// The Insights feed, rendered as the first scrolling element so it moves
+    /// with the page as one whole (device feedback). Nil when presented from
+    /// doctor-visit mode.
+    var pinnedHeader: AnyView? = nil
+
     @Environment(AppEnvironment.self) private var env
     @Query private var readings: [GlucoseReading]
     @Query private var carbs: [CarbEntry]
     @Query private var activity: [ActivityEntry]
 
-    init() {
+    init(pinnedHeader: AnyView? = nil) {
+        self.pinnedHeader = pinnedHeader
         // The AGP offers up to a year; cap at ~400 days so several imported years
         // don't all load at once.
         let cutoff = Calendar.current.date(byAdding: .day, value: -400, to: Date())
@@ -80,6 +86,7 @@ struct AGPReportView: View {
     var body: some View {
         ScrollView {
             VStack(spacing: 18) {
+                if let pinnedHeader { pinnedHeader }
                 Picker("Interval", selection: $interval) {
                     ForEach(InsightsInterval.allCases) { Text($0.label).tag($0) }
                 }
@@ -141,7 +148,6 @@ struct AGPReportView: View {
             .padding()
             .animation(.smooth, value: interval)
         }
-        .background(Theme.background)
     }
 
     private var coverage: Double {

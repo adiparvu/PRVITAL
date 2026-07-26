@@ -42,24 +42,27 @@ struct InsightsView: View {
         FeedKey(version: env.dataVersion, thresholds: env.preferences.thresholds)
     }
 
+    /// The insights feed, handed to the active pane to render as its FIRST
+    /// scrolling element — it rides with the page as one whole instead of
+    /// floating above it on its own layer (device feedback: "one whole with
+    /// the page").
+    private var feedHeader: AnyView? {
+        guard !feedDismissed, !feedCards.isEmpty else { return nil }
+        return AnyView(
+            InsightsFeedSection(cards: feedCards) {
+                withAnimation(.snappy) { feedDismissed = true }
+                Haptics.play(.light)
+            }
+        )
+    }
+
     var body: some View {
         NavigationStack {
-            VStack(spacing: 0) {
-                if !feedDismissed, !feedCards.isEmpty {
-                    InsightsFeedSection(cards: feedCards) {
-                        withAnimation(.snappy) { feedDismissed = true }
-                        Haptics.play(.light)
-                    }
-                    .padding(.horizontal)
-                    .padding(.top, 8)
-                    .padding(.bottom, 2)
-                    .transition(.move(edge: .top).combined(with: .opacity))
-                }
-
+            Group {
                 switch section {
-                case .charts: ChartsView(interval: $interval)
-                case .statistics: StatisticsView(interval: $interval)
-                case .agp: AGPReportView()
+                case .charts: ChartsView(interval: $interval, pinnedHeader: feedHeader)
+                case .statistics: StatisticsView(interval: $interval, pinnedHeader: feedHeader)
+                case .agp: AGPReportView(pinnedHeader: feedHeader)
                 }
             }
             .prvitalTabBackground()

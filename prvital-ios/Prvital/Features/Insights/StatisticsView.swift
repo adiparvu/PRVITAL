@@ -19,9 +19,12 @@ private struct StatDayRef: Identifiable {
 /// even after the computation itself was moved off it.
 struct StatisticsView: View {
     @Binding var interval: InsightsInterval
+    /// The Insights feed, rendered as the first scrolling element so it moves
+    /// with the page as one whole (device feedback).
+    var pinnedHeader: AnyView? = nil
 
     var body: some View {
-        StatisticsContent(interval: interval).id(interval)
+        StatisticsContent(interval: interval, pinnedHeader: pinnedHeader).id(interval)
     }
 }
 
@@ -29,6 +32,7 @@ struct StatisticsContent: View {
     @Environment(AppEnvironment.self) private var env
 
     let interval: InsightsInterval
+    var pinnedHeader: AnyView? = nil
 
     @Query private var glucose: [GlucoseReading]
     @Query private var insulin: [InsulinDose]
@@ -37,8 +41,9 @@ struct StatisticsContent: View {
     @Query private var observations: [ObservationEntry]
     @Query(sort: \LabResult.timestamp, order: .reverse) private var labResults: [LabResult]
 
-    init(interval: InsightsInterval) {
+    init(interval: InsightsInterval, pinnedHeader: AnyView? = nil) {
         self.interval = interval
+        self.pinnedHeader = pinnedHeader
         // Window every query to the SELECTED interval, so Day loads a day and only
         // Year loads a year — instead of a fixed 400-day fetch regardless of view.
         let cutoff = interval.dateRange().lowerBound
@@ -130,6 +135,7 @@ struct StatisticsContent: View {
     var body: some View {
         ScrollView {
             VStack(spacing: 20) {
+                if let pinnedHeader { pinnedHeader }
                 if !derived.ready {
                     loadingPlaceholder
                 } else if hasAnyData {
@@ -162,7 +168,6 @@ struct StatisticsContent: View {
             .padding()
             .animation(.smooth, value: interval)
         }
-        .background(Theme.background)
         .sheet(isPresented: $showingLogLab) { LogLabA1cSheet() }
         .task(id: signature) {
             // The A1c reconciliation compares a lab result to the CGM estimate over
