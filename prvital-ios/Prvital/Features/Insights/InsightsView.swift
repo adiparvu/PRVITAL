@@ -26,57 +26,30 @@ struct InsightsView: View {
     // is intentionally NOT persisted, so it returns the next time the app opens.
     @State private var feedDismissed = false
 
-    // Records feeding the ranked feed. Plain `@Query`s, filtered to a recent
-    // window in `insightCards` so the surfaced patterns stay current.
-    @Query private var glucose: [GlucoseReading]
-    @Query private var insulin: [InsulinDose]
-    @Query private var carbs: [CarbEntry]
-    @Query private var activity: [ActivityEntry]
-
-    init() {
-        // One day past the 30-day feed window — the analyzers never look further
-        // back, so anything more was pure fetch cost on the tab's first frame.
-        let cutoff = Calendar.current.date(byAdding: .day, value: -31, to: Date())
-            ?? Date().addingTimeInterval(-31 * 86_400)
-        _glucose = Query(filter: #Predicate<GlucoseReading> { $0.timestamp >= cutoff },
-                         sort: \.timestamp, order: .reverse)
-        _insulin = Query(filter: #Predicate<InsulinDose> { $0.timestamp >= cutoff },
-                         sort: \.timestamp, order: .reverse)
-        _carbs = Query(filter: #Predicate<CarbEntry> { $0.timestamp >= cutoff },
-                       sort: \.timestamp, order: .reverse)
-        _activity = Query(filter: #Predicate<ActivityEntry> { $0.startTimestamp >= cutoff },
-                          sort: \.startTimestamp, order: .reverse)
-    }
-
     /// The last 30 days — enough history for the analyzers, recent enough to act on.
     private var feedRange: ClosedRange<Date> { InsightsInterval.month.dateRange() }
 
-    /// The ranked feed, computed once per data change (off the render path) into
-    /// `feed` — not on every parent re-render.
-    @State private var feed = InsightsFeedModel()
+    /// The ranked feed. Built by `InsightsFeedBuilder` on a background
+    /// `ModelActor` — the view holds no feed queries at all, so entering the tab
+    /// costs nothing on the render path and the cards fade in when ready.
+    @State private var feedCards: [InsightCard] = []
 
-    /// Gates every touch of the feed's month-window queries. `@Query` fetches
-    /// lazily on first access, and accessing these arrays during the tab's FIRST
-    /// body evaluation materialised a month of records (thousands of rows for a
-    /// CGM user) synchronously on the main thread — the tap-the-tab lag. Until
-    /// this flips (one beat after the switch animation), body never reads them,
-    /// so the first frame costs only the day-windowed pane.
-    @State private var feedArmed = false
+    /// Re-derives the feed when data actually changes (`dataVersion` bumps on
+    /// every write/sync) or the thresholds move — without holding a `@Query`.
+    private struct FeedKey: Equatable {
+        let version: Int
+        let thresholds: GlucoseThresholds
+    }
 
-    private var feedSignature: InsightsFeedSignature? {
-        guard feedArmed else { return nil }
-        return InsightsFeedSignature(
-            glucose: glucose.count, insulin: insulin.count,
-            carbs: carbs.count, activity: activity.count,
-            newest: glucose.first?.timestamp,
-            thresholds: env.preferences.thresholds)
+    private var feedKey: FeedKey {
+        FeedKey(version: env.dataVersion, thresholds: env.preferences.thresholds)
     }
 
     var body: some View {
         NavigationStack {
             VStack(spacing: 0) {
-                if !feedDismissed, !feed.cards.isEmpty {
-                    InsightsFeedSection(cards: feed.cards) {
+                if !feedDismissed, !feedCards.isEmpty {
+                    InsightsFeedSection(cards: feedCards) {
                         withAnimation(.snappy) { feedDismissed = true }
                         Haptics.play(.light)
                     }
@@ -94,18 +67,13 @@ struct InsightsView: View {
             }
             .prvitalTabBackground()
             .navigationTitle("Insights")
-            .task {
-                // Arm the feed only after the tab-switch transition has landed,
-                // so its month-window fetch never competes with the first frame.
-                guard !feedArmed else { return }
-                try? await Task.sleep(for: .milliseconds(350))
-                feedArmed = true
-            }
-            .task(id: feedSignature) {
-                guard feedArmed else { return }
-                await feed.rebuild(
-                    glucose: glucose, insulin: insulin, carbs: carbs, activity: activity,
+            .task(id: feedKey) {
+                // Fetch + analyze on a background ModelActor; assigning the
+                // result is the only main-thread work.
+                let builder = InsightsFeedBuilder(modelContainer: env.modelContainer)
+                let cards = await builder.build(
                     range: feedRange, thresholds: env.preferences.thresholds)
+                withAnimation(.snappy) { feedCards = cards }
             }
             .toolbar {
                 // The view (Charts/Statistics/AGP) and the period (Day/Week/Month/
@@ -378,39 +346,6 @@ enum InsightsInterval: String, CaseIterable, Identifiable {
         let currentStart = dateRange(now: now).lowerBound
         let previousStart = dateRange(now: currentStart).lowerBound
         return min(previousStart, currentStart)...currentStart
-    }
-}
-
-// MARK: - Feed model (computed once per data change, off the render path)
-
-struct InsightsFeedSignature: Equatable {
-    let glucose: Int
-    let insulin: Int
-    let carbs: Int
-    let activity: Int
-    let newest: Date?
-    let thresholds: GlucoseThresholds
-}
-
-/// Runs the InsightFeed analyzers once per data change into `cards`, on the main
-/// actor (SwiftData objects are main-actor bound), yielding first so the tab can
-/// paint before the analyzers run.
-@MainActor
-@Observable
-final class InsightsFeedModel {
-    var cards: [InsightCard] = []
-
-    func rebuild(
-        glucose: [GlucoseReading], insulin: [InsulinDose], carbs: [CarbEntry],
-        activity: [ActivityEntry], range: ClosedRange<Date>, thresholds: GlucoseThresholds
-    ) async {
-        let readings = glucose.filter { $0.isActive && range.contains($0.timestamp) }
-        let ins = insulin.filter { range.contains($0.timestamp) }
-        let crb = carbs.filter { range.contains($0.timestamp) }
-        let act = activity.filter { range.contains($0.startTimestamp) }
-        await Task.yield()
-        self.cards = InsightFeed.build(readings: readings, insulin: ins, carbs: crb,
-                                       activity: act, thresholds: thresholds)
     }
 }
 

@@ -16,6 +16,10 @@ final class AppEnvironment {
     let healthKit: HealthKitService
     let registry: SourceRegistry
     let audit: AuditService
+    /// Bumped after every data write or completed sync, so lightweight observers
+    /// (e.g. the Insights feed) can re-derive off the main thread without
+    /// holding their own `@Query` over thousands of rows.
+    private(set) var dataVersion = 0
     let consent: ConsentStore
     let entryStore: EntryStore
     let profile: ProfileStore
@@ -69,6 +73,7 @@ final class AppEnvironment {
         entryStore.onChange = { [weak self] in
             publisher.refresh()
             self?.rescheduleContextualReminders()
+            self?.dataVersion += 1
         }
         // So a logged dose hands over to an "active insulin" countdown sized by
         // the user's own duration of action, not a generic default.
@@ -78,6 +83,7 @@ final class AppEnvironment {
         sync.onChange = { [weak self] in
             publisher.refresh()
             self?.rescheduleContextualReminders()
+            self?.dataVersion += 1
         }
         // A pass that found nothing new skips the whole pipeline above; only the
         // two genuinely time-driven behaviours still need a heartbeat — the

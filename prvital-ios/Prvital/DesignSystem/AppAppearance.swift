@@ -1,6 +1,7 @@
 import SwiftUI
 #if canImport(UIKit)
 import UIKit
+import ImageIO
 #endif
 
 /// Appearance choices the user makes in Settings → Appearance, beyond the accent
@@ -223,15 +224,23 @@ struct AppBackgroundView: View {
     @ViewBuilder
     private var photoView: some View {
         #if canImport(UIKit)
-        if let photoData, let image = UIImage(data: photoData) {
-            Image(uiImage: image)
-                .resizable()
-                .scaledToFill()
-                // A soft scrim keeps cards and text legible over any photo.
-                .overlay(Theme.background.opacity(0.28))
-        } else {
-            Theme.background
+        // The standard wash paints instantly; the decoded photo fades in over it
+        // once the background decode lands. The previous code ran
+        // `UIImage(data:)` inside body — re-inflating a multi-megapixel photo on
+        // the main thread on every render of every tab background, which was the
+        // single biggest cause of the "switching tabs lags" feel.
+        ZStack {
+            standardBackground
+            if let image = BackgroundPhotoStore.shared.image(matching: photoData) {
+                Image(uiImage: image)
+                    .resizable()
+                    .scaledToFill()
+                    // A soft scrim keeps cards and text legible over any photo.
+                    .overlay(Theme.background.opacity(0.28))
+                    .transition(.opacity)
+            }
         }
+        .task(id: photoData) { BackgroundPhotoStore.shared.prepare(photoData) }
         #else
         Theme.background
         #endif
@@ -249,3 +258,73 @@ extension View {
         }
     }
 }
+
+#if canImport(UIKit)
+/// Decodes the user's background photo ONCE, off the main thread, downsampled to
+/// screen scale via ImageIO — and hands every tab the same cached image.
+///
+/// `UIImage(data:)` in a view body decoded the full-resolution photo on the main
+/// thread on every render; with a 12-megapixel wallpaper that alone froze every
+/// tab switch for a beat. Here the decode happens on a detached task, produces a
+/// bitmap no larger than ~1600px, and is cached until the user picks a new photo.
+@MainActor
+@Observable
+final class BackgroundPhotoStore {
+    static let shared = BackgroundPhotoStore()
+
+    private(set) var decoded: UIImage?
+    private var decodedKey: Int?
+    private var pendingKey: Int?
+
+    /// The cached image when it matches `data`; nil while (re)decoding.
+    func image(matching data: Data?) -> UIImage? {
+        guard let data, decodedKey == Self.key(for: data) else { return nil }
+        return decoded
+    }
+
+    /// Kicks a background decode unless `data` is already cached or in flight.
+    func prepare(_ data: Data?) {
+        guard let data else {
+            decoded = nil
+            decodedKey = nil
+            pendingKey = nil
+            return
+        }
+        let key = Self.key(for: data)
+        guard key != decodedKey, key != pendingKey else { return }
+        pendingKey = key
+        Task.detached(priority: .userInitiated) {
+            let image = Self.downsample(data)
+            await MainActor.run {
+                guard self.pendingKey == key else { return }
+                self.pendingKey = nil
+                self.decodedKey = key
+                withAnimation(.easeIn(duration: 0.2)) { self.decoded = image }
+            }
+        }
+    }
+
+    /// Cheap fingerprint: length plus a byte sample. The photo only changes when
+    /// the user picks a new one, so this never needs to be cryptographic.
+    private nonisolated static func key(for data: Data) -> Int {
+        var hash = data.count
+        for byte in data.suffix(32) { hash = hash &* 31 &+ Int(byte) }
+        return hash
+    }
+
+    /// ImageIO thumbnailing: decodes straight to a screen-sized bitmap instead of
+    /// inflating the full-resolution photo just to scale it down every frame.
+    private nonisolated static func downsample(_ data: Data) -> UIImage? {
+        let sourceOptions = [kCGImageSourceShouldCache: false] as CFDictionary
+        guard let source = CGImageSourceCreateWithData(data as CFData, sourceOptions) else { return nil }
+        let options = [
+            kCGImageSourceCreateThumbnailFromImageAlways: true,
+            kCGImageSourceCreateThumbnailWithTransform: true,
+            kCGImageSourceShouldCacheImmediately: true,
+            kCGImageSourceThumbnailMaxPixelSize: 1600.0
+        ] as CFDictionary
+        guard let cgImage = CGImageSourceCreateThumbnailAtIndex(source, 0, options) else { return nil }
+        return UIImage(cgImage: cgImage)
+    }
+}
+#endif

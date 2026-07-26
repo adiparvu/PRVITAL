@@ -161,7 +161,9 @@ struct DashboardView: View {
                 .padding()
             }
             .prvitalTabBackground()
-            .navigationTitle("Today")
+            // No navigation title (device feedback): the big card-less ring IS
+            // the page's identity; a large "Today" above it was pure clutter.
+            .toolbarTitleDisplayMode(.inline)
             .onChange(of: scenePhase) { _, phase in
                 if phase == .active {
                     companionDismissed = false
