@@ -171,21 +171,41 @@ struct MainTabView: View {
     @State private var showQuickAdd = false
 
     var body: some View {
+        // Icon-only items (device feedback: "make the tabs in this style") —
+        // the floating glass pill reads as five clean glyphs, the selected one
+        // carried by the system's capsule highlight. No Text in a tab item
+        // means the bar centres the icon alone; the accessibility labels keep
+        // VoiceOver speaking the destination names.
         TabView(selection: $selection) {
             DashboardView()
-                .tabItem { Label("Dashboard", systemImage: "drop.fill") }
+                .tabItem {
+                    Image(systemName: "drop.fill")
+                        .accessibilityLabel("Dashboard")
+                }
                 .tag(MainTab.home)
             JournalView()
-                .tabItem { Label("Journal", systemImage: "book.closed.fill") }
+                .tabItem {
+                    Image(systemName: "book.closed.fill")
+                        .accessibilityLabel("Journal")
+                }
                 .tag(MainTab.journal)
             Color.clear
-                .tabItem { Label("Add", systemImage: "plus.circle.fill") }
+                .tabItem {
+                    Image(systemName: "plus.circle.fill")
+                        .accessibilityLabel("Add")
+                }
                 .tag(MainTab.add)
             InsightsView()
-                .tabItem { Label("Insights", systemImage: "chart.xyaxis.line") }
+                .tabItem {
+                    Image(systemName: "chart.xyaxis.line")
+                        .accessibilityLabel("Insights")
+                }
                 .tag(MainTab.insights)
             SettingsView()
-                .tabItem { Label("Settings", systemImage: "gearshape.fill") }
+                .tabItem {
+                    Image(systemName: "gearshape.fill")
+                        .accessibilityLabel("Settings")
+                }
                 .tag(MainTab.settings)
         }
         // The bar tucks away while scrolling and returns on touch — content
