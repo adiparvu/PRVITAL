@@ -59,9 +59,21 @@ struct RootView: View {
         return size ... size
     }
 
+    /// The scheme to force. An explicit Light/Dark choice always wins; on
+    /// "System" with a photo background, the text picks its own colour from the
+    /// photo's brightness (as dimmed): a dark wallpaper gets light text and
+    /// vice versa, instead of washing out.
+    private var resolvedColorScheme: ColorScheme? {
+        if let explicit = env.preferences.themeMode.colorScheme { return explicit }
+        guard env.preferences.backgroundKind == .photo,
+              let luminance = BackgroundPhotoStore.shared.averageLuminance else { return nil }
+        let effective = luminance * (1 - env.preferences.backgroundPhotoDimming)
+        return effective < 0.45 ? .dark : .light
+    }
+
     var body: some View {
         MainTabView()
-            .preferredColorScheme(env.preferences.themeMode.colorScheme)
+            .preferredColorScheme(resolvedColorScheme)
             .dynamicTypeSize(typeRange)
             .onAppear {
                 showOnboarding = !env.consent.hasCompletedOnboarding

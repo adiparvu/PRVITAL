@@ -105,6 +105,8 @@ enum AppBackgroundKind: String, CaseIterable, Identifiable {
 
     static let preferenceKey = "pref.backgroundKind"
     static let photoKey = "pref.backgroundPhoto"
+    /// How strongly the photo is darkened for legibility (0…0.7).
+    static let photoDimmingKey = "pref.backgroundPhotoDimming"
 }
 
 /// The built-in background gradients. Each is defined with light and dark stops
@@ -181,6 +183,10 @@ extension AppBackgroundKind {
     static var currentPhotoData: Data? {
         defaults?.data(forKey: photoKey)
     }
+
+    static var currentPhotoDimming: Double {
+        (defaults?.object(forKey: photoDimmingKey) as? Double) ?? 0.3
+    }
 }
 
 // MARK: - The background view + screen modifier
@@ -191,6 +197,7 @@ struct AppBackgroundView: View {
     var kind: AppBackgroundKind = .current
     var gradient: BackgroundGradient = AppBackgroundKind.currentGradient
     var photoData: Data? = AppBackgroundKind.currentPhotoData
+    var photoDimming: Double = AppBackgroundKind.currentPhotoDimming
 
     var body: some View {
         switch kind {
@@ -235,8 +242,9 @@ struct AppBackgroundView: View {
                 Image(uiImage: image)
                     .resizable()
                     .scaledToFill()
-                    // A soft scrim keeps cards and text legible over any photo.
-                    .overlay(Theme.background.opacity(0.28))
+                    // A neutral scrim at the user's chosen strength keeps cards
+                    // and text legible over any photo (Settings → Background).
+                    .overlay(Color.black.opacity(photoDimming))
                     .transition(.opacity)
             }
         }
@@ -273,6 +281,9 @@ final class BackgroundPhotoStore {
     static let shared = BackgroundPhotoStore()
 
     private(set) var decoded: UIImage?
+    /// Average luminance (0 = black … 1 = white) of the decoded photo, so the
+    /// app can pick light or dark text over it. Nil until a decode lands.
+    private(set) var averageLuminance: Double?
     private var decodedKey: Int?
     private var pendingKey: Int?
 
@@ -286,6 +297,7 @@ final class BackgroundPhotoStore {
     func prepare(_ data: Data?) {
         guard let data else {
             decoded = nil
+            averageLuminance = nil
             decodedKey = nil
             pendingKey = nil
             return
@@ -295,10 +307,12 @@ final class BackgroundPhotoStore {
         pendingKey = key
         Task.detached(priority: .userInitiated) {
             let image = Self.downsample(data)
+            let luminance = image.flatMap(Self.luminance(of:))
             await MainActor.run {
                 guard self.pendingKey == key else { return }
                 self.pendingKey = nil
                 self.decodedKey = key
+                self.averageLuminance = luminance
                 withAnimation(.easeIn(duration: 0.2)) { self.decoded = image }
             }
         }
@@ -325,6 +339,22 @@ final class BackgroundPhotoStore {
         ] as CFDictionary
         guard let cgImage = CGImageSourceCreateThumbnailAtIndex(source, 0, options) else { return nil }
         return UIImage(cgImage: cgImage)
+    }
+
+    /// Draws the image into a single pixel — the GPU-free way to average it —
+    /// and returns its relative luminance (0…1).
+    private nonisolated static func luminance(of image: UIImage) -> Double? {
+        guard let cgImage = image.cgImage else { return nil }
+        var pixel = [UInt8](repeating: 0, count: 4)
+        guard let context = CGContext(
+            data: &pixel, width: 1, height: 1, bitsPerComponent: 8, bytesPerRow: 4,
+            space: CGColorSpaceCreateDeviceRGB(),
+            bitmapInfo: CGImageAlphaInfo.premultipliedLast.rawValue
+        ) else { return nil }
+        context.interpolationQuality = .low
+        context.draw(cgImage, in: CGRect(x: 0, y: 0, width: 1, height: 1))
+        let r = Double(pixel[0]) / 255, g = Double(pixel[1]) / 255, b = Double(pixel[2]) / 255
+        return 0.2126 * r + 0.7152 * g + 0.0722 * b
     }
 }
 #endif

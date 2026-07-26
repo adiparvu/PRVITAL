@@ -14,10 +14,12 @@ enum Theme {
     static let surface = Color.adaptive(light: 0xFFFFFF, dark: 0x161A22)
     static let surfaceRaised = Color.adaptive(light: 0xFFFFFF, dark: 0x1E232D)
 
-    // Text
+    // Text. Secondary and tertiary sit a step darker (light) / brighter (dark)
+    // than typical palettes on purpose: the app draws over glass and photo
+    // backgrounds, where the usual muted greys wash out.
     static let textPrimary = Color.adaptive(light: 0x11131A, dark: 0xF5F7FA)
-    static let textSecondary = Color.adaptive(light: 0x6B7280, dark: 0x9BA1AC)
-    static let textTertiary = Color.adaptive(light: 0x9AA0AA, dark: 0x6B7280)
+    static let textSecondary = Color.adaptive(light: 0x4B5563, dark: 0xB9BFCA)
+    static let textTertiary = Color.adaptive(light: 0x666D7A, dark: 0x959CA9)
 
     // Brand accent — a medical teal by default, user-selectable in Settings →
     // Appearance. Computed (not stored) so every render resolves the theme the

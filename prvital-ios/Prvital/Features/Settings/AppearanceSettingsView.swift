@@ -298,8 +298,9 @@ struct TextSizeSettingsView: View {
 
 // MARK: - Background
 
-/// The app background chooser: a standard surface, one of four gradient presets,
-/// or a photo from the user's library — with a live sample card on top.
+/// The Background page: a live sample card, the background type as tile rows
+/// with round selection marks, and — for a photo — the change-photo row with a
+/// thumbnail, a dimming-for-legibility slider, and a destructive remove row.
 struct BackgroundSettingsView: View {
     @Environment(AppEnvironment.self) private var env
 
@@ -313,19 +314,17 @@ struct BackgroundSettingsView: View {
                 sampleCard(prefs: prefs)
                     .listRowInsets(EdgeInsets())
                     .listRowBackground(Color.clear)
-            } header: {
-                Text("Preview")
             }
 
             Section {
-                backgroundKindRow(.standard, title: String(localized: "Standard"),
-                                  subtitle: String(localized: "The calm default surface."),
+                backgroundKindRow(.standard, title: "Standard",
+                                  subtitle: "The calm default surface.",
                                   symbol: "square.fill", prefs: prefs)
-                backgroundKindRow(.gradient, title: String(localized: "Gradient"),
-                                  subtitle: String(localized: "A soft, static wash of colour."),
+                backgroundKindRow(.gradient, title: "Gradient",
+                                  subtitle: "A soft, static wash of colour.",
                                   symbol: "square.stack.3d.down.right.fill", prefs: prefs)
-                backgroundKindRow(.photo, title: String(localized: "Your photo"),
-                                  subtitle: String(localized: "Choose an image from your library."),
+                backgroundKindRow(.photo, title: "Your photo",
+                                  subtitle: "Choose an image from your library.",
                                   symbol: "photo.fill", prefs: prefs)
             } header: {
                 Text("Background type")
@@ -343,18 +342,46 @@ struct BackgroundSettingsView: View {
             if prefs.backgroundKind == .photo {
                 Section {
                     PhotosPicker(selection: $photoItem, matching: .images, photoLibrary: .shared()) {
-                        Label(prefs.backgroundPhotoData == nil ? "Choose photo" : "Change photo",
-                              systemImage: "photo.on.rectangle")
-                            .foregroundStyle(Theme.accent)
-                    }
-                    if prefs.backgroundPhotoData != nil {
-                        Button("Remove photo", role: .destructive) {
-                            Haptics.play(.selection)
-                            prefs.backgroundPhotoData = nil
+                        HStack(spacing: 12) {
+                            tile("photo.badge.plus")
+                            Text(prefs.backgroundPhotoData == nil ? "Choose photo" : "Change photo")
+                                .foregroundStyle(Theme.textPrimary)
+                            Spacer()
+                            if let thumb = BackgroundPhotoStore.shared.image(matching: prefs.backgroundPhotoData) {
+                                Image(uiImage: thumb)
+                                    .resizable()
+                                    .scaledToFill()
+                                    .frame(width: 44, height: 44)
+                                    .clipShape(RoundedRectangle(cornerRadius: 8, style: .continuous))
+                            }
                         }
                     }
+
+                    if prefs.backgroundPhotoData != nil {
+                        VStack(alignment: .leading, spacing: 6) {
+                            Text("Dimming for legibility")
+                                .foregroundStyle(Theme.textPrimary)
+                            Slider(value: $prefs.backgroundPhotoDimming, in: 0...0.7) { editing in
+                                if !editing { Haptics.play(.selection) }
+                            }
+                            .tint(Theme.accent)
+                        }
+                        .padding(.vertical, 2)
+
+                        Button(role: .destructive) {
+                            Haptics.play(.selection)
+                            prefs.backgroundPhotoData = nil
+                        } label: {
+                            HStack(spacing: 12) {
+                                tile("trash")
+                                Text("Remove photo")
+                            }
+                        }
+                    }
+                } header: {
+                    Text("Your photo")
                 } footer: {
-                    Text("Your photo stays on this device and is used only as the app background.")
+                    Text("The photo stays on your phone; text picks its own colour from its brightness.")
                         .font(.footnote)
                         .foregroundStyle(Theme.textTertiary)
                 }
@@ -364,7 +391,7 @@ struct BackgroundSettingsView: View {
         .scrollContentBackground(.hidden)
         .prvitalScreenBackground()
         .navigationTitle("Background")
-        .navigationBarTitleDisplayMode(.inline)
+        .navigationBarTitleDisplayMode(.large)
         .onChange(of: photoItem) { _, newItem in
             guard let newItem else { return }
             Task {
@@ -376,19 +403,29 @@ struct BackgroundSettingsView: View {
         }
     }
 
+    /// A small neutral squircle behind a row's glyph, like the reference rows.
+    private func tile(_ symbol: String) -> some View {
+        Image(systemName: symbol)
+            .font(.system(size: 15, weight: .semibold))
+            .foregroundStyle(Theme.textPrimary)
+            .frame(width: 34, height: 34)
+            .background(Theme.textPrimary.opacity(0.08), in: .rect(cornerRadius: 10))
+    }
+
     private func sampleCard(prefs: Preferences) -> some View {
         ZStack {
             AppBackgroundView(
                 kind: prefs.backgroundKind,
                 gradient: prefs.backgroundGradient,
-                photoData: prefs.backgroundPhotoData
+                photoData: prefs.backgroundPhotoData,
+                photoDimming: prefs.backgroundPhotoDimming
             )
             Text("Sample card")
                 .font(.headline)
                 .foregroundStyle(Theme.textPrimary)
                 .frame(maxWidth: .infinity, alignment: .leading)
                 .padding(18)
-                .background(Theme.surface, in: .rect(cornerRadius: 16))
+                .background(.ultraThinMaterial, in: .rect(cornerRadius: 16))
                 .padding(24)
         }
         .frame(height: 180)
@@ -396,10 +433,12 @@ struct BackgroundSettingsView: View {
         .padding(.vertical, 4)
         .animation(.smooth, value: prefs.backgroundKindRaw)
         .animation(.smooth, value: prefs.backgroundGradientRaw)
+        .animation(.smooth, value: prefs.backgroundPhotoDimming)
     }
 
     private func backgroundKindRow(
-        _ kind: AppBackgroundKind, title: String, subtitle: String, symbol: String, prefs: Preferences
+        _ kind: AppBackgroundKind, title: LocalizedStringKey, subtitle: LocalizedStringKey,
+        symbol: String, prefs: Preferences
     ) -> some View {
         Button {
             guard prefs.backgroundKind != kind else { return }
@@ -407,25 +446,21 @@ struct BackgroundSettingsView: View {
             prefs.backgroundKind = kind
         } label: {
             HStack(spacing: 12) {
-                Image(systemName: symbol)
-                    .font(.system(size: 15, weight: .semibold))
-                    .foregroundStyle(Theme.accent)
-                    .frame(width: 26)
+                tile(symbol)
                 VStack(alignment: .leading, spacing: 2) {
                     Text(title).font(.body).foregroundStyle(Theme.textPrimary)
                     Text(subtitle).font(.caption).foregroundStyle(Theme.textSecondary)
                 }
                 Spacer()
-                if prefs.backgroundKind == kind {
-                    Image(systemName: "checkmark")
-                        .font(.body.weight(.semibold))
-                        .foregroundStyle(Theme.accent)
-                }
+                Image(systemName: prefs.backgroundKind == kind ? "checkmark.circle.fill" : "circle")
+                    .font(.system(size: 22))
+                    .foregroundStyle(prefs.backgroundKind == kind ? Theme.accent : Theme.textTertiary)
             }
             .padding(.vertical, 2)
             .contentShape(.rect)
         }
         .buttonStyle(.plain)
+        .accessibilityAddTraits(prefs.backgroundKind == kind ? [.isSelected] : [])
     }
 
     private func gradientGrid(prefs: Preferences) -> some View {

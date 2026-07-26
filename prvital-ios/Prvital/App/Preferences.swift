@@ -49,6 +49,7 @@ final class Preferences {
         self.backgroundKindRaw = self.defaults.string(forKey: Keys.backgroundKind) ?? AppBackgroundKind.standard.rawValue
         self.backgroundGradientRaw = self.defaults.string(forKey: Keys.backgroundGradient) ?? BackgroundGradient.aurora.rawValue
         self.backgroundPhotoData = self.defaults.data(forKey: Keys.backgroundPhoto)
+        self.backgroundPhotoDimming = (self.defaults.object(forKey: Keys.backgroundPhotoDimming) as? Double) ?? 0.3
     }
 
     /// How much detail the journal's day cards show ("compact" / "standard" /
@@ -302,6 +303,11 @@ final class Preferences {
         }
     }
 
+    /// How strongly the background photo is darkened for legibility (0…0.7).
+    var backgroundPhotoDimming: Double {
+        didSet { defaults.set(backgroundPhotoDimming, forKey: Keys.backgroundPhotoDimming) }
+    }
+
     let activityDurations: [Int] = [15, 30, 45, 60, 90, 120]
 
     // MARK: Persistence
@@ -347,6 +353,7 @@ final class Preferences {
         static let backgroundKind = AppBackgroundKind.preferenceKey
         static let backgroundGradient = BackgroundGradient.preferenceKey
         static let backgroundPhoto = AppBackgroundKind.photoKey
+        static let backgroundPhotoDimming = AppBackgroundKind.photoDimmingKey
     }
 
     private static func readUnit(_ d: UserDefaults) -> GlucoseUnit {

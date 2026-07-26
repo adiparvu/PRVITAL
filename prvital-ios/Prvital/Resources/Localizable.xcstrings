@@ -27875,6 +27875,65 @@
         }
       }
     },
+    "Dimming for legibility" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Abdunkeln für Lesbarkeit"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Oscurecer para legibilidad"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Assombrir pour la lisibilité"
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Scurire per la leggibilità"
+          }
+        },
+        "nl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Dimmen voor leesbaarheid"
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Przyciemnienie dla czytelności"
+          }
+        },
+        "pt" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Escurecer para legibilidade"
+          }
+        },
+        "ro" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Întunecare pentru lizibilitate"
+          }
+        },
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Затемнение для читаемости"
+          }
+        }
+      }
+    },
     "Dinner" : {
       "extractionState" : "manual",
       "localizations" : {
@@ -82850,6 +82909,65 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Номер телефона становится кнопкой вызова. Приём в ближайшие 30 дней показывает обратный отсчёт."
+          }
+        }
+      }
+    },
+    "The photo stays on your phone; text picks its own colour from its brightness." : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Das Foto bleibt auf deinem Telefon; der Text wählt seine Farbe nach dessen Helligkeit."
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "La foto se queda en tu teléfono; el texto elige su color según su luminosidad."
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "La photo reste sur votre téléphone ; le texte choisit sa couleur selon sa luminosité."
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "La foto resta sul tuo telefono; il testo sceglie il colore in base alla sua luminosità."
+          }
+        },
+        "nl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "De foto blijft op je telefoon; de tekst kiest zijn kleur op basis van de helderheid."
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Zdjęcie zostaje w telefonie; tekst sam dobiera kolor do jego jasności."
+          }
+        },
+        "pt" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "A foto fica no teu telefone; o texto escolhe a sua cor conforme o brilho dela."
+          }
+        },
+        "ro" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Fotografia rămâne pe telefon; textul își alege singur culoarea după luminozitatea ei."
+          }
+        },
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Фото остаётся на телефоне; текст сам выбирает цвет по его яркости."
           }
         }
       }
