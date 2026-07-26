@@ -38,6 +38,9 @@ struct GlucoseProvider: TimelineProvider {
     }
 
     func getTimeline(in context: Context, completion: @escaping (Timeline<GlucoseEntry>) -> Void) {
+        // WidgetKit's completion is not Sendable; the timeline is delivered
+        // exactly once from the async work below, so the hand-off is safe.
+        let box = CompletionBox(call: completion)
         Task {
             let now = Date()
             var snapshot = SharedStore.load()
@@ -79,7 +82,13 @@ struct GlucoseProvider: TimelineProvider {
             }
 
             let refreshDate = now.addingTimeInterval(Double(refreshAfterMinutes) * 60)
-            completion(Timeline(entries: entries, policy: .after(refreshDate)))
+            box.call(Timeline(entries: entries, policy: .after(refreshDate)))
         }
     }
+}
+
+/// See `getTimeline` — carries WidgetKit's non-Sendable completion into the
+/// one-shot async timeline build.
+private struct CompletionBox: @unchecked Sendable {
+    let call: (Timeline<GlucoseEntry>) -> Void
 }
