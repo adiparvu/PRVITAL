@@ -286,9 +286,16 @@ final class SnapshotPublisher {
         return lines
     }
 
-    private static func relative(_ date: Date, _ now: Date) -> String {
+    /// Built once — formatter construction is expensive, and this ran on every
+    /// snapshot refresh. Safe as a static: the publisher only runs on the main
+    /// actor, and the locale changing mid-session recreates the process anyway.
+    private static let relativeFormatter: RelativeDateTimeFormatter = {
         let formatter = RelativeDateTimeFormatter()
         formatter.unitsStyle = .abbreviated
-        return formatter.localizedString(for: date, relativeTo: now)
+        return formatter
+    }()
+
+    private static func relative(_ date: Date, _ now: Date) -> String {
+        relativeFormatter.localizedString(for: date, relativeTo: now)
     }
 }

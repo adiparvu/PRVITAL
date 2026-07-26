@@ -9,6 +9,10 @@ import SwiftData
 /// without turning it into a second copy of the health data.
 @Model
 final class PrivacyAuditRecord {
+    /// Retention pruning and the audit list both select on time; without the
+    /// index each prune scanned the whole (potentially 100k-row) trail.
+    #Index<PrivacyAuditRecord>([\.timestamp])
+
     var id: UUID = UUID()
     var timestamp: Date = Date()
     var actionTypeRaw: String = AuditActionType.dataRead.rawValue

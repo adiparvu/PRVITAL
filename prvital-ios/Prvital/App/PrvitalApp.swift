@@ -110,6 +110,9 @@ struct RootView: View {
                 guard phase == .active else { return }
                 env.snapshots.refresh()
                 env.snapshots.reloadWidgets()
+                // Keep the audit trail lean without waiting for a cold launch —
+                // throttled internally to at most once a day.
+                env.audit.pruneIfDue()
             }
     }
 }
