@@ -92,6 +92,20 @@ final class SnapshotPublisher {
 
         snapshot.points = summary.recent.map { .init(date: $0.timestamp, mgdL: $0.valueMgdL) }
 
+        // Today's headline figures for the large widgets: time-in-range and the
+        // average, over today's active readings (a bounded, indexed fetch).
+        let todayStart = Calendar.current.startOfDay(for: now)
+        let today = recentActiveReadings(since: todayStart).map(\.valueMgdL)
+        if !today.isEmpty {
+            let inRange = today.filter {
+                $0 >= thresholds.targetLower && $0 <= thresholds.targetUpper
+            }.count
+            let tir = Double(inRange) / Double(today.count) * 100
+            snapshot.todayTIRText = "\(Int(tir.rounded()))%"
+            let average = today.reduce(0, +) / Double(today.count)
+            snapshot.todayAverageText = GlucoseFormatting.string(mgdL: average, unit: unit)
+        }
+
         if let dose = summary.lastInsulin {
             snapshot.lastInsulinText = String(localized: "\(dose.units.formatted()) U · \(Self.relative(dose.timestamp, now))")
         }

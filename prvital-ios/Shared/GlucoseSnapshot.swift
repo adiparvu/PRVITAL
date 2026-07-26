@@ -40,6 +40,12 @@ struct GlucoseSnapshot: Codable, Equatable, Sendable {
     var forecastLowMgdL: Double?
     var forecastHighMgdL: Double?
 
+    /// Today's headline figures, pre-formatted by the app ("74%", "128"), so the
+    /// large/extra-large widgets can show a stats row without running any
+    /// medical math in the widget process. Nil until today has readings.
+    var todayTIRText: String?
+    var todayAverageText: String?
+
     var lastInsulinText: String?
     var lastMealText: String?
     var nextReminderText: String?

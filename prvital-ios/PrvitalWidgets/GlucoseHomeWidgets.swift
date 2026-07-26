@@ -15,7 +15,8 @@ struct GlucoseWidget: Widget {
         }
         .configurationDisplayName("Glucose")
         .description("Your latest glucose reading, trend, and recent history.")
-        .supportedFamilies([.systemSmall, .systemMedium, .systemLarge])
+        // .systemExtraLarge only ever appears on iPad — iPhone stops at Large.
+        .supportedFamilies([.systemSmall, .systemMedium, .systemLarge, .systemExtraLarge])
     }
 }
 
@@ -34,6 +35,8 @@ private struct GlucoseWidgetEntryView: View {
                 WidgetGlucoseMedium(snapshot: entry.snapshot)
             case .systemLarge:
                 WidgetGlucoseLarge(snapshot: entry.snapshot)
+            case .systemExtraLarge:
+                WidgetGlucoseExtraLarge(snapshot: entry.snapshot)
             default:
                 WidgetGlucoseSmall(snapshot: entry.snapshot)
             }
@@ -166,8 +169,10 @@ private struct WidgetGlucoseLarge: View {
                 }
             }
 
+            WidgetStatsRow(snapshot: snapshot)
+
             WidgetGlucoseChart(snapshot: snapshot, showsForecastBand: true)
-                .frame(height: 110)
+                .frame(height: 122)
 
             // The forecast where you glance: an imminent low/high warning, shown
             // only when the app predicts one. Same neutral, triangle-marked
@@ -213,6 +218,98 @@ private struct WidgetGlucoseLarge: View {
             Spacer(minLength: 0)
         }
         .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .topLeading)
+    }
+}
+
+// MARK: - Extra large (iPad)
+
+/// The extra-large family: a two-column dashboard-in-a-widget — the reading,
+/// today's stats, therapy state and recent entries on the left, a big forecast
+/// chart on the right. iPad-only by platform rule; iPhone stops at Large.
+private struct WidgetGlucoseExtraLarge: View {
+    let snapshot: GlucoseSnapshot
+
+    var body: some View {
+        HStack(alignment: .top, spacing: 18) {
+            VStack(alignment: .leading, spacing: 12) {
+                WidgetGlucoseValueColumn(snapshot: snapshot)
+                WidgetStatsRow(snapshot: snapshot)
+                WidgetOnBoardStrip(snapshot: snapshot)
+                if let prediction = snapshot.predictionText {
+                    Label(prediction, systemImage: "exclamationmark.triangle.fill")
+                        .font(.caption)
+                        .foregroundStyle(.secondary)
+                        .lineLimit(1)
+                        .minimumScaleFactor(0.85)
+                }
+                if !snapshot.recentEntries.isEmpty {
+                    Divider().opacity(0.35)
+                    VStack(alignment: .leading, spacing: 6) {
+                        ForEach(Array(snapshot.recentEntries.prefix(5).enumerated()), id: \.offset) { _, entry in
+                            HStack(spacing: 7) {
+                                Image(systemName: "circle.fill")
+                                    .font(.system(size: 4))
+                                    .foregroundStyle(.tertiary)
+                                Text(entry)
+                                    .font(.caption)
+                                    .foregroundStyle(.primary)
+                                    .lineLimit(1)
+                            }
+                        }
+                    }
+                    .accessibilityElement(children: .combine)
+                    .accessibilityLabel("Recent entries")
+                }
+                Spacer(minLength: 0)
+                WidgetUpdatedText(snapshot: snapshot)
+                    .font(.caption2)
+                    .foregroundStyle(.tertiary)
+            }
+            .frame(maxWidth: 270, alignment: .leading)
+
+            WidgetGlucoseChart(snapshot: snapshot, showsForecastBand: true)
+                .frame(maxWidth: .infinity, maxHeight: .infinity)
+        }
+        .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .topLeading)
+        .accessibilityElement(children: .contain)
+    }
+}
+
+// MARK: - Today's stats row
+
+/// "TIR 74% · Average 128" — today's headline figures, rendered from the
+/// pre-formatted snapshot strings (no math runs in the widget process).
+private struct WidgetStatsRow: View {
+    let snapshot: GlucoseSnapshot
+
+    var body: some View {
+        if snapshot.todayTIRText != nil || snapshot.todayAverageText != nil {
+            HStack(spacing: 16) {
+                if let tir = snapshot.todayTIRText {
+                    stat(label: String(localized: "TIR"), value: tir,
+                         tint: Color(hex: 0x34D07A))
+                }
+                if let average = snapshot.todayAverageText {
+                    stat(label: String(localized: "Average"), value: average,
+                         tint: .primary)
+                }
+                Spacer(minLength: 0)
+            }
+            .accessibilityElement(children: .combine)
+        }
+    }
+
+    private func stat(label: String, value: String, tint: Color) -> some View {
+        VStack(alignment: .leading, spacing: 1) {
+            Text(label)
+                .font(.system(size: 9, weight: .semibold))
+                .textCase(.uppercase)
+                .foregroundStyle(.tertiary)
+            Text(value)
+                .font(.system(size: 16, weight: .bold, design: .rounded))
+                .foregroundStyle(tint)
+                .monospacedDigit()
+        }
     }
 }
 
