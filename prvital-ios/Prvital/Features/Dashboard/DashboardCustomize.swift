@@ -15,9 +15,9 @@ enum DashboardCard: String, CaseIterable, Identifiable, Codable {
     /// `rings` cards were removed; `order(from:)` drops their persisted ids).
     case today
     case schedule
-    case onBoard
+    /// One whole: the on-board figures, today's logged-events timeline and the
+    /// Recent tiles (the separate `onBoard` and `recent` cards were removed).
     case timeline
-    case recent
 
     var id: String { rawValue }
 
@@ -29,9 +29,7 @@ enum DashboardCard: String, CaseIterable, Identifiable, Codable {
         case .lessons: "Contextual lessons"
         case .today: "Today"
         case .schedule: "Logging schedule"
-        case .onBoard: "On board"
-        case .timeline: "Timeline"
-        case .recent: "Recent"
+        case .timeline: "Today's log"
         }
     }
 
@@ -42,9 +40,7 @@ enum DashboardCard: String, CaseIterable, Identifiable, Codable {
         case .lessons: "book"
         case .today: "clock"
         case .schedule: "clock.badge.checkmark"
-        case .onBoard: "syringe"
-        case .timeline: "calendar.day.timeline.left"
-        case .recent: "list.bullet"
+        case .timeline: "list.bullet.rectangle"
         }
     }
 

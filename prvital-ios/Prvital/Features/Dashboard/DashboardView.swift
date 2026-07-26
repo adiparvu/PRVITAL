@@ -449,22 +449,45 @@ struct DashboardView: View {
             if !scheduleStatuses.isEmpty {
                 scheduleCard(scheduleStatuses)
             }
-        case .onBoard:
-            if bolus.isEnabled && bolus.isValid {
-                let now = Date()
-                onBoardCard(
-                    iob: InsulinMath.activeInsulin(doses: insulin, at: now, parameters: bolus),
-                    cob: CarbMath.carbsOnBoard(entries: carbs, at: now)
-                )
-            }
         case .timeline:
-            TodayTimelineCard(
-                readings: readings, insulin: insulin, carbs: carbs, activity: activity,
-                medications: medications, ketones: ketones, notes: notes,
-                unit: unit, thresholds: thresholds
-            )
-        case .recent:
-            recentRow(summary: summary)
+            todayLogCard(summary: summary, insulin: insulin, carbs: carbs,
+                         unit: unit, thresholds: thresholds, bolus: bolus)
+        }
+    }
+
+    // MARK: - Today's log (on board + timeline + recent, one whole)
+
+    /// Three former cards fused into one: the on-board figures (when the bolus
+    /// calculator is set up), today's logged-events timeline, and the Recent
+    /// tiles — separated by hairlines inside a single card.
+    private func todayLogCard(
+        summary: DashboardSummary, insulin: [InsulinDose], carbs: [CarbEntry],
+        unit: GlucoseUnit, thresholds: GlucoseThresholds, bolus: BolusParameters
+    ) -> some View {
+        let events = TodayTimelineCard.events(
+            readings: readings, insulin: insulin, carbs: carbs, activity: activity,
+            medications: medications, ketones: ketones, notes: notes,
+            unit: unit, thresholds: thresholds)
+        let bolusActive = bolus.isEnabled && bolus.isValid
+
+        return SectionCard("Today's log", systemImage: "list.bullet.rectangle") {
+            VStack(alignment: .leading, spacing: 14) {
+                if bolusActive {
+                    let now = Date()
+                    onBoardRow(
+                        iob: InsulinMath.activeInsulin(doses: insulin, at: now, parameters: bolus),
+                        cob: CarbMath.carbsOnBoard(entries: carbs, at: now)
+                    )
+                }
+                if !events.isEmpty {
+                    if bolusActive { Divider().overlay(Theme.hairline) }
+                    TodayTimelineCard(events: events, embedded: true)
+                }
+                if bolusActive || !events.isEmpty {
+                    Divider().overlay(Theme.hairline)
+                }
+                recentRow(summary: summary)
+            }
         }
     }
 
@@ -1098,20 +1121,19 @@ struct DashboardView: View {
 
     // MARK: - On board (insulin + carbs)
 
-    private func onBoardCard(iob: Double, cob: Double) -> some View {
-        SectionCard("On board", systemImage: "chart.line.downtrend.xyaxis") {
-            HStack(spacing: 18) {
-                onBoardMetric(value: iob.formatted(.number.precision(.fractionLength(1))), unit: "U", label: String(localized: "Insulin"), tint: Theme.accent)
-                Divider().frame(height: 34).overlay(Theme.hairline)
-                onBoardMetric(value: cob.formatted(.number.precision(.fractionLength(0))), unit: "g", label: String(localized: "Carbs"), tint: Theme.zoneHigh)
-                Spacer()
-                NavigationLink {
-                    BolusCalculatorView()
-                } label: {
-                    Label("Calculator", systemImage: "syringe")
-                        .font(.subheadline.weight(.semibold))
-                        .foregroundStyle(Theme.accent)
-                }
+    /// The on-board figures row inside the Today's-log card.
+    private func onBoardRow(iob: Double, cob: Double) -> some View {
+        HStack(spacing: 18) {
+            onBoardMetric(value: iob.formatted(.number.precision(.fractionLength(1))), unit: "U", label: String(localized: "Insulin"), tint: Theme.accent)
+            Divider().frame(height: 34).overlay(Theme.hairline)
+            onBoardMetric(value: cob.formatted(.number.precision(.fractionLength(0))), unit: "g", label: String(localized: "Carbs"), tint: Theme.zoneHigh)
+            Spacer()
+            NavigationLink {
+                BolusCalculatorView()
+            } label: {
+                Label("Calculator", systemImage: "syringe")
+                    .font(.subheadline.weight(.semibold))
+                    .foregroundStyle(Theme.accent)
             }
         }
     }
@@ -1256,11 +1278,11 @@ struct DashboardView: View {
     private func recentRow(summary: DashboardSummary) -> some View {
         VStack(alignment: .leading, spacing: 10) {
             Label {
-                Text("Recent").foregroundStyle(Theme.textPrimary)
+                Text("Recent").foregroundStyle(Theme.textSecondary)
             } icon: {
                 Image(systemName: "clock.arrow.circlepath").foregroundStyle(Theme.accent)
             }
-            .font(.headline)
+            .font(.subheadline.weight(.semibold))
             .accessibilityAddTraits(.isHeader)
             HStack(spacing: 12) {
                 NavigationLink { InsulinLogView() } label: { insulinTile(summary.lastInsulin) }

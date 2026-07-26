@@ -16,33 +16,44 @@ struct TodayEvent: Identifiable {
 /// chronological list, newest first. It's the story of the day at a glance.
 /// Empty days stay quiet (the card hides itself), keeping the dashboard calm.
 struct TodayTimelineCard: View {
-    let readings: [GlucoseReading]
-    let insulin: [InsulinDose]
-    let carbs: [CarbEntry]
-    let activity: [ActivityEntry]
-    let medications: [MedicationDose]
-    let ketones: [KetoneReading]
-    let notes: [ObservationEntry]
-    let unit: GlucoseUnit
-    let thresholds: GlucoseThresholds
+    /// Precomputed by the parent (via `events(...)`) so it can test emptiness
+    /// before composing the day's fused card.
+    let events: [TodayEvent]
+    /// When true, renders only the rows — the parent supplies the card chrome.
+    var embedded = false
 
     private static let cap = 12
 
     var body: some View {
-        let events = buildEvents()
         if !events.isEmpty {
-            SectionCard("Today", systemImage: "list.bullet.rectangle") {
-                VStack(spacing: 0) {
-                    ForEach(Array(events.prefix(Self.cap).enumerated()), id: \.element.id) { index, event in
-                        if index > 0 { Divider().overlay(Theme.hairline) }
-                        TodayEventRow(event: event)
-                    }
-                }
+            if embedded {
+                rows
+            } else {
+                SectionCard("Today", systemImage: "list.bullet.rectangle") { rows }
             }
         }
     }
 
-    private func buildEvents() -> [TodayEvent] {
+    private var rows: some View {
+        VStack(spacing: 0) {
+            ForEach(Array(events.prefix(Self.cap).enumerated()), id: \.element.id) { index, event in
+                if index > 0 { Divider().overlay(Theme.hairline) }
+                TodayEventRow(event: event)
+            }
+        }
+    }
+
+    static func events(
+        readings: [GlucoseReading],
+        insulin: [InsulinDose],
+        carbs: [CarbEntry],
+        activity: [ActivityEntry],
+        medications: [MedicationDose],
+        ketones: [KetoneReading],
+        notes: [ObservationEntry],
+        unit: GlucoseUnit,
+        thresholds: GlucoseThresholds
+    ) -> [TodayEvent] {
         let cal = Calendar.current
         func isToday(_ date: Date) -> Bool { cal.isDateInToday(date) }
         var out: [TodayEvent] = []
