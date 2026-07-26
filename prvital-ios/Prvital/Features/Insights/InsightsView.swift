@@ -34,10 +34,10 @@ struct InsightsView: View {
     @Query private var activity: [ActivityEntry]
 
     init() {
-        // Bounded past the 30-day feed window so the ranked insights never
-        // materialise all history when the Insights tab renders.
-        let cutoff = Calendar.current.date(byAdding: .day, value: -45, to: Date())
-            ?? Date().addingTimeInterval(-45 * 86_400)
+        // One day past the 30-day feed window — the analyzers never look further
+        // back, so anything more was pure fetch cost on the tab's first frame.
+        let cutoff = Calendar.current.date(byAdding: .day, value: -31, to: Date())
+            ?? Date().addingTimeInterval(-31 * 86_400)
         _glucose = Query(filter: #Predicate<GlucoseReading> { $0.timestamp >= cutoff },
                          sort: \.timestamp, order: .reverse)
         _insulin = Query(filter: #Predicate<InsulinDose> { $0.timestamp >= cutoff },
@@ -52,12 +52,20 @@ struct InsightsView: View {
     private var feedRange: ClosedRange<Date> { InsightsInterval.month.dateRange() }
 
     /// The ranked feed, computed once per data change (off the render path) into
-    /// `feed` — not on every parent re-render. Running the six analyzers over a
-    /// 45-day window on each render was part of what made the tab feel heavy.
+    /// `feed` — not on every parent re-render.
     @State private var feed = InsightsFeedModel()
 
-    private var feedSignature: InsightsFeedSignature {
-        InsightsFeedSignature(
+    /// Gates every touch of the feed's month-window queries. `@Query` fetches
+    /// lazily on first access, and accessing these arrays during the tab's FIRST
+    /// body evaluation materialised a month of records (thousands of rows for a
+    /// CGM user) synchronously on the main thread — the tap-the-tab lag. Until
+    /// this flips (one beat after the switch animation), body never reads them,
+    /// so the first frame costs only the day-windowed pane.
+    @State private var feedArmed = false
+
+    private var feedSignature: InsightsFeedSignature? {
+        guard feedArmed else { return nil }
+        return InsightsFeedSignature(
             glucose: glucose.count, insulin: insulin.count,
             carbs: carbs.count, activity: activity.count,
             newest: glucose.first?.timestamp,
@@ -86,7 +94,15 @@ struct InsightsView: View {
             }
             .prvitalTabBackground()
             .navigationTitle("Insights")
+            .task {
+                // Arm the feed only after the tab-switch transition has landed,
+                // so its month-window fetch never competes with the first frame.
+                guard !feedArmed else { return }
+                try? await Task.sleep(for: .milliseconds(350))
+                feedArmed = true
+            }
             .task(id: feedSignature) {
+                guard feedArmed else { return }
                 await feed.rebuild(
                     glucose: glucose, insulin: insulin, carbs: carbs, activity: activity,
                     range: feedRange, thresholds: env.preferences.thresholds)
