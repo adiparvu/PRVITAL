@@ -126,7 +126,19 @@ struct QuickEntrySheet: View {
             .navigationBarTitleDisplayMode(.inline)
             .toolbar { ToolbarItem(placement: .cancellationAction) { Button("Done") { dismiss() } } }
             .sheet(item: $editor) { EntryEditor(kind: $0) }
-            .sheet(isPresented: $showBolusCalculator) { BolusCalculatorView() }
+            // Wrapped in its own stack: presented bare it had no bar and no way
+            // out (device feedback) — pushed from Settings/Dashboard it already
+            // gets a back button from the surrounding stack.
+            .sheet(isPresented: $showBolusCalculator) {
+                NavigationStack {
+                    BolusCalculatorView()
+                        .toolbar {
+                            ToolbarItem(placement: .cancellationAction) {
+                                Button("Done") { showBolusCalculator = false }
+                            }
+                        }
+                }
+            }
             .sheet(isPresented: $showRuleOf15) { RuleOf15Sheet() }
             .sheet(isPresented: $showKetones) { LogKetoneSheet() }
             .sheet(isPresented: $showVoiceLog) { VoiceLogSheet() }

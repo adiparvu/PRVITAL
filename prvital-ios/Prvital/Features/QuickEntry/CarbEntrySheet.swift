@@ -47,17 +47,32 @@ struct CarbEntrySheet: View {
                     }
                 }
                 if existing == nil, !favorites.isEmpty {
+                    // Vertical rows instead of a horizontal chip strip — a long
+                    // meal name truncates gracefully in place of one huge chip
+                    // pushing everything off-screen (device feedback).
                     Section("Favorites") {
-                        ScrollView(.horizontal, showsIndicators: false) {
-                            HStack(spacing: 8) {
-                                ForEach(rankedFavorites) { favorite in
-                                    FavoriteMealChip(favorite: favorite) {
-                                        fill(from: favorite)
-                                    }
+                        ForEach(rankedFavorites) { favorite in
+                            Button {
+                                fill(from: favorite)
+                            } label: {
+                                HStack(spacing: 12) {
+                                    Image(systemName: favorite.mealType.symbol)
+                                        .font(.subheadline)
+                                        .foregroundStyle(Theme.zoneHigh)
+                                        .frame(width: 32, height: 32)
+                                        .background(Theme.zoneHigh.opacity(0.12), in: .circle)
+                                    Text(favorite.name)
+                                        .foregroundStyle(Theme.textPrimary)
+                                        .lineLimit(1)
+                                    Spacer(minLength: 8)
+                                    Text("\(favorite.grams.formatted()) g")
+                                        .font(.subheadline)
+                                        .foregroundStyle(Theme.textSecondary)
+                                        .monospacedDigit()
                                 }
                             }
+                            .accessibilityElement(children: .combine)
                         }
-                        .listRowInsets(EdgeInsets(top: 6, leading: 12, bottom: 6, trailing: 12))
                     }
                 }
                 Section {
@@ -327,32 +342,3 @@ struct CarbEntrySheet: View {
     }
 }
 
-/// A tappable capsule for one favorite meal: meal-type symbol, name and grams.
-private struct FavoriteMealChip: View {
-    let favorite: FavoriteMeal
-    let action: () -> Void
-
-    var body: some View {
-        Button(action: action) {
-            HStack(spacing: 8) {
-                Image(systemName: favorite.mealType.symbol)
-                    .font(.caption)
-                VStack(alignment: .leading, spacing: 1) {
-                    Text(favorite.name)
-                        .font(.system(size: 14, weight: .semibold, design: .rounded))
-                        .lineLimit(1)
-                    Text("\(favorite.grams.formatted()) g")
-                        .font(.caption2)
-                }
-            }
-            .padding(.horizontal, 14)
-            .padding(.vertical, 7)
-            .frame(minHeight: 44) // meet the 44pt HIG tap-target minimum
-            .background(Theme.zoneHigh.opacity(0.12), in: .capsule)
-            .foregroundStyle(Theme.zoneHigh)
-        }
-        .buttonStyle(PressableChipStyle())
-        .accessibilityElement(children: .combine)
-        .accessibilityLabel("\(favorite.name), \(favorite.grams.formatted()) grams")
-    }
-}

@@ -11,7 +11,9 @@ struct ObservationEntrySheet: View {
     @State private var text = ""
     @State private var timestamp = Date()
 
-    private let columns = [GridItem(.adaptive(minimum: 110), spacing: 8)]
+    /// Two equal columns: the adaptive grid packed three uneven cells per row
+    /// and broke the longer Romanian labels mid-word (device feedback).
+    private let columns = [GridItem(.flexible(), spacing: 8), GridItem(.flexible(), spacing: 8)]
 
     var body: some View {
         NavigationStack {
@@ -24,13 +26,28 @@ struct ObservationEntrySheet: View {
                                 if isOn { selected.remove(tag) } else { selected.insert(tag) }
                                 Haptics.play(.selection)
                             } label: {
-                                Label(tag.label, systemImage: tag.symbol)
-                                    .font(.footnote.weight(.medium))
-                                    .frame(maxWidth: .infinity)
-                                    .padding(.vertical, 10)
-                                    .background(isOn ? Theme.accent.opacity(0.18) : Theme.hairline.opacity(0.4), in: .rect(cornerRadius: 12))
-                                    .foregroundStyle(isOn ? Theme.accent : Theme.textSecondary)
-                                    .animation(.snappy(duration: 0.2), value: isOn)
+                                // Leading-aligned, one line, gently scaled —
+                                // every cell the same height, nothing wraps.
+                                HStack(spacing: 8) {
+                                    Image(systemName: tag.symbol)
+                                        .font(.footnote.weight(.medium))
+                                        .frame(width: 18)
+                                    Text(tag.label)
+                                        .font(.footnote.weight(.medium))
+                                        .lineLimit(1)
+                                        .minimumScaleFactor(0.75)
+                                    Spacer(minLength: 0)
+                                    if isOn {
+                                        Image(systemName: "checkmark")
+                                            .font(.caption2.weight(.bold))
+                                    }
+                                }
+                                .padding(.horizontal, 12)
+                                .padding(.vertical, 11)
+                                .frame(maxWidth: .infinity)
+                                .background(isOn ? Theme.accent.opacity(0.18) : Theme.hairline.opacity(0.4), in: .rect(cornerRadius: 12))
+                                .foregroundStyle(isOn ? Theme.accent : Theme.textSecondary)
+                                .animation(.snappy(duration: 0.2), value: isOn)
                             }
                             .buttonStyle(PressableChipStyle())
                         }

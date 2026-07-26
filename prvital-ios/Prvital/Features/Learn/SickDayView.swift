@@ -315,16 +315,20 @@ struct LogKetoneSheet: View {
         NavigationStack {
             Form {
                 Section {
-                    HStack {
-                        Text(value.formatted(.number.precision(.fractionLength(1))))
+                    // Just the box — you type the reading (device feedback:
+                    // no stepper).
+                    HStack(alignment: .firstTextBaseline, spacing: 6) {
+                        TextField("0", value: $value, format: .number)
                             .font(.system(size: 30, weight: .bold, design: .rounded))
                             .foregroundStyle(Theme.accent)
-                            .contentTransition(.numericText())
-                            .animation(.snappy, value: value)
+                            .keyboardType(.decimalPad)
+                            .fixedSize()
+                            .accessibilityLabel("Ketone reading")
                         Text("mmol/L").foregroundStyle(Theme.textSecondary)
                         Spacer()
-                        Stepper("Ketones", value: $value, in: 0.0...8.0, step: 0.1)
-                            .labelsHidden()
+                    }
+                    .onChange(of: value) { _, newValue in
+                        if newValue < 0 { value = 0 } else if newValue > 8 { value = 8 }
                     }
                     Picker("Sample", selection: $sample) {
                         ForEach(KetoneSample.allCases) { Text($0.label).tag($0) }
