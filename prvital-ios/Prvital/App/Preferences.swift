@@ -16,6 +16,7 @@ final class Preferences {
         self.nightscout = Self.readNightscout(self.defaults)
         self.bolusParameters = Self.readBolus(self.defaults)
         self.alerts = Self.readAlerts(self.defaults)
+        self.community = Self.readCommunity(self.defaults)
         self.glucoseSchedule = Self.readGlucoseSchedule(self.defaults)
         self.glucoseGoals = Self.readGlucoseGoals(self.defaults)
         self.ringGoals = Self.readRingGoals(self.defaults)
@@ -91,6 +92,11 @@ final class Preferences {
     /// Reactive glucose alert settings (opt-in, off by default).
     var alerts: AlertPreferences {
         didSet { if let data = try? JSONEncoder().encode(alerts) { defaults.set(data, forKey: Keys.alerts) } }
+    }
+
+    /// Community leaderboard participation (opt-in; pseudonym + points only).
+    var community: CommunityPreferences {
+        didSet { if let data = try? JSONEncoder().encode(community) { defaults.set(data, forKey: Keys.community) } }
     }
 
     /// The user's chosen glucose-logging routine (times of day + optional
@@ -319,6 +325,7 @@ final class Preferences {
         static let nightscout = "pref.nightscout"
         static let bolus = "pref.bolusParameters"
         static let alerts = "pref.alerts"
+        static let community = "pref.community"
         static let glucoseSchedule = "pref.glucoseSchedule"
         static let glucoseGoals = "pref.glucoseGoals"
         static let ringGoals = "pref.ringGoals"
@@ -386,6 +393,12 @@ final class Preferences {
     private static func readAlerts(_ d: UserDefaults) -> AlertPreferences {
         guard let data = d.data(forKey: Keys.alerts),
               let value = try? JSONDecoder().decode(AlertPreferences.self, from: data)
+        else { return .default }
+        return value
+    }
+    private static func readCommunity(_ d: UserDefaults) -> CommunityPreferences {
+        guard let data = d.data(forKey: Keys.community),
+              let value = try? JSONDecoder().decode(CommunityPreferences.self, from: data)
         else { return .default }
         return value
     }

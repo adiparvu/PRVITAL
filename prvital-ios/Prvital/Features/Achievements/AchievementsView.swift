@@ -64,6 +64,7 @@ struct AchievementsView: View {
         return ScrollView {
             VStack(spacing: 18) {
                 header(points: points, earnedTiers: earnedTiers, totalTiers: totalTiers)
+                communityCard(points: points, badges: earnedTiers)
                 challengesCard(challengeInputs)
                 LazyVGrid(columns: columns, spacing: 14) {
                     ForEach(standings) { standing in
@@ -117,6 +118,37 @@ struct AchievementsView: View {
                 }
             }
         }
+    }
+
+    /// The doorway to the community leaderboard, carrying the live score.
+    private func communityCard(points: Int, badges: Int) -> some View {
+        NavigationLink {
+            CommunityView(points: points, badges: badges)
+        } label: {
+            HStack(spacing: 14) {
+                Image(systemName: "trophy.fill")
+                    .font(.system(size: 20, weight: .semibold))
+                    .foregroundStyle(Color(hex: 0xD9A521))
+                    .frame(width: 40, height: 40)
+                    .background(Color(hex: 0xD9A521).opacity(0.16), in: .circle)
+                VStack(alignment: .leading, spacing: 2) {
+                    Text("Community")
+                        .font(.subheadline.weight(.semibold))
+                        .foregroundStyle(Theme.textPrimary)
+                    Text(env.preferences.community.enabled
+                         ? String(localized: "See where you rank — country, continent, global.")
+                         : String(localized: "Join the leaderboard and share your wins."))
+                        .font(.caption)
+                        .foregroundStyle(Theme.textSecondary)
+                }
+                Spacer()
+                Image(systemName: "chevron.right").font(.caption).foregroundStyle(Theme.textTertiary)
+            }
+            .frame(maxWidth: .infinity, alignment: .leading)
+            .glassCard(cornerRadius: 18, padding: 14)
+        }
+        .buttonStyle(.plain)
+        .accessibilityLabel("Community leaderboard")
     }
 
     private func header(points: Int, earnedTiers: Int, totalTiers: Int) -> some View {
