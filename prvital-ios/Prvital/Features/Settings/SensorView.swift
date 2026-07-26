@@ -36,6 +36,12 @@ struct SensorView: View {
                 }
                 .buttonStyle(.borderedProminent)
                 .tint(Theme.accent)
+
+                Text("Sessions can also start themselves: LibreLinkUp reports the worn sensor exactly, and after a sensor expires, the reading gap left by a replacement starts the next one.")
+                    .font(.footnote)
+                    .foregroundStyle(Theme.textTertiary)
+                    .frame(maxWidth: .infinity, alignment: .leading)
+                    .padding(.horizontal, 4)
             }
             .padding()
         }

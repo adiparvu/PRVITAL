@@ -20,7 +20,19 @@ final class HealthKitGlucoseSource: GlucoseSource {
     private let service: HealthKitService
     private(set) var connectionState: SourceConnectionState = .notConnected
 
-    init(service: HealthKitService) { self.service = service }
+    init(service: HealthKitService) {
+        self.service = service
+        // Restore across launches, like the credentialed sources do. iOS never
+        // reports READ authorization back, so the flag persisted on a completed
+        // connection flow is the truth; without it this source woke up
+        // .notConnected on every launch and "Apple Health kept disconnecting".
+        if !service.isAvailable {
+            connectionState = .unavailable
+        } else if (UserDefaults(suiteName: AppSchema.appGroupIdentifier) ?? .standard)
+            .bool(forKey: HealthKitService.connectedFlagKey) {
+            connectionState = .connected
+        }
+    }
 
     var isAvailable: Bool { service.isAvailable }
 

@@ -91,7 +91,16 @@ private struct LibreGraphResponse: Decodable {
         let connection: Connection?
         let graphData: [LibreGlucoseMeasurement]?
     }
-    struct Connection: Decodable { let glucoseMeasurement: LibreGlucoseMeasurement? }
+    struct Connection: Decodable {
+        let glucoseMeasurement: LibreGlucoseMeasurement?
+        /// The worn sensor, when the account shares it: serial + activation
+        /// epoch. This is what lets the session tracker start itself.
+        let sensor: Sensor?
+    }
+    struct Sensor: Decodable {
+        let sn: String?
+        let a: Double?
+    }
 }
 
 /// A `Sendable` HTTP client for the unofficial **LibreLinkUp** service (the
@@ -161,6 +170,14 @@ struct LibreLinkUpClient: Sendable {
         let request = try makeRequest("\(session.host)/llu/connections/\(patientID)/graph",
                                       method: "GET", session: session, body: nil)
         let response: LibreGraphResponse = try await send(request)
+
+        // LibreLinkUp is the one feed that names the worn sensor outright —
+        // hand its serial + activation to the auto session tracker.
+        if let sensor = response.data?.connection?.sensor,
+           let serial = sensor.sn, let activated = sensor.a, activated > 0 {
+            SensorAutoTracker.reportLibreSensor(
+                serial: serial, activatedAt: Date(timeIntervalSince1970: activated))
+        }
 
         var measurements = response.data?.graphData ?? []
         if let latest = response.data?.connection?.glucoseMeasurement {

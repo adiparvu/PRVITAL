@@ -81,9 +81,14 @@ final class AppEnvironment {
             prefs?.bolusParameters.durationHours ?? BolusParameters.default.durationHours
         }
         sync.onChange = { [weak self] in
+            guard let self else { return }
+            // A completed sync can carry the signals that start a sensor
+            // session on their own — LibreLinkUp's reported sensor, or the
+            // replacement-shaped reading gap after an expiry.
+            SensorAutoTracker.run(context: self.modelContainer.mainContext)
             publisher.refresh()
-            self?.rescheduleContextualReminders()
-            self?.dataVersion += 1
+            self.rescheduleContextualReminders()
+            self.dataVersion += 1
         }
         // A pass that found nothing new skips the whole pipeline above; only the
         // two genuinely time-driven behaviours still need a heartbeat — the

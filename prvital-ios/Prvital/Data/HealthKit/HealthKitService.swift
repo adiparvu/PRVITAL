@@ -88,9 +88,18 @@ final class HealthKitService: @unchecked Sendable {
          respiratoryType, oxygenType, systolicType, diastolicType, bodyMassType, sleepType]
     }
 
+    /// Persisted marker that the user completed the Health connection flow at
+    /// least once. iOS deliberately hides READ authorization from apps, so
+    /// this flag is the only way the Sources screen can remember "connected"
+    /// across launches — without it Apple Health showed as disconnected on
+    /// every new session (device bug report).
+    static let connectedFlagKey = "source.healthKit.connected"
+
     func requestAuthorization() async throws {
         guard isAvailable else { throw SourceError.unavailable }
         try await store.requestAuthorization(toShare: shareTypes, read: readTypes)
+        (UserDefaults(suiteName: AppSchema.appGroupIdentifier) ?? .standard)
+            .set(true, forKey: Self.connectedFlagKey)
     }
 
     var glucoseAuthorization: HKAuthorizationStatus {

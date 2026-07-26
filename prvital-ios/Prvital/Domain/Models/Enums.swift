@@ -21,8 +21,16 @@ enum RecordType: String, Codable, CaseIterable, Sendable {
 /// A continuous glucose sensor model, with its wear time and warm-up period.
 enum SensorKind: String, Codable, CaseIterable, Sendable, Identifiable {
     case dexcomG7 = "dexcom_g7"
+    case dexcomOnePlus = "dexcom_one_plus"
     case dexcomG6 = "dexcom_g6"
+    case dexcomOne = "dexcom_one"
+    case freeStyleLibre3Plus = "freestyle_libre_3_plus"
     case freeStyleLibre3 = "freestyle_libre_3"
+    case freeStyleLibre2Plus = "freestyle_libre_2_plus"
+    case freeStyleLibre2 = "freestyle_libre_2"
+    case medtronicGuardian4 = "medtronic_guardian_4"
+    case medtronicSimplera = "medtronic_simplera"
+    case eversense365 = "eversense_365"
     case other
 
     var id: String { rawValue }
@@ -30,18 +38,30 @@ enum SensorKind: String, Codable, CaseIterable, Sendable, Identifiable {
     var displayName: String {
         switch self {
         case .dexcomG7: return String(localized: "Dexcom G7")
+        case .dexcomOnePlus: return String(localized: "Dexcom ONE+")
         case .dexcomG6: return String(localized: "Dexcom G6")
+        case .dexcomOne: return String(localized: "Dexcom ONE")
+        case .freeStyleLibre3Plus: return String(localized: "FreeStyle Libre 3 Plus")
         case .freeStyleLibre3: return String(localized: "FreeStyle Libre 3")
+        case .freeStyleLibre2Plus: return String(localized: "FreeStyle Libre 2 Plus")
+        case .freeStyleLibre2: return String(localized: "FreeStyle Libre 2")
+        case .medtronicGuardian4: return String(localized: "Medtronic Guardian 4")
+        case .medtronicSimplera: return String(localized: "Medtronic Simplera")
+        case .eversense365: return String(localized: "Eversense 365")
         case .other: return String(localized: "Other sensor")
         }
     }
 
-    /// Total time the sensor is worn before it must be replaced.
+    /// Total time the sensor is worn before it must be replaced. G7 and ONE+
+    /// include Dexcom's 12-hour grace window on top of the 10-day wear.
     var lifetime: TimeInterval {
         switch self {
-        case .dexcomG7: return 10.5 * 86_400
-        case .dexcomG6: return 10 * 86_400
-        case .freeStyleLibre3: return 14 * 86_400
+        case .dexcomG7, .dexcomOnePlus: return 10.5 * 86_400
+        case .dexcomG6, .dexcomOne: return 10 * 86_400
+        case .freeStyleLibre3, .freeStyleLibre2: return 14 * 86_400
+        case .freeStyleLibre3Plus, .freeStyleLibre2Plus: return 15 * 86_400
+        case .medtronicGuardian4, .medtronicSimplera: return 7 * 86_400
+        case .eversense365: return 365 * 86_400
         case .other: return 10 * 86_400
         }
     }
@@ -49,10 +69,24 @@ enum SensorKind: String, Codable, CaseIterable, Sendable, Identifiable {
     /// Warm-up after insertion before readings appear.
     var warmup: TimeInterval {
         switch self {
-        case .dexcomG7: return 30 * 60
-        case .dexcomG6: return 2 * 3_600
-        case .freeStyleLibre3: return 60 * 60
+        case .dexcomG7, .dexcomOnePlus: return 30 * 60
+        case .dexcomG6, .dexcomOne: return 2 * 3_600
+        case .freeStyleLibre3, .freeStyleLibre3Plus,
+             .freeStyleLibre2, .freeStyleLibre2Plus: return 60 * 60
+        case .medtronicGuardian4, .medtronicSimplera: return 2 * 3_600
+        case .eversense365: return 24 * 3_600
         case .other: return 60 * 60
+        }
+    }
+
+    /// Whether this is a FreeStyle Libre model — the family LibreLinkUp's
+    /// auto-detected sessions belong to.
+    var isLibre: Bool {
+        switch self {
+        case .freeStyleLibre2, .freeStyleLibre2Plus, .freeStyleLibre3, .freeStyleLibre3Plus:
+            return true
+        default:
+            return false
         }
     }
 }

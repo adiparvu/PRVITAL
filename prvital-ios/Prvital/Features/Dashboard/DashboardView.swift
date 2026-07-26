@@ -70,7 +70,6 @@ struct DashboardView: View {
     @State private var showPlainSummary = false
     @State private var showWeeklyDigest = false
     @State private var showExport = false
-    /// The quick-action row's active entry sheet (glucose / carbs / insulin / …).
     @State private var syncFailure: String?
     @State private var trendRange: DashboardTrendRange = .threeHours
     @State private var showCustomRange = false
