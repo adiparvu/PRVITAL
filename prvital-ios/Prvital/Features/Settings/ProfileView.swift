@@ -18,6 +18,7 @@ struct ProfileView: View {
     @State private var heightText = ""
     @State private var showGoalsEditor = false
     @State private var photoItem: PhotosPickerItem?
+    @State private var showPhotoPicker = false
     @State private var showRingPicker = false
 
     private var years: [Int] {
@@ -33,13 +34,14 @@ struct ProfileView: View {
     var body: some View {
         Form {
             Section {
-                ProfileHeaderCard(profile: profile, photoItem: $photoItem)
+                ProfileHeaderCard(profile: profile, photoItem: $photoItem,
+                                  showPhotoPicker: $showPhotoPicker,
+                                  showRingPicker: $showRingPicker)
                     .listRowInsets(EdgeInsets())
                     .listRowBackground(Color.clear)
             }
 
             nameSection
-            avatarSection
             aboutYouSection
             diabetesSection
             therapySection
@@ -60,6 +62,8 @@ struct ProfileView: View {
             AvatarRingPickerSheet(selectedHex: $profile.avatarColorHex)
                 .presentationDetents([.medium])
         }
+        .photosPicker(isPresented: $showPhotoPicker, selection: $photoItem,
+                      matching: .images, photoLibrary: .shared())
         .onChange(of: photoItem) { _, newItem in
             guard let newItem else { return }
             Task {
@@ -98,65 +102,6 @@ struct ProfileView: View {
                 .foregroundStyle(Theme.textTertiary)
         }
         .glassListRow()
-    }
-
-    // MARK: - Avatar
-
-    /// Photo picker + ring colour. Tapping the big avatar in the header also
-    /// opens the photo picker; this section makes the same actions explicit and
-    /// adds "remove photo" and the ring-colour sheet.
-    private var avatarSection: some View {
-        Section {
-            PhotosPicker(selection: $photoItem, matching: .images, photoLibrary: .shared()) {
-                Label {
-                    Text(profile.avatarImageData == nil ? "Add a photo" : "Change photo")
-                        .foregroundStyle(Theme.textPrimary)
-                } icon: {
-                    Image(systemName: "camera.fill").foregroundStyle(Theme.accent)
-                }
-            }
-
-            if profile.avatarImageData != nil {
-                Button(role: .destructive) {
-                    Haptics.play(.light)
-                    profile.avatarImageData = nil
-                    photoItem = nil
-                } label: {
-                    Label("Remove photo", systemImage: "trash")
-                }
-            }
-
-            Button {
-                Haptics.play(.selection)
-                showRingPicker = true
-            } label: {
-                HStack {
-                    Label {
-                        Text("Ring colour").foregroundStyle(Theme.textPrimary)
-                    } icon: {
-                        Image(systemName: "circle.circle.fill").foregroundStyle(ringColor)
-                    }
-                    Spacer()
-                    Circle().fill(ringColor).frame(width: 22, height: 22)
-                        .overlay(Circle().strokeBorder(Theme.hairline, lineWidth: 1))
-                    Image(systemName: "chevron.right")
-                        .font(.caption.weight(.bold))
-                        .foregroundStyle(Theme.textTertiary)
-                }
-            }
-        } header: {
-            Text("Avatar")
-        } footer: {
-            Text("Add a photo, or keep your initials on a colour. The ring colour frames your avatar and tints your initials.")
-                .font(.footnote)
-                .foregroundStyle(Theme.textTertiary)
-        }
-        .glassListRow()
-    }
-
-    /// The chosen ring/initials colour, falling back to the app accent.
-    private var ringColor: Color {
-        profile.avatarColorValue.map { Color(hex: $0) } ?? Theme.accent
     }
 
     // MARK: - About you
@@ -435,6 +380,8 @@ struct ProfileView: View {
 private struct ProfileHeaderCard: View {
     @Bindable var profile: UserProfile
     @Binding var photoItem: PhotosPickerItem?
+    @Binding var showPhotoPicker: Bool
+    @Binding var showRingPicker: Bool
 
     private var ring: Color {
         profile.avatarColorValue.map { Color(hex: $0) } ?? Theme.accent
@@ -442,7 +389,33 @@ private struct ProfileHeaderCard: View {
 
     var body: some View {
         HStack(spacing: 16) {
-            PhotosPicker(selection: $photoItem, matching: .images, photoLibrary: .shared()) {
+            // Every avatar action lives on the avatar itself (the separate
+            // "Avatar" form section is gone — device feedback): tap for a menu
+            // with change photo, remove photo and the ring colour.
+            Menu {
+                Button {
+                    Haptics.play(.selection)
+                    showPhotoPicker = true
+                } label: {
+                    Label(profile.avatarImageData == nil ? "Add a photo" : "Change photo",
+                          systemImage: "camera.fill")
+                }
+                if profile.avatarImageData != nil {
+                    Button(role: .destructive) {
+                        Haptics.play(.light)
+                        profile.avatarImageData = nil
+                        photoItem = nil
+                    } label: {
+                        Label("Remove photo", systemImage: "trash")
+                    }
+                }
+                Button {
+                    Haptics.play(.selection)
+                    showRingPicker = true
+                } label: {
+                    Label("Ring colour", systemImage: "circle.circle.fill")
+                }
+            } label: {
                 ZStack(alignment: .bottomTrailing) {
                     AvatarView(
                         imageData: profile.avatarImageData,
@@ -461,7 +434,7 @@ private struct ProfileHeaderCard: View {
                 }
             }
             .buttonStyle(.plain)
-            .accessibilityLabel("Change profile photo")
+            .accessibilityLabel("Avatar")
 
             VStack(alignment: .leading, spacing: 4) {
                 Text(profile.displayName.isEmpty ? "Add your name" : profile.displayName)
