@@ -8,7 +8,7 @@ struct InsulinEntrySheet: View {
 
     var existing: InsulinDose?
 
-    @State private var units: Double = 4
+    @State private var units: Double = 0
     @State private var timestamp = Date()
     @State private var type: InsulinType = .rapidActing
     @State private var name = ""
@@ -29,25 +29,23 @@ struct InsulinEntrySheet: View {
                     }
                 }
                 Section {
-                    HStack {
-                        Text("\(units.formatted()) U")
+                    // Just the box — you type the dose (device feedback: no
+                    // stepper, no preset chips here).
+                    HStack(alignment: .firstTextBaseline, spacing: 4) {
+                        TextField("0", value: $units, format: .number)
                             .font(.system(size: 30, weight: .bold, design: .rounded))
                             .foregroundStyle(Theme.accent)
-                            .contentTransition(.numericText())
-                            .animation(.snappy, value: units)
+                            .keyboardType(.decimalPad)
+                            .fixedSize()
+                            .accessibilityLabel("Insulin units")
+                        Text("U")
+                            .font(.system(size: 30, weight: .bold, design: .rounded))
+                            .foregroundStyle(Theme.accent)
                         Spacer()
-                        Stepper("", value: $units, in: 0...100, step: 0.5).labelsHidden()
                     }
-                    ScrollView(.horizontal, showsIndicators: false) {
-                        HStack(spacing: 8) {
-                            ForEach(env.preferences.insulinPresets, id: \.self) { preset in
-                                QuickChip(label: String(localized: "+\(preset.formatted()) U")) {
-                                    units += preset; Haptics.play(.selection)
-                                }
-                            }
-                        }
+                    .onChange(of: units) { _, value in
+                        if value < 0 { units = 0 } else if value > 100 { units = 100 }
                     }
-                    .listRowInsets(EdgeInsets(top: 6, leading: 12, bottom: 6, trailing: 12))
                 }
                 Section {
                     Picker("Type", selection: $type) {
@@ -79,11 +77,43 @@ struct InsulinEntrySheet: View {
                 ToolbarItem(placement: .confirmationAction) { Button("Save", action: save).disabled(units <= 0) }
             }
             .onAppear(perform: load)
+            // Keep the name in step with the chosen type, but never overwrite
+            // something the user typed themselves: swap only while the field is
+            // empty or still holding one of the profile's two presets.
+            .onChange(of: type) { _, _ in
+                let profile = env.profile.current()
+                let presets = [profile.bolusInsulinName, profile.basalInsulinName]
+                    .compactMap { $0 }.filter { !$0.isEmpty }
+                if name.isEmpty || presets.contains(name) {
+                    name = presetName ?? ""
+                }
+            }
+        }
+    }
+
+    /// The insulin this person already told the app they use (Profile →
+    /// My therapy), matched to the selected type — so logging a dose starts
+    /// with the right name filled in instead of an empty optional field.
+    private var presetName: String? {
+        let profile = env.profile.current()
+        switch type {
+        case .rapidActing:
+            return profile.bolusInsulinName
+        case .longActing, .intermediate:
+            return profile.basalInsulinName
+        case .premixed:
+            return nil
         }
     }
 
     private func load() {
-        guard let existing else { return }
+        guard let existing else {
+            // A fresh dose starts with the profile's preset for the type.
+            if name.isEmpty, let preset = presetName, !preset.isEmpty {
+                name = preset
+            }
+            return
+        }
         units = existing.units
         timestamp = existing.timestamp
         type = existing.insulinType

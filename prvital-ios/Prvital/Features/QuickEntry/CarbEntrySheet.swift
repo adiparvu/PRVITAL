@@ -61,9 +61,9 @@ struct CarbEntrySheet: View {
                     }
                 }
                 Section {
+                    // Just the box — you type the amount (device feedback: no
+                    // stepper, no preset chips here).
                     HStack(alignment: .firstTextBaseline, spacing: 4) {
-                        // Type the amount directly (numeric keyboard); the stepper and
-                        // the preset chips still drive the same value.
                         TextField("0", value: $grams, format: .number)
                             .font(.system(size: 30, weight: .bold, design: .rounded))
                             .foregroundStyle(Theme.zoneHigh)
@@ -74,22 +74,10 @@ struct CarbEntrySheet: View {
                             .font(.system(size: 30, weight: .bold, design: .rounded))
                             .foregroundStyle(Theme.zoneHigh)
                         Spacer()
-                        Stepper("", value: $grams, in: 0...300, step: 5).labelsHidden()
                     }
                     .onChange(of: grams) { _, value in
-                        // Keep a typed value in the same 0...300 range the stepper uses.
                         if value < 0 { grams = 0 } else if value > 300 { grams = 300 }
                     }
-                    ScrollView(.horizontal, showsIndicators: false) {
-                        HStack(spacing: 8) {
-                            ForEach(env.preferences.carbPresets, id: \.self) { preset in
-                                QuickChip(label: String(localized: "\(preset.formatted()) g"), tint: Theme.zoneHigh) {
-                                    grams = preset; Haptics.play(.selection)
-                                }
-                            }
-                        }
-                    }
-                    .listRowInsets(EdgeInsets(top: 6, leading: 12, bottom: 6, trailing: 12))
                 }
                 if existing == nil {
                     Section {
