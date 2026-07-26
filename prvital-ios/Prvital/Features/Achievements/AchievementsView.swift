@@ -24,7 +24,9 @@ struct AchievementsView: View {
                           sort: \.startTimestamp, order: .reverse)
     }
 
+    @Environment(\.modelContext) private var context
     @State private var store = AchievementStore()
+    @State private var showBadgeInfo = false
     // This week's Apple Health exercise minutes by day, so the "Get moving"
     // challenge counts Apple Watch activity, not only logged sessions.
     @State private var healthExercise: [DailyMetric] = []
@@ -38,32 +40,34 @@ struct AchievementsView: View {
     }
 
     private var inputs: AchievementInputs {
-        AchievementInputsBuilder.make(
+        var inputs = AchievementInputsBuilder.make(
             readings: readings, meals: meals,
             thresholds: env.preferences.thresholds,
             goalFraction: env.preferences.glucoseGoals.targetTIRFraction)
+        // Lifetime counts for the evolving badges — cheap fetchCounts, no rows.
+        inputs.loggedActivities = (try? context.fetchCount(FetchDescriptor<ActivityEntry>())) ?? 0
+        inputs.loggedNotes = (try? context.fetchCount(FetchDescriptor<ObservationEntry>())) ?? 0
+        inputs.loggedKetones = (try? context.fetchCount(FetchDescriptor<KetoneReading>())) ?? 0
+        inputs.sensorSessions = (try? context.fetchCount(FetchDescriptor<SensorSession>())) ?? 0
+        return inputs
     }
 
     private let columns = [GridItem(.adaptive(minimum: 150), spacing: 14)]
 
     var body: some View {
         let inputs = self.inputs
-        // Union live unlocks with what's already been earned, so a badge won by a
-        // stretch that later dipped still shows as earned.
-        let earned = store.earned.union(AchievementEvaluator.unlocked(inputs))
-        let earnedCount = AchievementID.allCases.filter { earned.contains($0) }.count
+        let standings = BadgeEvaluator.standings(inputs)
+        let points = standings.reduce(0) { $0 + $1.points }
+        let earnedTiers = standings.reduce(0) { $0 + (($1.earnedIndex.map { $0 + 1 }) ?? 0) }
+        let totalTiers = BadgeCatalog.families.reduce(0) { $0 + $1.thresholds.count }
 
         return ScrollView {
             VStack(spacing: 18) {
-                header(earned: earnedCount, total: AchievementID.allCases.count)
+                header(points: points, earnedTiers: earnedTiers, totalTiers: totalTiers)
                 challengesCard(challengeInputs)
                 LazyVGrid(columns: columns, spacing: 14) {
-                    ForEach(AchievementCatalog.all) { achievement in
-                        AchievementCard(
-                            achievement: achievement,
-                            isEarned: earned.contains(achievement.id),
-                            progress: AchievementEvaluator.progress(achievement.id, inputs)
-                        )
+                    ForEach(standings) { standing in
+                        BadgeFamilyCard(standing: standing)
                     }
                 }
             }
@@ -72,6 +76,18 @@ struct AchievementsView: View {
         .prvitalTabBackground()
         .navigationTitle("Achievements")
         .navigationBarTitleDisplayMode(.inline)
+        .toolbar {
+            ToolbarItem(placement: .topBarTrailing) {
+                Button {
+                    Haptics.play(.light)
+                    showBadgeInfo = true
+                } label: {
+                    Image(systemName: "info.circle")
+                }
+                .accessibilityLabel("How badges work")
+            }
+        }
+        .sheet(isPresented: $showBadgeInfo) { BadgeInfoView() }
         .task {
             // A week fits in ~8 daily buckets (today + up to 7 prior days).
             healthExercise = await env.healthKit.dailyMetric(.exercise, days: 8)
@@ -103,63 +119,56 @@ struct AchievementsView: View {
         }
     }
 
-    private func header(earned: Int, total: Int) -> some View {
-        let fraction = total > 0 ? Double(earned) / Double(total) : 0
+    private func header(points: Int, earnedTiers: Int, totalTiers: Int) -> some View {
+        let fraction = totalTiers > 0 ? Double(earnedTiers) / Double(totalTiers) : 0
         return VStack(spacing: 10) {
-            Text("\(earned) of \(total) earned")
-                .font(.title3.weight(.bold))
-                .foregroundStyle(Theme.textPrimary)
-                .contentTransition(.numericText())
+            HStack(alignment: .firstTextBaseline, spacing: 6) {
+                Text("\(points)")
+                    .font(.system(size: 34, weight: .bold, design: .rounded))
+                    .foregroundStyle(Theme.textPrimary)
+                    .contentTransition(.numericText())
+                Text("points")
+                    .font(.headline)
+                    .foregroundStyle(Theme.textSecondary)
+            }
             ProgressView(value: fraction)
                 .tint(Theme.accent)
-            Text("Small, steady wins add up. Keep going.")
+            Text("\(earnedTiers) of \(totalTiers) badge levels earned")
                 .font(.caption)
                 .foregroundStyle(Theme.textSecondary)
+                .contentTransition(.numericText())
+            Text("Small, steady wins add up. Keep going.")
+                .font(.caption)
+                .foregroundStyle(Theme.textTertiary)
         }
         .frame(maxWidth: .infinity)
         .glassCard()
         .accessibilityElement(children: .combine)
-        .accessibilityLabel("\(earned) of \(total) achievements earned")
+        .accessibilityLabel("\(points) points. \(earnedTiers) of \(totalTiers) badge levels earned")
     }
 }
 
-// MARK: - Badge card
+// MARK: - Evolving badge card
 
-/// Tier accent colours — warm metallics that read the same in light and dark.
-private extension AchievementTier {
-    var color: Color {
-        switch self {
-        case .bronze: return Color(hex: 0xC17B48)
-        case .silver: return Color(hex: 0x9AA3AD)
-        case .gold: return Color(hex: 0xE0A100)
-        }
+/// One family's card: the seal in the current tier's colour, the tier chip and
+/// the live progress toward the next level.
+private struct BadgeFamilyCard: View {
+    let standing: BadgeStanding
+
+    private var tint: Color {
+        standing.earnedTier.map { Color(hex: $0.colorHex) } ?? Theme.textTertiary
     }
-    var label: LocalizedStringKey {
-        switch self {
-        case .bronze: return "Bronze"
-        case .silver: return "Silver"
-        case .gold: return "Gold"
-        }
-    }
-}
-
-private struct AchievementCard: View {
-    let achievement: Achievement
-    let isEarned: Bool
-    let progress: (current: Int, target: Int)
-
-    private var tint: Color { achievement.tier.color }
 
     var body: some View {
         VStack(alignment: .leading, spacing: 10) {
             ZStack {
                 Circle()
-                    .fill(isEarned ? tint.opacity(0.18) : Theme.hairline.opacity(0.6))
+                    .fill(standing.earnedTier != nil ? tint.opacity(0.2) : Theme.hairline.opacity(0.6))
                     .frame(width: 52, height: 52)
-                Image(systemName: achievement.symbol)
+                Image(systemName: standing.family.symbol)
                     .font(.system(size: 22, weight: .semibold))
-                    .foregroundStyle(isEarned ? tint : Theme.textTertiary)
-                if isEarned {
+                    .foregroundStyle(standing.earnedTier != nil ? tint : Theme.textTertiary)
+                if standing.earnedTier != nil {
                     Image(systemName: "checkmark.seal.fill")
                         .font(.system(size: 16))
                         .foregroundStyle(tint)
@@ -169,54 +178,56 @@ private struct AchievementCard: View {
             }
             .accessibilityHidden(true)
 
-            Text(achievement.title)
+            Text(standing.family.title)
                 .font(.subheadline.weight(.semibold))
                 .foregroundStyle(Theme.textPrimary)
                 .fixedSize(horizontal: false, vertical: true)
 
-            Text(achievement.detail)
-                .font(.caption2)
-                .foregroundStyle(Theme.textSecondary)
-                .fixedSize(horizontal: false, vertical: true)
-
-            Spacer(minLength: 0)
-
-            if isEarned {
-                Text(achievement.tier.label)
+            if let tier = standing.earnedTier {
+                Text(tier.displayName)
                     .font(.system(size: 10, weight: .bold))
                     .padding(.horizontal, 8).padding(.vertical, 3)
                     .background(tint.opacity(0.16), in: .capsule)
                     .foregroundStyle(tint)
-            } else if progress.target > 1 {
-                VStack(alignment: .leading, spacing: 3) {
-                    ProgressView(value: Double(progress.current), total: Double(progress.target))
-                        .tint(Theme.accent)
-                    Text("\(progress.current) / \(progress.target)")
-                        .font(.system(size: 10, weight: .semibold))
-                        .foregroundStyle(Theme.textTertiary)
-                        .monospacedDigit()
-                }
             } else {
                 Text("Locked")
                     .font(.system(size: 10, weight: .semibold))
                     .foregroundStyle(Theme.textTertiary)
             }
+
+            Spacer(minLength: 0)
+
+            if let next = standing.nextThreshold {
+                VStack(alignment: .leading, spacing: 3) {
+                    ProgressView(value: standing.progressToNext)
+                        .tint(Theme.accent)
+                    Text("\(standing.count) / \(next)")
+                        .font(.system(size: 10, weight: .semibold))
+                        .foregroundStyle(Theme.textTertiary)
+                        .monospacedDigit()
+                }
+            } else {
+                Text("Max level")
+                    .font(.system(size: 10, weight: .bold))
+                    .foregroundStyle(tint)
+            }
         }
         .frame(maxWidth: .infinity, minHeight: 168, alignment: .leading)
         .glassCard(cornerRadius: 18, padding: 14)
-        .opacity(isEarned ? 1 : 0.9)
         .accessibilityElement(children: .combine)
         .accessibilityLabel(accessibilityText)
     }
 
     private var accessibilityText: String {
-        if isEarned {
-            return String(localized: "\(achievement.title), earned. \(achievement.detail)")
+        let title = standing.family.title
+        if let tier = standing.earnedTier, let next = standing.nextThreshold {
+            return String(localized: "\(title), \(tier.displayName). \(standing.count) of \(next) toward the next level.")
         }
-        if progress.target > 1 {
-            return String(localized: "\(achievement.title), \(progress.current) of \(progress.target). \(achievement.detail)")
+        if let tier = standing.earnedTier {
+            return String(localized: "\(title), \(tier.displayName). Max level.")
         }
-        return String(localized: "\(achievement.title), locked. \(achievement.detail)")
+        let next = standing.nextThreshold ?? 0
+        return String(localized: "\(title), locked. \(standing.count) of \(next).")
     }
 }
 

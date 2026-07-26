@@ -101,6 +101,14 @@ struct AchievementInputs: Equatable, Sendable {
     var tightDays = 0
     /// Best (lowest) estimated A1c reached; nil when there isn't enough data.
     var bestGmi: Double?
+
+    // Simple lifetime counts for the evolving badges (`BadgeEvaluator`).
+    // Assigned by the caller from cheap `fetchCount` queries; the builder's
+    // signature stays untouched.
+    var loggedActivities = 0
+    var loggedNotes = 0
+    var loggedKetones = 0
+    var sensorSessions = 0
 }
 
 /// Pure rules that turn `AchievementInputs` into progress and unlock state.
