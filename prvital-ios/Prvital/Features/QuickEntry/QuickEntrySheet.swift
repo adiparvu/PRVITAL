@@ -18,16 +18,6 @@ enum EntryEditorKind: String, Identifiable {
         case .observation: return "Observation"
         }
     }
-    /// One-line description under the tile title.
-    var subtitleKey: LocalizedStringKey {
-        switch self {
-        case .glucose: return "Log a reading"
-        case .insulin: return "Dose & type"
-        case .carbs: return "Meal & food"
-        case .activity: return "Movement & sport"
-        case .observation: return "Notes & symptoms"
-        }
-    }
     var symbol: String {
         switch self {
         case .glucose: return "drop.fill"
@@ -63,17 +53,37 @@ struct EntryEditor: View {
     }
 }
 
-/// The quick-entry hub, built to be *contextual*: it opens with the current
-/// glucose so the user logs with the number in front of them, surfaces a
-/// treat-low shortcut when it matters, offers their favorite meals as true
-/// one-tap logs, keeps the fast insulin/carb chips, and launches the full
-/// editors from rich, localized tiles.
+/// The quick-entry *composer*, rebuilt from scratch: instead of chips that save
+/// and dismiss instantly one at a time, taps accumulate into a visible basket —
+/// a meal and its bolus built together, checked together, saved together as one
+/// moment. Opens at half height with everything within thumb reach.
+///
+///  - tap a chip / favorite → it enters the basket (tap again to remove);
+///  - hold a chip → instant save, the old one-tap fast path;
+///  - ± fine-tuning appears for whatever is in the basket;
+///  - with the bolus calculator configured, a "Suggested: X U" chip derives the
+///    dose from the basket's carbs, the live glucose and IOB — one tap adopts it;
+///  - one Save button writes everything, linked as a single moment.
 struct QuickEntrySheet: View {
     @Environment(AppEnvironment.self) private var env
     @Environment(\.dismiss) private var dismiss
     @Environment(\.modelContext) private var modelContext
 
     @Query(sort: \FavoriteMeal.lastUsedAt, order: .reverse) private var favorites: [FavoriteMeal]
+    @Query private var recentInsulin: [InsulinDose]
+
+    /// Everything staged for the single Save.
+    private struct Basket: Equatable {
+        var carbsGrams: Double?
+        var carbsDescription: String?
+        var carbsMealType: MealType?
+        var insulinUnits: Double?
+        var isEmpty: Bool { carbsGrams == nil && insulinUnits == nil }
+    }
+
+    @State private var basket = Basket()
+    /// The favorite currently in the basket, so saving can teach its stats.
+    @State private var selectedFavoriteID: UUID?
 
     @State private var editor: EntryEditorKind?
     @State private var showBolusCalculator = false
@@ -81,7 +91,13 @@ struct QuickEntrySheet: View {
     @State private var showKetones = false
     @State private var showVoiceLog = false
 
-    private let columns = [GridItem(.flexible(), spacing: 12), GridItem(.flexible(), spacing: 12)]
+    init() {
+        // Only the doses that can still carry insulin-on-board — bounded.
+        let cutoff = Date().addingTimeInterval(-8 * 3600)
+        _recentInsulin = Query(filter: #Predicate<InsulinDose> { $0.timestamp >= cutoff })
+    }
+
+    // MARK: Context
 
     /// The display-ready snapshot the widgets use — self-contained and cheap.
     private var snapshot: GlucoseSnapshot { SharedStore.load() }
@@ -93,10 +109,40 @@ struct QuickEntrySheet: View {
         hasLiveReading && !snapshot.isStale && currentZone.isHypo
     }
 
+    private var bolusParameters: BolusParameters { env.preferences.bolusParameters }
+
+    /// Live insulin-on-board — the number to glance at before doubling a dose.
+    private var insulinOnBoard: Double {
+        guard bolusParameters.isValid else { return 0 }
+        return InsulinMath.activeInsulin(doses: recentInsulin, at: Date(), parameters: bolusParameters)
+    }
+
+    /// The calculator's dose for the basket's carbs at the live glucose, IOB
+    /// deducted — offered as a chip only when it is safe to derive one: the
+    /// calculator is configured, carbs are staged, and there are no warnings
+    /// (a low, a stale reading or a clamped dose must send the user to the
+    /// full calculator, not to a one-tap number).
+    private var suggestedUnits: Double? {
+        guard bolusParameters.isEnabled, bolusParameters.isValid,
+              let grams = basket.carbsGrams else { return nil }
+        let estimate = InsulinMath.suggestBolus(
+            carbs: grams,
+            currentMgdL: (hasLiveReading && !snapshot.isStale) ? snapshot.mgdL : nil,
+            activeInsulin: insulinOnBoard,
+            parameters: bolusParameters,
+            thresholds: env.preferences.thresholds
+        )
+        guard estimate.warnings.isEmpty else { return nil }
+        let rounded = (estimate.suggested * 2).rounded() / 2   // pen resolution
+        return rounded >= 0.5 ? rounded : nil
+    }
+
+    // MARK: Body
+
     var body: some View {
         NavigationStack {
             ScrollView {
-                VStack(spacing: 20) {
+                VStack(spacing: 16) {
                     if hasLiveReading {
                         contextBanner.appearTransition(delay: 0)
                     }
@@ -106,51 +152,47 @@ struct QuickEntrySheet: View {
                     if !rankedFavorites.isEmpty {
                         favoritesCard.appearTransition(delay: 0.06)
                     }
-                    SectionCard("Quick insulin", systemImage: "syringe.fill") {
-                        chipRow(env.preferences.insulinPresets.map { ("+\($0.formatted()) U", $0) }, tint: Theme.accent) { units in
-                            env.entryStore.addInsulin(units: units)
-                            Haptics.play(.success); dismiss()
-                        }
+                    insulinCard.appearTransition(delay: 0.10)
+                    carbsCard.appearTransition(delay: 0.14)
+                    if basket.isEmpty {
+                        Text("Tap the chips to combine a meal and its bolus, then save them together.")
+                            .font(.caption)
+                            .foregroundStyle(Theme.textTertiary)
+                            .multilineTextAlignment(.center)
+                            .padding(.horizontal)
+                            .appearTransition(delay: 0.18)
                     }
-                    .appearTransition(delay: 0.10)
-                    SectionCard("Quick carbs", systemImage: "fork.knife") {
-                        chipRow(env.preferences.carbPresets.map { ("\($0.formatted()) g", $0) }, tint: Theme.zoneHigh) { grams in
-                            env.entryStore.addCarbs(grams: grams)
-                            Haptics.play(.success); dismiss()
-                        }
-                    }
-                    .appearTransition(delay: 0.14)
-
-                    Button { Haptics.play(.selection); showVoiceLog = true } label: {
-                        voiceLauncherRow
-                    }
-                    .buttonStyle(PressableCardStyle())
-                    .appearTransition(delay: 0.16)
-
-                    launcherGrid
-
-                    if env.preferences.bolusParameters.isEnabled, env.preferences.bolusParameters.isValid {
-                        bolusShortcut.appearTransition(delay: 0.42)
-                    }
+                    iconRow.appearTransition(delay: 0.20)
                 }
                 .padding()
+                .padding(.bottom, 8)
             }
             .background(Theme.background)
             .navigationTitle("Add entry")
             .navigationBarTitleDisplayMode(.inline)
             .toolbar { ToolbarItem(placement: .cancellationAction) { Button("Done") { dismiss() } } }
+            .safeAreaInset(edge: .bottom) {
+                if !basket.isEmpty {
+                    basketBar
+                        .transition(.move(edge: .bottom).combined(with: .opacity))
+                }
+            }
+            .animation(.smooth(duration: 0.3), value: basket)
             .sheet(item: $editor) { EntryEditor(kind: $0) }
             .sheet(isPresented: $showBolusCalculator) { BolusCalculatorView() }
             .sheet(isPresented: $showRuleOf15) { RuleOf15Sheet() }
             .sheet(isPresented: $showKetones) { LogKetoneSheet() }
             .sheet(isPresented: $showVoiceLog) { VoiceLogSheet() }
         }
+        // Half height first: everything essential in thumb reach; pull up for
+        // the icon row and longer favorite lists.
+        .presentationDetents([.medium, .large])
     }
 
-    // MARK: Context
+    // MARK: Context banner
 
-    /// The current reading, so every log happens with the number in view.
-    /// Grey + clock when the value is stale, zone-tinted when live.
+    /// The current reading — every log happens with the number in view — plus
+    /// live IOB, so a second bolus is never a surprise.
     private var contextBanner: some View {
         let tint = snapshot.isStale ? Color.gray : Color(hex: snapshot.zoneColorHex)
         return HStack(spacing: 12) {
@@ -177,6 +219,20 @@ struct QuickEntrySheet: View {
                 .foregroundStyle(Theme.textSecondary)
             }
             Spacer()
+            if insulinOnBoard >= 0.05 {
+                HStack(spacing: 4) {
+                    Text("IOB")
+                        .font(.caption2.weight(.semibold))
+                    Text("\(insulinOnBoard.formatted(.number.precision(.fractionLength(1)))) U")
+                        .font(.caption.weight(.bold))
+                        .monospacedDigit()
+                }
+                .foregroundStyle(Theme.accent)
+                .padding(.horizontal, 10)
+                .padding(.vertical, 6)
+                .background(Theme.accentSoft, in: .capsule)
+                .accessibilityLabel("Insulin on board \(insulinOnBoard.formatted(.number.precision(.fractionLength(1)))) units")
+            }
         }
         .glassCard(cornerRadius: 18, padding: 14)
         .accessibilityElement(children: .combine)
@@ -200,8 +256,8 @@ struct QuickEntrySheet: View {
     // MARK: Favorites
 
     /// Favorites ordered "you'd want this now" first (usual-time match, then
-    /// most used). Unlike the carb editor, tapping here logs the meal directly —
-    /// that's the one-tap promise of a favorite.
+    /// most used). A tap stages the meal in the basket — editable, visible,
+    /// confirmed with Save — instead of logging blind.
     private var rankedFavorites: [FavoriteMeal] {
         let ranked = FavoriteMealSuggester.ranked(
             favorites.map {
@@ -222,30 +278,7 @@ struct QuickEntrySheet: View {
             ScrollView(.horizontal, showsIndicators: false) {
                 HStack(spacing: 10) {
                     ForEach(rankedFavorites) { favorite in
-                        Button {
-                            logFavorite(favorite)
-                        } label: {
-                            HStack(spacing: 8) {
-                                Image(systemName: favorite.mealType.symbol)
-                                    .font(.subheadline)
-                                    .foregroundStyle(Theme.zoneHigh)
-                                VStack(alignment: .leading, spacing: 0) {
-                                    Text(favorite.name)
-                                        .font(.subheadline.weight(.semibold))
-                                        .foregroundStyle(Theme.textPrimary)
-                                        .lineLimit(1)
-                                    Text("\(favorite.grams.formatted()) g")
-                                        .font(.caption2)
-                                        .foregroundStyle(Theme.textSecondary)
-                                }
-                            }
-                            .padding(.horizontal, 12)
-                            .padding(.vertical, 8)
-                            .background(Theme.zoneHigh.opacity(0.10), in: Capsule())
-                            .overlay(Capsule().strokeBorder(Theme.zoneHigh.opacity(0.25), lineWidth: 1))
-                        }
-                        .buttonStyle(PressableChipStyle())
-                        .accessibilityLabel("Log \(favorite.name), \(favorite.grams.formatted()) grams")
+                        favoriteChip(favorite)
                     }
                 }
                 .padding(.vertical, 2)
@@ -253,191 +286,356 @@ struct QuickEntrySheet: View {
         }
     }
 
-    /// Logs the favorite as a real carb entry and teaches it this use, exactly
-    /// like the carb editor's fill-from-favorite path.
-    private func logFavorite(_ favorite: FavoriteMeal) {
+    private func favoriteChip(_ favorite: FavoriteMeal) -> some View {
+        let isSelected = selectedFavoriteID == favorite.id
+        return HStack(spacing: 8) {
+            Image(systemName: favorite.mealType.symbol)
+                .font(.subheadline)
+                .foregroundStyle(isSelected ? Color.white : Theme.zoneHigh)
+            VStack(alignment: .leading, spacing: 0) {
+                Text(favorite.name)
+                    .font(.subheadline.weight(.semibold))
+                    .foregroundStyle(isSelected ? Color.white : Theme.textPrimary)
+                    .lineLimit(1)
+                Text("\(favorite.grams.formatted()) g")
+                    .font(.caption2)
+                    .foregroundStyle(isSelected ? Color.white.opacity(0.8) : Theme.textSecondary)
+            }
+        }
+        .padding(.horizontal, 12)
+        .padding(.vertical, 8)
+        .background(isSelected ? Theme.zoneHigh : Theme.zoneHigh.opacity(0.10), in: Capsule())
+        .overlay(Capsule().strokeBorder(Theme.zoneHigh.opacity(isSelected ? 0 : 0.25), lineWidth: 1))
+        .contentShape(.capsule)
+        .animation(.snappy, value: isSelected)
+        .onTapGesture {
+            Haptics.play(.selection)
+            if isSelected {
+                clearCarbs()
+            } else {
+                basket.carbsGrams = favorite.grams
+                basket.carbsDescription = favorite.foodDescription ?? favorite.name
+                basket.carbsMealType = favorite.mealType
+                selectedFavoriteID = favorite.id
+            }
+        }
+        .accessibilityLabel("\(favorite.name), \(favorite.grams.formatted()) grams")
+        .accessibilityAddTraits(isSelected ? [.isButton, .isSelected] : .isButton)
+    }
+
+    // MARK: Insulin & carbs
+
+    private var insulinCard: some View {
+        SectionCard("Quick insulin", systemImage: "syringe.fill") {
+            VStack(alignment: .leading, spacing: 10) {
+                ScrollView(.horizontal, showsIndicators: false) {
+                    HStack(spacing: 8) {
+                        if let suggested = suggestedUnits, basket.insulinUnits != suggested {
+                            suggestionChip(suggested)
+                        }
+                        ForEach(env.preferences.insulinPresets, id: \.self) { units in
+                            ComposerChip(
+                                label: "+\(units.formatted()) U",
+                                isSelected: basket.insulinUnits == units,
+                                tint: Theme.accent
+                            ) {
+                                Haptics.play(.selection)
+                                basket.insulinUnits = basket.insulinUnits == units ? nil : units
+                            } onInstantSave: {
+                                instantSaveInsulin(units)
+                            }
+                        }
+                    }
+                }
+                if let units = basket.insulinUnits {
+                    fineAdjustRow(
+                        text: "\(units.formatted()) U", tint: Theme.accent,
+                        minus: { basket.insulinUnits = max(0.5, units - 0.5) },
+                        plus: { basket.insulinUnits = min(100, units + 0.5) }
+                    )
+                }
+            }
+        }
+    }
+
+    private var carbsCard: some View {
+        SectionCard("Quick carbs", systemImage: "fork.knife") {
+            VStack(alignment: .leading, spacing: 10) {
+                ScrollView(.horizontal, showsIndicators: false) {
+                    HStack(spacing: 8) {
+                        ForEach(env.preferences.carbPresets, id: \.self) { grams in
+                            ComposerChip(
+                                label: "\(grams.formatted()) g",
+                                isSelected: basket.carbsGrams == grams && selectedFavoriteID == nil,
+                                tint: Theme.zoneHigh
+                            ) {
+                                Haptics.play(.selection)
+                                if basket.carbsGrams == grams, selectedFavoriteID == nil {
+                                    clearCarbs()
+                                } else {
+                                    basket.carbsGrams = grams
+                                    basket.carbsDescription = nil
+                                    basket.carbsMealType = nil
+                                    selectedFavoriteID = nil
+                                }
+                            } onInstantSave: {
+                                instantSaveCarbs(grams)
+                            }
+                        }
+                    }
+                }
+                if let grams = basket.carbsGrams {
+                    fineAdjustRow(
+                        text: "\(grams.formatted()) g", tint: Theme.zoneHigh,
+                        minus: { basket.carbsGrams = max(5, grams - 5) },
+                        plus: { basket.carbsGrams = min(400, grams + 5) }
+                    )
+                }
+            }
+        }
+    }
+
+    /// The calculator's dose as a one-tap chip — sparkles because it is derived,
+    /// not preset. Only offered when the estimate carries no warnings.
+    private func suggestionChip(_ suggested: Double) -> some View {
+        Button {
+            Haptics.play(.success)
+            basket.insulinUnits = suggested
+        } label: {
+            HStack(spacing: 5) {
+                Image(systemName: "sparkles")
+                    .font(.caption)
+                Text("Suggested: \(suggested.formatted()) U")
+                    .font(.system(size: 15, weight: .semibold, design: .rounded))
+            }
+            .padding(.horizontal, 14)
+            .padding(.vertical, 10)
+            .frame(minHeight: 44)
+            .background(Theme.accentSoft, in: .capsule)
+            .overlay(Capsule().strokeBorder(Theme.accent.opacity(0.45), lineWidth: 1))
+            .foregroundStyle(Theme.accent)
+        }
+        .buttonStyle(PressableChipStyle())
+    }
+
+    /// ± fine-tuning for whatever sits in the basket (0.5 U / 5 g steps).
+    private func fineAdjustRow(text: String, tint: Color,
+                               minus: @escaping () -> Void, plus: @escaping () -> Void) -> some View {
+        HStack(spacing: 14) {
+            Button { Haptics.play(.selection); minus() } label: {
+                Image(systemName: "minus.circle.fill")
+                    .font(.title2)
+                    .foregroundStyle(tint.opacity(0.8))
+            }
+            .buttonStyle(.plain)
+            Text(text)
+                .font(.title3.weight(.bold))
+                .monospacedDigit()
+                .foregroundStyle(Theme.textPrimary)
+                .contentTransition(.numericText())
+                .frame(minWidth: 64)
+            Button { Haptics.play(.selection); plus() } label: {
+                Image(systemName: "plus.circle.fill")
+                    .font(.title2)
+                    .foregroundStyle(tint.opacity(0.8))
+            }
+            .buttonStyle(.plain)
+            Spacer()
+        }
+        .animation(.snappy, value: text)
+    }
+
+    // MARK: Everything else — one compact row
+
+    /// The full editors and tools as a single row of round monochrome buttons
+    /// (Prvio style) instead of a wall of tiles.
+    private var iconRow: some View {
+        ScrollView(.horizontal, showsIndicators: false) {
+            HStack(spacing: 18) {
+                iconButton("drop.fill", "Glucose") { editor = .glucose }
+                iconButton("syringe.fill", "Insulin") { editor = .insulin }
+                iconButton("fork.knife", "Carbs") { editor = .carbs }
+                iconButton("figure.walk", "Activity") { editor = .activity }
+                iconButton("note.text", "Observation") { editor = .observation }
+                iconButton("drop.triangle.fill", "Ketones") { showKetones = true }
+                iconButton("mic.fill", "Voice") { showVoiceLog = true }
+                if bolusParameters.isEnabled, bolusParameters.isValid {
+                    iconButton("function", "Bolus") { showBolusCalculator = true }
+                }
+            }
+            .padding(.horizontal, 4)
+            .padding(.vertical, 2)
+        }
+    }
+
+    private func iconButton(_ symbol: String, _ label: LocalizedStringKey,
+                            action: @escaping () -> Void) -> some View {
+        Button {
+            Haptics.play(.selection)
+            action()
+        } label: {
+            VStack(spacing: 6) {
+                Image(systemName: symbol)
+                    .font(.system(size: 18, weight: .semibold))
+                    .foregroundStyle(Theme.textPrimary)
+                    .frame(width: 48, height: 48)
+                    .background(Theme.textPrimary.opacity(0.08), in: .circle)
+                Text(label)
+                    .font(.caption2)
+                    .foregroundStyle(Theme.textSecondary)
+                    .lineLimit(1)
+            }
+        }
+        .buttonStyle(PressableChipStyle())
+    }
+
+    // MARK: Basket bar
+
+    /// The staged entries + the single Save, floating above the home indicator.
+    private var basketBar: some View {
+        HStack(spacing: 8) {
+            ScrollView(.horizontal, showsIndicators: false) {
+                HStack(spacing: 8) {
+                    if let grams = basket.carbsGrams {
+                        basketChip(
+                            symbol: "fork.knife", tint: Theme.zoneHigh,
+                            text: basket.carbsDescription.map { "\(grams.formatted()) g · \($0)" }
+                                ?? "\(grams.formatted()) g",
+                            remove: clearCarbs
+                        )
+                    }
+                    if let units = basket.insulinUnits {
+                        basketChip(
+                            symbol: "syringe.fill", tint: Theme.accent,
+                            text: "\(units.formatted()) U",
+                            remove: { basket.insulinUnits = nil }
+                        )
+                    }
+                }
+            }
+            Button {
+                saveBasket()
+            } label: {
+                Label("Save", systemImage: "checkmark")
+                    .font(.headline)
+                    .padding(.horizontal, 2)
+            }
+            .buttonStyle(.borderedProminent)
+            .tint(Theme.accent)
+        }
+        .padding(12)
+        .background(.ultraThinMaterial, in: RoundedRectangle(cornerRadius: 24, style: .continuous))
+        .overlay(RoundedRectangle(cornerRadius: 24, style: .continuous)
+            .strokeBorder(.white.opacity(0.08), lineWidth: 1))
+        .padding(.horizontal)
+        .padding(.bottom, 6)
+    }
+
+    private func basketChip(symbol: String, tint: Color, text: String,
+                            remove: @escaping () -> Void) -> some View {
+        HStack(spacing: 6) {
+            Image(systemName: symbol)
+                .font(.caption.weight(.semibold))
+                .foregroundStyle(tint)
+            Text(text)
+                .font(.subheadline.weight(.semibold))
+                .foregroundStyle(Theme.textPrimary)
+                .contentTransition(.numericText())
+                .lineLimit(1)
+            Button {
+                Haptics.play(.selection)
+                remove()
+            } label: {
+                Image(systemName: "xmark.circle.fill")
+                    .font(.subheadline)
+                    .foregroundStyle(Theme.textTertiary)
+            }
+            .buttonStyle(.plain)
+            .accessibilityLabel("Remove")
+        }
+        .padding(.horizontal, 10)
+        .padding(.vertical, 8)
+        .background(tint.opacity(0.12), in: Capsule())
+    }
+
+    // MARK: Actions
+
+    private func clearCarbs() {
+        basket.carbsGrams = nil
+        basket.carbsDescription = nil
+        basket.carbsMealType = nil
+        selectedFavoriteID = nil
+    }
+
+    /// Writes the whole basket as one moment. When both a meal and a dose are
+    /// staged, only the meal announces on the Island — one sentence, one
+    /// confirmation.
+    private func saveBasket() {
         let now = Date()
-        env.entryStore.addCarbs(
-            grams: favorite.grams, timestamp: now,
-            mealType: favorite.mealType, foodDescription: favorite.foodDescription
-        )
-        favorite.timesUsed += 1
-        favorite.lastUsedAt = now
-        favorite.usualMinutesFromMidnight = FavoriteMealSuggester.blendedUsualMinutes(
-            current: favorite.usualMinutesFromMidnight,
-            newMinutes: FavoriteMealSuggester.minutesFromMidnight(of: now)
-        )
-        try? modelContext.save()
+        if let units = basket.insulinUnits {
+            _ = env.entryStore.addInsulin(units: units, announces: basket.carbsGrams == nil)
+        }
+        if let grams = basket.carbsGrams {
+            _ = env.entryStore.addCarbs(
+                grams: grams, timestamp: now,
+                mealType: basket.carbsMealType ?? MealTimeClassifier.mealType(for: now),
+                foodDescription: basket.carbsDescription
+            )
+            // Teach the favorite this use, exactly like the carb editor does.
+            if let id = selectedFavoriteID, let favorite = favorites.first(where: { $0.id == id }) {
+                favorite.timesUsed += 1
+                favorite.lastUsedAt = now
+                favorite.usualMinutesFromMidnight = FavoriteMealSuggester.blendedUsualMinutes(
+                    current: favorite.usualMinutesFromMidnight,
+                    newMinutes: FavoriteMealSuggester.minutesFromMidnight(of: now)
+                )
+                try? modelContext.save()
+            }
+        }
         Haptics.play(.success)
         dismiss()
     }
 
-    // MARK: Launchers
-
-    /// The voice-logging launcher: one sentence instead of three taps. Sits
-    /// right under the quick chips because it serves the same "log it in two
-    /// seconds" moment.
-    private var voiceLauncherRow: some View {
-        HStack(spacing: 12) {
-            Image(systemName: "mic.fill")
-                .font(.title3)
-                .foregroundStyle(Theme.accent)
-                .frame(width: 42, height: 42)
-                .background(Theme.accentSoft, in: .circle)
-            VStack(alignment: .leading, spacing: 1) {
-                Text("Log by voice")
-                    .font(.subheadline.weight(.semibold))
-                    .foregroundStyle(Theme.textPrimary)
-                Text("Say a meal, a dose or a reading")
-                    .font(.caption2)
-                    .foregroundStyle(Theme.textSecondary)
-            }
-            Spacer()
-            Image(systemName: "chevron.right")
-                .font(.caption)
-                .foregroundStyle(Theme.textTertiary)
-        }
-        .glassCard(cornerRadius: 18, padding: 14)
-        .accessibilityElement(children: .combine)
+    /// The hold-to-save fast path — the old one-tap behaviour, kept for speed.
+    private func instantSaveInsulin(_ units: Double) {
+        _ = env.entryStore.addInsulin(units: units)
+        Haptics.play(.success)
+        dismiss()
     }
 
-    private var launcherGrid: some View {
-        VStack(spacing: 12) {
-            LazyVGrid(columns: columns, spacing: 12) {
-                ForEach(Array([EntryEditorKind.glucose, .insulin, .carbs, .activity].enumerated()), id: \.element) { index, kind in
-                    Button { Haptics.play(.selection); editor = kind } label: { launcherTile(kind) }
-                        .buttonStyle(PressableCardStyle())
-                        .appearTransition(delay: 0.18 + Double(index) * 0.05)
-                }
-            }
-            Button { Haptics.play(.selection); editor = .observation } label: {
-                launcherRow(.observation)
-            }
-            .buttonStyle(PressableCardStyle())
-            .appearTransition(delay: 0.38)
-            Button { Haptics.play(.selection); showKetones = true } label: {
-                ketoneLauncherRow
-            }
-            .buttonStyle(PressableCardStyle())
-            .appearTransition(delay: 0.40)
-        }
+    private func instantSaveCarbs(_ grams: Double) {
+        _ = env.entryStore.addCarbs(grams: grams)
+        Haptics.play(.success)
+        dismiss()
     }
+}
 
-    /// The ketone launcher — a full-width row like the observation launcher, but
-    /// opening the ketone sheet (ketone logging moved here from the sick-day
-    /// screen so all logging lives in one place).
-    private var ketoneLauncherRow: some View {
-        HStack(spacing: 12) {
-            Image(systemName: "drop.triangle.fill")
-                .font(.title3)
-                .foregroundStyle(Theme.zoneWarning)
-                .frame(width: 42, height: 42)
-                .background(Theme.zoneWarning.opacity(0.14), in: .circle)
-            VStack(alignment: .leading, spacing: 1) {
-                Text("Ketones")
-                    .font(.subheadline.weight(.semibold))
-                    .foregroundStyle(Theme.textPrimary)
-                Text("Blood or urine reading")
-                    .font(.caption2)
-                    .foregroundStyle(Theme.textSecondary)
+/// A preset chip that stages into the basket on tap and saves instantly on a
+/// hold. Plain gestures rather than a Button so tap and long-press coexist.
+private struct ComposerChip: View {
+    let label: String
+    let isSelected: Bool
+    let tint: Color
+    let onTap: () -> Void
+    let onInstantSave: () -> Void
+
+    var body: some View {
+        Text(label)
+            .font(.system(size: 15, weight: .semibold, design: .rounded))
+            .padding(.horizontal, 16)
+            .padding(.vertical, 10)
+            .frame(minWidth: 56, minHeight: 44)
+            .background(isSelected ? tint : tint.opacity(0.12), in: .capsule)
+            .foregroundStyle(isSelected ? Color.white : tint)
+            .contentShape(.capsule)
+            .animation(.snappy, value: isSelected)
+            .onTapGesture(perform: onTap)
+            .onLongPressGesture(minimumDuration: 0.35) {
+                Haptics.play(.success)
+                onInstantSave()
             }
-            Spacer()
-            Image(systemName: "chevron.right")
-                .font(.caption)
-                .foregroundStyle(Theme.textTertiary)
-        }
-        .glassCard(cornerRadius: 18, padding: 14)
-        .accessibilityElement(children: .combine)
-    }
-
-    /// A square-ish grid tile: tinted icon circle, localized title + subtitle.
-    private func launcherTile(_ kind: EntryEditorKind) -> some View {
-        VStack(alignment: .leading, spacing: 10) {
-            Image(systemName: kind.symbol)
-                .font(.title3)
-                .foregroundStyle(kind.tint)
-                .frame(width: 42, height: 42)
-                .background(kind.tint.opacity(0.14), in: .circle)
-            VStack(alignment: .leading, spacing: 1) {
-                Text(kind.titleKey)
-                    .font(.subheadline.weight(.semibold))
-                    .foregroundStyle(Theme.textPrimary)
-                Text(kind.subtitleKey)
-                    .font(.caption2)
-                    .foregroundStyle(Theme.textSecondary)
-            }
-        }
-        .frame(maxWidth: .infinity, alignment: .leading)
-        .glassCard(cornerRadius: 18, padding: 14)
-        .accessibilityElement(children: .combine)
-    }
-
-    /// The full-width variant used for the odd fifth launcher, so the grid never
-    /// leaves a hole.
-    private func launcherRow(_ kind: EntryEditorKind) -> some View {
-        HStack(spacing: 12) {
-            Image(systemName: kind.symbol)
-                .font(.title3)
-                .foregroundStyle(kind.tint)
-                .frame(width: 42, height: 42)
-                .background(kind.tint.opacity(0.14), in: .circle)
-            VStack(alignment: .leading, spacing: 1) {
-                Text(kind.titleKey)
-                    .font(.subheadline.weight(.semibold))
-                    .foregroundStyle(Theme.textPrimary)
-                Text(kind.subtitleKey)
-                    .font(.caption2)
-                    .foregroundStyle(Theme.textSecondary)
-            }
-            Spacer()
-            Image(systemName: "chevron.right")
-                .font(.caption)
-                .foregroundStyle(Theme.textTertiary)
-        }
-        .glassCard(cornerRadius: 18, padding: 14)
-        .accessibilityElement(children: .combine)
-    }
-
-    private var bolusShortcut: some View {
-        Button {
-            Haptics.play(.selection)
-            showBolusCalculator = true
-        } label: {
-            HStack(spacing: 12) {
-                Image(systemName: "function")
-                    .font(.title3)
-                    .foregroundStyle(Theme.accent)
-                    .frame(width: 42, height: 42)
-                    .background(Theme.accentSoft, in: .circle)
-                VStack(alignment: .leading, spacing: 1) {
-                    Text("Bolus calculator")
-                        .font(.subheadline.weight(.semibold))
-                        .foregroundStyle(Theme.textPrimary)
-                    Text("Suggests a dose from carbs, glucose, IOB & COB")
-                        .font(.caption2)
-                        .foregroundStyle(Theme.textSecondary)
-                }
-                Spacer()
-                Image(systemName: "chevron.right")
-                    .font(.caption)
-                    .foregroundStyle(Theme.textTertiary)
-            }
-            .glassCard(cornerRadius: 18, padding: 14)
-        }
-        .buttonStyle(PressableCardStyle())
-        .accessibilityElement(children: .combine)
-    }
-
-    // MARK: Chips
-
-    private func chipRow(_ items: [(String, Double)], tint: Color, action: @escaping (Double) -> Void) -> some View {
-        ScrollView(.horizontal, showsIndicators: false) {
-            HStack(spacing: 8) {
-                ForEach(items, id: \.0) { item in
-                    QuickChip(label: item.0, tint: tint) { action(item.1) }
-                }
-            }
-        }
+            .accessibilityAddTraits(isSelected ? [.isButton, .isSelected] : .isButton)
+            .accessibilityHint("Tap to stage, hold to save instantly")
     }
 }
 

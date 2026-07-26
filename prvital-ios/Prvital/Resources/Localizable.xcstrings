@@ -41074,6 +41074,65 @@
         }
       }
     },
+    "IOB": {
+      "extractionState": "manual",
+      "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "IOB"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "IOB"
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "IOB"
+          }
+        },
+        "it": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "IOB"
+          }
+        },
+        "nl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "IOB"
+          }
+        },
+        "pl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "IOB"
+          }
+        },
+        "pt": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "IOB"
+          }
+        },
+        "ro": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "IOB"
+          }
+        },
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "IOB"
+          }
+        }
+      }
+    },
     "Idea": {
       "extractionState": "manual",
       "localizations": {
@@ -44374,6 +44433,65 @@
           "stringUnit": {
             "state": "translated",
             "value": "Активный инсулин %@"
+          }
+        }
+      }
+    },
+    "Insulin on board %@ units": {
+      "extractionState": "manual",
+      "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Aktives Insulin %@ Einheiten"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Insulina activa %@ unidades"
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Insuline active %@ unités"
+          }
+        },
+        "it": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Insulina attiva %@ unità"
+          }
+        },
+        "nl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Actieve insuline %@ eenheden"
+          }
+        },
+        "pl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Aktywna insulina %@ jednostek"
+          }
+        },
+        "pt": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Insulina ativa %@ unidades"
+          }
+        },
+        "ro": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Insulină activă %@ unități"
+          }
+        },
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Активный инсулин %@ единиц"
           }
         }
       }
@@ -78151,6 +78269,65 @@
         }
       }
     },
+    "Suggested: %@ U": {
+      "extractionState": "manual",
+      "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Vorschlag: %@ U"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Sugerido: %@ U"
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Suggéré : %@ U"
+          }
+        },
+        "it": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Suggerito: %@ U"
+          }
+        },
+        "nl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Voorstel: %@ U"
+          }
+        },
+        "pl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Sugerowane: %@ U"
+          }
+        },
+        "pt": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Sugerido: %@ U"
+          }
+        },
+        "ro": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Sugerat: %@ U"
+          }
+        },
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Предложено: %@ U"
+          }
+        }
+      }
+    },
     "Suggestions": {
       "extractionState": "manual",
       "localizations": {
@@ -79526,6 +79703,65 @@
         }
       }
     },
+    "Tap the chips to combine a meal and its bolus, then save them together.": {
+      "extractionState": "manual",
+      "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Tippe auf die Chips, um eine Mahlzeit mit ihrem Bolus zu kombinieren, und sichere dann beides zusammen."
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Toca las fichas para combinar una comida con su bolo y guárdalos juntos."
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Touchez les pastilles pour associer un repas à son bolus, puis enregistrez-les ensemble."
+          }
+        },
+        "it": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Tocca i chip per combinare un pasto con il suo bolo, poi salvali insieme."
+          }
+        },
+        "nl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Tik op de chips om een maaltijd met de bijbehorende bolus te combineren en sla ze samen op."
+          }
+        },
+        "pl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Stuknij żetony, aby połączyć posiłek z jego bolusem, a potem zapisz je razem."
+          }
+        },
+        "pt": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Toque nos chips para combinar uma refeição com o seu bólus e guarde-os juntos."
+          }
+        },
+        "ro": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Atinge chip-urile ca să combini masa cu bolusul ei, apoi salvează-le împreună."
+          }
+        },
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Нажимайте на чипы, чтобы объединить приём пищи с болюсом, затем сохраните их вместе."
+          }
+        }
+      }
+    },
     "Tap the microphone, then say what you want to log.": {
       "extractionState": "manual",
       "localizations": {
@@ -79581,6 +79817,65 @@
           "stringUnit": {
             "state": "translated",
             "value": "Нажмите на микрофон и скажите, что записать."
+          }
+        }
+      }
+    },
+    "Tap to stage, hold to save instantly": {
+      "extractionState": "manual",
+      "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Tippen zum Vormerken, halten zum sofortigen Sichern"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Toca para preparar, mantén pulsado para guardar al instante"
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Touchez pour préparer, maintenez pour enregistrer aussitôt"
+          }
+        },
+        "it": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Tocca per preparare, tieni premuto per salvare subito"
+          }
+        },
+        "nl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Tik om klaar te zetten, houd vast om direct op te slaan"
+          }
+        },
+        "pl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Stuknij, aby przygotować; przytrzymaj, aby zapisać od razu"
+          }
+        },
+        "pt": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Toque para preparar, mantenha premido para guardar de imediato"
+          }
+        },
+        "ro": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Atinge pentru a pregăti, ține apăsat pentru salvare instantanee"
+          }
+        },
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Нажмите, чтобы подготовить; удерживайте, чтобы сохранить сразу"
           }
         }
       }
@@ -89482,6 +89777,65 @@
           "stringUnit": {
             "state": "translated",
             "value": "Фиолетовый"
+          }
+        }
+      }
+    },
+    "Voice": {
+      "extractionState": "manual",
+      "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Stimme"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Voz"
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Voix"
+          }
+        },
+        "it": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Voce"
+          }
+        },
+        "nl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Stem"
+          }
+        },
+        "pl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Głos"
+          }
+        },
+        "pt": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Voz"
+          }
+        },
+        "ro": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Voce"
+          }
+        },
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Голос"
           }
         }
       }
