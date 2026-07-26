@@ -46,7 +46,8 @@ struct LiveVitalsStrip: View {
         if let minutes = vitals.minutesToNextReading {
             out.append(.init(id: "next", icon: "dot.radiowaves.left.and.right", tint: Theme.zoneInRange,
                              value: Self.duration(minutes), unit: nil,
-                             label: String(localized: "Next reading")))
+                             label: String(localized: "Next reading"),
+                             deadline: vitals.nextReadingAt))
         }
         return out
     }
@@ -66,6 +67,9 @@ private struct VitalCellModel: Identifiable {
     let value: String
     let unit: String?
     let label: String
+    /// When set, the value renders as a live countdown to this instant —
+    /// minutes while far out, ticking seconds over the final minute.
+    var deadline: Date? = nil
 }
 
 private struct VitalRow: View {
@@ -80,10 +84,13 @@ private struct VitalRow: View {
                 .foregroundStyle(monochrome ? Theme.textSecondary : model.tint)
                 .frame(width: 18, alignment: .leading)
                 .accessibilityHidden(true)
-            Text(model.value)
-                .font(.system(size: 15, weight: .semibold, design: .rounded))
-                .foregroundStyle(Theme.textPrimary)
-                .monospacedDigit()
+            if let deadline = model.deadline {
+                TimelineView(.periodic(from: .now, by: 1)) { context in
+                    valueText(Self.countdown(to: deadline, now: context.date))
+                }
+            } else {
+                valueText(model.value)
+            }
             if let unit = model.unit {
                 Text(unit).font(.caption2).foregroundStyle(Theme.textSecondary)
             }
@@ -96,5 +103,20 @@ private struct VitalRow: View {
         .contentTransition(.numericText())
         .accessibilityElement(children: .combine)
         .accessibilityLabel("\(model.label): \(model.value)\(model.unit.map { " " + $0 } ?? "")")
+    }
+
+    private func valueText(_ string: String) -> some View {
+        Text(string)
+            .font(.system(size: 15, weight: .semibold, design: .rounded))
+            .foregroundStyle(Theme.textPrimary)
+            .monospacedDigit()
+    }
+
+    /// Same minute display as the static cells while far out; once under a
+    /// minute the seconds count down live.
+    private static func countdown(to deadline: Date, now: Date) -> String {
+        let secs = Int(deadline.timeIntervalSince(now).rounded())
+        if secs > 60 { return String(localized: "\((secs + 59) / 60) min") }
+        return String(localized: "\(max(0, secs)) s")
     }
 }

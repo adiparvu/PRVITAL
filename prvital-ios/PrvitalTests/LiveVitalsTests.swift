@@ -20,8 +20,10 @@ final class LiveVitalsTests: XCTestCase {
         XCTAssertEqual(v.minutesSinceBolus, 30)
         // Clears at dose + 5 h → 300 − 30 = 270 minutes from now.
         XCTAssertEqual(v.minutesToInsulinClear, 270)
-        // Next Dexcom reading ≈ 5 minutes after the last one.
+        // Next Dexcom reading ≈ 5 minutes after the last one — with the exact
+        // instant exposed for the live countdown.
         XCTAssertEqual(v.minutesToNextReading, 5)
+        XCTAssertEqual(v.nextReadingAt, now.addingTimeInterval(5 * 60))
     }
 
     func testNextReadingOnlyForCGMSources() {
@@ -30,6 +32,7 @@ final class LiveVitalsTests: XCTestCase {
             latestReadingAt: now, sourceIsCGM: false, cgmCadenceMinutes: 5,
             insulin: [], carbs: [], bolus: params, now: now)
         XCTAssertNil(v.minutesToNextReading)
+        XCTAssertNil(v.nextReadingAt)
         XCTAssertFalse(v.hasInsulinOnBoard)
         XCTAssertFalse(v.hasCarbsOnBoard)
     }

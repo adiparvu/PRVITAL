@@ -17,6 +17,9 @@ struct LiveVitals: Equatable, Sendable {
     /// Minutes until the next CGM reading is expected; nil for non-CGM sources or
     /// when the last reading is too old for a scheduled next one to apply.
     var minutesToNextReading: Int?
+    /// The instant that next reading is expected — lets the dashboard tick a
+    /// live seconds countdown over the final minute.
+    var nextReadingAt: Date?
 
     var hasInsulinOnBoard: Bool { insulinOnBoard >= 0.05 }
     var hasCarbsOnBoard: Bool { carbsOnBoard >= 0.5 }
@@ -64,8 +67,12 @@ struct LiveVitals: Equatable, Sendable {
             // Only within a reasonable window of the last reading; otherwise the
             // stream is stale and no scheduled next reading applies.
             if now.timeIntervalSince(latestReadingAt) <= cadence * 2 {
-                let secs = latestReadingAt.addingTimeInterval(cadence).timeIntervalSince(now)
-                if secs > 0 { v.minutesToNextReading = Int((secs / 60).rounded(.up)) }
+                let expected = latestReadingAt.addingTimeInterval(cadence)
+                let secs = expected.timeIntervalSince(now)
+                if secs > 0 {
+                    v.minutesToNextReading = Int((secs / 60).rounded(.up))
+                    v.nextReadingAt = expected
+                }
             }
         }
         return v
