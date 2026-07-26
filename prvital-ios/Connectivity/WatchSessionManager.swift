@@ -35,14 +35,21 @@ final class WatchSessionManager: NSObject {
         #endif
     }
 
+    /// The last snapshot actually sent, so an unchanged snapshot skips the whole
+    /// encode + IPC round trip. `updateApplicationContext` persists the last
+    /// context on the system side, so skipping identical resends loses nothing.
+    private var lastSentSnapshot: GlucoseSnapshot?
+
     /// Phone → Watch. Safe to call frequently; only the latest context is kept.
     func updateSnapshot(_ snapshot: GlucoseSnapshot) {
         #if canImport(WatchConnectivity)
+        guard snapshot != lastSentSnapshot else { return }
         guard WCSession.isSupported(),
               let data = try? JSONEncoder().encode(snapshot) else { return }
         let session = WCSession.default
         guard session.activationState == .activated else { return }
         try? session.updateApplicationContext(["snapshot": data])
+        lastSentSnapshot = snapshot
         #endif
     }
 

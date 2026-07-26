@@ -25,6 +25,11 @@ final class GlucoseLiveActivityManager {
     /// While this is in the future, `sync` leaves the Island alone — a logged
     /// action, a countdown or an alert owns it.
     private var holdUntil: Date?
+    /// The last state actually pushed to ActivityKit. `sync` skips identical
+    /// re-pushes: ActivityKit has an update budget, and pushing an unchanged
+    /// state once a minute exhausted it — after which the system *defers*
+    /// updates, which read as "the Lock Screen lags behind the app".
+    private var lastPushedState: GlucoseActivityAttributes.ContentState?
     /// The follow-up transition (confirmation → countdown → live reading), kept
     /// so a newer presentation cancels a stale one.
     private var transition: Task<Void, Never>?
@@ -42,13 +47,16 @@ final class GlucoseLiveActivityManager {
         // A momentary presentation owns the Island until its hold expires.
         if let holdUntil, holdUntil > Date() { return }
 
-        push(glucoseState(from: snapshot), staleDate: staleDate(for: snapshot))
+        let state = glucoseState(from: snapshot)
+        guard state != lastPushedState else { return }
+        push(state, staleDate: staleDate(for: snapshot))
     }
 
     func end() {
         transition?.cancel()
         transition = nil
         holdUntil = nil
+        lastPushedState = nil
         let store = self.store
         Task { await store.finish() }
     }
@@ -221,6 +229,7 @@ final class GlucoseLiveActivityManager {
     }
 
     private func push(_ state: GlucoseActivityAttributes.ContentState, staleDate: Date) {
+        lastPushedState = state
         let store = self.store
         Task { await store.upsert(state: state, staleDate: staleDate) }
     }

@@ -120,7 +120,9 @@ final class SnapshotPublisher {
         // WidgetKit's refresh budget, so gate it on the value/time changing —
         // roughly CGM cadence, well within budget.
         let previous = SharedStore.load()
-        SharedStore.save(snapshot)
+        // Rewrite the App Group file only when the snapshot actually changed —
+        // an identical snapshot re-serialised to disk every refresh was pure churn.
+        if snapshot != previous { SharedStore.save(snapshot) }
         #if canImport(WidgetKit)
         if previous.updatedAt != snapshot.updatedAt || previous.mgdL != snapshot.mgdL {
             WidgetCenter.shared.reloadAllTimelines()

@@ -79,6 +79,13 @@ final class AppEnvironment {
             publisher.refresh()
             self?.rescheduleContextualReminders()
         }
+        // A pass that found nothing new skips the whole pipeline above; only the
+        // two genuinely time-driven behaviours still need a heartbeat — the
+        // signal-loss alert (a growing data gap IS the event) and the one-time
+        // flip to "stale" once the last reading ages out.
+        sync.onQuietPass = { [weak self] in
+            self?.handleQuietSyncPass()
+        }
 
         // Every sync also pulls insulin, meals and activity from Apple Health so
         // the journal is the full picture, not only the glucose curve.
@@ -159,6 +166,24 @@ final class AppEnvironment {
     /// existing reminder switches: the reading-gap nudge follows the glucose-check
     /// reminder opt-in, and the meal-driven nudges follow the meal reminder opt-in.
     /// Both default off, so nothing fires unprompted.
+    /// After a sync pass that changed nothing: run only the time-driven checks.
+    /// The signal-loss alert must keep evaluating (its trigger is the *absence*
+    /// of data), and the published snapshot must flip to stale exactly once when
+    /// the last reading ages past the dashboard's 20-minute staleness horizon —
+    /// after that flip, quiet passes are truly free.
+    private func handleQuietSyncPass(now: Date = Date()) {
+        alerts.evaluateSignalLoss(
+            lastReadingAt: Self.latestActiveReadingTimestamp(in: modelContainer.mainContext),
+            preferences: preferences.alerts,
+            now: now
+        )
+        let published = SharedStore.load()
+        if !published.isStale, published.updatedAt != .distantPast,
+           now.timeIntervalSince(published.updatedAt) > 20 * 60 {
+            snapshots.refresh(now: now)
+        }
+    }
+
     func rescheduleContextualReminders(now: Date = Date()) {
         let context = modelContainer.mainContext
         let meal = Self.latestMeal(in: context)

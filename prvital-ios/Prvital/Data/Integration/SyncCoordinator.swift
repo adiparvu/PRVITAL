@@ -26,6 +26,9 @@ final class SyncCoordinator {
     /// Called after each sync finishes, so the app can republish the snapshot
     /// and re-evaluate alerts from any newly imported readings.
     var onChange: (() -> Void)?
+    /// Called after a pass that changed nothing, so time-driven checks (signal
+    /// loss, staleness) can still run without the full change pipeline.
+    var onQuietPass: (() -> Void)?
 
     /// Imports the non-glucose journal (insulin, meals, activity) from Apple
     /// Health on the same pass. Injected by the composition root; nil in contexts
@@ -74,10 +77,16 @@ final class SyncCoordinator {
         for source in registry.connectedSources() {
             do {
                 let samples = try await source.fetchSamples(since: since)
-                let inserted = ingest(samples, from: source.source)
+                let inserted = ingest(samples, from: source.source, since: since)
                 report.imported += inserted
-                audit.log(.sync, source: source.source, result: .success,
-                          detail: "Imported \(inserted) reading(s)")
+                // An audit row only when something actually landed. Logging every
+                // quiet pass wrote a "Imported 0 reading(s)" row per source per
+                // minute — ~1.4k dead rows a day that bloated the store and made
+                // every save slower.
+                if inserted > 0 {
+                    audit.log(.sync, source: source.source, result: .success,
+                              detail: "Imported \(inserted) reading(s)")
+                }
             } catch {
                 // A source that simply isn't set up / needs re-linking (no valid
                 // credentials, unavailable hardware) is an expected state, not a
@@ -103,7 +112,12 @@ final class SyncCoordinator {
         }
 
         report.conflicts = resolveRecentConflicts(since: since)
-        try? context.save()
+        // Persist and fan out only when the pass changed anything. A quiet pass
+        // (no new samples, no conflicts) used to save + onChange anyway — which
+        // re-ran the whole snapshot/alerts/watch/Live-Activity pipeline and made
+        // every mounted @Query re-fetch, once a minute, for nothing.
+        let changed = report.imported > 0 || report.conflicts > 0
+        if changed { try? context.save() }
 
         // After a successful pass, mirror the user's own MANUAL entries up to
         // their Nightscout site (opt-in). Only `source == .manual` rows are
@@ -117,12 +131,16 @@ final class SyncCoordinator {
             await nightscoutUploader.upload(pending)
         }
 
-        onChange?()
+        if changed {
+            onChange?()
+        } else {
+            onQuietPass?()
+        }
         return report
     }
 
     /// Inserts new (non-duplicate) samples for one source; returns the count.
-    private func ingest(_ samples: [NormalizedGlucoseSample], from source: DataSource) -> Int {
+    private func ingest(_ samples: [NormalizedGlucoseSample], from source: DataSource, since: Date) -> Int {
         guard !samples.isEmpty else { return 0 }
         // Dedup within the incoming batch first — a source can report the same
         // instant twice in one payload (e.g. LibreLinkUp's current measurement plus
@@ -131,7 +149,7 @@ final class SyncCoordinator {
         var seenInBatch = Set<String>()
         let unique = samples.filter { seenInBatch.insert($0.id).inserted }
         let incomingIDs = Set(unique.map(\.id))
-        let existing = fetchExternalIDs(source: source, ids: incomingIDs)
+        let existing = fetchExternalIDs(source: source, ids: incomingIDs, since: since)
 
         var inserted = 0
         for sample in unique where !existing.contains(sample.id) {
@@ -166,11 +184,18 @@ final class SyncCoordinator {
         return summary.groupCount
     }
 
-    private func fetchExternalIDs(source: DataSource, ids: Set<String>) -> Set<String> {
+    private func fetchExternalIDs(source: DataSource, ids: Set<String>, since: Date) -> Set<String> {
         let raw = source.rawValue
+        // Bound the dedup lookup to the sync window (with a generous margin for
+        // boundary/clock skew). The incoming samples all lie in [since, now], so
+        // only rows in that window can collide — yet the unbounded version
+        // materialised the source's ENTIRE history (100k+ rows after an import)
+        // on the main thread, on every pass, just to build this set. That was
+        // the single biggest cost in the app.
+        let cutoff = since.addingTimeInterval(-6 * 3600)
         let descriptor = FetchDescriptor<GlucoseReading>(
             predicate: #Predicate { reading in
-                reading.sourceRaw == raw && reading.externalID != nil
+                reading.sourceRaw == raw && reading.externalID != nil && reading.timestamp >= cutoff
             }
         )
         let existing = (try? context.fetch(descriptor)) ?? []
