@@ -496,7 +496,8 @@ struct DashboardView: View {
                     events: trendEvents(in: windowReadings),
                     visibleEventKinds: env.preferences.chartEventKinds,
                     eventKindsBinding: eventKindsBinding,
-                    eventBand: true
+                    eventBand: true,
+                    yesterday: yesterdayTrendReadings()
                 )
             }
         }
@@ -530,6 +531,17 @@ struct DashboardView: View {
             let start = Date().addingTimeInterval(-trendRange.hours * 3600)
             return active.filter { $0.timestamp >= start }
         }
+    }
+
+    /// The same window, one day earlier — the chart's grey "yesterday" ghost.
+    /// Skipped for custom ranges (an arbitrary window has no meaningful
+    /// "yesterday") and when the user turned the ghost off.
+    private func yesterdayTrendReadings() -> [GlucoseReading] {
+        guard env.preferences.showYesterdayShadow, trendRange != .custom else { return [] }
+        let now = Date()
+        let start = now.addingTimeInterval(-trendRange.hours * 3600 - 86_400)
+        let end = now.addingTimeInterval(-86_400)
+        return readings.filter { $0.isActive && $0.timestamp >= start && $0.timestamp <= end }
     }
 
     /// A contextual lesson: the Panou points you to the encyclopedia article that

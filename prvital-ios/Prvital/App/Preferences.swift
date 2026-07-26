@@ -41,6 +41,7 @@ final class Preferences {
         self.showDailyCompanion = (self.defaults.object(forKey: Keys.showDailyCompanion) as? Bool) ?? true
         self.showContextualLessons = (self.defaults.object(forKey: Keys.showContextualLessons) as? Bool) ?? true
         self.minimalistIcons = (self.defaults.object(forKey: Keys.minimalistIcons) as? Bool) ?? false
+        self.showYesterdayShadow = (self.defaults.object(forKey: Keys.showYesterdayShadow) as? Bool) ?? true
         self.backgroundKindRaw = self.defaults.string(forKey: Keys.backgroundKind) ?? AppBackgroundKind.standard.rawValue
         self.backgroundGradientRaw = self.defaults.string(forKey: Keys.backgroundGradient) ?? BackgroundGradient.aurora.rawValue
         self.backgroundPhotoData = self.defaults.data(forKey: Keys.backgroundPhoto)
@@ -240,6 +241,11 @@ final class Preferences {
         didSet { defaults.set(minimalistIcons, forKey: Keys.minimalistIcons) }
     }
 
+    /// Draw yesterday's curve as a faint ghost under today's trend chart.
+    var showYesterdayShadow: Bool {
+        didSet { defaults.set(showYesterdayShadow, forKey: Keys.showYesterdayShadow) }
+    }
+
     /// Background: standard surface, a gradient preset, or the user's photo.
     var backgroundKindRaw: String {
         didSet { defaults.set(backgroundKindRaw, forKey: Keys.backgroundKind) }
@@ -306,6 +312,7 @@ final class Preferences {
         static let showDailyCompanion = "pref.showDailyCompanion"
         static let showContextualLessons = "pref.showContextualLessons"
         static let minimalistIcons = "pref.minimalistIcons"
+        static let showYesterdayShadow = "pref.showYesterdayShadow"
         static let backgroundKind = AppBackgroundKind.preferenceKey
         static let backgroundGradient = BackgroundGradient.preferenceKey
         static let backgroundPhoto = AppBackgroundKind.photoKey

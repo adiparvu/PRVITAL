@@ -154,10 +154,20 @@ struct GlucoseTrendChart: View {
     /// same time axis) instead of tiny badges on the curve — which get lost
     /// against the area fill. Per device feedback ("a band under the chart").
     var eventBand: Bool = false
+    /// Yesterday's readings (raw, un-shifted). Drawn as a faint grey ghost line
+    /// under today's curve, time-shifted +24h onto today's axis — instant
+    /// context for "is today usual?". Empty hides the ghost.
+    var yesterday: [GlucoseReading] = []
 
     @State private var selectedDate: Date?
     @State private var appeared = false
     @State private var showingLegend = false
+    /// Drives the one-shot left-to-right draw-on sweep.
+    @State private var drawn = false
+    /// The zone under the finger during a scrub, so crossing into/out of the
+    /// target band gets its own, firmer haptic.
+    @State private var scrubZoneWasInRange: Bool?
+    @Environment(\.accessibilityReduceMotion) private var reduceMotion
 
     private var sorted: [GlucoseReading] {
         readings.filter(\.isActive).sorted { $0.timestamp < $1.timestamp }
@@ -173,6 +183,31 @@ struct GlucoseTrendChart: View {
 
     /// Whether scrubbing / detailed marks are enabled (full-size only).
     private var interactive: Bool { !compact }
+
+    /// Yesterday's curve shifted onto today's time axis, downsampled hard — it
+    /// is context, not data, so a coarse line is enough. Full-size charts only.
+    private var yesterdayMarks: [(id: Int, date: Date, mgdL: Double)] {
+        guard interactive, !yesterday.isEmpty else { return [] }
+        let shifted = yesterday.filter(\.isActive)
+            .sorted { $0.timestamp < $1.timestamp }
+        return GlucoseDownsampler.downsample(shifted, maxPoints: 160)
+            .enumerated()
+            .map { ($0.offset, $0.element.timestamp.addingTimeInterval(86_400), $0.element.valueMgdL) }
+    }
+
+    /// The soft-edged target band: in-range green fading out toward both limits
+    /// instead of hard edges.
+    private var softBandGradient: LinearGradient {
+        LinearGradient(
+            gradient: Gradient(stops: [
+                .init(color: Theme.zoneInRange.opacity(0), location: 0),
+                .init(color: Theme.zoneInRange.opacity(0.09), location: 0.3),
+                .init(color: Theme.zoneInRange.opacity(0.09), location: 0.7),
+                .init(color: Theme.zoneInRange.opacity(0), location: 1),
+            ]),
+            startPoint: .bottom, endPoint: .top
+        )
+    }
 
     private var selectedReading: GlucoseReading? {
         guard interactive, let selectedDate, !sorted.isEmpty else { return nil }
@@ -289,12 +324,33 @@ struct GlucoseTrendChart: View {
                         .interpolationMethod(.stepEnd)
                 }
             } else {
+                // The target band as a soft wash that fades toward both limits —
+                // no hard edges — with the dashed limit lines on top of it.
+                RectangleMark(
+                    yStart: .value("Target lower", thresholds.targetLower),
+                    yEnd: .value("Target upper", thresholds.targetUpper)
+                )
+                .foregroundStyle(softBandGradient)
                 RuleMark(y: .value("Target upper", thresholds.targetUpper))
                     .foregroundStyle(Theme.zoneHigh.opacity(0.55))
                     .lineStyle(StrokeStyle(lineWidth: 1, dash: [4, 4]))
                 RuleMark(y: .value("Target lower", thresholds.targetLower))
                     .foregroundStyle(Theme.zoneWarning.opacity(0.55))
                     .lineStyle(StrokeStyle(lineWidth: 1, dash: [4, 4]))
+            }
+
+            // Yesterday's ghost: a faint grey line under today's curve, shifted
+            // onto the same axis. Context at a glance, never competing for
+            // attention (and toggleable in Appearance).
+            ForEach(yesterdayMarks, id: \.id) { mark in
+                LineMark(
+                    x: .value("Time", mark.date),
+                    y: .value("Yesterday", mark.mgdL),
+                    series: .value("Series", "yesterday")
+                )
+                .interpolationMethod(.catmullRom)
+                .foregroundStyle(Theme.textSecondary.opacity(0.22))
+                .lineStyle(StrokeStyle(lineWidth: 1.5, lineCap: .round))
             }
 
             ForEach(marks) { reading in
@@ -307,7 +363,8 @@ struct GlucoseTrendChart: View {
 
                 LineMark(
                     x: .value("Time", reading.timestamp),
-                    y: .value("Glucose", reading.valueMgdL)
+                    y: .value("Glucose", reading.valueMgdL),
+                    series: .value("Series", "today")
                 )
                 .interpolationMethod(.catmullRom)
                 .foregroundStyle(Theme.accent)
@@ -452,8 +509,39 @@ struct GlucoseTrendChart: View {
         }
         .opacity(appeared ? 1 : 0)
         .scaleEffect(y: appeared ? 1 : 0.94, anchor: .bottom)
+        // The one-shot draw-on: everything sweeps in left → right, once, as if
+        // the pen were drawing the day. Skipped under Reduce Motion.
+        .mask {
+            GeometryReader { geo in
+                HStack(spacing: 0) {
+                    Rectangle().frame(width: geo.size.width * (drawn ? 1 : 0))
+                    Spacer(minLength: 0)
+                }
+            }
+        }
         .onAppear {
             withAnimation(.spring(response: 0.6, dampingFraction: 0.85)) { appeared = true }
+            if reduceMotion || compact {
+                drawn = true
+            } else {
+                withAnimation(.easeOut(duration: 0.9)) { drawn = true }
+            }
+        }
+        // Scrub feedback: a light tick per reading, and a firmer knock the
+        // moment the finger crosses into or out of the target band.
+        .onChange(of: selectedReading?.id) { _, _ in
+            guard let sel = selectedReading else {
+                scrubZoneWasInRange = nil
+                return
+            }
+            let inRange = sel.valueMgdL >= thresholds.targetLower(at: sel.timestamp)
+                && sel.valueMgdL <= thresholds.targetUpper(at: sel.timestamp)
+            if let was = scrubZoneWasInRange, was != inRange {
+                Haptics.play(.warning)
+            } else {
+                Haptics.play(.selection)
+            }
+            scrubZoneWasInRange = inRange
         }
         .accessibilityElement(children: .ignore)
         .accessibilityLabel(accessibilitySummary)

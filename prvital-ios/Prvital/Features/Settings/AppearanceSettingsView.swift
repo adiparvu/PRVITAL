@@ -111,10 +111,17 @@ struct AppearanceSettingsView: View {
                 .onChange(of: prefs.minimalistIcons) { _, isOn in
                     if isOn { Haptics.play(.selection) }
                 }
+
+                Toggle(isOn: $prefs.showYesterdayShadow) {
+                    Text("Yesterday's curve")
+                }
+                .onChange(of: prefs.showYesterdayShadow) { _, isOn in
+                    if isOn { Haptics.play(.selection) }
+                }
             } header: {
                 Text("Display")
             } footer: {
-                Text("Text size and background apply to Prvital only. Haptics add a gentle tap to key actions. The daily companion is a friendly, encouraging note at the top of your dashboard. Contextual lessons suggest a relevant article after a low or high. Minimalist icons drop the coloured circles for plain, monochrome glyphs.")
+                Text("Text size and background apply to Prvital only. Haptics add a gentle tap to key actions. The daily companion is a friendly, encouraging note at the top of your dashboard. Contextual lessons suggest a relevant article after a low or high. Minimalist icons drop the coloured circles for plain, monochrome glyphs. Yesterday's curve draws the previous day as a faint line under today's chart.")
                     .font(.footnote)
                     .foregroundStyle(Theme.textTertiary)
             }

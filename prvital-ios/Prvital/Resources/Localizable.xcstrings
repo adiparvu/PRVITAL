@@ -78476,6 +78476,65 @@
         }
       }
     },
+    "Text size and background apply to Prvital only. Haptics add a gentle tap to key actions. The daily companion is a friendly, encouraging note at the top of your dashboard. Contextual lessons suggest a relevant article after a low or high. Minimalist icons drop the coloured circles for plain, monochrome glyphs. Yesterday's curve draws the previous day as a faint line under today's chart.": {
+      "extractionState": "manual",
+      "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Textgröße und Hintergrund gelten nur für Prvital. Haptik fügt wichtigen Aktionen ein sanftes Tippen hinzu. Der tägliche Begleiter ist eine freundliche, ermutigende Notiz oben im Dashboard. Kontextbezogene Lektionen schlagen nach einem Tief oder Hoch einen passenden Artikel vor. Minimalistische Symbole verzichten auf die farbigen Kreise zugunsten schlichter, einfarbiger Glyphen. Die Kurve von gestern zeichnet den Vortag als dezente Linie unter dem heutigen Diagramm."
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "El tamaño del texto y el fondo se aplican solo a Prvital. La vibración añade un toque suave a las acciones clave. El acompañante diario es una nota amable y alentadora en la parte superior del panel. Las lecciones contextuales sugieren un artículo relevante tras una bajada o una subida. Los iconos minimalistas quitan los círculos de color por glifos simples y monocromos. La curva de ayer dibuja el día anterior como una línea tenue bajo el gráfico de hoy."
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "La taille du texte et l’arrière-plan s’appliquent uniquement à Prvital. Le retour haptique ajoute une légère vibration aux actions clés. Le compagnon quotidien est une note amicale et encourageante en haut du tableau de bord. Les leçons contextuelles suggèrent un article pertinent après une hypo ou une hyper. Les icônes minimalistes abandonnent les cercles colorés au profit de glyphes simples et monochromes. La courbe d'hier dessine la veille comme une ligne discrète sous le graphique du jour."
+          }
+        },
+        "it": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "La dimensione del testo e lo sfondo si applicano solo a Prvital. Il feedback aptico aggiunge un tocco leggero alle azioni principali. Il compagno quotidiano è una nota amichevole e incoraggiante in cima alla dashboard. Le lezioni contestuali suggeriscono un articolo pertinente dopo un valore basso o alto. Le icone minimaliste rinunciano ai cerchi colorati a favore di semplici simboli monocromatici. La curva di ieri disegna il giorno precedente come una linea tenue sotto il grafico di oggi."
+          }
+        },
+        "nl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Tekstgrootte en achtergrond gelden alleen voor Prvital. Haptiek voegt een zachte tik toe aan belangrijke acties. De dagelijkse metgezel is een vriendelijke, bemoedigende notitie boven aan je dashboard. Contextuele lessen stellen een relevant artikel voor na een lage of hoge waarde. Minimalistische pictogrammen laten de gekleurde cirkels vallen voor eenvoudige, monochrome symbolen. De curve van gisteren tekent de vorige dag als een subtiele lijn onder de grafiek van vandaag."
+          }
+        },
+        "pl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Rozmiar tekstu i tło dotyczą tylko Prvital. Wibracje dodają delikatne stuknięcie przy kluczowych czynnościach. Codzienny towarzysz to przyjazna, zachęcająca notatka u góry panelu. Lekcje kontekstowe proponują odpowiedni artykuł po niskim lub wysokim poziomie. Minimalistyczne ikony rezygnują z kolorowych kółek na rzecz prostych, monochromatycznych symboli. Krzywa z wczoraj rysuje poprzedni dzień jako delikatną linię pod dzisiejszym wykresem."
+          }
+        },
+        "pt": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "O tamanho do texto e o fundo aplicam-se apenas ao Prvital. O retorno tátil adiciona um toque suave às ações principais. O companheiro diário é uma nota amigável e encorajadora no topo do painel. As lições contextuais sugerem um artigo relevante após uma baixa ou uma alta. Os ícones minimalistas dispensam os círculos coloridos por símbolos simples e monocromáticos. A curva de ontem desenha o dia anterior como uma linha ténue sob o gráfico de hoje."
+          }
+        },
+        "ro": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Mărimea textului și fundalul se aplică doar în Prvital. Vibrațiile adaugă o atingere ușoară la acțiunile importante. Însoțitorul zilnic este o notă prietenoasă și încurajatoare în capul panoului. Lecțiile contextuale sugerează un articol relevant după o hipoglicemie sau o hiperglicemie. Iconițele minimaliste renunță la cercurile colorate în favoarea unor simboluri simple, monocrome. Curba de ieri desenează ziua precedentă ca o linie discretă sub graficul de azi."
+          }
+        },
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Размер текста и фон применяются только в Prvital. Тактильная отдача добавляет мягкое касание к ключевым действиям. Ежедневный спутник — это дружелюбная, ободряющая заметка вверху панели. Контекстные уроки предлагают подходящую статью после понижения или повышения. Минималистичные значки убирают цветные кружки в пользу простых монохромных символов. Кривая вчерашнего дня отображает предыдущий день тонкой линией под сегодняшним графиком."
+          }
+        }
+      }
+    },
     "The Glucose Management Indicator (GMI) turns your average sensor glucose into a percentage on the same scale as a lab A1c. It's an estimate of where your A1c is likely to land.": {
       "extractionState": "manual",
       "localizations": {
@@ -89783,6 +89842,65 @@
           "stringUnit": {
             "state": "translated",
             "value": "Вчера"
+          }
+        }
+      }
+    },
+    "Yesterday's curve": {
+      "extractionState": "manual",
+      "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Kurve von gestern"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Curva de ayer"
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Courbe d'hier"
+          }
+        },
+        "it": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Curva di ieri"
+          }
+        },
+        "nl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Curve van gisteren"
+          }
+        },
+        "pl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Krzywa z wczoraj"
+          }
+        },
+        "pt": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Curva de ontem"
+          }
+        },
+        "ro": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Curba de ieri"
+          }
+        },
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Кривая вчера"
           }
         }
       }
