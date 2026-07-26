@@ -144,19 +144,46 @@ extension View {
 /// The five primary destinations. History, Charts, Statistics and Export are
 /// reached from within Insights; the Calendar month view is reached from the
 /// Journal; quick entry is presented from Dashboard/Journal.
+/// The app's tab shell: four real destinations plus a centre "+" that never
+/// selects — it opens the quick-entry hub and snaps back, like a floating
+/// action button living in the tab bar (the Prvio pattern the user asked for).
+/// Learn lost its tab (rarely visited; lessons already surface contextually on
+/// the dashboard) and now lives behind the book button on Insights.
 struct MainTabView: View {
+    private enum MainTab: Hashable { case home, journal, add, insights, settings }
+    @State private var selection: MainTab = .home
+    @State private var showQuickAdd = false
+
     var body: some View {
-        TabView {
+        TabView(selection: $selection) {
             DashboardView()
                 .tabItem { Label("Dashboard", systemImage: "drop.fill") }
+                .tag(MainTab.home)
             JournalView()
                 .tabItem { Label("Journal", systemImage: "book.closed.fill") }
+                .tag(MainTab.journal)
+            Color.clear
+                .tabItem { Label("Add", systemImage: "plus.circle.fill") }
+                .tag(MainTab.add)
             InsightsView()
                 .tabItem { Label("Insights", systemImage: "chart.xyaxis.line") }
-            LearnView()
-                .tabItem { Label("Learn", systemImage: "book.fill") }
+                .tag(MainTab.insights)
             SettingsView()
                 .tabItem { Label("Settings", systemImage: "gearshape.fill") }
+                .tag(MainTab.settings)
         }
+        // The bar tucks away while scrolling and returns on touch — content
+        // breathes on every tab.
+        .tabBarMinimizeBehavior(.onScrollDown)
+        .onChange(of: selection) { old, new in
+            // "+" acts, it doesn't navigate: bounce straight back to the tab the
+            // user was on and raise the quick-entry hub.
+            if new == .add {
+                selection = old
+                Haptics.play(.light)
+                showQuickAdd = true
+            }
+        }
+        .sheet(isPresented: $showQuickAdd) { QuickEntrySheet() }
     }
 }

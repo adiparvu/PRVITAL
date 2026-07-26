@@ -43,6 +43,8 @@ struct JournalView: View {
     }
 
     @State private var editTarget: JournalEditTarget?
+    /// Anchors the zoom transition from the week strip into its digest.
+    @Namespace private var zoomNamespace
     @State private var showingQuickEntry = false
     @State private var showingWeeklyDigest = false
     @State private var mode: JournalMode = .days
@@ -136,7 +138,9 @@ struct JournalView: View {
                 QuickEntrySheet()
             }
             .sheet(isPresented: $showingWeeklyDigest) {
+                // The week strip zooms open into its digest.
                 WeeklyDigestView()
+                    .navigationTransition(.zoom(sourceID: "weeklyDigest", in: zoomNamespace))
             }
             .sheet(item: $editTarget) { target in
                 editorSheet(for: target.item)
@@ -174,6 +178,7 @@ struct JournalView: View {
                                 showingWeeklyDigest = true
                             } label: {
                                 weekSummaryStrip(weekSummary)
+                                    .matchedTransitionSource(id: "weeklyDigest", in: zoomNamespace)
                             }
                             .buttonStyle(PressableCardStyle())
                             .appearTransition(delay: 0)

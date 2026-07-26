@@ -21,6 +21,7 @@ struct InsightsView: View {
     @State private var showingWeeklyDigest = false
     @State private var showingPlainSummary = false
     @State private var showingExport = false
+    @State private var showingLearn = false
     @State private var showingHealth = false
     // Session-only: the user can dismiss the pinned insights card with its X; it
     // is intentionally NOT persisted, so it returns the next time the app opens.
@@ -110,6 +111,17 @@ struct InsightsView: View {
                 // (per device feedback: "all of these into one menu button").
                 // History moved to the Journal tab (its "List" mode); Insights is
                 // trends + reports only now.
+                // Learn lost its tab (device-approved plan): the whole education
+                // hub now lives one tap away, here on Insights.
+                ToolbarItem(placement: .topBarTrailing) {
+                    Button {
+                        Haptics.play(.selection)
+                        showingLearn = true
+                    } label: {
+                        Image(systemName: "book")
+                    }
+                    .accessibilityLabel("Learn")
+                }
                 ToolbarItem(placement: .topBarTrailing) {
                     Menu {
                         Button {
@@ -143,6 +155,7 @@ struct InsightsView: View {
                 }
             }
             .sheet(isPresented: $showingWeeklyDigest) { WeeklyDigestView() }
+            .sheet(isPresented: $showingLearn) { LearnView() }
             .sheet(isPresented: $showingPlainSummary) {
                 NavigationStack {
                     PlainLanguageSummaryView()

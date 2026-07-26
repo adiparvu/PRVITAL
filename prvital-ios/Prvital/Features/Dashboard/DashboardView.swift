@@ -23,6 +23,8 @@ struct DashboardView: View {
     @Query private var notes: [ObservationEntry]
     @Query(sort: \SensorSession.startDate, order: .reverse) private var sensorSessions: [SensorSession]
     @Environment(\.scenePhase) private var scenePhase
+    /// Anchors the zoom navigation transitions (card → detail).
+    @Namespace private var zoomNamespace
     // Session-only dismissal of the companion card: cleared when the app returns
     // to the foreground, so it comes back on the next open (as requested).
     @State private var companionDismissed = false
@@ -543,7 +545,10 @@ struct DashboardView: View {
                 dawnRiseLikely: dawnRiseLikelyForLesson()),
            let article = LearnLibrary.articles.first(where: { $0.id == lesson.articleID }) {
             NavigationLink {
+                // The card *opens into* its article instead of sliding — the
+                // native zoom transition, anchored on the card below.
                 ArticleDetailView(article: article)
+                    .navigationTransition(.zoom(sourceID: "contextualLesson", in: zoomNamespace))
             } label: {
                 HStack(spacing: 14) {
                     Image(systemName: article.symbol)
@@ -571,6 +576,7 @@ struct DashboardView: View {
                 .frame(maxWidth: .infinity, alignment: .leading)
                 .glassCard(cornerRadius: 20, padding: 14)
                 .contentShape(.rect)
+                .matchedTransitionSource(id: "contextualLesson", in: zoomNamespace)
             }
             .buttonStyle(PressableCardStyle())
         }
