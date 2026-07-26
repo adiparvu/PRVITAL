@@ -440,6 +440,11 @@ private struct AGPChart: View {
     let unit: GlucoseUnit
 
     @State private var appeared = false
+    /// Layered reveal: 1 = the IQR band, 2 = the 10/90 envelope, 3 = the
+    /// median. Each layer fades in a beat after the previous one, so the AGP
+    /// reads as built up, not dumped.
+    @State private var revealStage = 0
+    @Environment(\.accessibilityReduceMotion) private var reduceMotion
 
     private var yDomain: ClosedRange<Double> {
         let hi = max(buckets.map(\.p90).max() ?? thresholds.high, thresholds.high) + 20
@@ -460,6 +465,7 @@ private struct AGPChart: View {
                          yStart: .value("p25", b.p25), yEnd: .value("p75", b.p75))
                     .interpolationMethod(.catmullRom)
                     .foregroundStyle(Theme.accent.opacity(0.18))
+                    .opacity(revealStage >= 1 ? 1 : 0)
             }
             ForEach(buckets) { b in
                 LineMark(x: .value("Time", b.minutesOfDay), y: .value("p10", b.p10),
@@ -467,6 +473,7 @@ private struct AGPChart: View {
                     .interpolationMethod(.catmullRom)
                     .foregroundStyle(Theme.textTertiary)
                     .lineStyle(StrokeStyle(lineWidth: 1, dash: [3, 3]))
+                    .opacity(revealStage >= 2 ? 1 : 0)
             }
             ForEach(buckets) { b in
                 LineMark(x: .value("Time", b.minutesOfDay), y: .value("p90", b.p90),
@@ -474,6 +481,7 @@ private struct AGPChart: View {
                     .interpolationMethod(.catmullRom)
                     .foregroundStyle(Theme.textTertiary)
                     .lineStyle(StrokeStyle(lineWidth: 1, dash: [3, 3]))
+                    .opacity(revealStage >= 2 ? 1 : 0)
             }
             ForEach(buckets) { b in
                 LineMark(x: .value("Time", b.minutesOfDay), y: .value("Median", b.p50),
@@ -481,6 +489,7 @@ private struct AGPChart: View {
                     .interpolationMethod(.catmullRom)
                     .foregroundStyle(Theme.accent)
                     .lineStyle(StrokeStyle(lineWidth: 2.5))
+                    .opacity(revealStage >= 3 ? 1 : 0)
             }
         }
         .chartYScale(domain: yDomain)
@@ -502,10 +511,21 @@ private struct AGPChart: View {
             }
         }
         .frame(height: 240)
+        .animation(.easeOut(duration: 0.45), value: revealStage)
         .opacity(appeared ? 1 : 0)
         .scaleEffect(y: appeared ? 1 : 0.96, anchor: .bottom)
         .onAppear {
             withAnimation(.spring(response: 0.7, dampingFraction: 0.85)) { appeared = true }
+        }
+        .task {
+            // Build the AGP up in layers: band → envelope → median. Reduce
+            // Motion shows everything at once.
+            guard revealStage < 3 else { return }
+            if reduceMotion { revealStage = 3; return }
+            for stage in 1...3 {
+                try? await Task.sleep(for: .milliseconds(160))
+                revealStage = stage
+            }
         }
     }
 }

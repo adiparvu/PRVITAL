@@ -42,6 +42,8 @@ final class Preferences {
         self.showContextualLessons = (self.defaults.object(forKey: Keys.showContextualLessons) as? Bool) ?? true
         self.minimalistIcons = (self.defaults.object(forKey: Keys.minimalistIcons) as? Bool) ?? false
         self.showYesterdayShadow = (self.defaults.object(forKey: Keys.showYesterdayShadow) as? Bool) ?? true
+        self.dashboardCardOrder = self.defaults.stringArray(forKey: Keys.dashboardCardOrder) ?? []
+        self.dashboardHiddenCards = self.defaults.stringArray(forKey: Keys.dashboardHiddenCards) ?? []
         self.backgroundKindRaw = self.defaults.string(forKey: Keys.backgroundKind) ?? AppBackgroundKind.standard.rawValue
         self.backgroundGradientRaw = self.defaults.string(forKey: Keys.backgroundGradient) ?? BackgroundGradient.aurora.rawValue
         self.backgroundPhotoData = self.defaults.data(forKey: Keys.backgroundPhoto)
@@ -246,6 +248,18 @@ final class Preferences {
         didSet { defaults.set(showYesterdayShadow, forKey: Keys.showYesterdayShadow) }
     }
 
+    /// The dashboard deck's card order (raw `DashboardCard` values). Empty means
+    /// the default order; unknown/new cards append automatically on resolve.
+    var dashboardCardOrder: [String] {
+        didSet { defaults.set(dashboardCardOrder, forKey: Keys.dashboardCardOrder) }
+    }
+
+    /// Cards the user switched off (raw values). The companion and lessons cards
+    /// keep their own dedicated toggles instead of living in this set.
+    var dashboardHiddenCards: [String] {
+        didSet { defaults.set(dashboardHiddenCards, forKey: Keys.dashboardHiddenCards) }
+    }
+
     /// Background: standard surface, a gradient preset, or the user's photo.
     var backgroundKindRaw: String {
         didSet { defaults.set(backgroundKindRaw, forKey: Keys.backgroundKind) }
@@ -313,6 +327,8 @@ final class Preferences {
         static let showContextualLessons = "pref.showContextualLessons"
         static let minimalistIcons = "pref.minimalistIcons"
         static let showYesterdayShadow = "pref.showYesterdayShadow"
+        static let dashboardCardOrder = "pref.dashboardCardOrder"
+        static let dashboardHiddenCards = "pref.dashboardHiddenCards"
         static let backgroundKind = AppBackgroundKind.preferenceKey
         static let backgroundGradient = BackgroundGradient.preferenceKey
         static let backgroundPhoto = AppBackgroundKind.photoKey

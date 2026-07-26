@@ -62,6 +62,7 @@ struct DashboardView: View {
     @State private var showQuickEntry = false
     @State private var showGlucoseEntry = false
     @State private var showGoalsEditor = false
+    @State private var showCustomize = false
     @State private var showRuleOf15 = false
     /// The quick-action row's active entry sheet (glucose / carbs / insulin / …).
     @State private var quickAction: DashboardQuickAction?
@@ -96,69 +97,38 @@ struct DashboardView: View {
                         .appearTransition(delay: 0)
                     quickActionsRow()
                         .appearTransition(delay: 0.01)
-                    if env.preferences.showDailyCompanion && !companionDismissed {
-                        dailyCompanionCard(summary: summary, todayStats: todayStats, thresholds: thresholds)
-                            .appearTransition(delay: 0.02)
-                    }
+
+                    // Safety banners stay pinned above the customisable deck.
                     if env.preferences.sickDayEnabled {
                         SickDayBanner()
-                            .appearTransition(delay: 0.03)
+                            .appearTransition(delay: 0.02)
                     } else {
                         let suggestion = SickDayAdvisor.evaluate(readings: readings)
                         if suggestion.shouldSuggest {
                             SickDaySuggestionBanner(averageMgdL: suggestion.averageMgdL, unit: unit)
-                                .appearTransition(delay: 0.03)
+                                .appearTransition(delay: 0.02)
                         }
-                    }
-                    trendSection(summary: summary, thresholds: thresholds, unit: unit)
-                        .appearTransition(delay: 0.06)
-                    if env.preferences.showContextualLessons {
-                        contextualLessonCard(thresholds: thresholds)
-                            .appearTransition(delay: 0.08)
-                    }
-                    if todayStats.hasGlucose {
-                        todayCard(todayStats,
-                                  forecast: tirForecast(thresholds: thresholds),
-                                  goalFraction: env.preferences.glucoseGoals.targetTIRFraction)
-                            .appearTransition(delay: 0.12)
-                    }
-                    if env.preferences.glucoseGoals.enabled {
-                        goalsCard(todayStats, thresholds: thresholds)
-                            .appearTransition(delay: 0.14)
-                    }
-                    if todayStats.hasGlucose {
-                        ringsCard(thresholds: thresholds)
-                            .appearTransition(delay: 0.16)
                     }
                     if let session = sensorSessions.first {
                         let sensorStatus = SensorSessionEvaluator.status(
                             start: session.startDate, kind: session.kind, now: Date())
                         if sensorStatus.phase != .active {
                             sensorBanner(session: session, status: sensorStatus)
-                                .appearTransition(delay: 0.15)
+                                .appearTransition(delay: 0.02)
                         }
                     }
-                    let scheduleStatuses = glucoseScheduleStatuses
-                    if !scheduleStatuses.isEmpty {
-                        scheduleCard(scheduleStatuses)
-                            .appearTransition(delay: 0.18)
+
+                    // The customisable deck: every card below in the user's
+                    // chosen order, hidden ones skipped (Customize page).
+                    let orderedCards = DashboardCard.order(from: env.preferences.dashboardCardOrder)
+                    let hiddenCards = Set(env.preferences.dashboardHiddenCards)
+                    ForEach(Array(orderedCards.enumerated()), id: \.element) { index, card in
+                        if isCardVisible(card, hidden: hiddenCards) {
+                            dashboardCard(card, summary: summary, thresholds: thresholds,
+                                          unit: unit, todayStats: todayStats, bolus: bolus)
+                                .appearTransition(delay: 0.04 + Double(min(index, 8)) * 0.03)
+                        }
                     }
-                    if bolus.isEnabled && bolus.isValid {
-                        let now = Date()
-                        onBoardCard(
-                            iob: InsulinMath.activeInsulin(doses: insulin, at: now, parameters: bolus),
-                            cob: CarbMath.carbsOnBoard(entries: carbs, at: now)
-                        )
-                        .appearTransition(delay: 0.24)
-                    }
-                    TodayTimelineCard(
-                        readings: readings, insulin: insulin, carbs: carbs, activity: activity,
-                        medications: medications, ketones: ketones, notes: notes,
-                        unit: unit, thresholds: thresholds
-                    )
-                    .appearTransition(delay: 0.28)
-                    recentRow(summary: summary)
-                        .appearTransition(delay: 0.30)
                 }
                 .padding()
             }
@@ -183,6 +153,15 @@ struct DashboardView: View {
                     }
                     .accessibilityLabel("Goals")
                     .accessibilityHint("Set your time-in-range and A1c goals")
+                }
+                ToolbarItem(placement: .topBarLeading) {
+                    Button {
+                        Haptics.play(.selection)
+                        showCustomize = true
+                    } label: {
+                        Image(systemName: "slider.horizontal.3")
+                    }
+                    .accessibilityLabel("Customize page")
                 }
                 ToolbarItem(placement: .primaryAction) {
                     Button {
@@ -222,6 +201,7 @@ struct DashboardView: View {
             .sheet(isPresented: $showGlucoseEntry) {
                 GlucoseEntrySheet()
             }
+            .sheet(isPresented: $showCustomize) { DashboardCustomizeView() }
             .sheet(isPresented: $showGoalsEditor) {
                 GoalsEditorSheet()
             }
@@ -328,6 +308,19 @@ struct DashboardView: View {
                     }
                 }
                 .buttonStyle(PressableCardStyle())
+                // The ambient halo: a barely-there wash of the zone colour behind
+                // the ring — Apple-Weather sky, not a traffic light. Crossfades
+                // slowly when the zone changes.
+                .background {
+                    Circle()
+                        .fill(zone.color)
+                        .frame(width: 420, height: 420)
+                        .blur(radius: 90)
+                        .opacity(0.15)
+                        .offset(y: -14)
+                        .allowsHitTesting(false)
+                        .animation(.smooth(duration: 1.2), value: zone.label)
+                }
                 .accessibilityHint("Opens glucose entry")
 
                 VStack(spacing: 4) {
@@ -409,6 +402,72 @@ struct DashboardView: View {
         guard let minutes = summary.minutesSinceUpdate else { return String(localized: "Updated recently") }
         if minutes <= 0 { return String(localized: "Updated just now") }
         return String(localized: "Updated \(minutes) min ago")
+    }
+
+    // MARK: - Customisable deck
+
+    private func isCardVisible(_ card: DashboardCard, hidden: Set<String>) -> Bool {
+        switch card {
+        case .companion: env.preferences.showDailyCompanion
+        case .lessons: env.preferences.showContextualLessons
+        default: !hidden.contains(card.rawValue)
+        }
+    }
+
+    @ViewBuilder
+    private func dashboardCard(
+        _ card: DashboardCard,
+        summary: DashboardSummary,
+        thresholds: GlucoseThresholds,
+        unit: GlucoseUnit,
+        todayStats: PeriodStatistics,
+        bolus: BolusParameters
+    ) -> some View {
+        switch card {
+        case .companion:
+            if !companionDismissed {
+                dailyCompanionCard(summary: summary, todayStats: todayStats, thresholds: thresholds)
+            }
+        case .trend:
+            trendSection(summary: summary, thresholds: thresholds, unit: unit)
+        case .lessons:
+            contextualLessonCard(thresholds: thresholds)
+        case .today:
+            if todayStats.hasGlucose {
+                todayCard(todayStats,
+                          forecast: tirForecast(thresholds: thresholds),
+                          goalFraction: env.preferences.glucoseGoals.targetTIRFraction)
+            }
+        case .goals:
+            if env.preferences.glucoseGoals.enabled {
+                goalsCard(todayStats, thresholds: thresholds)
+            }
+        case .rings:
+            if todayStats.hasGlucose {
+                ringsCard(thresholds: thresholds)
+            }
+        case .schedule:
+            let scheduleStatuses = glucoseScheduleStatuses
+            if !scheduleStatuses.isEmpty {
+                scheduleCard(scheduleStatuses)
+            }
+        case .onBoard:
+            if bolus.isEnabled && bolus.isValid {
+                let now = Date()
+                onBoardCard(
+                    iob: InsulinMath.activeInsulin(doses: insulin, at: now, parameters: bolus),
+                    cob: CarbMath.carbsOnBoard(entries: carbs, at: now)
+                )
+            }
+        case .timeline:
+            TodayTimelineCard(
+                readings: readings, insulin: insulin, carbs: carbs, activity: activity,
+                medications: medications, ketones: ketones, notes: notes,
+                unit: unit, thresholds: thresholds
+            )
+        case .recent:
+            recentRow(summary: summary)
+        }
     }
 
     // MARK: - Predictive warning

@@ -49,6 +49,9 @@ struct ChartsContent: View {
     @Query private var notes: [ObservationEntry]
 
     @State private var derived = ChartsDerived()
+    /// Drives the distribution histogram's one-shot rise (bars grow from zero).
+    @State private var histogramRisen = false
+    @Environment(\.accessibilityReduceMotion) private var reduceMotion
     // Apple Health's daily exercise minutes (appleExerciseTime — the Watch's green
     // ring) for the window, fetched off the render path and merged into the
     // Activity chart so it reflects real Watch activity, not only logged workouts.
@@ -146,14 +149,18 @@ struct ChartsContent: View {
                 emptyChart("No glucose readings in this period.")
             } else {
                 Chart(derived.distribution) { bin in
+                    // Bars rise from zero on first appearance — see histogramRisen.
                     BarMark(
                         x: .value("Glucose", bin.midpoint),
-                        y: .value("Readings", bin.count),
+                        y: .value("Readings", histogramRisen ? bin.count : 0),
                         width: .fixed(9)
                     )
                     .foregroundStyle(barColor(bin).gradient)
                     .cornerRadius(2)
                 }
+                .animation(reduceMotion ? nil : .spring(response: 0.55, dampingFraction: 0.8),
+                           value: histogramRisen)
+                .task { histogramRisen = true }
                 .chartXAxis {
                     AxisMarks(values: .stride(by: 40)) { value in
                         AxisGridLine().foregroundStyle(Theme.hairline)
