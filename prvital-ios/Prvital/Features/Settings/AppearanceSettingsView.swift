@@ -408,7 +408,9 @@ struct BackgroundSettingsView: View {
     }
 
     /// A small neutral squircle behind a row's glyph, like the reference rows.
-    private func tile(_ symbol: String) -> some View {
+    /// Nonisolated (pure view construction) so the @Sendable PhotosPicker
+    /// label closure can call it too.
+    private nonisolated func tile(_ symbol: String) -> some View {
         Image(systemName: symbol)
             .font(.system(size: 15, weight: .semibold))
             .foregroundStyle(Theme.textPrimary)
