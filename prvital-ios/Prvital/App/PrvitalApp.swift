@@ -242,9 +242,7 @@ struct MainTabView: View {
                 }
                 .tag(MainTab.settings)
         }
-        // The bar tucks away while scrolling and returns on touch — content
-        // breathes on every tab.
-        .tabBarMinimizeBehavior(.onScrollDown)
+        // The bar stays put while scrolling (device feedback: no minimizing).
         .onChange(of: selection) { old, new in
             // "+" acts, it doesn't navigate: bounce straight back to the tab the
             // user was on and raise the quick-entry hub.
