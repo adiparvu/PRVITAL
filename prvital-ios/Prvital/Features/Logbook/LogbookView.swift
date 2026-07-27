@@ -9,7 +9,42 @@ import SwiftData
 /// offers it through the system share sheet (which includes Print).
 /// The register table's content, without its own `NavigationStack`/title, so the
 /// Journal tab embeds it as its "Logbook" mode (Faza 1).
+///
+/// The shell owns only the selected window and recreates the table per window,
+/// so the SwiftData queries cover exactly the chosen slice — the old single
+/// view queried 370 days up front (~100k readings after a full import) just to
+/// render the default week.
 struct LogbookContent: View {
+    @State private var range: LogbookRange = .week
+
+    var body: some View {
+        LogbookTable(range: range)
+            .id(range)
+            .toolbar {
+                ToolbarItem(placement: .topBarLeading) { rangeMenu }
+            }
+    }
+
+    /// Menu with a checkmark on the current window (Day … 1 year).
+    private var rangeMenu: some View {
+        Menu {
+            Picker("Period", selection: $range) {
+                ForEach(LogbookRange.allCases) { option in
+                    Text(verbatim: PrvitalString(option.title)).tag(option)
+                }
+            }
+        } label: {
+            HStack(spacing: 4) {
+                Text(verbatim: PrvitalString(range.title)).font(.system(size: 15, weight: .semibold))
+                Image(systemName: "chevron.up.chevron.down").font(.caption2.weight(.bold))
+            }
+        }
+        .accessibilityLabel("Choose period")
+    }
+}
+
+/// The register table for ONE window, with queries bounded to exactly it.
+private struct LogbookTable: View {
     @Environment(AppEnvironment.self) private var env
     @Environment(\.modelContext) private var modelContext
     // Declared so the view re-renders when the in-app language changes: the
@@ -17,29 +52,28 @@ struct LogbookContent: View {
     // which SwiftUI's `\.locale` does not re-resolve on its own).
     @Environment(\.locale) private var locale
 
+    let range: LogbookRange
+
     @Query private var glucose: [GlucoseReading]
     @Query private var insulin: [InsulinDose]
     @Query private var carbs: [CarbEntry]
     @Query private var observations: [ObservationEntry]
 
-    /// The widest register window is one year, so the queries never need more
-    /// than ~370 days. Windowing them here keeps a synced (or freshly imported)
-    /// 100k+-row table off the main thread — the builder still slices to the
-    /// selected `interval` below.
-    init() {
-        let cutoff = Calendar.current.date(byAdding: .day, value: -370, to: Date())
-            ?? Date().addingTimeInterval(-370 * 86_400)
-        _glucose = Query(filter: #Predicate<GlucoseReading> { $0.timestamp >= cutoff },
+    init(range: LogbookRange) {
+        self.range = range
+        let calendar = Calendar.current
+        let start = calendar.startOfDay(
+            for: calendar.date(byAdding: .day, value: -(range.days - 1), to: Date()) ?? Date())
+        _glucose = Query(filter: #Predicate<GlucoseReading> { $0.timestamp >= start },
                          sort: \.timestamp, order: .reverse)
-        _insulin = Query(filter: #Predicate<InsulinDose> { $0.timestamp >= cutoff },
+        _insulin = Query(filter: #Predicate<InsulinDose> { $0.timestamp >= start },
                          sort: \.timestamp, order: .reverse)
-        _carbs = Query(filter: #Predicate<CarbEntry> { $0.timestamp >= cutoff },
+        _carbs = Query(filter: #Predicate<CarbEntry> { $0.timestamp >= start },
                        sort: \.timestamp, order: .reverse)
-        _observations = Query(filter: #Predicate<ObservationEntry> { $0.timestamp >= cutoff },
+        _observations = Query(filter: #Predicate<ObservationEntry> { $0.timestamp >= start },
                               sort: \.timestamp, order: .reverse)
     }
 
-    @State private var range: LogbookRange = .week
     @State private var sheetTarget: LogbookSheetTarget?
     @State private var shareItem: LogbookShareItem?
     @State private var errorMessage: String?
@@ -128,7 +162,6 @@ struct LogbookContent: View {
             .task(id: rebuildKey) { await rebuild() }
             .background(Theme.background)
             .toolbar {
-                ToolbarItem(placement: .topBarLeading) { rangeMenu }
                 ToolbarItem(placement: .primaryAction) {
                     Button {
                         Haptics.play(.light)
@@ -152,25 +185,6 @@ struct LogbookContent: View {
             } message: { message in
                 Text(message)
             }
-    }
-
-    // MARK: - Range picker
-
-    /// Menu with a checkmark on the current window (Day … 1 year).
-    private var rangeMenu: some View {
-        Menu {
-            Picker("Period", selection: $range) {
-                ForEach(LogbookRange.allCases) { option in
-                    Text(verbatim: PrvitalString(option.title)).tag(option)
-                }
-            }
-        } label: {
-            HStack(spacing: 4) {
-                Text(verbatim: PrvitalString(range.title)).font(.system(size: 15, weight: .semibold))
-                Image(systemName: "chevron.up.chevron.down").font(.caption2.weight(.bold))
-            }
-        }
-        .accessibilityLabel("Choose period")
     }
 
     // MARK: - Table

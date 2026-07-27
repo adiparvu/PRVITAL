@@ -22,15 +22,19 @@ struct JournalView: View {
 
     /// The Journal shows at most the 14 most-recent days *with data*, so the
     /// queries only need a recent window — never the whole (potentially 100k-row,
-    /// post-import) history. 45 days covers 14 days-with-data even for someone
-    /// logging every few days, at a fraction of the old 120-day window's cost —
-    /// for a CGM user that window alone was ~35k readings re-materialised on the
-    /// main thread on every store change. Older days stay reachable through the
-    /// Calendar mode, which loads months on demand.
+    /// post-import) history. Non-glucose records keep a 45-day window (so a
+    /// sparse logger still fills 14 day cards), but GLUCOSE gets a tight 15-day
+    /// one: a CGM writes ~288 rows a day, and the 45-day window alone was ~13k
+    /// readings re-materialised on the main thread on every store change — the
+    /// single heaviest fetch behind the "switching to the Journal lags" feel.
+    /// Older days than the curve window still get their cards (from the other
+    /// records); full history stays reachable through Calendar, on demand.
     init() {
         let cutoff = Calendar.current.date(byAdding: .day, value: -45, to: Date())
             ?? Date().addingTimeInterval(-45 * 86_400)
-        _glucose = Query(filter: #Predicate<GlucoseReading> { $0.timestamp >= cutoff },
+        let glucoseCutoff = Calendar.current.date(byAdding: .day, value: -15, to: Date())
+            ?? Date().addingTimeInterval(-15 * 86_400)
+        _glucose = Query(filter: #Predicate<GlucoseReading> { $0.timestamp >= glucoseCutoff },
                          sort: \.timestamp, order: .reverse)
         _insulin = Query(filter: #Predicate<InsulinDose> { $0.timestamp >= cutoff },
                          sort: \.timestamp, order: .reverse)
@@ -184,51 +188,51 @@ struct JournalView: View {
                 .map { JournalWeekSummary.Day(day: $0.day, timeInRange: $0.stats.timeInRange) },
             now: Date()
         )
-        return Group {
+        // ONE stable ScrollView across all three states — swapping it for a
+        // ProgressView/empty view broke the tab bar's scroll-driven minimize
+        // and reset the scroll position on every rebuild.
+        return ScrollView {
             if buckets.isEmpty && isBuildingBuckets {
                 // First fill after switching in — never flash "No entries yet"
                 // while the cards are still being built.
                 ProgressView()
-                    .frame(maxWidth: .infinity, maxHeight: .infinity)
+                    .frame(maxWidth: .infinity)
+                    .padding(.top, 120)
             } else if buckets.isEmpty {
-                ScrollView {
-                    EmptyStateView(
-                        systemImage: "book.closed",
-                        title: "No entries yet",
-                        message: "Log glucose, insulin, meals, activity and notes — they'll appear here as day cards."
-                    )
-                    .padding(.top, 72)
-                }
+                EmptyStateView(
+                    systemImage: "book.closed",
+                    title: "No entries yet",
+                    message: "Log glucose, insulin, meals, activity and notes — they'll appear here as day cards."
+                )
+                .padding(.top, 72)
             } else {
-                ScrollView {
-                    LazyVStack(alignment: .leading, spacing: 20) {
-                        if let weekSummary {
-                            Button {
-                                Haptics.play(.light)
-                                showingWeeklyDigest = true
-                            } label: {
-                                weekSummaryStrip(weekSummary)
-                                    .matchedTransitionSource(id: "weeklyDigest", in: zoomNamespace)
-                            }
-                            .buttonStyle(PressableCardStyle())
-                            .appearTransition(delay: 0)
+                LazyVStack(alignment: .leading, spacing: 20) {
+                    if let weekSummary {
+                        Button {
+                            Haptics.play(.light)
+                            showingWeeklyDigest = true
+                        } label: {
+                            weekSummaryStrip(weekSummary)
+                                .matchedTransitionSource(id: "weeklyDigest", in: zoomNamespace)
                         }
-                        ForEach(Array(buckets.enumerated()), id: \.element.id) { index, bucket in
-                            JournalDayCard(
-                                bucket: bucket,
-                                density: density,
-                                unit: unit,
-                                thresholds: thresholds
-                            ) { item in
-                                Haptics.play(.selection)
-                                editTarget = JournalEditTarget(item: item)
-                            }
-                            .appearTransition(delay: Double(min(index + 1, 6)) * 0.05)
-                        }
+                        .buttonStyle(PressableCardStyle())
+                        .appearTransition(delay: 0)
                     }
-                    .padding()
-                    .animation(.snappy, value: density)
+                    ForEach(Array(buckets.enumerated()), id: \.element.id) { index, bucket in
+                        JournalDayCard(
+                            bucket: bucket,
+                            density: density,
+                            unit: unit,
+                            thresholds: thresholds
+                        ) { item in
+                            Haptics.play(.selection)
+                            editTarget = JournalEditTarget(item: item)
+                        }
+                        .appearTransition(delay: Double(min(index + 1, 6)) * 0.05)
+                    }
                 }
+                .padding()
+                .animation(.snappy, value: density)
             }
         }
     }

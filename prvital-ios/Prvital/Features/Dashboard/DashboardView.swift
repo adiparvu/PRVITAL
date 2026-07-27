@@ -29,10 +29,12 @@ struct DashboardView: View {
     // to the foreground, so it comes back on the next open (as requested).
     @State private var companionDismissed = false
 
-    /// How far back the dashboard reaches: enough for the 7-day forecast
-    /// baseline and a reasonable custom trend range. The custom picker is
-    /// capped to match so it can't ask for data the query didn't load.
-    private static let windowDays = 21
+    /// How far back the dashboard reaches: the 7-day forecast/dawn baseline,
+    /// today, and yesterday's ghost — nothing more. The custom trend picker is
+    /// capped to match so it can't ask for data the query didn't load; longer
+    /// ranges live in Analize. (Was 21 days: ~6k CGM rows re-materialised on
+    /// the main thread whenever the store changed — a steady source of jank.)
+    private static let windowDays = 8
 
     init() {
         let cutoff = Calendar.current.date(byAdding: .day, value: -Self.windowDays, to: Date())
@@ -91,10 +93,13 @@ struct DashboardView: View {
         let bolus = env.preferences.bolusParameters
 
         return NavigationStack {
-            Group {
+            // The ScrollView is ALWAYS the tab's content — hiding it behind an
+            // if/else while the derived bundle loads broke the tab bar's
+            // scroll-driven minimize and reset the scroll identity on every
+            // switch. The conditional now lives INSIDE the scroll.
+            ScrollView {
                 if let derived {
                     let summary = derived.summary
-            ScrollView {
                 VStack(spacing: 20) {
                     hero(summary: summary, thresholds: thresholds, unit: unit)
                         .appearTransition(delay: 0)
@@ -129,6 +134,7 @@ struct DashboardView: View {
                     }
                 }
                 .padding()
+                }
             }
             .refreshable {
                 // Surface genuine source/network failures (not "source not set
@@ -136,13 +142,6 @@ struct DashboardView: View {
                 // instead of silently looking like "no new data".
                 let report = await env.sync.syncAll()
                 syncFailure = report.failures.isEmpty ? nil : report.failures.joined(separator: "\n")
-            }
-                } else {
-                    // First frame after a cold launch: chrome only — the
-                    // derived bundle lands a beat later and rides the cards'
-                    // existing appear animations.
-                    Color.clear
-                }
             }
             .task(id: derivedKey) { await rebuildDerived() }
             .prvitalTabBackground()
