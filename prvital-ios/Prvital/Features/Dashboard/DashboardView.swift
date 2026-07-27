@@ -564,7 +564,10 @@ struct DashboardView: View {
                     bolus: env.preferences.bolusParameters)
                 let forecast = GlucoseForecast.project(
                     currentMgdL: current.valueMgdL, velocityMgdLPerMin: velocity.mgdLPerMinute,
-                    iob: vitals.insulinOnBoard, cob: vitals.carbsOnBoard, horizonMinutes: 30)
+                    iob: vitals.insulinOnBoard, cob: vitals.carbsOnBoard,
+                    minutesSinceReading: summary.now.timeIntervalSince(current.timestamp) / 60,
+                    sigmaMgdL: velocity.sigmaMgdL, slopeSEPerMinute: velocity.slopeSEPerMinute,
+                    horizonMinutes: 30)
                 velocityLine(velocity, currentMgdL: current.valueMgdL, unit: unit, forecast: forecast)
             }
             if windowReadings.isEmpty {

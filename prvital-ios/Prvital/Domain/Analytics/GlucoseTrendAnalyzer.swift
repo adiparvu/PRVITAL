@@ -1,11 +1,16 @@
 import Foundation
 
 /// A computed glucose rate of change and the trend it implies. `mgdLPerMinute`
-/// is the least-squares slope over the recent window; the projection lets the
-/// dashboard show where glucose is heading.
+/// is the recency-weighted least-squares slope over the recent window; the
+/// uncertainty figures let the forecast draw an honest, data-driven band
+/// instead of a fixed-width guess.
 struct GlucoseVelocity: Equatable, Sendable {
     let mgdLPerMinute: Double
     let trend: GlucoseTrend
+    /// Residual scatter of the fit (mg/dL) — how noisy the recent stream is.
+    var sigmaMgdL: Double = 5
+    /// Standard error of the slope (mg/dL/min) — how firm the rate estimate is.
+    var slopeSEPerMinute: Double = 0.1
 
     /// A linear projection `minutes` ahead, clamped to a non-negative value.
     func projectedMgdL(from currentMgdL: Double, minutes: Double) -> Double {
@@ -15,44 +20,70 @@ struct GlucoseVelocity: Equatable, Sendable {
 
 /// Derives a short-term glucose velocity and projection from recent readings.
 ///
-/// The velocity is the ordinary least-squares slope of value over time across
-/// the recent window — more robust to a single noisy point than a two-point
-/// delta. It's a deterministic function of the readings, so it is unit-tested
-/// and drives only display (a projection is never a substitute for a real
-/// reading).
+/// The velocity is a *recency-weighted* least-squares slope over the recent
+/// window: newer readings count more (weights halve every `halfLifeMinutes`),
+/// so the rate tracks the stream's current direction instead of lagging behind
+/// a turn the way a plain average does. One robust pass drops clear outliers
+/// (compression lows, spikes) before the final fit, and the fit's residual
+/// noise and slope standard error ride along for honest downstream bands.
+/// Deterministic and unit-tested; drives only display (a projection is never a
+/// substitute for a real reading).
 enum GlucoseTrendAnalyzer {
 
-    /// Least-squares slope (mg/dL per minute) over active readings within
-    /// `window` of `now`. Returns `nil` unless there are at least three recent
-    /// points with a real spread in time.
+    /// Recency-weighted least-squares slope (mg/dL per minute) over active
+    /// readings within `window` of `now`. Returns `nil` unless there are at
+    /// least three recent points with a real spread in time.
     static func velocity(
         _ readings: [GlucoseReading],
         now: Date,
-        window: TimeInterval = 20 * 60
+        window: TimeInterval = 20 * 60,
+        halfLifeMinutes: Double = 8
     ) -> GlucoseVelocity? {
-        let recent = readings.filter {
-            $0.isActive && $0.timestamp <= now && now.timeIntervalSince($0.timestamp) <= window
-        }
-        guard recent.count >= 3 else { return nil }
-
         // x in minutes relative to `now` (<= 0), y in mg/dL.
-        let xs = recent.map { $0.timestamp.timeIntervalSince(now) / 60 }
-        let ys = recent.map(\.valueMgdL)
-        let n = Double(xs.count)
-        let meanX = xs.reduce(0, +) / n
-        let meanY = ys.reduce(0, +) / n
+        var points: [(x: Double, y: Double)] = readings
+            .filter { $0.isActive && $0.timestamp <= now && now.timeIntervalSince($0.timestamp) <= window }
+            .map { ($0.timestamp.timeIntervalSince(now) / 60, $0.valueMgdL) }
+        guard points.count >= 3 else { return nil }
 
-        var numerator = 0.0
-        var denominator = 0.0
-        for i in xs.indices {
-            let dx = xs[i] - meanX
-            numerator += dx * (ys[i] - meanY)
-            denominator += dx * dx
+        func fit(_ pts: [(x: Double, y: Double)]) -> (slope: Double, intercept: Double, sxx: Double)? {
+            // Weight halves every halfLife minutes into the past (x <= 0).
+            let ws = pts.map { exp($0.x * M_LN2 / halfLifeMinutes) }
+            let sumW = ws.reduce(0, +)
+            var meanX = 0.0, meanY = 0.0
+            for (w, p) in zip(ws, pts) { meanX += w * p.x; meanY += w * p.y }
+            meanX /= sumW; meanY /= sumW
+            var sxx = 0.0, sxy = 0.0
+            for (w, p) in zip(ws, pts) {
+                sxx += w * (p.x - meanX) * (p.x - meanX)
+                sxy += w * (p.x - meanX) * (p.y - meanY)
+            }
+            guard sxx > 1e-6 else { return nil } // readings share one instant
+            return (sxy / sxx, meanY - (sxy / sxx) * meanX, sxx)
         }
-        guard denominator > 1e-6 else { return nil } // readings share one instant
 
-        let slope = numerator / denominator
-        return GlucoseVelocity(mgdLPerMinute: slope, trend: trend(forSlopePerMinute: slope))
+        guard var line = fit(points) else { return nil }
+
+        // One robust pass: a single compression low or spike shouldn't bend the
+        // rate. The cutoff scales from the MEDIAN residual (an outlier inflates
+        // an rms scale enough to hide itself behind it — the median stays put),
+        // with a floor above ordinary sensor noise.
+        let residuals = points.map { abs($0.y - (line.intercept + line.slope * $0.x)) }
+        let medianResidual = residuals.sorted()[residuals.count / 2]
+        let cutoff = max(8, 3 * medianResidual)
+        let kept = zip(points, residuals).filter { $0.1 <= cutoff }.map(\.0)
+        if kept.count >= 3, kept.count < points.count, let refit = fit(kept) {
+            points = kept
+            line = refit
+        }
+
+        let finalResiduals = points.map { $0.y - (line.intercept + line.slope * $0.x) }
+        let sigma = (finalResiduals.reduce(0) { $0 + $1 * $1 } / Double(max(1, points.count - 2))).squareRoot()
+        let slopeSE = sigma / line.sxx.squareRoot()
+        return GlucoseVelocity(
+            mgdLPerMinute: line.slope,
+            trend: trend(forSlopePerMinute: line.slope),
+            sigmaMgdL: sigma,
+            slopeSEPerMinute: slopeSE)
     }
 
     /// The most *local* velocity available: tries progressively wider windows and
@@ -70,13 +101,15 @@ enum GlucoseTrendAnalyzer {
         return nil
     }
 
-    /// Maps a slope (mg/dL per minute) to the app's five trend levels using the
-    /// conventional CGM cutoffs (±1.5 and ±3 mg/dL/min).
+    /// Maps a slope (mg/dL per minute) to the app's five trend levels using
+    /// Dexcom's arrow convention: the flat arrow means "changing less than
+    /// 1 mg/dL/min", so "stable" here is |slope| < 1 — the label can never
+    /// contradict a displayed rate of ±1.2 again — and ±3 marks fast.
     static func trend(forSlopePerMinute slope: Double) -> GlucoseTrend {
         if slope >= 3 { return .risingFast }
-        if slope >= 1.5 { return .rising }
+        if slope >= 1 { return .rising }
         if slope <= -3 { return .fallingFast }
-        if slope <= -1.5 { return .falling }
+        if slope <= -1 { return .falling }
         return .stable
     }
 

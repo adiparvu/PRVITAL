@@ -76,9 +76,15 @@ final class SnapshotPublisher {
             // dashed continuation agrees with the "~X in N min" figure.
             if !summary.isStale, let velocity = summary.velocity {
                 let horizonMinutes = 30
+                // No `minutesSinceReading` here on purpose: the widget's dashed
+                // tail starts AT the last point and ends at `forecastAt` =
+                // reading + horizon, so the displacement must cover exactly the
+                // horizon from the reading, not from wall-clock now.
                 let forecast = GlucoseForecast.project(
                     currentMgdL: current.valueMgdL,
                     velocityMgdLPerMin: velocity.mgdLPerMinute,
+                    sigmaMgdL: velocity.sigmaMgdL,
+                    slopeSEPerMinute: velocity.slopeSEPerMinute,
                     horizonMinutes: horizonMinutes)
                 // Only worth a dashed tail when the trajectory actually moves; a
                 // near-flat projection would just be visual noise on the sparkline.

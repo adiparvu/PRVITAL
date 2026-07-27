@@ -86,12 +86,50 @@ final class GlucoseTrendAnalyzerTests: XCTestCase {
     }
 
     func testTrendCutoffs() {
+        // Dexcom's flat arrow means |rate| < 1 mg/dL/min — so a shown rate of
+        // +1.2 can never sit next to a "Stable" label again.
         XCTAssertEqual(GlucoseTrendAnalyzer.trend(forSlopePerMinute: 3), .risingFast)
-        XCTAssertEqual(GlucoseTrendAnalyzer.trend(forSlopePerMinute: 2), .rising)
-        XCTAssertEqual(GlucoseTrendAnalyzer.trend(forSlopePerMinute: 1), .stable)
+        XCTAssertEqual(GlucoseTrendAnalyzer.trend(forSlopePerMinute: 1.2), .rising)
+        XCTAssertEqual(GlucoseTrendAnalyzer.trend(forSlopePerMinute: 0.9), .stable)
         XCTAssertEqual(GlucoseTrendAnalyzer.trend(forSlopePerMinute: 0), .stable)
-        XCTAssertEqual(GlucoseTrendAnalyzer.trend(forSlopePerMinute: -2), .falling)
+        XCTAssertEqual(GlucoseTrendAnalyzer.trend(forSlopePerMinute: -0.9), .stable)
+        XCTAssertEqual(GlucoseTrendAnalyzer.trend(forSlopePerMinute: -1.2), .falling)
         XCTAssertEqual(GlucoseTrendAnalyzer.trend(forSlopePerMinute: -3), .fallingFast)
+    }
+
+    func testRecencyWeightingTracksATurn() {
+        // Flat for 10 minutes, then rising 2 mg/dL/min over the last 10 — the
+        // situation where a plain 20-min average (slope 1.0 here) lags the turn.
+        // Recency weighting lands ~1.26 and the label agrees with the rate.
+        let now = Date()
+        let readings = [(-20.0, 110.0), (-15, 110), (-10, 110), (-5, 120), (0, 130)].map {
+            GlucoseReading(valueMgdL: $0.1, timestamp: now.addingTimeInterval($0.0 * 60), source: .manual)
+        }
+        let velocity = GlucoseTrendAnalyzer.velocity(readings, now: now)
+        XCTAssertEqual(velocity?.mgdLPerMinute ?? 0, 1.26, accuracy: 0.05)
+        XCTAssertEqual(velocity?.trend, .rising)
+    }
+
+    func testCompressionLowOutlierDoesNotBendTheRate() {
+        // A clean 1 mg/dL/min rise with one compression-low spike in the middle:
+        // the robust pass drops the spike and recovers the true slope exactly.
+        let now = Date()
+        let readings = [(-20.0, 100.0), (-15, 105), (-10, 110), (-8, 70), (-5, 115), (0, 120)].map {
+            GlucoseReading(valueMgdL: $0.1, timestamp: now.addingTimeInterval($0.0 * 60), source: .manual)
+        }
+        let velocity = GlucoseTrendAnalyzer.velocity(readings, now: now)
+        XCTAssertEqual(velocity?.mgdLPerMinute ?? 0, 1.0, accuracy: 0.02)
+        XCTAssertEqual(velocity?.sigmaMgdL ?? 99, 0, accuracy: 0.5, "outlier must be out of the fit")
+    }
+
+    func testCleanFitReportsTightUncertainty() {
+        let now = Date()
+        let readings = [(-10.0, 100.0), (-5, 120), (0, 140)].map {
+            GlucoseReading(valueMgdL: $0.1, timestamp: now.addingTimeInterval($0.0 * 60), source: .manual)
+        }
+        let velocity = GlucoseTrendAnalyzer.velocity(readings, now: now)
+        XCTAssertEqual(velocity?.sigmaMgdL ?? 99, 0, accuracy: 1e-6)
+        XCTAssertEqual(velocity?.slopeSEPerMinute ?? 99, 0, accuracy: 1e-6)
     }
 
     func testProjectionClampsToZero() {
