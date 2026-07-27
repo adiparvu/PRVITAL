@@ -27,7 +27,9 @@ enum SharedStore {
     /// One cached instance for the whole process — `UserDefaults(suiteName:)`
     /// allocates a fresh object on every call, and hot paths (accent colour,
     /// background kind, haptics gate) read the suite on every body pass.
-    static let groupDefaults = UserDefaults(suiteName: appGroupIdentifier) ?? .standard
+    /// `nonisolated(unsafe)` because `UserDefaults` is documented thread-safe
+    /// but not marked `Sendable`.
+    nonisolated(unsafe) static let groupDefaults = UserDefaults(suiteName: appGroupIdentifier) ?? .standard
 
     private static var defaults: UserDefaults { groupDefaults }
 
