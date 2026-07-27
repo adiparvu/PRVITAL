@@ -79,22 +79,21 @@ struct DashboardView: View {
     /// the Active ring and activity tile fill from all-day movement, not only
     /// logged workouts.
     @State private var healthActiveMinutes = 0
+    /// The cached expensive derivations (see `DashboardDerived`); nil only for
+    /// the very first frame after a cold launch.
+    @State private var derived: DashboardDerived?
+    /// Bumped on foreground and once a minute so time-relative labels re-derive.
+    @State private var refreshTick = 0
 
     var body: some View {
         let thresholds = env.preferences.thresholds
         let unit = env.preferences.glucoseUnit
-        let summary = DashboardSummary.make(
-            readings: readings,
-            insulin: insulin,
-            carbs: carbs,
-            activity: activity,
-            thresholds: thresholds
-        )
-
         let bolus = env.preferences.bolusParameters
-        let todayStats = DailyGlucose.today(readings, thresholds: thresholds)
 
         return NavigationStack {
+            Group {
+                if let derived {
+                    let summary = derived.summary
             ScrollView {
                 VStack(spacing: 20) {
                     hero(summary: summary, thresholds: thresholds, unit: unit)
@@ -104,12 +103,9 @@ struct DashboardView: View {
                     if env.preferences.sickDayEnabled {
                         SickDayBanner()
                             .appearTransition(delay: 0.02)
-                    } else {
-                        let suggestion = SickDayAdvisor.evaluate(readings: readings)
-                        if suggestion.shouldSuggest {
-                            SickDaySuggestionBanner(averageMgdL: suggestion.averageMgdL, unit: unit)
-                                .appearTransition(delay: 0.02)
-                        }
+                    } else if derived.sickDaySuggestion.shouldSuggest {
+                        SickDaySuggestionBanner(averageMgdL: derived.sickDaySuggestion.averageMgdL, unit: unit)
+                            .appearTransition(delay: 0.02)
                     }
                     if let session = sensorSessions.first {
                         let sensorStatus = SensorSessionEvaluator.status(
@@ -126,14 +122,29 @@ struct DashboardView: View {
                     let hiddenCards = Set(env.preferences.dashboardHiddenCards)
                     ForEach(Array(orderedCards.enumerated()), id: \.element) { index, card in
                         if isCardVisible(card, hidden: hiddenCards) {
-                            dashboardCard(card, summary: summary, thresholds: thresholds,
-                                          unit: unit, todayStats: todayStats, bolus: bolus)
+                            dashboardCard(card, derived: derived, thresholds: thresholds,
+                                          unit: unit, bolus: bolus)
                                 .appearTransition(delay: 0.04 + Double(min(index, 8)) * 0.03)
                         }
                     }
                 }
                 .padding()
             }
+            .refreshable {
+                // Surface genuine source/network failures (not "source not set
+                // up" states, which are filtered out in SyncCoordinator)
+                // instead of silently looking like "no new data".
+                let report = await env.sync.syncAll()
+                syncFailure = report.failures.isEmpty ? nil : report.failures.joined(separator: "\n")
+            }
+                } else {
+                    // First frame after a cold launch: chrome only — the
+                    // derived bundle lands a beat later and rides the cards'
+                    // existing appear animations.
+                    Color.clear
+                }
+            }
+            .task(id: derivedKey) { await rebuildDerived() }
             .prvitalTabBackground()
             // No navigation title (device feedback): the big card-less ring IS
             // the page's identity; a large "Today" above it was pure clutter.
@@ -141,10 +152,20 @@ struct DashboardView: View {
             .onChange(of: scenePhase) { _, phase in
                 if phase == .active {
                     companionDismissed = false
+                    refreshTick += 1   // re-derive "X min ago" / staleness now
                     Task { await refreshHealthActivity() }
                 }
             }
             .task { await refreshHealthActivity() }
+            // A once-a-minute tick so the cached summary's "Updated X min ago"
+            // and staleness stay honest between data changes. One rebuild is a
+            // few milliseconds — nothing next to the per-render cost it replaced.
+            .task {
+                while !Task.isCancelled {
+                    try? await Task.sleep(for: .seconds(60))
+                    refreshTick += 1
+                }
+            }
             .toolbar {
                 // ONE button for everything (device feedback: the goals +
                 // customize pill on the left plus a separate ••• on the right
@@ -203,13 +224,6 @@ struct DashboardView: View {
                     }
                     .accessibilityLabel("More")
                 }
-            }
-            .refreshable {
-                // Surface genuine source/network failures (not "source not set up"
-                // states, which are filtered out in SyncCoordinator) instead of
-                // silently looking like "no new data".
-                let report = await env.sync.syncAll()
-                syncFailure = report.failures.isEmpty ? nil : report.failures.joined(separator: "\n")
             }
             .overlay(alignment: .top) {
                 if let syncFailure {
@@ -280,6 +294,9 @@ struct DashboardView: View {
                 // A day with data is a good moment: count it, and — sparingly,
                 // at most once per app version after enough such moments — ask
                 // for a rating. StoreKit may still choose to suppress the prompt.
+                // (Computed locally: this runs once per appearance, before the
+                // cached derived bundle necessarily exists.)
+                let todayStats = DailyGlucose.today(readings, thresholds: thresholds)
                 guard todayStats.hasGlucose else { return }
                 RatingPrompter.registerPositiveMoment()
                 if RatingPrompter.consumePromptOpportunity() {
@@ -422,31 +439,30 @@ struct DashboardView: View {
     @ViewBuilder
     private func dashboardCard(
         _ card: DashboardCard,
-        summary: DashboardSummary,
+        derived: DashboardDerived,
         thresholds: GlucoseThresholds,
         unit: GlucoseUnit,
-        todayStats: PeriodStatistics,
         bolus: BolusParameters
     ) -> some View {
+        let summary = derived.summary
         switch card {
         case .companion:
             if !companionDismissed {
-                dailyCompanionCard(summary: summary, todayStats: todayStats, thresholds: thresholds)
+                dailyCompanionCard(summary: summary, todayStats: derived.todayStats, thresholds: thresholds)
             }
         case .trend:
-            trendSection(summary: summary, thresholds: thresholds, unit: unit)
+            trendSection(derived: derived, thresholds: thresholds, unit: unit)
         case .lessons:
-            contextualLessonCard(thresholds: thresholds)
+            contextualLessonCard(lesson: derived.lesson)
         case .today:
-            if todayStats.hasGlucose || env.preferences.glucoseGoals.enabled {
-                todayCard(todayStats,
-                          forecast: tirForecast(thresholds: thresholds),
+            if derived.todayStats.hasGlucose || env.preferences.glucoseGoals.enabled {
+                todayCard(derived.todayStats,
+                          forecast: derived.tirForecast,
                           thresholds: thresholds)
             }
         case .schedule:
-            let scheduleStatuses = glucoseScheduleStatuses
-            if !scheduleStatuses.isEmpty {
-                scheduleCard(scheduleStatuses)
+            if !derived.scheduleStatuses.isEmpty {
+                scheduleCard(derived.scheduleStatuses)
             }
         case .timeline:
             todayLogCard(summary: summary, insulin: insulin, carbs: carbs,
@@ -535,8 +551,9 @@ struct DashboardView: View {
     // MARK: - Trend
 
     @ViewBuilder
-    private func trendSection(summary: DashboardSummary, thresholds: GlucoseThresholds, unit: GlucoseUnit) -> some View {
-        let windowReadings = trendReadings()
+    private func trendSection(derived: DashboardDerived, thresholds: GlucoseThresholds, unit: GlucoseUnit) -> some View {
+        let summary = derived.summary
+        let windowReadings = derived.windowReadings
         return SectionCard(
             trendRange.titleKey,
             systemImage: "waveform.path.ecg",
@@ -586,7 +603,7 @@ struct DashboardView: View {
                     eventKindsBinding: eventKindsBinding,
                     inlineLegendButton: false,
                     eventBand: true,
-                    yesterday: yesterdayTrendReadings()
+                    yesterday: derived.yesterdayReadings
                 )
             }
         }
@@ -635,15 +652,12 @@ struct DashboardView: View {
 
     /// A contextual lesson: the Panou points you to the encyclopedia article that
     /// fits what your glucose just did — the connective tissue between the data and
-    /// Învață. Hidden when there's nothing recent to teach from.
+    /// Învață. Hidden when there's nothing recent to teach from. The lesson is
+    /// resolved in the cached derived bundle — its dawn-pattern detector alone
+    /// walks the whole 21-day window, far too heavy for every body pass.
     @ViewBuilder
-    private func contextualLessonCard(thresholds: GlucoseThresholds) -> some View {
-        if let lesson = ContextualLesson.make(
-                recentMgdL: recentMgdLForLesson(),
-                targetLow: thresholds.targetLower,
-                targetHigh: thresholds.targetUpper,
-                hadRecentMeal: hadRecentMealForLesson(),
-                dawnRiseLikely: dawnRiseLikelyForLesson()),
+    private func contextualLessonCard(lesson: ContextualLesson?) -> some View {
+        if let lesson,
            let article = LearnLibrary.articles.first(where: { $0.id == lesson.articleID }) {
             NavigationLink {
                 // The card *opens into* its article instead of sliding — the
@@ -691,6 +705,59 @@ struct DashboardView: View {
         case .recentHigh:   return "Because you had a high earlier"
         case .steady:       return "You've been steady — here's why that matters"
         }
+    }
+
+    // MARK: - Derived bundle (computed once per data change, never per render)
+
+    /// Everything expensive the dashboard derives from its queried arrays.
+    /// These used to be computed INLINE in `body` — five to eight full passes
+    /// over ~21 days of SwiftData objects (whose property accesses aren't free)
+    /// on every single render: every tab switch, sheet open, preference change.
+    /// Now they're computed once behind `.task(id:)` and cached.
+    struct DashboardDerived {
+        var summary: DashboardSummary
+        var todayStats: PeriodStatistics
+        var sickDaySuggestion: SickDaySuggestion
+        var lesson: ContextualLesson?
+        var tirForecast: TIRForecast
+        var scheduleStatuses: [GlucoseSlotStatus]
+        var windowReadings: [GlucoseReading]
+        var yesterdayReadings: [GlucoseReading]
+    }
+
+    /// Changes exactly when the derived bundle must be rebuilt: the data, the
+    /// thresholds, the trend window, or the periodic staleness tick.
+    private var derivedKey: String {
+        let t = env.preferences.thresholds
+        return "\(readings.count)|\(insulin.count)|\(carbs.count)|\(activity.count)"
+            + "|\(t.targetLower)|\(t.targetUpper)"
+            + "|\(trendRange.rawValue)|\(customStart.timeIntervalSince1970)|\(customEnd.timeIntervalSince1970)"
+            + "|\(env.preferences.showYesterdayShadow)"
+            + "|\(env.preferences.glucoseSchedule.activeSlots.count)"
+            + "|\(refreshTick)"
+    }
+
+    private func rebuildDerived() async {
+        // Yield so a tab switch presents its frame before the heavy pass runs.
+        await Task.yield()
+        let thresholds = env.preferences.thresholds
+        let lesson = ContextualLesson.make(
+            recentMgdL: recentMgdLForLesson(),
+            targetLow: thresholds.targetLower,
+            targetHigh: thresholds.targetUpper,
+            hadRecentMeal: hadRecentMealForLesson(),
+            dawnRiseLikely: dawnRiseLikelyForLesson())
+        derived = DashboardDerived(
+            summary: DashboardSummary.make(
+                readings: readings, insulin: insulin, carbs: carbs,
+                activity: activity, thresholds: thresholds),
+            todayStats: DailyGlucose.today(readings, thresholds: thresholds),
+            sickDaySuggestion: SickDayAdvisor.evaluate(readings: readings),
+            lesson: lesson,
+            tirForecast: tirForecast(thresholds: thresholds),
+            scheduleStatuses: glucoseScheduleStatuses,
+            windowReadings: trendReadings(),
+            yesterdayReadings: yesterdayTrendReadings())
     }
 
     /// The active glucose values (mg/dL) from the last six hours — the window the

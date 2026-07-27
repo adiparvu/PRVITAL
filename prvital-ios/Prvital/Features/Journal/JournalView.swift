@@ -70,13 +70,33 @@ struct JournalView: View {
         )
     }
 
-    private var buckets: [JournalDayBucket] {
-        JournalDayBucket.build(
+    /// The day cards, cached and rebuilt only when the underlying data changes.
+    /// This used to be a computed property — re-bucketing ~45 days of records
+    /// (thousands of SwiftData objects) on EVERY body pass, which is why
+    /// switching to the Journal tab painted a blank page while the main thread
+    /// churned. Now the build runs once per change behind `.task(id:)`.
+    @State private var buckets: [JournalDayBucket] = []
+    @State private var isBuildingBuckets = false
+    /// Bumped when an editor sheet closes, so in-place edits (a changed value,
+    /// a re-timed dose) rebuild the cards even though no record count moved.
+    @State private var dataVersion = 0
+
+    private var bucketsKey: String {
+        "\(glucose.count)|\(insulin.count)|\(carbs.count)|\(activity.count)|\(observations.count)"
+            + "|\(healthExerciseByDay.count)|\(thresholds.targetLower)|\(thresholds.targetUpper)|\(dataVersion)"
+    }
+
+    private func rebuildBuckets() async {
+        isBuildingBuckets = true
+        // Yield so the tab switch presents its frame before the heavy pass.
+        await Task.yield()
+        buckets = JournalDayBucket.build(
             glucose: glucose, insulin: insulin, carbs: carbs,
             activity: activity, observations: observations,
             thresholds: thresholds,
             healthExerciseByDay: healthExerciseByDay
         )
+        isBuildingBuckets = false
     }
 
     /// Reads the last two weeks of Apple Health exercise minutes and keys them by
@@ -106,7 +126,12 @@ struct JournalView: View {
                 .onChange(of: mode) { _, _ in Haptics.play(.selection) }
 
                 switch mode {
-                case .days: daysContent
+                case .days:
+                    daysContent
+                        // Attached HERE (not to the whole tab) so the build
+                        // only runs — and re-runs — while the day cards are
+                        // actually on screen.
+                        .task(id: bucketsKey) { await rebuildBuckets() }
                 case .list: HistoryContent()
                 case .calendar: CalendarContent()
                 case .register: LogbookContent()
@@ -142,7 +167,7 @@ struct JournalView: View {
                 WeeklyDigestView()
                     .navigationTransition(.zoom(sourceID: "weeklyDigest", in: zoomNamespace))
             }
-            .sheet(item: $editTarget) { target in
+            .sheet(item: $editTarget, onDismiss: { dataVersion += 1 }) { target in
                 editorSheet(for: target.item)
             }
             .task { await loadHealthExercise() }
@@ -160,7 +185,12 @@ struct JournalView: View {
             now: Date()
         )
         return Group {
-            if buckets.isEmpty {
+            if buckets.isEmpty && isBuildingBuckets {
+                // First fill after switching in — never flash "No entries yet"
+                // while the cards are still being built.
+                ProgressView()
+                    .frame(maxWidth: .infinity, maxHeight: .infinity)
+            } else if buckets.isEmpty {
                 ScrollView {
                     EmptyStateView(
                         systemImage: "book.closed",
