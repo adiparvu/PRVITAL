@@ -146,58 +146,57 @@ struct DashboardView: View {
             }
             .task { await refreshHealthActivity() }
             .toolbar {
-                ToolbarItem(placement: .topBarLeading) {
-                    Button {
-                        Haptics.play(.selection)
-                        showGoalsEditor = true
-                    } label: {
-                        Image(systemName: "target")
-                    }
-                    .accessibilityLabel("Goals")
-                    .accessibilityHint("Set your time-in-range and A1c goals")
-                }
-                ToolbarItem(placement: .topBarLeading) {
-                    Button {
-                        Haptics.play(.selection)
-                        showCustomize = true
-                    } label: {
-                        Image(systemName: "slider.horizontal.3")
-                    }
-                    .accessibilityLabel("Customize page")
-                }
-                // One button for every report/tool — doctor mode, Health,
-                // plain words, week in review, export — on the first page.
+                // ONE button for everything (device feedback: the goals +
+                // customize pill on the left plus a separate ••• on the right
+                // was three targets of chrome on a page whose identity is the
+                // ring). Page setup up top, reports/tools below.
                 ToolbarItem(placement: .topBarTrailing) {
                     Menu {
-                        Button {
-                            Haptics.play(.selection)
-                            showDoctorMode = true
-                        } label: {
-                            Label("Doctor visit mode", systemImage: "stethoscope")
+                        Section {
+                            Button {
+                                Haptics.play(.selection)
+                                showGoalsEditor = true
+                            } label: {
+                                Label("Goals", systemImage: "target")
+                            }
+                            Button {
+                                Haptics.play(.selection)
+                                showCustomize = true
+                            } label: {
+                                Label("Customize page", systemImage: "slider.horizontal.3")
+                            }
                         }
-                        Button {
-                            Haptics.play(.selection)
-                            showHealthHub = true
-                        } label: {
-                            Label("Health", systemImage: "heart.text.square")
-                        }
-                        Button {
-                            Haptics.play(.selection)
-                            showPlainSummary = true
-                        } label: {
-                            Label("In plain words", systemImage: "text.quote")
-                        }
-                        Button {
-                            Haptics.play(.selection)
-                            showWeeklyDigest = true
-                        } label: {
-                            Label("Week in review", systemImage: "calendar.badge.clock")
-                        }
-                        Button {
-                            Haptics.play(.selection)
-                            showExport = true
-                        } label: {
-                            Label("Export a report", systemImage: "square.and.arrow.up")
+                        Section {
+                            Button {
+                                Haptics.play(.selection)
+                                showDoctorMode = true
+                            } label: {
+                                Label("Doctor visit mode", systemImage: "stethoscope")
+                            }
+                            Button {
+                                Haptics.play(.selection)
+                                showHealthHub = true
+                            } label: {
+                                Label("Health", systemImage: "heart.text.square")
+                            }
+                            Button {
+                                Haptics.play(.selection)
+                                showPlainSummary = true
+                            } label: {
+                                Label("In plain words", systemImage: "text.quote")
+                            }
+                            Button {
+                                Haptics.play(.selection)
+                                showWeeklyDigest = true
+                            } label: {
+                                Label("Week in review", systemImage: "calendar.badge.clock")
+                            }
+                            Button {
+                                Haptics.play(.selection)
+                                showExport = true
+                            } label: {
+                                Label("Export a report", systemImage: "square.and.arrow.up")
+                            }
                         }
                     } label: {
                         Image(systemName: "ellipsis.circle")
