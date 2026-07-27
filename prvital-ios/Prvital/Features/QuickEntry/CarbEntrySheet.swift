@@ -19,9 +19,15 @@ struct CarbEntrySheet: View {
     // through the view's `modelContext` rather than the audited `EntryStore`.
     @Query(sort: \FavoriteMeal.createdAt) private var favorites: [FavoriteMeal]
 
-    @State private var grams: Double = 40
+    // Starts at 0 — the person types what they actually ate (a prefilled 40 g
+    // was one habit-tap away from logging a meal that never happened). Save
+    // stays disabled until a real amount is entered.
+    @State private var grams: Double = 0
     @State private var timestamp = Date()
     @State private var mealType: MealType = .lunch
+    /// Main meals already logged today — shown disabled in the picker so
+    /// "lunch" can't be logged twice by reflex. Snacks repeat freely.
+    @State private var takenMainMealsToday: Set<MealType> = []
     @State private var food = ""
     @State private var note = ""
     @State private var showingFood = false
@@ -109,7 +115,11 @@ struct CarbEntrySheet: View {
                 }
                 Section {
                     Picker("Meal", selection: $mealType) {
-                        ForEach(MealType.allCases) { Label($0.label, systemImage: $0.symbol).tag($0) }
+                        ForEach(MealType.allCases) { type in
+                            Label(type.label, systemImage: type.symbol)
+                                .tag(type)
+                                .selectionDisabled(disabledMealTypes.contains(type))
+                        }
                     }
                     TextField("Food (optional)", text: $food)
                     DatePicker("Time", selection: $timestamp)
@@ -191,7 +201,10 @@ struct CarbEntrySheet: View {
     }
 
     private func load() {
-        guard let existing else { return }
+        guard let existing else {
+            prepareNewEntryDefaults()
+            return
+        }
         grams = existing.grams
         timestamp = existing.timestamp
         mealType = existing.mealType
@@ -199,6 +212,64 @@ struct CarbEntrySheet: View {
         note = existing.note ?? ""
         photoData = existing.photo
         computeImpact(for: existing)
+    }
+
+    /// The smart defaults for a fresh entry: which meal this most likely is.
+    ///
+    /// - Glucose LOW right now → this is hypo-treatment carbs, so suggest a
+    ///   snack outright — never "Lunch" while someone treats a low.
+    /// - Otherwise suggest by the clock (breakfast / lunch / dinner bands) —
+    ///   but a main meal already logged today falls through to a snack, and it
+    ///   also shows disabled in the picker so it can't be picked twice by reflex.
+    private func prepareNewEntryDefaults() {
+        let calendar = Calendar.current
+        let now = Date()
+
+        // Main meals already logged today (snacks repeat freely).
+        let startOfDay = calendar.startOfDay(for: now)
+        let todayDescriptor = FetchDescriptor<CarbEntry>(
+            predicate: #Predicate { $0.timestamp >= startOfDay })
+        let todays = (try? modelContext.fetch(todayDescriptor)) ?? []
+        takenMainMealsToday = Set(todays.map(\.mealType))
+            .intersection([.breakfast, .lunch, .dinner])
+
+        // Is the latest fresh reading low?
+        var latestDescriptor = FetchDescriptor<GlucoseReading>(
+            predicate: #Predicate { $0.isActive },
+            sortBy: [SortDescriptor(\.timestamp, order: .reverse)])
+        latestDescriptor.fetchLimit = 1
+        let latest = (try? modelContext.fetch(latestDescriptor))?.first
+        let thresholds = env.preferences.thresholds
+        let isLowNow = latest.map {
+            now.timeIntervalSince($0.timestamp) <= 20 * 60
+                && $0.valueMgdL < thresholds.targetLower
+        } ?? false
+
+        let hour = calendar.component(.hour, from: now)
+        let daypartSnack: MealType = hour < 16 ? .morningSnack : .eveningSnack
+        if isLowNow {
+            mealType = daypartSnack
+            return
+        }
+        let clockMeal: MealType? = switch hour {
+        case 4..<11: .breakfast
+        case 11..<16: .lunch
+        case 16..<22: .dinner
+        default: nil
+        }
+        if let clockMeal, !takenMainMealsToday.contains(clockMeal) {
+            mealType = clockMeal
+        } else {
+            mealType = daypartSnack
+        }
+    }
+
+    /// Picker rows shown disabled: main meals already logged today — only for
+    /// a NEW entry dated today, and never the currently selected value (so an
+    /// edit or an intentional re-selection is never trapped).
+    private var disabledMealTypes: Set<MealType> {
+        guard existing == nil, Calendar.current.isDateInToday(timestamp) else { return [] }
+        return takenMainMealsToday.subtracting([mealType])
     }
 
     /// Reads the glucose around this meal and the insulin active at its time, so

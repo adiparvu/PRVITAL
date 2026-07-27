@@ -206,22 +206,26 @@ struct MainTabView: View {
         // carried by the system's capsule highlight. No Text in a tab item
         // means the bar centres the icon alone; the accessibility labels keep
         // VoiceOver speaking the destination names.
+        // Glyphs restyled after the user's reference bar: simple geometric
+        // outlines — home, a squares grid for the Journal's day cards, a BARE
+        // plus (no circle), the thin chart line, and a person for the
+        // profile-led Settings.
         TabView(selection: $selection) {
             DashboardView()
                 .tabItem {
-                    Image(systemName: "drop.fill")
+                    Image(systemName: "house")
                         .accessibilityLabel("Dashboard")
                 }
                 .tag(MainTab.home)
             JournalView()
                 .tabItem {
-                    Image(systemName: "book.closed.fill")
+                    Image(systemName: "square.grid.2x2")
                         .accessibilityLabel("Journal")
                 }
                 .tag(MainTab.journal)
             Color.clear
                 .tabItem {
-                    Image(systemName: "plus.circle.fill")
+                    Image(systemName: "plus")
                         .accessibilityLabel("Add")
                 }
                 .tag(MainTab.add)
@@ -233,7 +237,7 @@ struct MainTabView: View {
                 .tag(MainTab.insights)
             SettingsView()
                 .tabItem {
-                    Image(systemName: "gearshape.fill")
+                    Image(systemName: "person")
                         .accessibilityLabel("Settings")
                 }
                 .tag(MainTab.settings)

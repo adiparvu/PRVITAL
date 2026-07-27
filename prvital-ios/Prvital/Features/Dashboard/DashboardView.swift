@@ -369,7 +369,13 @@ struct DashboardView: View {
                     cgmCadenceMinutes: 5,
                     insulin: insulin, carbs: carbs,
                     bolus: env.preferences.bolusParameters)
-                LiveVitalsStrip(vitals: vitals, monochrome: env.preferences.minimalistIcons)
+                LiveVitalsStrip(vitals: vitals, monochrome: env.preferences.minimalistIcons,
+                                onReadingOverdue: {
+                    // The expected reading didn't arrive on time — pull for it
+                    // quietly (failures stay silent here; this is a nudge, not
+                    // a user-initiated refresh).
+                    Task { _ = await env.sync.syncAll() }
+                })
                     .animation(.snappy, value: vitals)
 
                 if let warning = projectionWarning(summary: summary, thresholds: thresholds) {
