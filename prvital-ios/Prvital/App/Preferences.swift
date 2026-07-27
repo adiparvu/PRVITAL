@@ -49,7 +49,6 @@ final class Preferences {
         self.dashboardHiddenCards = self.defaults.stringArray(forKey: Keys.dashboardHiddenCards) ?? []
         self.backgroundKindRaw = self.defaults.string(forKey: Keys.backgroundKind) ?? AppBackgroundKind.standard.rawValue
         self.backgroundGradientRaw = self.defaults.string(forKey: Keys.backgroundGradient) ?? BackgroundGradient.aurora.rawValue
-        self.backgroundPhotoData = self.defaults.data(forKey: Keys.backgroundPhoto)
         self.backgroundPhotoDimming = (self.defaults.object(forKey: Keys.backgroundPhotoDimming) as? Double) ?? 0.3
     }
 
@@ -297,16 +296,14 @@ final class Preferences {
         get { BackgroundGradient(rawValue: backgroundGradientRaw) ?? .aurora }
         set { backgroundGradientRaw = newValue.rawValue }
     }
-    /// The chosen background photo, if any (JPEG/PNG data). Stored in the shared
-    /// defaults so it survives relaunches; nil clears it.
+    /// The chosen background photo, if any (JPEG/PNG data). The bytes live in a
+    /// FILE in the App Group container (via `BackgroundPhotoStore`) — never in
+    /// `UserDefaults`: megabytes of photo inside the shared plist made every
+    /// preference write rewrite the whole file, and every widget-process write
+    /// invalidate and re-parse it, which the app felt as lag on every screen.
     var backgroundPhotoData: Data? {
-        didSet {
-            if let backgroundPhotoData {
-                defaults.set(backgroundPhotoData, forKey: Keys.backgroundPhoto)
-            } else {
-                defaults.removeObject(forKey: Keys.backgroundPhoto)
-            }
-        }
+        get { BackgroundPhotoStore.shared.data }
+        set { BackgroundPhotoStore.shared.setPhoto(newValue) }
     }
 
     /// How strongly the background photo is darkened for legibility (0…0.7).

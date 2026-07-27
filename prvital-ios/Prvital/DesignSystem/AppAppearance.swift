@@ -167,25 +167,19 @@ enum BackgroundGradient: String, CaseIterable, Identifiable {
 // MARK: - Current values from shared defaults
 
 extension AppBackgroundKind {
-    private static var defaults: UserDefaults? {
-        UserDefaults(suiteName: SharedStore.appGroupIdentifier)
-    }
+    private static var defaults: UserDefaults { SharedStore.groupDefaults }
 
     static var current: AppBackgroundKind {
-        defaults?.string(forKey: preferenceKey).flatMap(AppBackgroundKind.init(rawValue:)) ?? .standard
+        defaults.string(forKey: preferenceKey).flatMap(AppBackgroundKind.init(rawValue:)) ?? .standard
     }
 
     static var currentGradient: BackgroundGradient {
-        defaults?.string(forKey: BackgroundGradient.preferenceKey)
+        defaults.string(forKey: BackgroundGradient.preferenceKey)
             .flatMap(BackgroundGradient.init(rawValue:)) ?? .aurora
     }
 
-    static var currentPhotoData: Data? {
-        defaults?.data(forKey: photoKey)
-    }
-
     static var currentPhotoDimming: Double {
-        (defaults?.object(forKey: photoDimmingKey) as? Double) ?? 0.3
+        (defaults.object(forKey: photoDimmingKey) as? Double) ?? 0.3
     }
 }
 
@@ -196,7 +190,6 @@ extension AppBackgroundKind {
 struct AppBackgroundView: View {
     var kind: AppBackgroundKind = .current
     var gradient: BackgroundGradient = AppBackgroundKind.currentGradient
-    var photoData: Data? = AppBackgroundKind.currentPhotoData
     var photoDimming: Double = AppBackgroundKind.currentPhotoDimming
 
     var body: some View {
@@ -232,13 +225,12 @@ struct AppBackgroundView: View {
     private var photoView: some View {
         #if canImport(UIKit)
         // The standard wash paints instantly; the decoded photo fades in over it
-        // once the background decode lands. The previous code ran
-        // `UIImage(data:)` inside body — re-inflating a multi-megapixel photo on
-        // the main thread on every render of every tab background, which was the
-        // single biggest cause of the "switching tabs lags" feel.
+        // once the store's one-time decode lands. The view never touches the
+        // photo BYTES: hauling them through here meant reading megabytes per
+        // body pass of every tab background.
         ZStack {
             standardBackground
-            if let image = BackgroundPhotoStore.shared.image(matching: photoData) {
+            if let image = BackgroundPhotoStore.shared.decoded {
                 Image(uiImage: image)
                     .resizable()
                     .scaledToFill()
@@ -248,7 +240,7 @@ struct AppBackgroundView: View {
                     .transition(.opacity)
             }
         }
-        .task(id: photoData) { BackgroundPhotoStore.shared.prepare(photoData) }
+        .task { BackgroundPhotoStore.shared.loadIfNeeded() }
         #else
         Theme.background
         #endif
@@ -268,13 +260,17 @@ extension View {
 }
 
 #if canImport(UIKit)
-/// Decodes the user's background photo ONCE, off the main thread, downsampled to
-/// screen scale via ImageIO — and hands every tab the same cached image.
+/// The single owner of the background photo: its BYTES live in a file in the
+/// App Group container, its decoded (downsampled, ≤1600px) bitmap and average
+/// luminance live here in memory — and `UserDefaults` never sees any of it.
 ///
-/// `UIImage(data:)` in a view body decoded the full-resolution photo on the main
-/// thread on every render; with a 12-megapixel wallpaper that alone froze every
-/// tab switch for a beat. Here the decode happens on a detached task, produces a
-/// bitmap no larger than ~1600px, and is cached until the user picks a new photo.
+/// The photo used to be stored inside the shared App Group defaults. That plist
+/// is written constantly — snapshot bookkeeping, alert state, preferences, and
+/// by the WIDGET process too — and every write rewrites the whole file while
+/// every cross-process write invalidates the app's in-memory copy, forcing a
+/// full re-parse on the next preference read. With megabytes of photo embedded,
+/// that cycle ran on every screen, all the time: the "the app is slow on every
+/// page" report. Moving the bytes into a file shrinks the plist to kilobytes.
 @MainActor
 @Observable
 final class BackgroundPhotoStore {
@@ -284,17 +280,67 @@ final class BackgroundPhotoStore {
     /// Average luminance (0 = black … 1 = white) of the decoded photo, so the
     /// app can pick light or dark text over it. Nil until a decode lands.
     private(set) var averageLuminance: Double?
+    /// The raw bytes, kept for the Settings thumbnail and re-saves.
+    private(set) var data: Data?
     private var decodedKey: Int?
     private var pendingKey: Int?
+    private var loadStarted = false
+    /// True once the in-memory state is authoritative (a load finished or the
+    /// user set a photo), so a late-landing disk load can't clobber it.
+    private var resolved = false
 
-    /// The cached image when it matches `data`; nil while (re)decoding.
-    func image(matching data: Data?) -> UIImage? {
-        guard let data, decodedKey == Self.key(for: data) else { return nil }
-        return decoded
+    /// Loads the photo file once per process — and, on the first run after the
+    /// update, migrates the legacy blob OUT of the shared defaults plist.
+    func loadIfNeeded() {
+        guard !loadStarted else { return }
+        loadStarted = true
+        Task.detached(priority: .userInitiated) {
+            let url = Self.photoFileURL
+            var bytes = try? Data(contentsOf: url)
+            let defaults = UserDefaults(suiteName: SharedStore.appGroupIdentifier)
+            if let legacy = defaults?.data(forKey: AppBackgroundKind.photoKey) {
+                if bytes == nil {
+                    try? legacy.write(to: url, options: .atomic)
+                    bytes = legacy
+                }
+                // THE fix: the megabytes leave the plist here.
+                defaults?.removeObject(forKey: AppBackgroundKind.photoKey)
+            }
+            let loaded = bytes
+            await MainActor.run {
+                guard !self.resolved else { return }
+                self.resolved = true
+                self.data = loaded
+                self.prepare(loaded)
+            }
+        }
+    }
+
+    /// Replaces (or clears) the photo: memory, decode cache and the on-disk
+    /// file. `UserDefaults` is never touched with the bytes.
+    func setPhoto(_ newData: Data?) {
+        loadStarted = true
+        resolved = true
+        data = newData
+        prepare(newData)
+        Task.detached(priority: .utility) {
+            if let newData {
+                try? newData.write(to: Self.photoFileURL, options: .atomic)
+            } else {
+                try? FileManager.default.removeItem(at: Self.photoFileURL)
+            }
+        }
+    }
+
+    private nonisolated static var photoFileURL: URL {
+        let base = FileManager.default
+            .containerURL(forSecurityApplicationGroupIdentifier: SharedStore.appGroupIdentifier)
+            ?? FileManager.default.urls(for: .applicationSupportDirectory, in: .userDomainMask)[0]
+        return base.appendingPathComponent("background-photo.dat")
     }
 
     /// Kicks a background decode unless `data` is already cached or in flight.
-    func prepare(_ data: Data?) {
+    private func prepare(_ data: Data?) {
         guard let data else {
             decoded = nil
             averageLuminance = nil

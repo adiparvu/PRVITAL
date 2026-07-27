@@ -76,6 +76,9 @@ struct RootView: View {
             .preferredColorScheme(resolvedColorScheme)
             .dynamicTypeSize(typeRange)
             .onAppear {
+                // Kick the one-time photo load (and the legacy-blob migration
+                // out of the shared plist) before the first background renders.
+                BackgroundPhotoStore.shared.loadIfNeeded()
                 showOnboarding = !env.consent.hasCompletedOnboarding
                 if showOnboarding {
                     // A brand-new install is meeting every feature for the first
@@ -172,7 +175,7 @@ struct PrvitalTabBackground: ViewModifier {
             AppBackgroundView(
                 kind: env.preferences.backgroundKind,
                 gradient: env.preferences.backgroundGradient,
-                photoData: env.preferences.backgroundPhotoData
+                photoDimming: env.preferences.backgroundPhotoDimming
             )
             .ignoresSafeArea()
         }

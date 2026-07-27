@@ -24,9 +24,12 @@ enum SharedStore {
     /// freezes the widget — the exact bug this throttle fixes.
     private static let routineReloadInterval: TimeInterval = 20 * 60
 
-    private static var defaults: UserDefaults {
-        UserDefaults(suiteName: appGroupIdentifier) ?? .standard
-    }
+    /// One cached instance for the whole process — `UserDefaults(suiteName:)`
+    /// allocates a fresh object on every call, and hot paths (accent colour,
+    /// background kind, haptics gate) read the suite on every body pass.
+    static let groupDefaults = UserDefaults(suiteName: appGroupIdentifier) ?? .standard
+
+    private static var defaults: UserDefaults { groupDefaults }
 
     /// The primary snapshot store: a plain file in the shared App Group container.
     /// A widget/watch process reads this instead of the `UserDefaults` plist, whose

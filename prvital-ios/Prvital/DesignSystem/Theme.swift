@@ -67,9 +67,10 @@ enum AccentTheme: String, CaseIterable, Identifiable {
     private static let preferenceKey = "pref.accentTheme"
 
     /// The theme currently chosen in Settings, falling back to the teal brand.
+    /// Read through the cached suite instance — this runs on every body pass of
+    /// nearly every view, and `UserDefaults(suiteName:)` allocates per call.
     static var current: AccentTheme {
-        let raw = UserDefaults(suiteName: SharedStore.appGroupIdentifier)?
-            .string(forKey: preferenceKey)
+        let raw = SharedStore.groupDefaults.string(forKey: preferenceKey)
         return raw.flatMap(AccentTheme.init(rawValue:)) ?? .default
     }
 

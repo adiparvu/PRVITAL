@@ -13,8 +13,7 @@ enum Haptics {
     /// opens the setting. Reading here — rather than at every call site — keeps
     /// the single toggle authoritative without threading `Preferences` through.
     private static var isEnabled: Bool {
-        (UserDefaults(suiteName: SharedStore.appGroupIdentifier)?
-            .object(forKey: "pref.hapticsEnabled") as? Bool) ?? true
+        (SharedStore.groupDefaults.object(forKey: "pref.hapticsEnabled") as? Bool) ?? true
     }
 
     @MainActor

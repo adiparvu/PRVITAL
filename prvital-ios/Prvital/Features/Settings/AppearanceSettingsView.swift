@@ -341,15 +341,23 @@ struct BackgroundSettingsView: View {
 
             if prefs.backgroundKind == .photo {
                 Section {
-                    // Copied into a `let` first: the PhotosPicker label closure
+                    // Copied into `let`s first: the PhotosPicker label closure
                     // is @Sendable and must not capture the mutable `prefs`.
-                    let photoData = prefs.backgroundPhotoData
-                    let thumb = BackgroundPhotoStore.shared.image(matching: photoData)
+                    let hasPhoto = prefs.backgroundPhotoData != nil
+                    let thumb = BackgroundPhotoStore.shared.decoded
                     PhotosPicker(selection: $photoItem, matching: .images, photoLibrary: .shared()) {
                         HStack(spacing: 12) {
                             tile("photo.badge.plus")
-                            Text(photoData == nil ? "Choose photo" : "Change photo")
-                                .foregroundStyle(Theme.textPrimary)
+                            // if/else, not a ternary: a ternary collapses the two
+                            // literals into a String and skips the catalog.
+                            Group {
+                                if hasPhoto {
+                                    Text("Change photo")
+                                } else {
+                                    Text("Choose photo")
+                                }
+                            }
+                            .foregroundStyle(Theme.textPrimary)
                             Spacer()
                             if let thumb {
                                 Image(uiImage: thumb)
@@ -361,7 +369,7 @@ struct BackgroundSettingsView: View {
                         }
                     }
 
-                    if prefs.backgroundPhotoData != nil {
+                    if hasPhoto {
                         VStack(alignment: .leading, spacing: 6) {
                             Text("Dimming for legibility")
                                 .foregroundStyle(Theme.textPrimary)
@@ -423,7 +431,6 @@ struct BackgroundSettingsView: View {
             AppBackgroundView(
                 kind: prefs.backgroundKind,
                 gradient: prefs.backgroundGradient,
-                photoData: prefs.backgroundPhotoData,
                 photoDimming: prefs.backgroundPhotoDimming
             )
             Text("Sample card")
