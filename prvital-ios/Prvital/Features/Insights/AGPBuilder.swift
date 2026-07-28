@@ -31,8 +31,11 @@ actor AGPBuilder {
 
     func build(interval: InsightsInterval, thresholds: GlucoseThresholds) -> AGPPayload {
         let range = interval.dateRange()
-        let previousRange = interval.previousDateRange()
-        let lower = min(range.lowerBound, previousRange.lowerBound)
+        // The period-over-period comparison needs the window before this one
+        // — except on Year, where fetching a second year of CGM just to draw
+        // one delta row doubles the heaviest load in the app.
+        let previousRange = interval == .year ? nil : interval.previousDateRange()
+        let lower = min(range.lowerBound, previousRange?.lowerBound ?? range.lowerBound)
         let upper = range.upperBound
 
         let readings = (try? modelContext.fetch(FetchDescriptor<GlucoseReading>(
@@ -45,7 +48,9 @@ actor AGPBuilder {
             predicate: #Predicate { $0.startTimestamp >= rangeLower && $0.startTimestamp <= upper }))) ?? []
 
         let window = readings.filter { range.contains($0.timestamp) }
-        let previousWindow = readings.filter { previousRange.contains($0.timestamp) }
+        let previousWindow = previousRange.map { previous in
+            readings.filter { previous.contains($0.timestamp) }
+        } ?? []
 
         var payload = AGPPayload()
         payload.readingCount = window.count
@@ -54,7 +59,9 @@ actor AGPBuilder {
         payload.patterns = GlucosePatternDetector.insights(window, thresholds: thresholds)
         let previousStats = previousWindow.isEmpty
             ? nil : StatisticsEngine.glucose(previousWindow, thresholds: thresholds)
-        payload.comparison = StatComparator.compare(current: payload.stats, previous: previousStats)
+        payload.comparison = previousRange == nil
+            ? nil
+            : StatComparator.compare(current: payload.stats, previous: previousStats)
         payload.mealImpacts = MealImpactAnalyzer.analyze(meals: carbs, readings: window)
         payload.mealImpactSummary = MealImpactAnalyzer.summary(payload.mealImpacts)
         payload.dawn = DawnPhenomenonDetector.analyze(window)

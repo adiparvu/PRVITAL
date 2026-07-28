@@ -66,20 +66,20 @@ enum MealImpactAnalyzer {
                 let mealTime = meal.timestamp
 
                 // Baseline: the reading nearest the meal within
-                // [mealTime - lookback, mealTime + forwardTolerance].
-                let baselineCandidates = active.filter {
-                    $0.timestamp >= mealTime.addingTimeInterval(-lookback) &&
-                    $0.timestamp <= mealTime.addingTimeInterval(forward)
-                }
+                // [mealTime - lookback, mealTime + forwardTolerance]. Sliced by
+                // binary search — a `filter` here re-walked every reading in the
+                // period for every meal (see SortedReadingWindow).
+                let baselineCandidates = active.readings(
+                    from: mealTime.addingTimeInterval(-lookback),
+                    through: mealTime.addingTimeInterval(forward))
                 guard let baseline = baselineCandidates.min(by: {
                     abs($0.timestamp.timeIntervalSince(mealTime)) < abs($1.timestamp.timeIntervalSince(mealTime))
                 }) else { return nil }
 
                 // Peak: the highest reading strictly after the meal, within the window.
-                let postMeal = active.filter {
-                    $0.timestamp > mealTime &&
-                    $0.timestamp <= mealTime.addingTimeInterval(window)
-                }
+                let postMeal = active.readings(
+                    after: mealTime,
+                    through: mealTime.addingTimeInterval(window))
                 guard let peak = postMeal.max(by: { $0.valueMgdL < $1.valueMgdL }) else { return nil }
 
                 let minutesToPeak = Int((peak.timestamp.timeIntervalSince(mealTime) / 60).rounded())

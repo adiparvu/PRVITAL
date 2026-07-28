@@ -52,15 +52,16 @@ enum ActivityImpactAnalyzer {
                 let start = session.startTimestamp
                 let windowEnd = start.addingTimeInterval(Double(session.durationSeconds) + post)
 
-                let baselineCandidates = active.filter {
-                    $0.timestamp >= start.addingTimeInterval(-lookback) &&
-                    $0.timestamp <= start.addingTimeInterval(forward)
-                }
+                // Sliced by binary search rather than filtered: a `filter` per
+                // session re-walked the whole period (see SortedReadingWindow).
+                let baselineCandidates = active.readings(
+                    from: start.addingTimeInterval(-lookback),
+                    through: start.addingTimeInterval(forward))
                 guard let baseline = baselineCandidates.min(by: {
                     abs($0.timestamp.timeIntervalSince(start)) < abs($1.timestamp.timeIntervalSince(start))
                 }) else { return nil }
 
-                let postReadings = active.filter { $0.timestamp > start && $0.timestamp <= windowEnd }
+                let postReadings = active.readings(after: start, through: windowEnd)
                 guard let nadir = postReadings.min(by: { $0.valueMgdL < $1.valueMgdL }) else { return nil }
 
                 let minutesToNadir = Int((nadir.timestamp.timeIntervalSince(start) / 60).rounded())

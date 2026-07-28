@@ -11,9 +11,22 @@ struct GlucoseGaugeRing: View {
     /// An active rule-of-15 recheck deadline: shows a live countdown inside the
     /// gauge, under the trend (device feedback: the timer belongs on Home).
     var recheckAt: Date?
+    /// Draws the zone label in the dial's bottom opening. The arc deliberately
+    /// stops short of the bottom, so the label has a home of its own instead of
+    /// colliding with the sweep's tip (device feedback: "things got messy there").
+    var showsZoneLabel: Bool = true
     /// Sized for the card-less hero: with no frame around it, the ring can own
     /// the top of the screen (device feedback: "bigger, more refined").
     var diameter: CGFloat = 248
+
+    /// The dial spans 270°, opening at the bottom: it starts bottom-left, runs
+    /// clockwise over the top and ends bottom-right. Lows land on the left,
+    /// in-range values near the top, highs on the right — and nothing is ever
+    /// drawn where the zone label and the source line sit.
+    private static let sweepDegrees: Double = 270
+    private static let startDegrees: Double = 135
+    /// Fraction of a full turn the dial covers, for `Circle.trim`.
+    private static let sweepFraction: Double = sweepDegrees / 360
 
     /// Display scale for the ring sweep (clamped).
     private let scaleLow = 40.0
@@ -52,29 +65,35 @@ struct GlucoseGaugeRing: View {
 
             // A faint instrument tick ring just inside the track — the quiet
             // "dial" detail that makes the gauge read as crafted, not generic.
-            ForEach(0..<60, id: \.self) { index in
+            // Spaced along the 270° arc, so no tick strays into the opening.
+            ForEach(0...45, id: \.self) { index in
+                let progress = Double(index) / 45
                 Rectangle()
                     .fill(Theme.textSecondary.opacity(index.isMultiple(of: 15) ? 0.35 : 0.16))
                     .frame(width: 1.5, height: index.isMultiple(of: 15) ? 7 : 4)
                     .offset(y: -diameter / 2 + ringWidth + 13)
-                    .rotationEffect(.degrees(Double(index) * 6))
+                    // A tick at rotation 0 points up (12 o'clock = 270° on the
+                    // screen circle), hence the −270 shift.
+                    .rotationEffect(.degrees(Self.startDegrees + progress * Self.sweepDegrees - 270))
             }
 
             Circle()
+                .trim(from: 0, to: Self.sweepFraction)
                 .stroke(Theme.hairline.opacity(0.7), style: StrokeStyle(lineWidth: ringWidth, lineCap: .round))
+                .rotationEffect(.degrees(Self.startDegrees))
             // The sweep brightens toward its tip, giving the arc direction.
             Circle()
-                .trim(from: 0, to: appeared ? fraction : 0)
+                .trim(from: 0, to: (appeared ? fraction : 0) * Self.sweepFraction)
                 .stroke(
                     AngularGradient(
                         colors: [zone.color.opacity(0.45), zone.color],
                         center: .center,
                         startAngle: .degrees(0),
-                        endAngle: .degrees(fraction * 360)
+                        endAngle: .degrees(fraction * Self.sweepDegrees)
                     ),
                     style: StrokeStyle(lineWidth: ringWidth, lineCap: .round)
                 )
-                .rotationEffect(.degrees(-90))
+                .rotationEffect(.degrees(Self.startDegrees))
                 .animation(.smooth, value: fraction)
 
             // A bright cap at the arc's tip — the "you are here" of the scale.
@@ -97,6 +116,18 @@ struct GlucoseGaugeRing: View {
                 }
             }
             .scaleEffect(appeared ? 1 : 0.9)
+            // Optically centred in the C: the dial's mass sits above the
+            // opening, so dead-centre reads a touch low.
+            .offset(y: -ringWidth / 2)
+
+            // The zone label lives in the dial's opening — the one place the
+            // sweep can never reach.
+            if showsZoneLabel {
+                VStack {
+                    Spacer(minLength: 0)
+                    ZonePill(zone: zone, plain: true)
+                }
+            }
         }
         .frame(width: diameter, height: diameter)
         .onAppear {
@@ -143,7 +174,7 @@ struct GlucoseGaugeRing: View {
 
     /// The glowing endpoint of the sweep, riding exactly on the arc's tip.
     private var tipDot: some View {
-        let angle = (fraction * 360 - 90) * .pi / 180
+        let angle = (Self.startDegrees + fraction * Self.sweepDegrees) * .pi / 180
         let radius = diameter / 2
         return Circle()
             .fill(zone.color)
