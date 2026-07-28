@@ -143,6 +143,7 @@ struct StatisticsContent: View {
                 } else if hasAnyData {
                     if stats.hasGlucose { timeInRangeBar.appearTransition(delay: 0) }
                     statsGrid.appearTransition(delay: 0.06)
+                    if let risk = derived.risk { riskCard(risk).appearTransition(delay: 0.09) }
                     if let insulin = insulinSummary { insulinBalanceCard(insulin).appearTransition(delay: 0.12) }
                     if !carbsByMeal.isEmpty { carbsByMealCard(carbsByMeal).appearTransition(delay: 0.18) }
                     if let overnight = overnightStats, overnight.hasGlucose { overnightCard(overnight).appearTransition(delay: 0.24) }
@@ -899,6 +900,133 @@ struct StatisticsContent: View {
         return date.formatted(date: .omitted, time: .shortened)
     }
 
+    // MARK: Glycaemic risk
+
+    /// The clinic-grade risk indices (GRI headline + LBGI/HBGI/MAGE rows) that
+    /// Clarity/Glooko print — computed with the fixed clinical cutoffs, so the
+    /// figures match what a doctor's report would say.
+    private func riskCard(_ risk: GlycemicRisk) -> some View {
+        SectionCard("Glycaemic risk", systemImage: "waveform.path.ecg") {
+            VStack(alignment: .leading, spacing: 14) {
+                HStack(alignment: .firstTextBaseline) {
+                    VStack(alignment: .leading, spacing: 2) {
+                        Text("Glycemia Risk Index (GRI)")
+                            .font(.footnote)
+                            .foregroundStyle(Theme.textSecondary)
+                        Text(verbatim: "\(Int(risk.gri.rounded()))")
+                            .font(.system(size: 34, weight: .bold, design: .rounded))
+                            .foregroundStyle(griColor(risk.band))
+                            .monospacedDigit()
+                    }
+                    Spacer()
+                    Text(griBandLabel(risk.band))
+                        .font(.subheadline.weight(.semibold))
+                        .foregroundStyle(griColor(risk.band))
+                        .padding(.horizontal, 10)
+                        .padding(.vertical, 5)
+                        .background(griColor(risk.band).opacity(0.14), in: .capsule)
+                }
+                griScale(risk.gri)
+
+                VStack(spacing: 8) {
+                    riskRow(title: "Hypo risk (LBGI)",
+                            value: risk.lbgi.formatted(.number.precision(.fractionLength(1))),
+                            severity: lbgiSeverity(risk.lbgi))
+                    riskRow(title: "Hyper risk (HBGI)",
+                            value: risk.hbgi.formatted(.number.precision(.fractionLength(1))),
+                            severity: hbgiSeverity(risk.hbgi))
+                    riskRow(title: "Swing size (MAGE)",
+                            value: GlucoseFormatting.labeled(mgdL: risk.mage, unit: unit),
+                            severity: nil)
+                }
+
+                Text("Computed with the fixed clinical cutoffs (54–70–180–250 mg/dL), so these figures match clinic reports regardless of your personal target range.")
+                    .font(.caption2)
+                    .foregroundStyle(Theme.textTertiary)
+                    .fixedSize(horizontal: false, vertical: true)
+            }
+        }
+    }
+
+    /// The 0–100 GRI strip with the published quintile bands and a marker.
+    private func griScale(_ gri: Double) -> some View {
+        GeometryReader { proxy in
+            let width = proxy.size.width
+            ZStack(alignment: .leading) {
+                HStack(spacing: 2) {
+                    ForEach(Array(GlycemicRisk.Band.allCases.enumerated()), id: \.offset) { _, band in
+                        RoundedRectangle(cornerRadius: 2)
+                            .fill(griColor(band).opacity(0.35))
+                    }
+                }
+                Circle()
+                    .fill(Theme.textPrimary)
+                    .overlay(Circle().strokeBorder(Theme.background, lineWidth: 2))
+                    .frame(width: 14, height: 14)
+                    .offset(x: max(0, min(width - 14, width * gri / 100 - 7)))
+            }
+        }
+        .frame(height: 14)
+        .accessibilityHidden(true)
+    }
+
+    private func riskRow(title: LocalizedStringKey, value: String,
+                         severity: (label: LocalizedStringKey, color: Color)?) -> some View {
+        HStack {
+            Text(title)
+                .font(.subheadline)
+                .foregroundStyle(Theme.textSecondary)
+            Spacer()
+            if let severity {
+                Text(severity.label)
+                    .font(.caption.weight(.semibold))
+                    .foregroundStyle(severity.color)
+            }
+            Text(verbatim: value)
+                .font(.subheadline.weight(.semibold))
+                .foregroundStyle(Theme.textPrimary)
+                .monospacedDigit()
+        }
+        .accessibilityElement(children: .combine)
+    }
+
+    private func griColor(_ band: GlycemicRisk.Band) -> Color {
+        switch band {
+        case .a: return Theme.zoneInRange
+        case .b: return Theme.zoneInRange
+        case .c: return Theme.zoneHigh
+        case .d: return Theme.zoneWarning
+        case .e: return Theme.zoneCritical
+        }
+    }
+
+    private func griBandLabel(_ band: GlycemicRisk.Band) -> LocalizedStringKey {
+        switch band {
+        case .a: return "Very low risk"
+        case .b: return "Low risk"
+        case .c: return "Moderate risk"
+        case .d: return "High risk"
+        case .e: return "Very high risk"
+        }
+    }
+
+    private func lbgiSeverity(_ lbgi: Double) -> (LocalizedStringKey, Color) {
+        switch lbgi {
+        case ..<1.1: return ("Minimal", Theme.zoneInRange)
+        case ..<2.5: return ("Low", Theme.zoneInRange)
+        case ..<5: return ("Moderate", Theme.zoneWarning)
+        default: return ("High", Theme.zoneCritical)
+        }
+    }
+
+    private func hbgiSeverity(_ hbgi: Double) -> (LocalizedStringKey, Color) {
+        switch hbgi {
+        case ..<4.5: return ("Low", Theme.zoneInRange)
+        case ..<9: return ("Moderate", Theme.zoneWarning)
+        default: return ("High", Theme.zoneCritical)
+        }
+    }
+
     // MARK: Stat grid
 
     private var statsGrid: some View {
@@ -1109,6 +1237,8 @@ final class StatisticsDerived {
     /// second year just for one delta line isn't worth it) — drives the
     /// Clarity-style "±X% vs the previous N days" line.
     var previousPeriodTIR: Double?
+    /// Clinical risk indices (GRI, LBGI/HBGI, MAGE); nil below 24 readings.
+    var risk: GlycemicRisk?
 
     func rebuild(
         glucose: [GlucoseReading], insulin: [InsulinDose], carbs: [CarbEntry],
@@ -1161,8 +1291,10 @@ final class StatisticsDerived {
             let prev = StatisticsEngine.glucose(readings.filter(\.isActive), thresholds: thresholds)
             return prev.hasGlucose ? prev.timeInRange : nil
         }
+        let riskIndices = GlycemicRiskEngine.compute(active)
 
         self.previousPeriodTIR = previousTIR
+        self.risk = riskIndices
         self.stats = summary
         self.activityMinutes = activityMins
         self.hasAnyData = anyData
