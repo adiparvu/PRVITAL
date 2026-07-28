@@ -67,7 +67,9 @@ struct PrvioListRowBackground: View {
 
     var body: some View {
         ZStack {
-            Rectangle().fill(.ultraThinMaterial)
+            // Flat fill + veil, not a material — see GlassBackground for why
+            // backdrop blurs were retired app-wide.
+            Rectangle().fill(Theme.glassFill)
             Color.black.opacity(colorScheme == .dark ? 0.30 : 0.05)
         }
         .overlay(alignment: .bottom) {
@@ -121,7 +123,7 @@ struct PrvioChipLabel: View {
         .background {
             ZStack {
                 RoundedRectangle(cornerRadius: 16, style: .continuous)
-                    .fill(.ultraThinMaterial)
+                    .fill(Theme.glassFill)
                 RoundedRectangle(cornerRadius: 16, style: .continuous)
                     .fill(Color.black.opacity(colorScheme == .dark ? 0.22 : 0.05))
             }

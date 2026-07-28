@@ -28,9 +28,22 @@ struct GlucoseGaugeRing: View {
     var body: some View {
         ZStack {
             // Soft glow that breathes behind the ring, tinted by the zone.
+            // Drawn as a radial gradient, NOT a blurred stroke: this pulses
+            // forever, and animating a `.blur` forces an offscreen Gaussian
+            // pass on every frame — the GPU never rested while the Dashboard
+            // was on screen. The gradient is a plain cached fill.
             Circle()
-                .stroke(zone.color.opacity(0.35), lineWidth: ringWidth)
-                .blur(radius: 12)
+                .fill(RadialGradient(
+                    stops: [
+                        .init(color: zone.color.opacity(0), location: 0.62),
+                        .init(color: zone.color.opacity(0.35), location: 0.86),
+                        .init(color: zone.color.opacity(0), location: 1),
+                    ],
+                    center: .center,
+                    startRadius: 0,
+                    endRadius: diameter / 2 + 14
+                ))
+                .frame(width: diameter + 28, height: diameter + 28)
                 .scaleEffect(pulse ? 1.05 : 0.97)
                 .opacity(pulse ? 0.8 : 0.4)
 

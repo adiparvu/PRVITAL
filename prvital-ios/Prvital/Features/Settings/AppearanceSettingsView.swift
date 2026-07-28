@@ -438,7 +438,7 @@ struct BackgroundSettingsView: View {
                 .foregroundStyle(Theme.textPrimary)
                 .frame(maxWidth: .infinity, alignment: .leading)
                 .padding(18)
-                .background(.ultraThinMaterial, in: .rect(cornerRadius: 16))
+                .background(Theme.glassFill, in: .rect(cornerRadius: 16))
                 .padding(24)
         }
         .frame(height: 180)

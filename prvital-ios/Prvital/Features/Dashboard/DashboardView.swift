@@ -331,16 +331,20 @@ struct DashboardView: View {
                 .buttonStyle(PressableCardStyle())
                 // The ambient halo: a barely-there wash of the zone colour behind
                 // the ring — Apple-Weather sky, not a traffic light. Crossfades
-                // slowly when the zone changes.
+                // slowly when the zone changes. A radial gradient, not a
+                // 90pt `.blur` — that Gaussian over a 420pt circle was a huge
+                // offscreen pass every time the hero re-rendered.
                 .background {
-                    Circle()
-                        .fill(zone.color)
-                        .frame(width: 420, height: 420)
-                        .blur(radius: 90)
-                        .opacity(0.15)
-                        .offset(y: -14)
-                        .allowsHitTesting(false)
-                        .animation(.smooth(duration: 1.2), value: zone.label)
+                    RadialGradient(
+                        colors: [zone.color.opacity(0.15), zone.color.opacity(0)],
+                        center: .center,
+                        startRadius: 0,
+                        endRadius: 210
+                    )
+                    .frame(width: 420, height: 420)
+                    .offset(y: -14)
+                    .allowsHitTesting(false)
+                    .animation(.smooth(duration: 1.2), value: zone.label)
                 }
                 .accessibilityHint("Opens glucose entry")
 
@@ -1481,7 +1485,7 @@ private struct SyncErrorBanner: View {
             .accessibilityLabel("Dismiss")
         }
         .padding(12)
-        .background(.regularMaterial, in: .rect(cornerRadius: 14))
+        .background(Theme.surfaceRaised, in: .rect(cornerRadius: 14))
         .overlay(
             RoundedRectangle(cornerRadius: 14, style: .continuous)
                 .strokeBorder(Theme.hairline)

@@ -22,14 +22,14 @@ private struct GlassBackground: ViewModifier {
         // — e.g. a chart's area fill that reaches the padded content's edge — pokes
         // past the rounded corners, since the corner radius can exceed the padding.
         //
-        // Deliberately a MATERIAL, not the native `glassEffect`: Liquid Glass
-        // does live refraction sampling of everything behind it and Apple's
-        // guidance is to use it sparingly — this modifier backs dozens of
-        // cards per screen over a full-screen photo, and during a tab-switch
-        // crossfade BOTH tabs' stacks render at once. That was the visible
-        // stutter on every switch. The frosted material reads the same.
+        // Deliberately a FLAT translucent fill — not `glassEffect` and not a
+        // material either. Both are backdrop effects: they re-sample and
+        // re-blur everything behind the card on every frame, and this
+        // modifier backs dozens of cards per screen (during a tab-switch
+        // crossfade, two screens' worth). Cutting the backdrop work entirely
+        // is what finally made scrolling and tab switches smooth.
         let shape = RoundedRectangle(cornerRadius: cornerRadius, style: .continuous)
-        content.background(.ultraThinMaterial, in: .rect(cornerRadius: cornerRadius))
+        content.background(Theme.glassFill, in: .rect(cornerRadius: cornerRadius))
             .overlay { edge }
             .clipShape(shape)
     }
@@ -57,13 +57,11 @@ extension View {
     }
 }
 
-/// The frosted-glass fill behind a settings list row.
+/// The translucent fill behind a settings list row.
 ///
-/// Matches the cards (`glassCard`): the native Liquid Glass effect on iOS/watchOS
-/// 26, with an `.ultraThinMaterial` fallback — the more translucent material the
-/// companion card uses, so menus read as the same frosted glass that lets the app
-/// background show through, rather than a more opaque panel. A hairline keeps each
-/// row defined where the glass blends into the backdrop.
+/// Matches the cards (`glassCard`): the same flat `Theme.glassFill`, so menus
+/// read as the same surface that lets the app background show through. A
+/// hairline keeps each row defined where the fill blends into the backdrop.
 struct GlassListRowBackground: View {
     var body: some View {
         glass
@@ -73,10 +71,10 @@ struct GlassListRowBackground: View {
     }
 
     @ViewBuilder private var glass: some View {
-        // Material, not `glassEffect` — every list row is its own backdrop
-        // layer, and Liquid Glass refraction per row over a photo background
-        // was a large share of the tab-switch stutter (see GlassBackground).
-        Rectangle().fill(.ultraThinMaterial)
+        // Flat fill, no material — every list row was its own backdrop-blur
+        // layer, re-sampling the photo behind it each frame (see
+        // GlassBackground for the full story).
+        Rectangle().fill(Theme.glassFill)
     }
 }
 

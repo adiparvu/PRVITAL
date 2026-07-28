@@ -100,7 +100,7 @@ struct OnboardingView: View {
         .padding(.horizontal, 20)
         .padding(.top, 12)
         .padding(.bottom, 8)
-        .background(.ultraThinMaterial)
+        .background(Theme.glassFill)
     }
 
     private func advance(profile: UserProfile) {

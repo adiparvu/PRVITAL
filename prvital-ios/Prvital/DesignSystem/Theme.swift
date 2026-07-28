@@ -13,6 +13,12 @@ enum Theme {
     static let background = Color.adaptive(light: 0xF2F3F7, dark: 0x0B0E14)
     static let surface = Color.adaptive(light: 0xFFFFFF, dark: 0x161A22)
     static let surfaceRaised = Color.adaptive(light: 0xFFFFFF, dark: 0x1E232D)
+    /// The card/row fill. A flat translucent colour, deliberately NOT a system
+    /// material: materials re-sample and re-blur whatever is behind them on
+    /// every frame, and with dozens of cards per screen over a photo that
+    /// backdrop work was the app-wide scroll and tab-switch cost. A flat fill
+    /// composites for free while still letting the background read through.
+    static let glassFill = Color.adaptive(light: 0xFFFFFF, dark: 0x151923).opacity(0.74)
 
     // Text. Secondary and tertiary sit a step darker (light) / brighter (dark)
     // than typical palettes on purpose: the app draws over glass and photo
