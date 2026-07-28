@@ -231,7 +231,11 @@ struct MainTabView: View {
                 .tag(MainTab.add)
             InsightsView()
                 .tabItem {
-                    Image(systemName: "chart.xyaxis.line")
+                    // The reference bar's fourth slot is a chat bubble — ours
+                    // is Analyze, so it wears simple outline bars instead:
+                    // same minimal weight as the other glyphs, instantly
+                    // readable as "statistics", and it fills on selection.
+                    Image(systemName: "chart.bar")
                         .accessibilityLabel("Insights")
                 }
                 .tag(MainTab.insights)
