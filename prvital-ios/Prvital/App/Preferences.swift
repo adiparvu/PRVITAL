@@ -34,9 +34,6 @@ final class Preferences {
         self.weeklyDigestEnabled = self.defaults.bool(forKey: Keys.weeklyDigest)
         self.weeklyInsightEnabled = self.defaults.bool(forKey: Keys.weeklyInsight)
         self.nightscoutUploadEnabled = self.defaults.bool(forKey: Keys.nightscoutUpload)
-        self.accentThemeRaw = self.defaults.string(forKey: Keys.accentTheme) ?? "default"
-        let storedCustomAccent = self.defaults.integer(forKey: AccentTheme.customHexKey)
-        self.accentCustomHex = storedCustomAccent > 0 ? storedCustomAccent : 0x2FD4CE
         self.journalCardDensityRaw = self.defaults.string(forKey: Keys.journalCardDensity) ?? "standard"
         self.lastSeenWhatsNewVersion = self.defaults.string(forKey: Keys.lastSeenWhatsNew) ?? ""
         self.themeModeRaw = self.defaults.string(forKey: Keys.themeMode) ?? ThemeMode.system.rawValue
@@ -212,16 +209,21 @@ final class Preferences {
         didSet { defaults.set(nightscoutUploadEnabled, forKey: Keys.nightscoutUpload) }
     }
 
+    // Both accent values live in `AccentPreference`, the observable store that
+    // `Theme.accent` itself reads. Forwarding rather than duplicating is what
+    // keeps a colour change repainting every `Theme.accent` in the app the
+    // moment it is written — no root-identity bump, no lost screen.
+
     /// The chosen accent theme's raw identifier ("default" = the teal brand).
     var accentThemeRaw: String {
-        didSet { defaults.set(accentThemeRaw, forKey: Keys.accentTheme) }
+        get { AccentPreference.shared.themeRaw }
+        set { AccentPreference.shared.themeRaw = newValue }
     }
 
     /// The custom accent colour (0xRRGGBB), used when the theme is "custom".
-    /// Observable so a drag in the colour well repaints the app live; the key
-    /// is `AccentTheme.customHexKey`, where `Theme.accent` resolves it from.
     var accentCustomHex: Int {
-        didSet { defaults.set(accentCustomHex, forKey: AccentTheme.customHexKey) }
+        get { AccentPreference.shared.customHex }
+        set { AccentPreference.shared.customHex = newValue }
     }
 
     // MARK: Appearance (theme mode, text size, haptics, background)

@@ -28,11 +28,14 @@ struct PrvitalApp: App {
                 // literals go through `PrvitalString`, which reads the chosen
                 // language directly.
                 .environment(\.locale, language.locale)
-                // Only the accent theme keys the root identity: `Theme.accent` is a
-                // global read (not observed), so bumping identity when it changes is
-                // what repaints the tab-bar tint and every `Theme.accent` glyph at
-                // once. Language is deliberately NOT in the key — see above.
-                .id(environment.preferences.accentThemeRaw)
+                // NOTHING keys the root identity any more. The accent used to:
+                // `Theme.accent` was an unobserved global, so bumping identity
+                // was the only way to repaint it — at the cost of tearing down
+                // the whole hierarchy, which threw the user out of whatever
+                // screen they were on the instant they picked a colour.
+                // `Theme.accent` now reads the observable `AccentPreference`,
+                // so every view that paints with it re-renders on its own (the
+                // `.tint` above included).
         }
         .backgroundTask(.appRefresh(AppEnvironment.backgroundRefreshIdentifier)) { [environment] in
             await environment.performBackgroundRefresh()
@@ -223,29 +226,31 @@ struct MainTabView: View {
                 .tag(MainTab.home)
             JournalView()
                 .tabItem {
-                    Image(systemName: "square.grid.2x2")
+                    Image(uiImage: PrvitalTabGlyph.journal)
+                        .renderingMode(.template)
                         .accessibilityLabel("Journal")
                 }
                 .tag(MainTab.journal)
             Color.clear
                 .tabItem {
-                    Image(systemName: "plus")
+                    Image(uiImage: PrvitalTabGlyph.add)
+                        .renderingMode(.template)
                         .accessibilityLabel("Add")
                 }
                 .tag(MainTab.add)
             InsightsView()
                 .tabItem {
                     // The reference bar's fourth slot is a chat bubble — ours
-                    // is Analyze, so it wears simple outline bars instead:
-                    // same minimal weight as the other glyphs, instantly
-                    // readable as "statistics", and it fills on selection.
-                    Image(systemName: "chart.bar")
+                    // is Analyze, so it wears simple outline bars instead.
+                    Image(uiImage: PrvitalTabGlyph.insights)
+                        .renderingMode(.template)
                         .accessibilityLabel("Insights")
                 }
                 .tag(MainTab.insights)
             SettingsView()
                 .tabItem {
-                    Image(systemName: "person")
+                    Image(uiImage: PrvitalTabGlyph.profile)
+                        .renderingMode(.template)
                         .accessibilityLabel("Settings")
                 }
                 .tag(MainTab.settings)

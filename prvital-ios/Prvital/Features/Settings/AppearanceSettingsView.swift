@@ -11,6 +11,7 @@ import UIKit
 /// and never change with any of these.
 struct AppearanceSettingsView: View {
     @Environment(AppEnvironment.self) private var env
+    @State private var showingAccentPicker = false
 
     private var selected: AccentTheme {
         AccentTheme(rawValue: env.preferences.accentThemeRaw) ?? .default
@@ -55,35 +56,30 @@ struct AppearanceSettingsView: View {
             }
             .glassListRow()
 
-            // Accent: plain swatch circles plus a custom colour well — the
-            // exact language of the avatar-ring picker (device feedback).
+            // Accent lives in its own sheet: the swatch grid plus the colour
+            // well made the Appearance page top-heavy, and a picker deserves
+            // room to breathe (device feedback).
             Section {
-                AccentSwatchGrid(selected: selected) { theme in
-                    guard theme != selected else { return }
-                    Haptics.play(.selection)
-                    env.preferences.accentThemeRaw = theme.rawValue
-                }
-                .listRowInsets(EdgeInsets(top: 8, leading: 8, bottom: 8, trailing: 8))
-                .listRowBackground(Color.clear)
-
-                ColorPicker(selection: customAccentBinding, supportsOpacity: false) {
-                    HStack(spacing: 8) {
+                Button {
+                    Haptics.play(.light)
+                    showingAccentPicker = true
+                } label: {
+                    LabeledContent {
+                        Circle()
+                            .fill(Theme.accent)
+                            .frame(width: 22, height: 22)
+                            .overlay(Circle().strokeBorder(Theme.hairline, lineWidth: 1))
+                    } label: {
                         Label {
-                            Text("Custom colour").foregroundStyle(Theme.textPrimary)
+                            Text("Accent colour").foregroundStyle(Theme.textPrimary)
                         } icon: {
-                            Image(systemName: "eyedropper.halffull")
-                                .foregroundStyle(selected == .custom ? Theme.accent : Theme.textSecondary)
-                        }
-                        if selected == .custom {
-                            Image(systemName: "checkmark")
-                                .font(.caption.weight(.bold))
+                            Image(systemName: "paintpalette")
                                 .foregroundStyle(Theme.accent)
                         }
                     }
                 }
+                .buttonStyle(.plain)
                 .glassListRow()
-            } header: {
-                Text("Accent colour")
             } footer: {
                 Text("The accent tints buttons, icons and highlights across the app. Glucose zone colours never change, so readings always mean the same thing. Widgets and the Watch app pick up the new colour the next time they refresh.")
                     .font(.footnote)
@@ -141,6 +137,14 @@ struct AppearanceSettingsView: View {
         .prvitalScreenBackground()
         .navigationTitle("Appearance")
         .navigationBarTitleDisplayMode(.inline)
+        .sheet(isPresented: $showingAccentPicker) {
+            AccentColorSheet(selected: selected,
+                             customColour: customAccentBinding) { theme in
+                guard theme != selected else { return }
+                Haptics.play(.selection)
+                env.preferences.accentThemeRaw = theme.rawValue
+            }
+        }
     }
 
     /// A toggle whose explanation lives right under its title.
@@ -168,6 +172,64 @@ struct AppearanceSettingsView: View {
         case .gradient: env.preferences.backgroundGradient.displayName
         case .photo: String(localized: "Your photo")
         }
+    }
+}
+
+/// The accent picker, on its own sheet: the preset swatches and the custom
+/// colour well, with room around them.
+///
+/// Choosing a colour repaints the app *behind* the sheet and leaves the sheet
+/// open, so several can be tried in a row — nothing about picking a colour
+/// navigates or dismisses any more.
+private struct AccentColorSheet: View {
+    let selected: AccentTheme
+    @Binding var customColour: Color
+    let choose: (AccentTheme) -> Void
+
+    @Environment(\.dismiss) private var dismiss
+
+    var body: some View {
+        NavigationStack {
+            ScrollView {
+                VStack(alignment: .leading, spacing: 22) {
+                    AccentSwatchGrid(selected: selected, choose: choose)
+                        .padding(.top, 8)
+
+                    ColorPicker(selection: $customColour, supportsOpacity: false) {
+                        HStack(spacing: 8) {
+                            Label {
+                                Text("Custom colour").foregroundStyle(Theme.textPrimary)
+                            } icon: {
+                                Image(systemName: "eyedropper.halffull")
+                                    .foregroundStyle(selected == .custom ? Theme.accent : Theme.textSecondary)
+                            }
+                            if selected == .custom {
+                                Image(systemName: "checkmark")
+                                    .font(.caption.weight(.bold))
+                                    .foregroundStyle(Theme.accent)
+                            }
+                        }
+                    }
+                    .padding(14)
+                    .background(Theme.glassFill, in: .rect(cornerRadius: 16))
+
+                    Text("The accent tints buttons, icons and highlights across the app. Glucose zone colours never change, so readings always mean the same thing. Widgets and the Watch app pick up the new colour the next time they refresh.")
+                        .font(.footnote)
+                        .foregroundStyle(Theme.textTertiary)
+                        .fixedSize(horizontal: false, vertical: true)
+                }
+                .padding()
+            }
+            .prvitalScreenBackground()
+            .navigationTitle("Accent colour")
+            .navigationBarTitleDisplayMode(.inline)
+            .toolbar {
+                ToolbarItem(placement: .confirmationAction) {
+                    Button("Done") { dismiss() }
+                }
+            }
+        }
+        .presentationDetents([.medium, .large])
     }
 }
 

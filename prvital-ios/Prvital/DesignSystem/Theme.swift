@@ -61,6 +61,40 @@ enum Theme {
     }
 }
 
+/// The live accent choice, as an observable object.
+///
+/// `Theme.accent` reads this, so every view body that paints with the accent
+/// registers an Observation dependency on it and re-renders by itself when the
+/// choice changes. That is what lets the app recolour instantly *without*
+/// keying the root view's identity on the accent — which used to tear down and
+/// rebuild the whole hierarchy, throwing the user back out of whatever screen
+/// they were on the moment they tapped a colour.
+///
+/// Values are mirrored into the shared App Group defaults so the widgets and
+/// the watch app (separate processes, which never mutate this) resolve the same
+/// accent on their next refresh.
+@Observable
+final class AccentPreference {
+    /// Single-threaded by contract: read during view updates and written from
+    /// the Appearance screen, both on the main actor.
+    nonisolated(unsafe) static let shared = AccentPreference()
+
+    var themeRaw: String {
+        didSet { SharedStore.groupDefaults.set(themeRaw, forKey: AccentTheme.preferenceKey) }
+    }
+
+    /// The custom accent as 0xRRGGBB; 0 means "never chosen".
+    var customHex: Int {
+        didSet { SharedStore.groupDefaults.set(customHex, forKey: AccentTheme.customHexKey) }
+    }
+
+    private init() {
+        let defaults = SharedStore.groupDefaults
+        themeRaw = defaults.string(forKey: AccentTheme.preferenceKey) ?? AccentTheme.default.rawValue
+        customHex = defaults.integer(forKey: AccentTheme.customHexKey)
+    }
+}
+
 /// The user-selectable accent palette (Settings → Appearance).
 ///
 /// Only the brand accent changes with the theme — the glucose zone colours are
@@ -86,21 +120,20 @@ enum AccentTheme: String, CaseIterable, Identifiable {
 
     /// The stored custom colour, falling back to the teal brand.
     static var customHex: UInt {
-        let stored = SharedStore.groupDefaults.integer(forKey: customHexKey)
+        let stored = AccentPreference.shared.customHex
         return stored > 0 ? UInt(stored) : 0x2FD4CE
     }
 
     /// The key `Preferences` writes. Duplicated here (rather than referenced) so
     /// Theme keeps compiling in the widget and watch targets, where the app's
     /// `Preferences` type does not exist.
-    private static let preferenceKey = "pref.accentTheme"
+    static let preferenceKey = "pref.accentTheme"
 
     /// The theme currently chosen in Settings, falling back to the teal brand.
     /// Read through the cached suite instance — this runs on every body pass of
     /// nearly every view, and `UserDefaults(suiteName:)` allocates per call.
     static var current: AccentTheme {
-        let raw = SharedStore.groupDefaults.string(forKey: preferenceKey)
-        return raw.flatMap(AccentTheme.init(rawValue:)) ?? .default
+        AccentTheme(rawValue: AccentPreference.shared.themeRaw) ?? .default
     }
 
     var displayName: String {
