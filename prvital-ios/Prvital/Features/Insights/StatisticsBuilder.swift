@@ -83,11 +83,14 @@ actor StatisticsBuilder {
         // Reconciliation compares a lab result with the ~90 days of CGM it
         // reflects — wider than the selected window, and only when a lab exists.
         if let latestLab = labResults.first {
-            let reconLower = Calendar.current.date(byAdding: .day, value: -100, to: latestLab.timestamp)
-                ?? latestLab.timestamp.addingTimeInterval(-100 * 86_400)
+            // Both bounds must be plain local values: `#Predicate` cannot
+            // capture a property read off a SwiftData model.
+            let labDate = latestLab.timestamp
+            let reconLower = Calendar.current.date(byAdding: .day, value: -100, to: labDate)
+                ?? labDate.addingTimeInterval(-100 * 86_400)
             let reconReadings = (try? modelContext.fetch(FetchDescriptor<GlucoseReading>(
                 predicate: #Predicate {
-                    $0.isActive && $0.timestamp >= reconLower && $0.timestamp <= latestLab.timestamp
+                    $0.isActive && $0.timestamp >= reconLower && $0.timestamp <= labDate
                 },
                 sortBy: [SortDescriptor(\.timestamp)]))) ?? []
             payload.latestReconciliation = A1cReconciler.reconcile(
