@@ -416,7 +416,9 @@ struct GlucoseTrendChart: View {
                     series: .value("Series", "yesterday")
                 )
                 .interpolationMethod(.catmullRom)
-                .foregroundStyle(Theme.textSecondary.opacity(0.22))
+                // Quiet, but it has to survive the wallpaper behind the card:
+                // at 0.22 it vanished over a bright patch of photo.
+                .foregroundStyle(Theme.textSecondary.opacity(0.45))
                 .lineStyle(StrokeStyle(lineWidth: 1.5, lineCap: .round))
             }
 
@@ -569,7 +571,11 @@ struct GlucoseTrendChart: View {
         // Keep every mark inside the plot area: the area fill and the smoothed
         // (Catmull-Rom) curve must end above the hour labels, never bleed past
         // the plot's floor into the axis strip or the card below it.
-        .chartPlotStyle { plot in plot.clipped() }
+        .chartPlotStyle { plot in
+            plot
+                .background(Theme.chartPlotBackdrop)
+                .clipped()
+        }
         .frame(height: compact ? 120 : 220)
         .overlay(alignment: .topTrailing) { legendButton }
 

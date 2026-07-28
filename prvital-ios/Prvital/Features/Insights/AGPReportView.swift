@@ -494,6 +494,9 @@ private struct AGPChart: View {
                 }
             }
         }
+        // The percentile envelope is drawn in hairlines — it needs the same
+        // calm backdrop the trend chart uses over a photo wallpaper.
+        .chartPlotStyle { $0.background(Theme.chartPlotBackdrop) }
         .frame(height: 240)
         .animation(.easeOut(duration: 0.45), value: revealStage)
         .opacity(appeared ? 1 : 0)

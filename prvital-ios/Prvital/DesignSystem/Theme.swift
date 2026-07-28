@@ -20,6 +20,16 @@ enum Theme {
     /// composites for free while still letting the background read through.
     static let glassFill = Color.adaptive(light: 0xFFFFFF, dark: 0x151923).opacity(0.74)
 
+    /// A calm backdrop for a chart's plot area.
+    ///
+    /// Cards are a flat translucent fill, so — unlike a material — they do not
+    /// blur what is behind them: a bright, busy patch of the user's wallpaper
+    /// (a headlight, a highlight) shows through sharply and swallows the
+    /// hairline marks a chart is made of, the ghost line above all. Laying this
+    /// behind the plot restores contrast for every chart mark, and costs one
+    /// flat fill rather than a blur pass.
+    static let chartPlotBackdrop = Color.adaptive(light: 0xFFFFFF, dark: 0x10141C).opacity(0.55)
+
     // Text. Secondary and tertiary sit a step darker (light) / brighter (dark)
     // than typical palettes on purpose: the app draws over glass and photo
     // backgrounds, where the usual muted greys wash out.

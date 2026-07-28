@@ -240,6 +240,9 @@ struct ChartsContent: View {
                         }
                     }
                 }
+                // Faded earlier days are hairlines by design — give them a
+                // calm backdrop so a bright wallpaper can't erase them.
+                .chartPlotStyle { $0.background(Theme.chartPlotBackdrop) }
                 .frame(height: 220)
 
                 HStack(spacing: 14) {
