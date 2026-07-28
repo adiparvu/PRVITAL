@@ -130,6 +130,20 @@ final class ExportService {
             }
             y += 14
 
+            // The risk indices clinics read from Clarity/Glooko reports —
+            // computed with the fixed clinical cutoffs, so the figures are
+            // comparable across systems.
+            if let risk = GlycemicRiskEngine.compute(input.glucose) {
+                y = draw("Glycaemic risk", at: y, margin: margin, width: width, font: .boldSystemFont(ofSize: 16))
+                for row in riskRows(risk, unit: input.unit) {
+                    y = draw(row, at: y + 2, margin: margin, width: width, font: .systemFont(ofSize: 12))
+                }
+                y = draw("Risk indices use the fixed clinical cutoffs (54–70–180–250 mg/dL), independent of the personal target range.",
+                         at: y + 4, margin: margin, width: width,
+                         font: .italicSystemFont(ofSize: 9), color: .secondaryLabel)
+                y += 14
+            }
+
             y = draw("Recent glucose", at: y, margin: margin, width: width, font: .boldSystemFont(ofSize: 16))
             let recent = input.glucose.sorted { $0.timestamp > $1.timestamp }.prefix(40)
             let df = DateFormatter(); df.dateFormat = "yyyy-MM-dd HH:mm"
@@ -163,6 +177,27 @@ final class ExportService {
         renderer.scale = 3
         renderer.proposedSize = ProposedViewSize(size)
         return renderer.uiImage
+    }
+
+    /// The doctor-facing lines for the risk indices. English on purpose — like
+    /// the rest of the PDF's section labels, the report reads as a clinical
+    /// document and the abbreviations (GRI/LBGI/HBGI/MAGE) are the terms
+    /// clinicians actually search for.
+    private func riskRows(_ risk: GlycemicRisk, unit: GlucoseUnit) -> [String] {
+        let band: String
+        switch risk.band {
+        case .a: band = "very low risk"
+        case .b: band = "low risk"
+        case .c: band = "moderate risk"
+        case .d: band = "high risk"
+        case .e: band = "very high risk"
+        }
+        let f: (Double) -> String = { $0.formatted(.number.precision(.fractionLength(1))) }
+        return [
+            "GRI (Glycemia Risk Index): \(Int(risk.gri.rounded())) / 100 — \(band)",
+            "LBGI: \(f(risk.lbgi))   ·   HBGI: \(f(risk.hbgi))",
+            "MAGE (mean swing): \(GlucoseFormatting.labeled(mgdL: risk.mage, unit: unit))",
+        ]
     }
 
     private func summaryRows(_ input: ExportInput) -> [String] {
