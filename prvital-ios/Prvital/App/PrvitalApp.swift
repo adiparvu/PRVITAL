@@ -213,7 +213,11 @@ struct MainTabView: View {
         TabView(selection: $selection) {
             DashboardView()
                 .tabItem {
-                    Image(systemName: "house")
+                    // The one custom glyph: our own rounded house with a
+                    // droplet cut out of it, rendered as a template image so
+                    // the bar tints it exactly like the SF Symbols beside it.
+                    Image(uiImage: PrvitalTabGlyph.home)
+                        .renderingMode(.template)
                         .accessibilityLabel("Dashboard")
                 }
                 .tag(MainTab.home)
