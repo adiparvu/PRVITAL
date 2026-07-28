@@ -168,8 +168,30 @@ struct RuleOf15Sheet: View {
                         UserDefaults.standard.double(forKey: RuleOf15.roundStartKey))
                     state.resumeWaiting()
                 }
+                autoResolveIfRecovered()
+            }
+            // A fresh recovered reading ends the wait by itself — logging a
+            // fingerstick back above the low threshold shouldn't also require
+            // tapping "Recheck".
+            .onChange(of: readings.count) {
+                autoResolveIfRecovered()
             }
         }
+    }
+
+    /// Resolves the flow automatically when a reading logged after this round
+    /// started is back at or above the low threshold. Still-low readings
+    /// change nothing mid-wait — the manual recheck owns the "treat again"
+    /// decision, so the countdown can't cut a wait short in the wrong way.
+    private func autoResolveIfRecovered() {
+        guard state.phase == .waiting,
+              let latest = latestReading, latest.timestamp >= roundStartedAt,
+              latest.valueMgdL >= thresholds.targetLower else { return }
+        withAnimation(.smooth) {
+            state.recheck(mgdL: latest.valueMgdL, targetLowerMgdL: thresholds.targetLower)
+        }
+        Haptics.play(.success)
+        RuleOf15.clearPersistedWait()
     }
 
     // MARK: Step 1 — treat

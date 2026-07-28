@@ -200,6 +200,19 @@ final class SnapshotPublisher {
             now: now
         )
 
+        // A recovered reading stands any rule-of-15 wait down on its own: a
+        // glucose entry (or CGM point) back at/above the low threshold, newer
+        // than the round's start, clears the persisted countdown — so the
+        // Dashboard timer disappears and a reopened treat flow starts clean.
+        if RuleOf15.persistedDeadline != nil,
+           let current = summary.current, !summary.isStale,
+           current.valueMgdL >= thresholds.targetLower {
+            let roundStart = UserDefaults.standard.double(forKey: RuleOf15.roundStartKey)
+            if current.timestamp.timeIntervalSince1970 >= roundStart {
+                RuleOf15.clearPersistedWait()
+            }
+        }
+
         // Missed-bolus nudge: a logged meal with no dose around it, or a fast
         // unlogged climb. Reuses the fetches this refresh already did.
         if preferences.alerts.missedBolusEnabled {
