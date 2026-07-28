@@ -9335,6 +9335,65 @@
         }
       }
     },
+    "A gentle nudge ~25 minutes after a logged meal that has no bolus around it — and when glucose climbs fast with nothing logged at all. For people who dose insulin at meals." : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ein sanfter Hinweis ~25 Minuten nach einer erfassten Mahlzeit ohne Bolus — und wenn der Glukosewert schnell steigt, ohne dass etwas erfasst wurde. Für alle, die zu den Mahlzeiten Insulin dosieren."
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Un aviso suave ~25 minutos después de una comida registrada sin bolo — y cuando la glucosa sube rápido sin nada registrado. Para quienes se administran insulina en las comidas."
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Un rappel discret ~25 minutes après un repas noté sans bolus — et lorsque la glycémie monte vite sans rien de noté. Pour ceux qui s'injectent de l'insuline aux repas."
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Un promemoria delicato ~25 minuti dopo un pasto registrato senza bolo — e quando la glicemia sale rapidamente senza nulla di registrato. Per chi assume insulina ai pasti."
+          }
+        },
+        "nl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Een vriendelijk duwtje ~25 minuten na een gelogde maaltijd zonder bolus — en wanneer de glucose snel stijgt zonder dat er iets is gelogd. Voor wie insuline doseert bij maaltijden."
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Delikatne przypomnienie ~25 minut po zapisanym posiłku bez bolusa — oraz gdy glikemia szybko rośnie, a nic nie zapisano. Dla osób podających insulinę do posiłków."
+          }
+        },
+        "pt" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Um lembrete suave ~25 minutos após uma refeição registada sem bólus — e quando a glicose sobe depressa sem nada registado. Para quem administra insulina às refeições."
+          }
+        },
+        "ro" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "O atenționare blândă la ~25 de minute după o masă înregistrată fără bolus în jurul ei — și când glicemia urcă rapid fără nimic înregistrat. Pentru cei care își administrează insulină la mese."
+          }
+        },
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Мягкое напоминание через ~25 минут после записанного приёма пищи без болюса — и когда глюкоза быстро растёт без каких-либо записей. Для тех, кто вводит инсулин на еду."
+          }
+        }
+      }
+    },
     "A gentle tap on key actions." : {
       "extractionState" : "manual",
       "localizations" : {
@@ -38330,6 +38389,65 @@
         }
       }
     },
+    "Glucose climbed quickly in the last hour with no meal or bolus logged. If you ate, log it and consider your dose." : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Der Glukosewert ist in der letzten Stunde schnell gestiegen, ohne erfasste Mahlzeit oder Bolus. Falls du gegessen hast, erfasse es und denke an deine Dosis."
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "La glucosa subió rápido en la última hora sin comida ni bolo registrados. Si comiste, regístralo y considera tu dosis."
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "La glycémie a monté rapidement au cours de la dernière heure sans repas ni bolus notés. Si tu as mangé, note-le et pense à ta dose."
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "La glicemia è salita rapidamente nell'ultima ora senza pasto né bolo registrati. Se hai mangiato, registralo e valuta la dose."
+          }
+        },
+        "nl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "De glucose steeg snel in het afgelopen uur zonder gelogde maaltijd of bolus. Heb je gegeten, log het en overweeg je dosis."
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Glikemia szybko wzrosła w ciągu ostatniej godziny bez zapisanego posiłku ani bolusa. Jeśli zjadłeś, zapisz to i rozważ dawkę."
+          }
+        },
+        "pt" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "A glicose subiu depressa na última hora sem refeição nem bólus registados. Se comeste, regista-o e pondera a tua dose."
+          }
+        },
+        "ro" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Glicemia a urcat rapid în ultima oră fără vreo masă sau bolus înregistrat. Dacă ai mâncat, înregistrează masa și ia în calcul doza."
+          }
+        },
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Глюкоза быстро выросла за последний час без записанной еды или болюса. Если вы поели — запишите это и подумайте о дозе."
+          }
+        }
+      }
+    },
     "Glucose climbs about +%lld mg/dL before breakfast across %lld days" : {
       "extractionState" : "manual",
       "localizations" : {
@@ -56774,6 +56892,65 @@
         }
       }
     },
+    "Meal without a bolus?" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Mahlzeit ohne Bolus?"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "¿Comida sin bolo?"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Repas sans bolus ?"
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Pasto senza bolo?"
+          }
+        },
+        "nl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Maaltijd zonder bolus?"
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Posiłek bez bolusa?"
+          }
+        },
+        "pt" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Refeição sem bólus?"
+          }
+        },
+        "ro" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Masă fără bolus?"
+          }
+        },
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Приём пищи без болюса?"
+          }
+        }
+      }
+    },
     "Meals" : {
       "extractionState" : "manual",
       "localizations" : {
@@ -58192,6 +58369,65 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Минимум"
+          }
+        }
+      }
+    },
+    "Missed bolus" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Vergessener Bolus"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Bolo olvidado"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Bolus oublié"
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Bolo dimenticato"
+          }
+        },
+        "nl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Vergeten bolus"
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Pominięty bolus"
+          }
+        },
+        "pt" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Bólus esquecido"
+          }
+        },
+        "ro" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Bolus uitat"
+          }
+        },
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Пропущенный болюс"
           }
         }
       }
@@ -75851,6 +76087,65 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Быстро растёт"
+          }
+        }
+      }
+    },
+    "Rising fast — nothing logged" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Schneller Anstieg — nichts erfasst"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Subida rápida — nada registrado"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Montée rapide — rien de noté"
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Salita rapida — nulla registrato"
+          }
+        },
+        "nl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Snelle stijging — niets gelogd"
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Szybki wzrost — nic nie zapisano"
+          }
+        },
+        "pt" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Subida rápida — nada registado"
+          }
+        },
+        "ro" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Crește rapid — nimic înregistrat"
+          }
+        },
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Быстрый рост — ничего не записано"
           }
         }
       }
@@ -99345,6 +99640,65 @@
         }
       }
     },
+    "You logged %lld g of carbs %lld min ago and no bolus is recorded. If you dosed, log it — if not, this is your nudge." : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Du hast vor %2$lld Min. %1$lld g Kohlenhydrate erfasst, aber kein Bolus ist eingetragen. Falls du dosiert hast, trage es ein — falls nicht, ist dies dein Hinweis."
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Registraste %lld g de carbohidratos hace %lld min y no consta ningún bolo. Si te lo administraste, regístralo — si no, este es tu aviso."
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Tu as noté %lld g de glucides il y a %lld min et aucun bolus n'est enregistré. Si tu as dosé, note-le — sinon, voici ton rappel."
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Hai registrato %lld g di carboidrati %lld min fa e nessun bolo risulta. Se hai dosato, registralo — altrimenti questo è il tuo promemoria."
+          }
+        },
+        "nl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Je hebt %lld g koolhydraten gelogd %lld min geleden en er is geen bolus geregistreerd. Heb je gedoseerd, log het — zo niet, dan is dit je duwtje."
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Zapisano %lld g węglowodanów %lld min temu, a bolusa brak. Jeśli podano dawkę, zapisz ją — jeśli nie, to Twoje przypomnienie."
+          }
+        },
+        "pt" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Registaste %lld g de hidratos há %lld min e não consta nenhum bólus. Se doseaste, regista-o — se não, este é o teu lembrete."
+          }
+        },
+        "ro" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ai înregistrat %lld g de carbohidrați acum %lld min și niciun bolus nu apare. Dacă ți-ai administrat doza, înregistreaz-o — dacă nu, aceasta e atenționarea ta."
+          }
+        },
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Вы записали %lld г углеводов %lld мин назад, а болюс не записан. Если вы ввели дозу — запишите её, если нет — это ваше напоминание."
+          }
+        }
+      }
+    },
     "You logged %lld g of carbs but no bolus. Add your dose if you meant to." : {
       "extractionState" : "manual",
       "localizations" : {
@@ -103908,6 +104262,65 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "kg"
+          }
+        }
+      }
+    },
+    "meal logged or rising, no dose recorded" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Mahlzeit erfasst oder Anstieg, keine Dosis"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "comida registrada o subida, sin dosis"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "repas noté ou montée, aucune dose"
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "pasto registrato o salita, nessuna dose"
+          }
+        },
+        "nl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "maaltijd gelogd of stijging, geen dosis"
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "posiłek zapisany lub wzrost, brak dawki"
+          }
+        },
+        "pt" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "refeição registada ou subida, sem dose"
+          }
+        },
+        "ro" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "masă înregistrată sau creștere, fără doză"
+          }
+        },
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "приём пищи или рост, доза не записана"
           }
         }
       }

@@ -199,6 +199,24 @@ final class SnapshotPublisher {
             preferences: preferences.alerts,
             now: now
         )
+
+        // Missed-bolus nudge: a logged meal with no dose around it, or a fast
+        // unlogged climb. Reuses the fetches this refresh already did.
+        if preferences.alerts.missedBolusEnabled {
+            alerts.evaluateMissedBolus(
+                carbs: recentCarbEntries(now: now).map {
+                    MissedBolusEvaluator.CarbEvent(id: "\($0.id)", timestamp: $0.timestamp, grams: $0.grams)
+                },
+                doses: recentInsulinDoses(now: now).map {
+                    MissedBolusEvaluator.DoseEvent(timestamp: $0.timestamp, isBolus: !$0.insulinType.isBasal)
+                },
+                points: summary.recent.map {
+                    MissedBolusEvaluator.Point(timestamp: $0.timestamp, mgdL: $0.valueMgdL)
+                },
+                preferences: preferences.alerts,
+                now: now
+            )
+        }
     }
 
     /// Forces a widget timeline reload, bypassing the save throttle. Called once on

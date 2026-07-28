@@ -39,6 +39,12 @@ struct AlertPreferences: Codable, Equatable, Sendable {
     var signalLossEnabled = false
     var signalLossMinutes = 25
 
+    // MARK: Missed bolus
+
+    /// Nudge when a logged meal has no bolus, or CGM shows a fast unlogged
+    /// meal-sized climb. Opt-in — only meaningful for people who bolus.
+    var missedBolusEnabled = false
+
     static let `default` = AlertPreferences()
 
     func isEnabled(_ level: GlucoseAlertLevel) -> Bool {
@@ -52,7 +58,8 @@ struct AlertPreferences: Codable, Equatable, Sendable {
 
     /// Whether any alert category is switched on (drives the hub's summary).
     var anyCategoryEnabled: Bool {
-        enabled && (urgentLow || low || high || urgentHigh || riseRateEnabled || fallRateEnabled || signalLossEnabled)
+        enabled && (urgentLow || low || high || urgentHigh || riseRateEnabled
+                    || fallRateEnabled || signalLossEnabled || missedBolusEnabled)
     }
 
     // A tolerant decoder so settings saved before the rate-of-change and
@@ -64,6 +71,7 @@ struct AlertPreferences: Codable, Equatable, Sendable {
         case enabled, urgentLow, low, high, urgentHigh, snoozeMinutes
         case riseRateEnabled, fallRateEnabled, rateThresholdPerMinute
         case signalLossEnabled, signalLossMinutes
+        case missedBolusEnabled
     }
 
     init() {}
@@ -81,6 +89,7 @@ struct AlertPreferences: Codable, Equatable, Sendable {
         rateThresholdPerMinute = try c.decodeIfPresent(Double.self, forKey: .rateThresholdPerMinute) ?? 3.0
         signalLossEnabled = try c.decodeIfPresent(Bool.self, forKey: .signalLossEnabled) ?? false
         signalLossMinutes = try c.decodeIfPresent(Int.self, forKey: .signalLossMinutes) ?? 25
+        missedBolusEnabled = try c.decodeIfPresent(Bool.self, forKey: .missedBolusEnabled) ?? false
     }
 }
 

@@ -52,6 +52,7 @@ struct AlertsHubView: View {
                 escalationSection(preferences: preferences)
                 rateOfChangeSection
                 signalLossSection
+                missedBolusSection
                 sensorSection
                 snoozeSection
             }
@@ -185,6 +186,25 @@ struct AlertsHubView: View {
             Text("Signal loss")
         } footer: {
             Text("Warns you once when no new glucose data has arrived for this long — a sensor dropout or a lost connection. Detection runs while the app is open or syncing in the background.")
+                .font(.footnote).foregroundStyle(Theme.textTertiary)
+        }
+        .glassListRow()
+    }
+
+    private var missedBolusSection: some View {
+        Section {
+            Toggle(isOn: $prefs.missedBolusEnabled) {
+                VStack(alignment: .leading, spacing: 2) {
+                    Text("Missed bolus").foregroundStyle(Theme.textPrimary)
+                    Text("meal logged or rising, no dose recorded")
+                        .font(.caption).foregroundStyle(Theme.textSecondary)
+                }
+            }
+            .tint(Theme.accent)
+        } header: {
+            Text("Bolus")
+        } footer: {
+            Text("A gentle nudge ~25 minutes after a logged meal that has no bolus around it — and when glucose climbs fast with nothing logged at all. For people who dose insulin at meals.")
                 .font(.footnote).foregroundStyle(Theme.textTertiary)
         }
         .glassListRow()

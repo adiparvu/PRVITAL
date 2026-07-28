@@ -108,6 +108,24 @@ final class GlucoseAlertService {
         saveRateState(decision.state)
     }
 
+    /// Nudges when a bolus looks forgotten: a logged meal with no dose around
+    /// it, or a fast unlogged climb. The pure evaluator decides; this persists
+    /// its memory (which meals were nudged, rise cooldown) and delivers.
+    func evaluateMissedBolus(
+        carbs: [MissedBolusEvaluator.CarbEvent],
+        doses: [MissedBolusEvaluator.DoseEvent],
+        points: [MissedBolusEvaluator.Point],
+        preferences: AlertPreferences,
+        now: Date = Date()
+    ) {
+        guard preferences.enabled, preferences.missedBolusEnabled else { return }
+        let decision = MissedBolusEvaluator.decide(
+            carbs: carbs, doses: doses, points: points,
+            state: loadMissedBolusState(), now: now)
+        if let alert = decision.alert { fireMissedBolus(alert) }
+        saveMissedBolusState(decision.state)
+    }
+
     /// Fires a "no recent readings" alert once per data gap.
     func evaluateSignalLoss(
         lastReadingAt: Date?,
@@ -128,6 +146,17 @@ final class GlucoseAlertService {
     private static let predictiveKey = "glucose.predictiveLowFiredAt"
     private static let rateStateKey = "glucose.rateAlertState"
     private static let signalStateKey = "glucose.signalLossState"
+    private static let missedBolusStateKey = "glucose.missedBolusState"
+
+    private func loadMissedBolusState() -> MissedBolusState {
+        guard let data = defaults.data(forKey: Self.missedBolusStateKey),
+              let state = try? JSONDecoder().decode(MissedBolusState.self, from: data)
+        else { return .empty }
+        return state
+    }
+    private func saveMissedBolusState(_ state: MissedBolusState) {
+        if let data = try? JSONEncoder().encode(state) { defaults.set(data, forKey: Self.missedBolusStateKey) }
+    }
 
     private func loadRateState() -> RateAlertState {
         guard let data = defaults.data(forKey: Self.rateStateKey),
@@ -242,6 +271,30 @@ final class GlucoseAlertService {
         content.relevanceScore = 0.4
         let request = UNNotificationRequest(
             identifier: "glucose-signal-loss",
+            content: content,
+            trigger: nil
+        )
+        center.add(request)
+        #endif
+    }
+
+    private func fireMissedBolus(_ alert: MissedBolusAlert) {
+        #if canImport(UserNotifications)
+        let content = UNMutableNotificationContent()
+        switch alert.kind {
+        case .loggedMeal:
+            let grams = Int((alert.grams ?? 0).rounded())
+            let minutes = alert.minutesAgo ?? 0
+            content.title = String(localized: "Meal without a bolus?")
+            content.body = String(localized: "You logged \(grams) g of carbs \(minutes) min ago and no bolus is recorded. If you dosed, log it — if not, this is your nudge.")
+        case .risingUnlogged:
+            content.title = String(localized: "Rising fast — nothing logged")
+            content.body = String(localized: "Glucose climbed quickly in the last hour with no meal or bolus logged. If you ate, log it and consider your dose.")
+        }
+        content.sound = AlertSoundStore.load().important.notificationSound
+        content.relevanceScore = 0.7
+        let request = UNNotificationRequest(
+            identifier: "glucose-missed-bolus-\(alert.kind.rawValue)",
             content: content,
             trigger: nil
         )
