@@ -31,6 +31,11 @@ final class InsulinDose: MedicalRecord {
     var mealTagRaw: String?
     var note: String?
 
+    /// When this manual entry was last mirrored into Apple Health — the
+    /// timestamp its Health sample lives at, so edits and deletes can find and
+    /// remove the old sample even after the entry's time changes.
+    var healthKitSyncedAt: Date?
+
     var recordType: RecordType { .insulin }
 
     var source: DataSource {

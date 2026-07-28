@@ -494,6 +494,29 @@ final class HealthKitService: @unchecked Sendable {
         let sample = HKQuantitySample(type: carbType, quantity: quantity, start: date, end: date)
         try await store.save(sample)
     }
+
+    /// The record kinds the app mirrors into Health (and may need to unmirror).
+    enum WriteKind: Sendable { case glucose, insulin, carbs }
+
+    /// Deletes the sample(s) THIS APP wrote at the given instant — how an edit
+    /// or delete in Prvital propagates. Scoped to our own source and a ±1 s
+    /// window around the mirrored timestamp, so another app's data at the same
+    /// moment is never touched.
+    func deleteOwnSamples(_ kind: WriteKind, at date: Date) async {
+        let type: HKQuantityType
+        switch kind {
+        case .glucose: type = glucoseType
+        case .insulin: type = insulinType
+        case .carbs: type = carbType
+        }
+        let predicate = NSCompoundPredicate(andPredicateWithSubpredicates: [
+            HKQuery.predicateForSamples(withStart: date.addingTimeInterval(-1),
+                                        end: date.addingTimeInterval(1),
+                                        options: []),
+            HKQuery.predicateForObjects(from: HKSource.default()),
+        ])
+        _ = try? await store.deleteObjects(of: type, predicate: predicate)
+    }
     #else
     // Non-Apple platforms (Linux CI for the shared package): HealthKit is absent.
     var isAvailable: Bool { false }
@@ -508,6 +531,8 @@ final class HealthKitService: @unchecked Sendable {
     func saveGlucose(mgdL: Double, at date: Date) async throws {}
     func saveInsulin(units: Double, isBasal: Bool, at date: Date) async throws {}
     func saveCarbs(grams: Double, at date: Date) async throws {}
+    enum WriteKind: Sendable { case glucose, insulin, carbs }
+    func deleteOwnSamples(_ kind: WriteKind, at date: Date) async {}
     func dailyMetric(_ kind: HealthMetricKind, days: Int) async -> [DailyMetric] { [] }
     func latestReading(_ kind: HealthMetricKind) async -> MetricReading? { nil }
     func latestBloodPressure() async -> BloodPressureReading? { nil }

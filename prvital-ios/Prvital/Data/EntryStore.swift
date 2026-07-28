@@ -56,6 +56,7 @@ final class EntryStore {
         resolveConflicts(around: timestamp)
         finish(.manualEdit, source: source, detail: "Glucose logged")
         if healthKitEnabled, source == .manual {
+            reading.healthKitSyncedAt = timestamp
             let hk = healthKit
             Task { try? await hk.saveGlucose(mgdL: mgdL, at: timestamp) }
         }
@@ -82,6 +83,7 @@ final class EntryStore {
         context.insert(dose)
         finish(.manualEdit, detail: "Insulin \(units) U logged")
         if healthKitEnabled {
+            dose.healthKitSyncedAt = timestamp
             let hk = healthKit
             Task { try? await hk.saveInsulin(units: units, isBasal: type.isBasal, at: timestamp) }
         }
@@ -112,6 +114,7 @@ final class EntryStore {
         context.insert(entry)
         finish(.manualEdit, detail: "Carbs \(grams) g logged")
         if healthKitEnabled {
+            entry.healthKitSyncedAt = timestamp
             let hk = healthKit
             Task { try? await hk.saveCarbs(grams: grams, at: timestamp) }
         }
@@ -420,6 +423,7 @@ final class EntryStore {
         if let glucose = record as? GlucoseReading {
             resolveConflicts(around: glucose.timestamp)
         }
+        remirrorToHealth(record)
         finish(.manualEdit, source: record.source, detail: "\(record.recordType.rawValue) edited")
     }
 
@@ -430,11 +434,60 @@ final class EntryStore {
         // duplicate group leaves the others stuck inactive and that instant
         // disappears from every stats/chart path.
         let glucoseTimestamp = (record as? GlucoseReading)?.timestamp
+        unmirrorFromHealth(record)
         context.delete(record)
         if let glucoseTimestamp {
             resolveConflicts(around: glucoseTimestamp)
         }
         finish(.dataDeletion, source: source, detail: "Record deleted")
+    }
+
+    /// An edit propagates to Apple Health as delete-then-rewrite: the old
+    /// sample is found at `healthKitSyncedAt` (where the last mirror put it —
+    /// robust even when the edit changed the entry's time), and the current
+    /// values are written fresh. Manual entries only; imported data is never
+    /// mirrored back.
+    private func remirrorToHealth<T: PersistentModel>(_ record: T) {
+        guard healthKitEnabled else { return }
+        let hk = healthKit
+        if let reading = record as? GlucoseReading, reading.source == .manual {
+            let old = reading.healthKitSyncedAt
+            let (mgdL, at) = (reading.valueMgdL, reading.timestamp)
+            reading.healthKitSyncedAt = at
+            Task {
+                if let old { await hk.deleteOwnSamples(.glucose, at: old) }
+                try? await hk.saveGlucose(mgdL: mgdL, at: at)
+            }
+        } else if let entry = record as? CarbEntry, entry.source == .manual {
+            let old = entry.healthKitSyncedAt
+            let (grams, at) = (entry.grams, entry.timestamp)
+            entry.healthKitSyncedAt = at
+            Task {
+                if let old { await hk.deleteOwnSamples(.carbs, at: old) }
+                try? await hk.saveCarbs(grams: grams, at: at)
+            }
+        } else if let dose = record as? InsulinDose, dose.source == .manual {
+            let old = dose.healthKitSyncedAt
+            let (units, isBasal, at) = (dose.units, dose.insulinType.isBasal, dose.timestamp)
+            dose.healthKitSyncedAt = at
+            Task {
+                if let old { await hk.deleteOwnSamples(.insulin, at: old) }
+                try? await hk.saveInsulin(units: units, isBasal: isBasal, at: at)
+            }
+        }
+    }
+
+    /// A delete removes the mirrored Health sample too (our own source only).
+    private func unmirrorFromHealth<T: PersistentModel>(_ record: T) {
+        guard healthKitEnabled else { return }
+        let hk = healthKit
+        if let reading = record as? GlucoseReading, let at = reading.healthKitSyncedAt {
+            Task { await hk.deleteOwnSamples(.glucose, at: at) }
+        } else if let entry = record as? CarbEntry, let at = entry.healthKitSyncedAt {
+            Task { await hk.deleteOwnSamples(.carbs, at: at) }
+        } else if let dose = record as? InsulinDose, let at = dose.healthKitSyncedAt {
+            Task { await hk.deleteOwnSamples(.insulin, at: at) }
+        }
     }
 
     // MARK: Internals

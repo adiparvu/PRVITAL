@@ -35,6 +35,11 @@ final class CarbEntry: MedicalRecord {
     /// observation's. Defaulted so the addition is CloudKit-safe.
     var tagsRaw: [String] = []
 
+    /// When this manual entry was last mirrored into Apple Health — the
+    /// timestamp its Health sample lives at, so edits and deletes can find and
+    /// remove the old sample even after the entry's time changes.
+    var healthKitSyncedAt: Date?
+
     var recordType: RecordType { .carbohydrate }
 
     var tags: [ObservationTag] {
