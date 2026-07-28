@@ -83,6 +83,9 @@ struct ChartsContent: View {
         VStack(spacing: 20) {
             if derived.ready {
                 glucoseSection.appearTransition(delay: 0)
+                if derived.overlayDays.count >= 2 {
+                    overlaySection.appearTransition(delay: 0.03)
+                }
                 distributionSection.appearTransition(delay: 0.06)
                 if derived.heatmap.hasData {
                     GlucoseHeatmapCard(heatmap: derived.heatmap, unit: unit, thresholds: thresholds)
@@ -177,6 +180,82 @@ struct ChartsContent: View {
                                   visibleEventKinds: env.preferences.chartEventKinds,
                                   eventKindsBinding: eventKindsBinding,
                                   eventBand: true)
+            }
+        }
+    }
+
+    /// The Clarity-style "modal day": every recent day drawn over the same
+    /// 0–24 h axis, the most recent in accent on top — the fastest way to see
+    /// "I always rise at 7 AM". Faded days carry no identity on purpose; the
+    /// pattern, not any single line, is the reading.
+    private var overlaySection: some View {
+        SectionCard("Days overlaid", systemImage: "square.stack.3d.up") {
+            VStack(alignment: .leading, spacing: 10) {
+                Chart {
+                    RectangleMark(
+                        xStart: .value("Hour", 0.0), xEnd: .value("Hour", 24.0),
+                        yStart: .value("Glucose", unit.fromMgdL(thresholds.targetLower)),
+                        yEnd: .value("Glucose", unit.fromMgdL(thresholds.targetUpper))
+                    )
+                    .foregroundStyle(Theme.zoneInRange.opacity(0.10))
+
+                    ForEach(derived.overlayDays) { day in
+                        let isLatest = day.id == derived.overlayDays.last?.id
+                        ForEach(Array(day.points.enumerated()), id: \.offset) { _, point in
+                            LineMark(
+                                x: .value("Hour", point.hour),
+                                y: .value("Glucose", unit.fromMgdL(point.mgdL)),
+                                series: .value("Day", day.id.timeIntervalSince1970)
+                            )
+                            .foregroundStyle(isLatest ? Theme.accent : Theme.textTertiary.opacity(0.32))
+                            .lineStyle(StrokeStyle(lineWidth: isLatest ? 2.5 : 1.2,
+                                                   lineCap: .round, lineJoin: .round))
+                        }
+                        .interpolationMethod(.monotone)
+                    }
+                }
+                .chartXScale(domain: 0...24)
+                .chartXAxis {
+                    AxisMarks(values: [0, 6, 12, 18, 24]) { value in
+                        AxisGridLine().foregroundStyle(Theme.hairline.opacity(0.6))
+                        AxisValueLabel {
+                            if let hour = value.as(Double.self) {
+                                Text(verbatim: String(format: "%02d", Int(hour) % 24))
+                                    .font(.caption2)
+                                    .foregroundStyle(Theme.textSecondary)
+                            }
+                        }
+                    }
+                }
+                .chartYAxis {
+                    AxisMarks(position: .trailing) { value in
+                        AxisGridLine().foregroundStyle(Theme.hairline.opacity(0.4))
+                        AxisValueLabel {
+                            if let level = value.as(Double.self) {
+                                Text(verbatim: level.formatted(
+                                    .number.precision(.fractionLength(unit.fractionDigits))))
+                                    .font(.caption2)
+                                    .foregroundStyle(Theme.textSecondary)
+                            }
+                        }
+                    }
+                }
+                .frame(height: 220)
+
+                HStack(spacing: 14) {
+                    HStack(spacing: 5) {
+                        Capsule().fill(Theme.accent).frame(width: 16, height: 3)
+                        if let latest = derived.overlayDays.last {
+                            Text(latest.id, format: .dateTime.weekday(.wide).day().month())
+                        }
+                    }
+                    HStack(spacing: 5) {
+                        Capsule().fill(Theme.textTertiary.opacity(0.5)).frame(width: 16, height: 3)
+                        Text("Previous \(derived.overlayDays.count - 1) days")
+                    }
+                }
+                .font(.caption)
+                .foregroundStyle(Theme.textSecondary)
             }
         }
     }
@@ -315,10 +394,12 @@ final class ChartsDerived {
     var insulinBars: [ChartsInsulinBar] = []
     var carbBars: [ChartsDailyBar] = []
     var activityBars: [ChartsDailyBar] = []
+    var overlayDays: [ChartsPayload.OverlayDay] = []
     var heatmap = GlucoseHeatmap(blocksPerDay: 8, averages: [])
 
     func apply(_ payload: ChartsPayload) {
         heatmap = payload.heatmap
+        overlayDays = payload.overlayDays
         distribution = payload.distribution
         chartEvents = payload.events
         insulinBars = payload.insulinBars
@@ -344,7 +425,24 @@ struct ChartsPayload: Sendable {
         let typeRaw: String
     }
 
+    /// One day's glucose curve folded onto a 0–24 h axis, for the
+    /// Clarity-style "daily overlay" chart.
+    struct OverlayDay: Sendable, Identifiable {
+        /// Start of the calendar day — doubles as the identity and legend date.
+        let id: Date
+        /// (fractional hour of day, mg/dL), time-ordered, ≤48 points.
+        let points: [OverlayPoint]
+    }
+
+    struct OverlayPoint: Sendable {
+        let hour: Double
+        let mgdL: Double
+    }
+
     var trend: [TrendPoint] = []
+    /// Most recent days of the window (≤14, newest last), each folded onto a
+    /// 24 h axis. Empty when the window spans fewer than 3 calendar days.
+    var overlayDays: [OverlayDay] = []
     var distribution: [DistributionBin] = []
     var events: [ChartEvent] = []
     var insulinBars: [ChartsInsulinBar] = []
@@ -397,8 +495,37 @@ actor ChartsBuilder {
             ChartsPayload.TrendPoint(date: $0.timestamp, mgdL: $0.valueMgdL,
                                      sourceRaw: $0.sourceRaw, typeRaw: $0.measurementTypeRaw)
         }
+        payload.overlayDays = Self.overlayDays(active, range: range)
         payload.heatmap = GlucoseHeatmap.build(active)
         return payload
+    }
+
+    /// Folds the window's readings into per-day 24 h curves for the overlay
+    /// chart: the most recent ≤14 calendar days with data, newest last, each
+    /// day thinned to ≤48 points so a full overlay stays under ~700 marks.
+    private static func overlayDays(
+        _ active: [GlucoseReading], range: ClosedRange<Date>
+    ) -> [ChartsPayload.OverlayDay] {
+        let calendar = Calendar.current
+        let spanDays = calendar.dateComponents(
+            [.day], from: range.lowerBound, to: range.upperBound).day ?? 0
+        guard spanDays >= 3 else { return [] }
+
+        var byDay: [Date: [GlucoseReading]] = [:]
+        for reading in active {
+            byDay[calendar.startOfDay(for: reading.timestamp), default: []].append(reading)
+        }
+        let recentDays = byDay.keys.sorted().suffix(14)
+        return recentDays.compactMap { day in
+            guard let readings = byDay[day], readings.count >= 3 else { return nil }
+            let thinned = downsample(readings.sorted { $0.timestamp < $1.timestamp }, maxPoints: 48)
+            let points = thinned.map { reading in
+                ChartsPayload.OverlayPoint(
+                    hour: reading.timestamp.timeIntervalSince(day) / 3600,
+                    mgdL: reading.valueMgdL)
+            }
+            return ChartsPayload.OverlayDay(id: day, points: points)
+        }
     }
 
     /// Evenly thins a time-ordered reading series down to at most `maxPoints`,
