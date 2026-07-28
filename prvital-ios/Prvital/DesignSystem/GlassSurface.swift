@@ -21,22 +21,17 @@ private struct GlassBackground: ViewModifier {
         // Clip the whole card (content + surface) to the rounded shape so nothing
         // — e.g. a chart's area fill that reaches the padded content's edge — pokes
         // past the rounded corners, since the corner radius can exceed the padding.
+        //
+        // Deliberately a MATERIAL, not the native `glassEffect`: Liquid Glass
+        // does live refraction sampling of everything behind it and Apple's
+        // guidance is to use it sparingly — this modifier backs dozens of
+        // cards per screen over a full-screen photo, and during a tab-switch
+        // crossfade BOTH tabs' stacks render at once. That was the visible
+        // stutter on every switch. The frosted material reads the same.
         let shape = RoundedRectangle(cornerRadius: cornerRadius, style: .continuous)
-        #if os(iOS) || os(watchOS)
-        if #available(iOS 26, watchOS 26, *) {
-            content.glassEffect(.regular, in: .rect(cornerRadius: cornerRadius))
-                .overlay { edge }
-                .clipShape(shape)
-        } else {
-            content.background(.ultraThinMaterial, in: .rect(cornerRadius: cornerRadius))
-                .overlay { edge }
-                .clipShape(shape)
-        }
-        #else
         content.background(.ultraThinMaterial, in: .rect(cornerRadius: cornerRadius))
             .overlay { edge }
             .clipShape(shape)
-        #endif
     }
 
     /// A hairline edge that gives every card a defined border in light mode and
@@ -78,15 +73,10 @@ struct GlassListRowBackground: View {
     }
 
     @ViewBuilder private var glass: some View {
-        #if os(iOS) || os(watchOS)
-        if #available(iOS 26, watchOS 26, *) {
-            Color.clear.glassEffect(.regular, in: .rect(cornerRadius: 0))
-        } else {
-            Rectangle().fill(.ultraThinMaterial)
-        }
-        #else
+        // Material, not `glassEffect` — every list row is its own backdrop
+        // layer, and Liquid Glass refraction per row over a photo background
+        // was a large share of the tab-switch stutter (see GlassBackground).
         Rectangle().fill(.ultraThinMaterial)
-        #endif
     }
 }
 
