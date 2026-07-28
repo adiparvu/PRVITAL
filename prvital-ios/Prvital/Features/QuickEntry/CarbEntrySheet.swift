@@ -34,6 +34,8 @@ struct CarbEntrySheet: View {
     @State private var showingFood = false
     @State private var photoItem: PhotosPickerItem?
     @State private var photoData: Data?
+    /// What the on-device classifier thinks is on the meal photo.
+    @State private var photoSuggestions: [MealPhotoRecognizer.Suggestion] = []
     /// The favorite whose tap pre-filled the fields, so saving can bump its
     /// usage stats. Nil when the user typed the entry from scratch.
     @State private var filledFromFavoriteID: UUID?
@@ -144,7 +146,33 @@ struct CarbEntrySheet: View {
                             Button("Remove", role: .destructive) {
                                 self.photoData = nil
                                 self.photoItem = nil
+                                self.photoSuggestions = []
                                 Haptics.play(.selection)
+                            }
+                        }
+                    }
+                    if !photoSuggestions.isEmpty {
+                        // The classifier's guesses as one-tap fills for the
+                        // food field. Recognition runs entirely on-device.
+                        VStack(alignment: .leading, spacing: 6) {
+                            Text("Looks like")
+                                .font(.caption)
+                                .foregroundStyle(Theme.textSecondary)
+                            HStack(spacing: 8) {
+                                ForEach(photoSuggestions) { suggestion in
+                                    Button {
+                                        food = suggestion.displayName
+                                        Haptics.play(.selection)
+                                    } label: {
+                                        Text(verbatim: suggestion.displayName)
+                                            .font(.caption.weight(.medium))
+                                            .padding(.horizontal, 10)
+                                            .padding(.vertical, 6)
+                                            .foregroundStyle(Theme.accent)
+                                            .background(Theme.accentSoft, in: .capsule)
+                                    }
+                                    .buttonStyle(.plain)
+                                }
                             }
                         }
                     }
@@ -183,6 +211,9 @@ struct CarbEntrySheet: View {
                 Task {
                     if let data = try? await newItem.loadTransferable(type: Data.self) {
                         photoData = data
+                        // Ask the on-device classifier what's on the plate —
+                        // suggestions land as tappable fills for "Food".
+                        photoSuggestions = await MealPhotoRecognizer.recognizeFood(in: data)
                     }
                 }
             }
