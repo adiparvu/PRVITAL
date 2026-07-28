@@ -117,6 +117,9 @@ final class AppEnvironment {
         // Move stored source credentials into the shared Keychain group so the
         // widget's self-refresh can use them. No-op once migrated.
         SourceCredentialStore.shared.migrateToSharedGroup()
+        // Bring back finger-stick / lab readings the old conflict order hid
+        // behind a CGM sample. No-op once repaired.
+        entryStore.repairSupersededBloodReadingsOnce()
 
         // Log quick entries sent from the Apple Watch through the normal path.
         WatchSessionManager.shared.onQuickEntry = { [weak self] kind, amount in

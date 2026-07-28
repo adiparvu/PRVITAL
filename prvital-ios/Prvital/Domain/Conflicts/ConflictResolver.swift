@@ -27,11 +27,21 @@ struct ConflictResolutionSummary: Sendable {
 ///   • The reason for the selection is human-readable and reproducible.
 ///
 /// The comparison order is fully deterministic:
-///   1. the user's **primary source** preference (`sourcePriority`),
-///   2. measurement-type authority (lab > finger-stick > CGM > calibration > manual),
+///   1. measurement-type authority (lab > finger-stick > CGM > calibration > manual),
+///   2. the user's **primary source** preference (`sourcePriority`),
 ///   3. reported **confidence**,
 ///   4. freshest sensor sample, then freshest capture time,
 ///   5. UUID — a stable final tiebreak so the result never depends on input order.
+///
+/// Authority comes FIRST on purpose. A finger-stick (or a lab result) is a
+/// direct blood measurement and the clinical reference a CGM is calibrated
+/// against; interstitial CGM values must never supersede one. With source
+/// priority first, every finger-stick logged while a CGM was streaming lost to
+/// the sensor sample 2 minutes either side of it and vanished from the journal
+/// — the sensor is the *primary source*, but not the *better measurement*.
+/// Within one measurement type (two CGM feeds mirroring the same sensor, say)
+/// authority ties and the user's primary source still decides, so multi-source
+/// de-duplication behaves exactly as before.
 struct ConflictResolver {
 
     /// Readings this far apart or closer are treated as the same clinical instant.
@@ -108,12 +118,12 @@ struct ConflictResolver {
 
     /// `true` when `a` should rank ahead of `b` (a is the stronger candidate).
     private func precedes(_ a: GlucoseReading, _ b: GlucoseReading) -> Bool {
-        let ra = sourceRank(a.source), rb = sourceRank(b.source)
-        if ra != rb { return ra < rb }
-
         let ma = measurementAuthority(a.measurementType)
         let mb = measurementAuthority(b.measurementType)
         if ma != mb { return ma > mb }
+
+        let ra = sourceRank(a.source), rb = sourceRank(b.source)
+        if ra != rb { return ra < rb }
 
         let ca = a.confidence ?? 0, cb = b.confidence ?? 0
         if ca != cb { return ca > cb }
@@ -130,6 +140,18 @@ struct ConflictResolver {
         sourcePriority.firstIndex(of: source) ?? sourcePriority.count
     }
 
+    /// The word used in a resolution reason. Deliberately unlocalized: the
+    /// whole reason string is an English audit line.
+    private static func measurementWord(_ type: GlucoseMeasurementType) -> String {
+        switch type {
+        case .laboratory: return "lab"
+        case .fingerstick: return "finger-stick"
+        case .cgm: return "sensor"
+        case .calibration: return "calibration"
+        case .manual: return "manual"
+        }
+    }
+
     private func measurementAuthority(_ type: GlucoseMeasurementType) -> Int {
         switch type {
         case .laboratory: return 5
@@ -141,11 +163,18 @@ struct ConflictResolver {
     }
 
     private func explanation(winner: GlucoseReading, over cluster: [GlucoseReading]) -> String {
-        let others = cluster.filter { $0.id != winner.id }.map { $0.source.displayName }
-        let uniqueOthers = Array(Set(others)).sorted().joined(separator: ", ")
-        let rank = sourceRank(winner.source)
-        let isPrimary = rank == 0
-        let basis = isPrimary ? "primary source" : "higher-priority source"
+        let losers = cluster.filter { $0.id != winner.id }
+        let uniqueOthers = Array(Set(losers.map { $0.source.displayName })).sorted().joined(separator: ", ")
+
+        // Say what actually decided it: a stronger measurement type beats every
+        // source preference, so "finger-stick over Dexcom" must not read as
+        // "primary source".
+        let winnerAuthority = measurementAuthority(winner.measurementType)
+        let wonOnMeasurement = losers.allSatisfy { measurementAuthority($0.measurementType) < winnerAuthority }
+        let basis = wonOnMeasurement
+            ? "\(Self.measurementWord(winner.measurementType)) reading"
+            : (sourceRank(winner.source) == 0 ? "primary source" : "higher-priority source")
+
         if uniqueOthers.isEmpty {
             return "Selected \(winner.source.displayName) (\(basis))."
         }

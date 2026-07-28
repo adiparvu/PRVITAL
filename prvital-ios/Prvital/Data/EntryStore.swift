@@ -342,6 +342,50 @@ final class EntryStore {
         return keys
     }
 
+    /// One-time repair for readings hidden by the old conflict order.
+    ///
+    /// Until build 184 the resolver compared source priority before
+    /// measurement-type authority, so a finger-stick logged while a CGM was
+    /// streaming lost to the sensor sample beside it and was marked inactive —
+    /// invisible in the journal, the statistics and the charts. Re-resolving
+    /// their clusters with the corrected order brings every one of them back.
+    ///
+    /// Bounded and idempotent: only superseded finger-stick / lab readings are
+    /// fetched (a handful even for a heavy logger), each cluster is re-run
+    /// once, and the flag makes it a no-op afterwards.
+    func repairSupersededBloodReadingsOnce() {
+        let flagKey = "entryStore.didRepairSupersededBloodReadings"
+        let defaults = UserDefaults.standard
+        guard !defaults.bool(forKey: flagKey) else { return }
+        defaults.set(true, forKey: flagKey)
+
+        let fingerstick = GlucoseMeasurementType.fingerstick.rawValue
+        let laboratory = GlucoseMeasurementType.laboratory.rawValue
+        let descriptor = FetchDescriptor<GlucoseReading>(
+            predicate: #Predicate {
+                $0.isActive == false
+                && ($0.measurementTypeRaw == fingerstick || $0.measurementTypeRaw == laboratory)
+            },
+            sortBy: [SortDescriptor(\.timestamp)]
+        )
+        guard let hidden = try? context.fetch(descriptor), !hidden.isEmpty else { return }
+
+        // One pass per cluster: walk the affected timestamps and skip any that
+        // an earlier pass already covered.
+        var lastResolvedUpTo: Date?
+        var repaired = 0
+        for reading in hidden {
+            if let lastResolvedUpTo, reading.timestamp <= lastResolvedUpTo { continue }
+            resolveConflicts(around: reading.timestamp)
+            lastResolvedUpTo = reading.timestamp.addingTimeInterval(600)
+            repaired += 1
+        }
+        try? context.save()
+        audit.log(.manualEdit, userConfirmation: false,
+                  detail: "Restored \(hidden.count) superseded blood readings across \(repaired) clusters")
+        onChange()
+    }
+
     /// Re-runs conflict resolution over every reading since `date` (one pass).
     private func resolveConflicts(since date: Date) {
         let descriptor = FetchDescriptor<GlucoseReading>(
