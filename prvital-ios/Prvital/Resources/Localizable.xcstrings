@@ -74120,6 +74120,65 @@
         }
       }
     },
+    "Recheck your glucose when the timer ends." : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Miss deinen Glukosewert erneut, wenn der Timer abläuft."
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Vuelve a medir tu glucosa cuando termine el temporizador."
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Revérifie ta glycémie à la fin du minuteur."
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ricontrolla la glicemia quando il timer finisce."
+          }
+        },
+        "nl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Controleer je glucose opnieuw als de timer afloopt."
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Sprawdź ponownie glikemię, gdy skończy się odliczanie."
+          }
+        },
+        "pt" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Volta a verificar a glicose quando o temporizador terminar."
+          }
+        },
+        "ro" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Reverifică glicemia când se termină cronometrul."
+          }
+        },
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Перепроверьте глюкозу, когда таймер закончится."
+          }
+        }
+      }
+    },
     "Recheck your glucose. If it's still below 70 mg/dL, take another 15 g of fast carbs and wait 15 minutes again." : {
       "extractionState" : "manual",
       "localizations" : {
@@ -89403,6 +89462,65 @@
         }
       }
     },
+    "The wait is over. Check your glucose — if you're still low, treat again." : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Die Wartezeit ist vorbei. Prüfe deinen Glukosewert — wenn er noch niedrig ist, behandle erneut."
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "La espera terminó. Mide tu glucosa — si sigue baja, trata de nuevo."
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "L'attente est finie. Vérifie ta glycémie — si elle est encore basse, traite à nouveau."
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "L'attesa è finita. Controlla la glicemia — se è ancora bassa, tratta di nuovo."
+          }
+        },
+        "nl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Het wachten is voorbij. Controleer je glucose — nog steeds laag? Behandel opnieuw."
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Czas oczekiwania minął. Sprawdź glikemię — jeśli nadal jest niska, powtórz leczenie."
+          }
+        },
+        "pt" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "A espera acabou. Verifica a glicose — se ainda estiver baixa, trata novamente."
+          }
+        },
+        "ro" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Așteptarea s-a terminat. Verifică glicemia — dacă ești tot jos, tratează din nou."
+          }
+        },
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ожидание завершено. Проверьте глюкозу — если всё ещё низкая, повторите лечение."
+          }
+        }
+      }
+    },
     "Theme" : {
       "extractionState" : "manual",
       "localizations" : {
@@ -93594,6 +93712,65 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Купируйте гипогликемию"
+          }
+        }
+      }
+    },
+    "Treating a low" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Hypo wird behandelt"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Tratando una hipo"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Traitement d'une hypo"
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Trattamento di un'ipo"
+          }
+        },
+        "nl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Hypo behandelen"
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Leczenie hipo"
+          }
+        },
+        "pt" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "A tratar uma hipo"
+          }
+        },
+        "ro" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Tratezi o hipoglicemie"
+          }
+        },
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Лечение гипогликемии"
           }
         }
       }

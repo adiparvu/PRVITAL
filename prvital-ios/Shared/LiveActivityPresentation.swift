@@ -24,6 +24,9 @@ enum LiveActivityKind: String, Codable, Hashable, Sendable, CaseIterable {
     case sensorReconnected
     /// The transmitter battery is running out.
     case sensorBattery
+    /// The rule-of-15 wait: "recheck in 12:34", ticking live on the Lock
+    /// Screen / Island so treating a low never needs the app open.
+    case ruleOf15Wait
 }
 
 /// The four headline states of a live glucose reading. Drives the colour, the
@@ -109,6 +112,8 @@ enum LiveActivityPresentation {
         case .alertLow, .alertHigh: alertHex
         case .sensorReconnected: confirmHex
         case .sensorBattery: carbsHex
+        // The wait is part of treating a low — it wears the warning orange.
+        case .ruleOf15Wait: risingHex
         }
     }
 
@@ -127,6 +132,7 @@ enum LiveActivityPresentation {
         case .alertHigh: "arrow.up"
         case .sensorReconnected: "smallcircle.filled.circle"
         case .sensorBattery: "battery.25"
+        case .ruleOf15Wait: "timer"
         }
     }
 

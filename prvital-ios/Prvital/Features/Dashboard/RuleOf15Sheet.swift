@@ -1,5 +1,8 @@
 import SwiftUI
 import SwiftData
+#if canImport(UserNotifications)
+import UserNotifications
+#endif
 
 // MARK: - Pure logic
 
@@ -30,14 +33,56 @@ enum RuleOf15 {
         return ts > 0 ? Date(timeIntervalSince1970: ts) : nil
     }
 
+    /// Starts the wait everywhere at once: persists it (Dashboard gauge +
+    /// sheet resume), takes the Dynamic Island / Lock Screen with the ticking
+    /// countdown, and schedules the "time to recheck" notification for the
+    /// deadline. Main-actor because the Live Activity manager is.
+    @MainActor
     static func persistWait(deadline: Date, roundStart: Date) {
         UserDefaults.standard.set(deadline.timeIntervalSince1970, forKey: deadlineKey)
         UserDefaults.standard.set(roundStart.timeIntervalSince1970, forKey: roundStartKey)
+        GlucoseLiveActivityManager.shared.presentRuleOf15Wait(recheckAt: deadline)
+        scheduleRecheckReminder(at: deadline)
     }
 
+    /// Stands the whole wait down — persisted state, Live Activity takeover
+    /// and the pending notification. Safe to call when nothing is running.
+    @MainActor
     static func clearPersistedWait() {
         UserDefaults.standard.removeObject(forKey: deadlineKey)
         UserDefaults.standard.removeObject(forKey: roundStartKey)
+        GlucoseLiveActivityManager.shared.endRuleOf15Wait()
+        cancelRecheckReminder()
+    }
+
+    // MARK: Recheck notification
+
+    private static let recheckNotificationID = "ruleof15-recheck"
+
+    /// A local notification at the deadline: if the low resolves first, the
+    /// clear path cancels it, so it only ever fires when a recheck is due.
+    private static func scheduleRecheckReminder(at deadline: Date) {
+        #if canImport(UserNotifications)
+        guard deadline.timeIntervalSinceNow > 1 else { return }
+        let content = UNMutableNotificationContent()
+        content.title = String(localized: "Time to recheck your glucose")
+        content.body = String(localized: "The wait is over. Check your glucose — if you're still low, treat again.")
+        content.sound = AlertSoundStore.load().important.notificationSound
+        content.interruptionLevel = .timeSensitive
+        content.relevanceScore = 0.9
+        let trigger = UNTimeIntervalNotificationTrigger(
+            timeInterval: deadline.timeIntervalSinceNow, repeats: false)
+        UNUserNotificationCenter.current().add(UNNotificationRequest(
+            identifier: recheckNotificationID, content: content, trigger: trigger))
+        #endif
+    }
+
+    private static func cancelRecheckReminder() {
+        #if canImport(UserNotifications)
+        let center = UNUserNotificationCenter.current()
+        center.removePendingNotificationRequests(withIdentifiers: [recheckNotificationID])
+        center.removeDeliveredNotifications(withIdentifiers: [recheckNotificationID])
+        #endif
     }
 
     /// "M:SS" for a remaining-seconds value. Rounds up so the clock reads the full

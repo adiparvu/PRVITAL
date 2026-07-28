@@ -167,6 +167,34 @@ final class GlucoseLiveActivityManager {
         present(state, holdFor: Self.confirmationSeconds)
     }
 
+    /// The rule-of-15 wait, on the Lock Screen and in the Island: a ticking
+    /// "recheck in 12:34" with a self-filling bar, held for the whole wait so
+    /// a locked phone still shows exactly when to recheck.
+    func presentRuleOf15Wait(recheckAt: Date, now: Date = Date()) {
+        guard var state = baseState(), recheckAt > now else { return }
+        state.kind = .ruleOf15Wait
+        state.stateColorHex = LiveActivityPresentation.colorHex(for: .ruleOf15Wait, glucoseState: state.glucoseState)
+        state.iconName = LiveActivityPresentation.iconName(for: .ruleOf15Wait, glucoseState: state.glucoseState)
+        state.eventCompactText = Self.clock(until: recheckAt, from: now)
+        state.eventTitle = String(localized: "Treating a low")
+        state.eventDetail = Self.clock(until: recheckAt, from: now)
+        state.eventCaption = String(localized: "Recheck your glucose when the timer ends.")
+        state.progressStart = now
+        state.progressEnd = recheckAt
+        present(state, holdFor: recheckAt.timeIntervalSince(now))
+    }
+
+    /// The low resolved (or the flow was abandoned): hand the Island straight
+    /// back to the live reading. No-op unless the wait owns it right now.
+    func endRuleOf15Wait() {
+        guard lastPushedState?.kind == .ruleOf15Wait else { return }
+        transition?.cancel()
+        holdUntil = nil
+        if let snapshot = lastSnapshot {
+            push(glucoseState(from: snapshot), staleDate: staleDate(for: snapshot))
+        }
+    }
+
     /// "Sensor battery: 20% — replace the sensor soon".
     func presentSensorBattery(percent: Int) {
         guard var state = baseState() else { return }
@@ -360,6 +388,8 @@ final class GlucoseLiveActivityManager {
     func presentGlucoseAlert(isLow: Bool) {}
     func presentSensorReconnected(sourceName: String) {}
     func presentSensorBattery(percent: Int) {}
+    func presentRuleOf15Wait(recheckAt: Date, now: Date = Date()) {}
+    func endRuleOf15Wait() {}
     #endif
 }
 

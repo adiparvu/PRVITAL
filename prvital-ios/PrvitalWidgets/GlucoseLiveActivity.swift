@@ -120,6 +120,12 @@ private struct CompactTrailing: View {
                     .contentTransition(.numericText(value: state.mgdL))
             }
             .foregroundStyle(tint)
+        } else if state.kind == .ruleOf15Wait {
+            WaitTimerText(state: state)
+                .font(.footnote.weight(.semibold))
+                .foregroundStyle(tint)
+                .monospacedDigit()
+                .lineLimit(1)
         } else if let compact = state.eventCompactText {
             Text(compact)
                 .font(.footnote.weight(.semibold))
@@ -144,6 +150,11 @@ private struct MinimalPresentation: View {
                 .font(.footnote.weight(.semibold))
                 .foregroundStyle(tint)
                 .contentTransition(.numericText(value: state.mgdL))
+        case .ruleOf15Wait:
+            WaitTimerText(state: state)
+                .font(.footnote.weight(.semibold))
+                .foregroundStyle(tint)
+                .monospacedDigit()
         default:
             // An action or countdown shows its own number; a state with none
             // (a reconnected sensor) falls back to the glyph.
@@ -190,7 +201,13 @@ private struct ExpandedLeading: View {
                                 .font(.caption2).foregroundStyle(.secondary)
                                 .lineLimit(1).minimumScaleFactor(0.8)
                         }
-                        if let detail = state.eventDetail {
+                        if state.kind == .ruleOf15Wait {
+                            WaitTimerText(state: state)
+                                .font(.system(size: 17, weight: .semibold, design: .rounded))
+                                .foregroundStyle(tint)
+                                .monospacedDigit()
+                                .lineLimit(1)
+                        } else if let detail = state.eventDetail {
                             Text(detail)
                                 .font(.system(size: 17, weight: .semibold, design: .rounded))
                                 .foregroundStyle(tint)
@@ -224,6 +241,12 @@ private struct ExpandedTrailing: View {
                         .font(.caption2).foregroundStyle(.secondary)
                         .lineLimit(1)
                 }
+            } else if state.kind == .ruleOf15Wait {
+                WaitTimerText(state: state)
+                    .font(.system(size: 17, weight: .semibold, design: .rounded))
+                    .foregroundStyle(tint)
+                    .monospacedDigit()
+                    .lineLimit(1)
             } else if let compact = state.eventCompactText {
                 Text(compact)
                     .font(.system(size: 17, weight: .semibold, design: .rounded))
@@ -248,7 +271,7 @@ private struct ExpandedBottom: View {
             switch state.kind {
             case .glucose:
                 glucoseBody
-            case .insulinLogged, .mealLogged, .insulinOnBoard, .mealCountdown:
+            case .insulinLogged, .mealLogged, .insulinOnBoard, .mealCountdown, .ruleOf15Wait:
                 eventBody
             case .alertLow, .alertHigh, .sensorReconnected, .sensorBattery:
                 alertBody
@@ -371,7 +394,7 @@ private struct LockScreenBanner: View {
             switch state.kind {
             case .glucose:
                 glucoseBody
-            case .insulinLogged, .mealLogged, .insulinOnBoard, .mealCountdown:
+            case .insulinLogged, .mealLogged, .insulinOnBoard, .mealCountdown, .ruleOf15Wait:
                 eventBody
             case .alertLow, .alertHigh, .sensorReconnected, .sensorBattery:
                 alertBody
@@ -451,7 +474,14 @@ private struct LockScreenBanner: View {
                 if let title = state.eventTitle {
                     Text(title).font(.caption).foregroundStyle(.white.opacity(0.7)).lineLimit(1)
                 }
-                if let detail = state.eventDetail {
+                if state.kind == .ruleOf15Wait {
+                    // The countdown IS the headline — ticking live, no pushes.
+                    WaitTimerText(state: state)
+                        .font(.system(size: 22, weight: .semibold, design: .rounded))
+                        .foregroundStyle(tint)
+                        .monospacedDigit()
+                        .lineLimit(1)
+                } else if let detail = state.eventDetail {
                     Text(detail)
                         .font(.system(size: 22, weight: .semibold, design: .rounded))
                         .foregroundStyle(tint)
@@ -459,7 +489,7 @@ private struct LockScreenBanner: View {
                 }
             }
             Spacer(minLength: 0)
-            if let compact = state.eventCompactText {
+            if state.kind != .ruleOf15Wait, let compact = state.eventCompactText {
                 Text(compact)
                     .font(.system(size: 17, weight: .semibold, design: .rounded))
                     .foregroundStyle(.white.opacity(0.85))
@@ -506,6 +536,22 @@ private struct LockScreenBanner: View {
 private enum LiveActivityHeadline {
     static func text(_ state: GlucoseActivityAttributes.ContentState) -> String {
         state.eventTitle ?? state.zoneLabel
+    }
+}
+
+/// The rule-of-15 recheck countdown, ticking by itself: `Text(timerInterval:)`
+/// is driven by the system between pushes, so the Lock Screen clock stays
+/// accurate for the full wait with a single activity update. Falls back to the
+/// pre-formatted static clock if the window is somehow gone.
+private struct WaitTimerText: View {
+    let state: GlucoseActivityAttributes.ContentState
+
+    var body: some View {
+        if let start = state.progressStart, let end = state.progressEnd, end > Date() {
+            Text(timerInterval: start...end, countsDown: true, showsHours: false)
+        } else {
+            Text(state.eventCompactText ?? "0:00")
+        }
     }
 }
 
