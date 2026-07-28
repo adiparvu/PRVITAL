@@ -44,14 +44,6 @@ struct ChartsContent: View {
 
     let interval: InsightsInterval
 
-    @Query private var glucose: [GlucoseReading]
-    @Query private var insulin: [InsulinDose]
-    @Query private var carbs: [CarbEntry]
-    @Query private var activity: [ActivityEntry]
-    @Query private var medications: [MedicationDose]
-    @Query private var ketones: [KetoneReading]
-    @Query private var notes: [ObservationEntry]
-
     @State private var derived = ChartsDerived()
     /// Drives the distribution histogram's one-shot rise (bars grow from zero).
     @State private var histogramRisen = false
@@ -61,25 +53,6 @@ struct ChartsContent: View {
     // Activity chart so it reflects real Watch activity, not only logged workouts.
     @State private var healthExercise: [DailyMetric] = []
 
-    init(interval: InsightsInterval) {
-        self.interval = interval
-        let cutoff = interval.dateRange().lowerBound
-        _glucose = Query(filter: #Predicate<GlucoseReading> { $0.timestamp >= cutoff },
-                         sort: \.timestamp, order: .reverse)
-        _insulin = Query(filter: #Predicate<InsulinDose> { $0.timestamp >= cutoff },
-                         sort: \.timestamp, order: .reverse)
-        _carbs = Query(filter: #Predicate<CarbEntry> { $0.timestamp >= cutoff },
-                       sort: \.timestamp, order: .reverse)
-        _activity = Query(filter: #Predicate<ActivityEntry> { $0.startTimestamp >= cutoff },
-                          sort: \.startTimestamp, order: .reverse)
-        _medications = Query(filter: #Predicate<MedicationDose> { $0.timestamp >= cutoff },
-                             sort: \.timestamp, order: .reverse)
-        _ketones = Query(filter: #Predicate<KetoneReading> { $0.timestamp >= cutoff },
-                         sort: \.timestamp, order: .reverse)
-        _notes = Query(filter: #Predicate<ObservationEntry> { $0.timestamp >= cutoff },
-                       sort: \.timestamp, order: .reverse)
-    }
-
     private var unit: GlucoseUnit { env.preferences.glucoseUnit }
     private var thresholds: GlucoseThresholds { env.preferences.thresholds }
 
@@ -88,19 +61,20 @@ struct ChartsContent: View {
                 set: { env.preferences.chartEventKinds = $0 })
     }
 
-    /// Cheap, Equatable fingerprint of the inputs. Changes only when data is
-    /// added/removed (or the interval switches), so ordinary re-renders reuse the
-    /// cached results instead of recomputing.
-    private var signature: ChartsSignature {
-        ChartsSignature(
-            interval: interval,
-            glucose: glucose.count, insulin: insulin.count, carbs: carbs.count,
-            activity: activity.count, medications: medications.count,
-            ketones: ketones.count, notes: notes.count,
-            newest: glucose.first?.timestamp,
-            healthExerciseDays: healthExercise.count,
-            healthExerciseTotal: Int(healthExercise.reduce(0.0) { $0 + $1.value }.rounded())
-        )
+    /// Rebuild trigger: the interval, the store's data version (bumped on every
+    /// write/sync) and the Health exercise merge — no live `@Query` involved.
+    private struct BuildKey: Equatable {
+        let interval: InsightsInterval
+        let dataVersion: Int
+        let exerciseDays: Int
+        let exerciseTotal: Int
+    }
+
+    private var buildKey: BuildKey {
+        BuildKey(interval: interval,
+                 dataVersion: env.dataVersion,
+                 exerciseDays: healthExercise.count,
+                 exerciseTotal: Int(healthExercise.reduce(0.0) { $0 + $1.value }.rounded()))
     }
 
     // MARK: Body
@@ -121,14 +95,19 @@ struct ChartsContent: View {
                 loadingPlaceholder
             }
         }
-        .task(id: signature) {
-            await derived.rebuild(
-                glucose: glucose, insulin: insulin, carbs: carbs, activity: activity,
-                medications: medications, ketones: ketones, notes: notes,
-                healthExercise: healthExercise, range: interval.dateRange())
+        .task(id: buildKey) {
+            // Fetch + aggregate on a background ModelActor — a Year window is
+            // ~100k CGM rows, and holding it in a live @Query re-materialised
+            // all of them on the MAIN thread on every store change while the
+            // Insights tab was alive. Only applying the finished payload (and
+            // building ≤500 detached trend points) touches the main actor.
+            let builder = ChartsBuilder(modelContainer: env.modelContainer)
+            let payload = await builder.build(
+                range: interval.dateRange(), healthExercise: healthExercise)
+            derived.apply(payload)
         }
         // Pull the window's Apple Health exercise minutes; when they land the
-        // signature changes and the rebuild re-runs to merge them in.
+        // build key changes and the builder re-runs to merge them in.
         .task(id: interval) {
             healthExercise = await env.healthKit.dailyMetric(.exercise, days: interval.dayCount)
         }
@@ -320,31 +299,16 @@ struct ChartsContent: View {
 
 // MARK: - Derived (computed once per data change, off the render path)
 
-/// A cheap fingerprint of the chart inputs. `.task(id:)` reruns the rebuild only
-/// when this changes, so scrolls/animations/sheet toggles never recompute.
-struct ChartsSignature: Equatable {
-    let interval: InsightsInterval
-    let glucose: Int
-    let insulin: Int
-    let carbs: Int
-    let activity: Int
-    let medications: Int
-    let ketones: Int
-    let notes: Int
-    let newest: Date?
-    let healthExerciseDays: Int
-    let healthExerciseTotal: Int
-}
-
-/// Holds the prepared, already-aggregated chart data. Rebuilt once per data
-/// change on the main actor (SwiftData objects are main-actor bound), with a
-/// yield after the initial filter so the pane can paint before the heavier
-/// aggregation runs.
+/// Holds the prepared, already-aggregated chart data on the main actor. The
+/// heavy lifting happens in `ChartsBuilder` on a background ModelActor; this
+/// only stores the finished payload and materialises the ≤500 detached trend
+/// readings the chart view consumes.
 @MainActor
 @Observable
 final class ChartsDerived {
     var ready = false
-    /// Downsampled glucose readings for the trend line (see `downsample`).
+    /// Detached (never-inserted) readings for the trend line — built from the
+    /// payload's value points, ≤500 of them.
     var chartReadings: [GlucoseReading] = []
     var distribution: [DistributionBin] = []
     var chartEvents: [ChartEvent] = []
@@ -353,73 +317,111 @@ final class ChartsDerived {
     var activityBars: [ChartsDailyBar] = []
     var heatmap = GlucoseHeatmap(blocksPerDay: 8, averages: [])
 
-    /// Cap on the number of points fed to the glucose trend chart. A month is
-    /// ~8.6k CGM readings and a year ~100k; Swift Charts renders a mark per
-    /// point, so uncapped it stalled for seconds. ~500 points draws a smooth
-    /// line instantly.
+    func apply(_ payload: ChartsPayload) {
+        heatmap = payload.heatmap
+        distribution = payload.distribution
+        chartEvents = payload.events
+        insulinBars = payload.insulinBars
+        carbBars = payload.carbBars
+        activityBars = payload.activityBars
+        chartReadings = payload.trend.map {
+            GlucoseReading(
+                valueMgdL: $0.mgdL, timestamp: $0.date,
+                source: DataSource(rawValue: $0.sourceRaw) ?? .manual,
+                measurementType: GlucoseMeasurementType(rawValue: $0.typeRaw) ?? .cgm)
+        }
+        ready = true
+    }
+}
+
+/// The finished, fully value-typed chart data a `ChartsBuilder` run produces —
+/// safe to hop actors with.
+struct ChartsPayload: Sendable {
+    struct TrendPoint: Sendable {
+        let date: Date
+        let mgdL: Double
+        let sourceRaw: String
+        let typeRaw: String
+    }
+
+    var trend: [TrendPoint] = []
+    var distribution: [DistributionBin] = []
+    var events: [ChartEvent] = []
+    var insulinBars: [ChartsInsulinBar] = []
+    var carbBars: [ChartsDailyBar] = []
+    var activityBars: [ChartsDailyBar] = []
+    var heatmap = GlucoseHeatmap(blocksPerDay: 8, averages: [])
+}
+
+/// Fetches and aggregates the Charts pane's window on a background ModelActor.
+/// A Year window is ~100k CGM rows; doing this behind a live `@Query` kept all
+/// of them materialising on the MAIN thread on every store change for as long
+/// as the Insights tab stayed alive.
+@ModelActor
+actor ChartsBuilder {
+    /// Cap on the number of points fed to the glucose trend chart. Swift Charts
+    /// renders a mark per point; ~500 draws a smooth line instantly.
     private static let maxTrendPoints = 500
 
-    func rebuild(
-        glucose: [GlucoseReading], insulin: [InsulinDose], carbs: [CarbEntry],
-        activity: [ActivityEntry], medications: [MedicationDose], ketones: [KetoneReading],
-        notes: [ObservationEntry], healthExercise: [DailyMetric], range: ClosedRange<Date>
-    ) async {
-        let active = glucose.filter { $0.isActive && range.contains($0.timestamp) }
-        let fInsulin = insulin.filter { range.contains($0.timestamp) }
-        let fCarbs = carbs.filter { range.contains($0.timestamp) }
-        let fActivity = activity.filter { range.contains($0.startTimestamp) }
-        let fMeds = medications.filter { range.contains($0.timestamp) }
-        let fKetones = ketones.filter { range.contains($0.timestamp) }
-        let fNotes = notes.filter { range.contains($0.timestamp) }
+    func build(range: ClosedRange<Date>, healthExercise: [DailyMetric]) -> ChartsPayload {
+        let lower = range.lowerBound
+        let upper = range.upperBound
 
-        // Let the first frame paint (loading placeholder) before the heavier work.
-        await Task.yield()
+        let active = (try? modelContext.fetch(FetchDescriptor<GlucoseReading>(
+            predicate: #Predicate { $0.isActive && $0.timestamp >= lower && $0.timestamp <= upper },
+            sortBy: [SortDescriptor(\.timestamp)]))) ?? []
+        let fInsulin = (try? modelContext.fetch(FetchDescriptor<InsulinDose>(
+            predicate: #Predicate { $0.timestamp >= lower && $0.timestamp <= upper }))) ?? []
+        let fCarbs = (try? modelContext.fetch(FetchDescriptor<CarbEntry>(
+            predicate: #Predicate { $0.timestamp >= lower && $0.timestamp <= upper }))) ?? []
+        let fActivity = (try? modelContext.fetch(FetchDescriptor<ActivityEntry>(
+            predicate: #Predicate { $0.startTimestamp >= lower && $0.startTimestamp <= upper }))) ?? []
+        let fMeds = (try? modelContext.fetch(FetchDescriptor<MedicationDose>(
+            predicate: #Predicate { $0.timestamp >= lower && $0.timestamp <= upper }))) ?? []
+        let fKetones = (try? modelContext.fetch(FetchDescriptor<KetoneReading>(
+            predicate: #Predicate { $0.timestamp >= lower && $0.timestamp <= upper }))) ?? []
+        let fNotes = (try? modelContext.fetch(FetchDescriptor<ObservationEntry>(
+            predicate: #Predicate { $0.timestamp >= lower && $0.timestamp <= upper }))) ?? []
 
-        let distribution = GlucoseDistribution.bins(active)
-        let events = ChartEvent.build(insulin: fInsulin, meals: fCarbs,
-                                      medications: fMeds, activity: fActivity,
-                                      ketones: fKetones, notes: fNotes)
-        let insulinBars = Self.insulinBars(fInsulin)
-        let carbBars = Self.dailyTotals(fCarbs.map { ($0.timestamp, $0.grams) })
-        let activityBars = Self.activityBars(
+        var payload = ChartsPayload()
+        payload.distribution = GlucoseDistribution.bins(active)
+        payload.events = ChartEvent.build(insulin: fInsulin, meals: fCarbs,
+                                          medications: fMeds, activity: fActivity,
+                                          ketones: fKetones, notes: fNotes)
+        payload.insulinBars = Self.insulinBars(fInsulin)
+        payload.carbBars = Self.dailyTotals(fCarbs.map { ($0.timestamp, $0.grams) })
+        payload.activityBars = Self.activityBars(
             logged: fActivity.map { ($0.startTimestamp, Double($0.durationMinutes)) },
             health: healthExercise, range: range)
-        let trend = Self.downsample(active, maxPoints: Self.maxTrendPoints)
-        let heatmap = GlucoseHeatmap.build(active)
-
-        self.heatmap = heatmap
-        self.distribution = distribution
-        self.chartEvents = events
-        self.insulinBars = insulinBars
-        self.carbBars = carbBars
-        self.activityBars = activityBars
-        self.chartReadings = trend
-        self.ready = true
+        payload.trend = Self.downsample(active, maxPoints: Self.maxTrendPoints).map {
+            ChartsPayload.TrendPoint(date: $0.timestamp, mgdL: $0.valueMgdL,
+                                     sourceRaw: $0.sourceRaw, typeRaw: $0.measurementTypeRaw)
+        }
+        payload.heatmap = GlucoseHeatmap.build(active)
+        return payload
     }
 
     /// Evenly thins a time-ordered reading series down to at most `maxPoints`,
-    /// preserving chronological order. Returns the real `GlucoseReading` objects
-    /// (a subset), so no synthetic samples are created.
-    static func downsample(_ readings: [GlucoseReading], maxPoints: Int) -> [GlucoseReading] {
-        let sorted = readings.sorted { $0.timestamp < $1.timestamp }
-        guard sorted.count > maxPoints, maxPoints > 0 else { return sorted }
-        let stride = Double(sorted.count) / Double(maxPoints)
+    /// preserving chronological order.
+    private static func downsample(_ readings: [GlucoseReading], maxPoints: Int) -> [GlucoseReading] {
+        guard readings.count > maxPoints, maxPoints > 0 else { return readings }
+        let stride = Double(readings.count) / Double(maxPoints)
         var result: [GlucoseReading] = []
         result.reserveCapacity(maxPoints)
         var cursor = 0.0
-        while Int(cursor) < sorted.count {
-            result.append(sorted[Int(cursor)])
+        while Int(cursor) < readings.count {
+            result.append(readings[Int(cursor)])
             cursor += stride
         }
         // Always keep the final reading so the line reaches "now".
-        if let last = sorted.last, result.last?.timestamp != last.timestamp {
+        if let last = readings.last, result.last?.timestamp != last.timestamp {
             result.append(last)
         }
         return result
     }
 
     /// Daily insulin totals split into basal and bolus stacks.
-    static func insulinBars(_ doses: [InsulinDose]) -> [ChartsInsulinBar] {
+    private static func insulinBars(_ doses: [InsulinDose]) -> [ChartsInsulinBar] {
         let calendar = Calendar.current
         var basal: [Date: Double] = [:]
         var bolus: [Date: Double] = [:]
