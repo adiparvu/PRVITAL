@@ -34,6 +34,8 @@ struct StatisticsContent: View {
     let interval: InsightsInterval
     var pinnedHeader: AnyView? = nil
 
+    @Environment(\.modelContext) private var modelContext
+
     @Query private var glucose: [GlucoseReading]
     @Query private var insulin: [InsulinDose]
     @Query private var carbs: [CarbEntry]
@@ -174,11 +176,24 @@ struct StatisticsContent: View {
             // the ~90 days the lab reflects — wider than the selected interval — so
             // fetch that window on demand, and only when a lab actually exists.
             let reconReadings = labResults.first == nil ? [] : Self.fetchReconReadings(env)
+            // The window immediately before this one, for the Clarity-style
+            // "±X% vs the previous N days" delta. Skipped for Year — a second
+            // ~100k-row fetch just for one line isn't worth the stall.
+            let range = interval.dateRange()
+            var previousReadings: [GlucoseReading]?
+            if interval != .year {
+                let duration = range.upperBound.timeIntervalSince(range.lowerBound)
+                let prevLower = range.lowerBound.addingTimeInterval(-duration)
+                let prevUpper = range.lowerBound
+                let descriptor = FetchDescriptor<GlucoseReading>(
+                    predicate: #Predicate { $0.isActive && $0.timestamp >= prevLower && $0.timestamp < prevUpper })
+                previousReadings = (try? modelContext.fetch(descriptor)) ?? []
+            }
             await derived.rebuild(
                 glucose: glucose, insulin: insulin, carbs: carbs, activity: activity,
                 labResults: labResults, reconReadings: reconReadings,
-                healthExercise: healthExercise,
-                range: interval.dateRange(), thresholds: thresholds,
+                healthExercise: healthExercise, previousReadings: previousReadings,
+                range: range, thresholds: thresholds,
                 periodTargets: env.preferences.periodTIRTargets,
                 globalTargetPercent: env.preferences.glucoseGoals.targetTIRPercent)
         }
@@ -711,20 +726,27 @@ struct StatisticsContent: View {
         return Theme.zoneHigh
     }
 
-    // MARK: Time-in-range bar
+    // MARK: Time-in-range card (Clarity-style, per the user's reference)
 
+    /// The Dexcom Clarity layout the user asked for: a five-zone vertical bar
+    /// with the percentages beside it ("In range" writ large), the change vs
+    /// the previous equally long window, and the Day/Night target-range box
+    /// when the night range is enabled.
     private var timeInRangeBar: some View {
-        SectionCard("Time in range", systemImage: "chart.bar.fill") {
-            VStack(alignment: .leading, spacing: 12) {
-                GeometryReader { geo in
-                    HStack(spacing: 0) {
-                        segment(width: geo.size.width * stats.timeBelowRange, color: Theme.zoneCritical)
-                        segment(width: geo.size.width * stats.timeInRange, color: Theme.zoneInRange)
-                        segment(width: geo.size.width * stats.timeAboveRange, color: Theme.zoneHigh)
+        SectionCard(thresholds.nightModeEnabled ? "Time in range (custom)" : "Time in range",
+                    systemImage: "chart.bar.fill") {
+            VStack(alignment: .leading, spacing: 16) {
+                HStack(alignment: .center, spacing: 18) {
+                    verticalTIRBar
+                    VStack(alignment: .leading, spacing: 10) {
+                        zoneRow("Very high", stats.timeVeryHigh)
+                        zoneRow("High", max(0, stats.timeAboveRange - stats.timeVeryHigh))
+                        zoneRow("In range", stats.timeInRange, big: true)
+                        zoneRow("Low", max(0, stats.timeBelowRange - stats.timeVeryLow))
+                        zoneRow("Very low", stats.timeVeryLow)
                     }
-                    .clipShape(Capsule())
+                    Spacer(minLength: 0)
                 }
-                .frame(height: 22)
                 .accessibilityElement(children: .ignore)
                 .accessibilityLabel(
                     "Time in range \(percent(stats.timeInRange)), "
@@ -732,31 +754,134 @@ struct StatisticsContent: View {
                     + "above \(percent(stats.timeAboveRange))"
                 )
 
-                HStack(spacing: 16) {
-                    legendDot(String(localized: "Below"), value: stats.timeBelowRange, color: Theme.zoneCritical)
-                    legendDot(String(localized: "In range"), value: stats.timeInRange, color: Theme.zoneInRange)
-                    legendDot(String(localized: "Above"), value: stats.timeAboveRange, color: Theme.zoneHigh)
+                tirChangeLine
+                targetRangeBox
+            }
+        }
+    }
+
+    /// The stacked five-zone bar, very high at the top, very low at the bottom.
+    private var verticalTIRBar: some View {
+        let height: CGFloat = 210
+        return VStack(spacing: 3) {
+            barSlice(stats.timeVeryHigh, height: height, color: GlucoseZone.veryHigh.color)
+            barSlice(max(0, stats.timeAboveRange - stats.timeVeryHigh), height: height, color: GlucoseZone.high.color)
+            barSlice(stats.timeInRange, height: height, color: GlucoseZone.inRange.color)
+            barSlice(max(0, stats.timeBelowRange - stats.timeVeryLow), height: height, color: GlucoseZone.low.color)
+            barSlice(stats.timeVeryLow, height: height, color: GlucoseZone.veryLow.color)
+        }
+        .frame(width: 54)
+        .accessibilityHidden(true)
+    }
+
+    private func barSlice(_ fraction: Double, height: CGFloat, color: Color) -> some View {
+        RoundedRectangle(cornerRadius: 3, style: .continuous)
+            .fill(color)
+            // A zone that occurred at all keeps a visible sliver, like the
+            // reference's thin "<1%" strips; an absent zone takes no space.
+            .frame(height: fraction > 0 ? max(6, height * fraction) : 0)
+    }
+
+    private func zoneRow(_ key: LocalizedStringKey, _ value: Double, big: Bool = false) -> some View {
+        HStack(alignment: .firstTextBaseline, spacing: 8) {
+            Text(zonePercent(value))
+                .font(big ? .system(size: 30, weight: .bold, design: .rounded)
+                          : .system(size: 16, weight: .semibold, design: .rounded))
+                .foregroundStyle(Theme.textPrimary)
+                .monospacedDigit()
+            Text(key)
+                .font(big ? .title3.weight(.semibold) : .subheadline)
+                .foregroundStyle(big ? Theme.textPrimary : Theme.textSecondary)
+        }
+    }
+
+    /// "16 %" — but a present-yet-tiny zone reads "<1 %", Clarity-style, so a
+    /// single spike never rounds away to a dishonest 0.
+    private func zonePercent(_ value: Double) -> String {
+        if value > 0 && value < 0.01 { return String(localized: "<1 %") }
+        return percent(value)
+    }
+
+    /// "±X% vs the previous N days" — only when both windows have glucose.
+    @ViewBuilder
+    private var tirChangeLine: some View {
+        if let previous = derived.previousPeriodTIR, stats.hasGlucose {
+            let points = Int(((stats.timeInRange - previous) * 100).rounded())
+            let signed = points > 0 ? "+\(points) %" : "\(points) %"
+            let tint: Color = points > 0 ? Theme.zoneInRange
+                : (points < 0 ? Theme.zoneWarning : Theme.textSecondary)
+            Label {
+                Text("\(signed) change vs the previous \(interval.dayCount) days")
+                    .font(.footnote)
+                    .foregroundStyle(Theme.textSecondary)
+            } icon: {
+                Image(systemName: points > 0 ? "arrow.up.right" : (points < 0 ? "arrow.down.right" : "arrow.right"))
+                    .font(.footnote.weight(.bold))
+                    .foregroundStyle(tint)
+            }
+            .accessibilityElement(children: .combine)
+        }
+    }
+
+    /// The reference's "Target Range" box: Day + Night rows when the night
+    /// range is on, a single all-day row otherwise.
+    private var targetRangeBox: some View {
+        VStack(alignment: .leading, spacing: 10) {
+            Text("Target range")
+                .font(.caption.weight(.semibold))
+                .foregroundStyle(Theme.textSecondary)
+                .textCase(.uppercase)
+            if thresholds.nightModeEnabled {
+                targetRangeRow(title: "Day",
+                               window: windowText(from: thresholds.nightEndMinute, to: thresholds.nightStartMinute),
+                               lower: thresholds.targetLower, upper: thresholds.targetUpper)
+                Divider().overlay(Theme.hairline)
+                targetRangeRow(title: "Night",
+                               window: windowText(from: thresholds.nightStartMinute, to: thresholds.nightEndMinute),
+                               lower: thresholds.nightTargetLower, upper: thresholds.nightTargetUpper)
+            } else {
+                targetRangeRow(title: nil, window: nil,
+                               lower: thresholds.targetLower, upper: thresholds.targetUpper)
+            }
+        }
+        .padding(14)
+        .background(Theme.textPrimary.opacity(0.05), in: .rect(cornerRadius: 14, style: .continuous))
+    }
+
+    private func targetRangeRow(title: LocalizedStringKey?, window: String?,
+                                lower: Double, upper: Double) -> some View {
+        HStack(alignment: .center) {
+            VStack(alignment: .leading, spacing: 2) {
+                if let title {
+                    Text(title)
+                        .font(.body.weight(.semibold))
+                        .foregroundStyle(Theme.textPrimary)
+                }
+                if let window {
+                    Text(window)
+                        .font(.caption)
+                        .foregroundStyle(Theme.textSecondary)
                 }
             }
-        }
-    }
-
-    private func segment(width: CGFloat, color: Color) -> some View {
-        Rectangle().fill(color).frame(width: max(0, width))
-    }
-
-    private func legendDot(_ title: String, value: Double, color: Color) -> some View {
-        HStack(spacing: 6) {
-            Circle().fill(color).frame(width: 9, height: 9)
-            VStack(alignment: .leading, spacing: 1) {
-                Text(title).font(.caption2).foregroundStyle(Theme.textSecondary)
-                Text(percent(value))
-                    .font(.system(size: 15, weight: .semibold, design: .rounded))
-                    .foregroundStyle(Theme.textPrimary)
-            }
+            Spacer(minLength: 8)
+            Text(verbatim: "\(GlucoseFormatting.string(mgdL: lower, unit: unit)) – "
+                 + "\(GlucoseFormatting.string(mgdL: upper, unit: unit)) \(unit.rawValue)")
+                .font(.system(size: 17, weight: .semibold, design: .rounded))
+                .foregroundStyle(Theme.textPrimary)
+                .monospacedDigit()
         }
         .accessibilityElement(children: .combine)
-        .accessibilityLabel("\(title): \(percent(value))")
+    }
+
+    private func windowText(from startMinute: Int, to endMinute: Int) -> String {
+        "\(timeText(startMinute)) – \(timeText(endMinute))"
+    }
+
+    private func timeText(_ minutesFromMidnight: Int) -> String {
+        let calendar = Calendar.current
+        let base = calendar.startOfDay(for: Date())
+        let date = calendar.date(byAdding: .minute, value: minutesFromMidnight, to: base) ?? base
+        return date.formatted(date: .omitted, time: .shortened)
     }
 
     // MARK: Stat grid
@@ -964,11 +1089,16 @@ final class StatisticsDerived {
     var overnightStats: PeriodStatistics?
     var carbsByMeal: [MealTypeCarbs] = []
     var periodTIRs: [PeriodTIR] = []
+    /// Time-in-range over the equally long window immediately BEFORE this one
+    /// (nil when that window has no glucose, or for Year, where fetching a
+    /// second year just for one delta line isn't worth it) — drives the
+    /// Clarity-style "±X% vs the previous N days" line.
+    var previousPeriodTIR: Double?
 
     func rebuild(
         glucose: [GlucoseReading], insulin: [InsulinDose], carbs: [CarbEntry],
         activity: [ActivityEntry], labResults: [LabResult], reconReadings: [GlucoseReading],
-        healthExercise: [DailyMetric],
+        healthExercise: [DailyMetric], previousReadings: [GlucoseReading]?,
         range: ClosedRange<Date>,
         thresholds: GlucoseThresholds, periodTargets: PeriodTIRTargets,
         globalTargetPercent: Double
@@ -1012,7 +1142,12 @@ final class StatisticsDerived {
         let pTIRs = PeriodTIRAnalyzer.breakdown(
             active, thresholds: thresholds,
             targets: periodTargets, globalTargetPercent: globalTargetPercent)
+        let previousTIR: Double? = previousReadings.flatMap { readings in
+            let prev = StatisticsEngine.glucose(readings.filter(\.isActive), thresholds: thresholds)
+            return prev.hasGlucose ? prev.timeInRange : nil
+        }
 
+        self.previousPeriodTIR = previousTIR
         self.stats = summary
         self.activityMinutes = activityMins
         self.hasAnyData = anyData
