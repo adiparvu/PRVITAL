@@ -73,12 +73,18 @@ struct DashboardCustomizeView: View {
                         HStack(spacing: 12) {
                             PrvioIconTile(systemImage: card.symbol)
                             Text(card.label)
+                                .font(.body)
                                 .foregroundStyle(Theme.textPrimary)
                             Spacer(minLength: 0)
                             Toggle("", isOn: visibilityBinding(card, prefs: prefs))
                                 .labelsHidden()
+                                .tint(Theme.accent)
                         }
                         .padding(.vertical, 2)
+                        // The Prvio row draws its own full-width hairline; the
+                        // stock inset separator on top of it read as a foreign
+                        // element (device feedback: "doesn't match the app").
+                        .listRowSeparator(.hidden)
                     }
                     .onMove { from, to in
                         var current = order
@@ -86,6 +92,9 @@ struct DashboardCustomizeView: View {
                         prefs.dashboardCardOrder = current.map(\.rawValue)
                         Haptics.play(.selection)
                     }
+                } header: {
+                    Text("Cards on Home")
+                        .prvioSectionHeader()
                 } footer: {
                     Text("Drag to reorder. The glucose ring, quick actions and safety banners always stay at the top.")
                         .font(.footnote)
@@ -93,6 +102,7 @@ struct DashboardCustomizeView: View {
                 }
                 .prvioListRow()
             }
+            .listSectionSpacing(.compact)
             .environment(\.editMode, .constant(.active))
             .scrollContentBackground(.hidden)
             .prvitalTabBackground()
