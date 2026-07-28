@@ -145,6 +145,9 @@ struct StatisticsContent: View {
                     statsGrid.appearTransition(delay: 0.06)
                     if let risk = derived.risk { riskCard(risk).appearTransition(delay: 0.09) }
                     if !derived.tagImpacts.isEmpty { tagImpactCard.appearTransition(delay: 0.10) }
+                    if let treatments = derived.hypoTreatments {
+                        hypoTreatmentCard(treatments).appearTransition(delay: 0.11)
+                    }
                     if let insulin = insulinSummary { insulinBalanceCard(insulin).appearTransition(delay: 0.12) }
                     if !carbsByMeal.isEmpty { carbsByMealCard(carbsByMeal).appearTransition(delay: 0.18) }
                     if let overnight = overnightStats, overnight.hasGlucose { overnightCard(overnight).appearTransition(delay: 0.24) }
@@ -1060,6 +1063,45 @@ struct StatisticsContent: View {
         }
     }
 
+    // MARK: Hypo treatments
+
+    /// The personal answer to "does my dose work?": what the logged rule-of-15
+    /// treatments actually did. Reported, never prescribed — the footnote says
+    /// exactly that.
+    private func hypoTreatmentCard(_ stats: HypoTreatmentStats) -> some View {
+        SectionCard("Your low treatments", systemImage: "cross.case.fill") {
+            VStack(alignment: .leading, spacing: 10) {
+                treatmentRow(title: "Typical dose",
+                             value: String(localized: "\(Int(stats.typicalGrams.rounded())) g"))
+                if let rise = stats.averageRiseMgdL {
+                    let signed = (rise >= 0 ? "+" : "")
+                        + GlucoseFormatting.labeled(mgdL: rise, unit: unit)
+                    treatmentRow(title: "Average rise in ~15 min", value: signed)
+                }
+                treatmentRow(title: "Resolved in one round",
+                             value: String(localized: "\(stats.resolvedInOneRound) of \(stats.episodes)"))
+                Text("From your \(stats.treatmentCount) logged treatments in this period. Informational only — discuss dosing with your care team.")
+                    .font(.caption2)
+                    .foregroundStyle(Theme.textTertiary)
+                    .fixedSize(horizontal: false, vertical: true)
+            }
+        }
+    }
+
+    private func treatmentRow(title: LocalizedStringKey, value: String) -> some View {
+        HStack {
+            Text(title)
+                .font(.subheadline)
+                .foregroundStyle(Theme.textSecondary)
+            Spacer()
+            Text(verbatim: value)
+                .font(.subheadline.weight(.semibold))
+                .foregroundStyle(Theme.textPrimary)
+                .monospacedDigit()
+        }
+        .accessibilityElement(children: .combine)
+    }
+
     private func lbgiSeverity(_ lbgi: Double) -> (LocalizedStringKey, Color) {
         switch lbgi {
         case ..<1.1: return ("Minimal", Theme.zoneInRange)
@@ -1292,6 +1334,8 @@ final class StatisticsDerived {
     var risk: GlycemicRisk?
     /// TIR on tagged vs untagged days, for the tags used in this window.
     var tagImpacts: [TagImpact] = []
+    /// What the user's own rule-of-15 treatments did; nil below 3 treatments.
+    var hypoTreatments: HypoTreatmentStats?
 
     func rebuild(
         glucose: [GlucoseReading], insulin: [InsulinDose], carbs: [CarbEntry],
@@ -1350,10 +1394,12 @@ final class StatisticsDerived {
         let tagStats = TagImpactAnalyzer.analyze(
             readings: active, carbs: fCarbs, observations: fObservations,
             thresholds: thresholds)
+        let treatmentStats = HypoTreatmentAnalyzer.analyze(readings: active, carbs: fCarbs)
 
         self.previousPeriodTIR = previousTIR
         self.risk = riskIndices
         self.tagImpacts = tagStats
+        self.hypoTreatments = treatmentStats
         self.stats = summary
         self.activityMinutes = activityMins
         self.hasAnyData = anyData
