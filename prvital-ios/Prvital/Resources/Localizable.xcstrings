@@ -34672,6 +34672,65 @@
         }
       }
     },
+    "Fast-carb examples" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Beispiele für schnelle Kohlenhydrate"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ejemplos de carbohidratos rápidos"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Exemples de glucides rapides"
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Esempi di carboidrati rapidi"
+          }
+        },
+        "nl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Voorbeelden van snelle koolhydraten"
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Przykłady szybkich węglowodanów"
+          }
+        },
+        "pt" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Exemplos de hidratos rápidos"
+          }
+        },
+        "ro" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Exemple de carbohidrați rapizi"
+          }
+        },
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Примеры быстрых углеводов"
+          }
+        }
+      }
+    },
     "Fat" : {
       "extractionState" : "manual",
       "localizations" : {
@@ -43670,6 +43729,65 @@
         }
       }
     },
+    "How much are you taking?" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Wie viel nimmst du?"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "¿Cuánto tomas?"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Combien prends-tu ?"
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Quanto ne prendi?"
+          }
+        },
+        "nl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Hoeveel neem je?"
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ile przyjmujesz?"
+          }
+        },
+        "pt" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Quanto vais tomar?"
+          }
+        },
+        "ro" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Cât iei?"
+          }
+        },
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Сколько вы принимаете?"
+          }
+        }
+      }
+    },
     "How much of the day you aim to have CGM data for. Consensus calls 70% or more reliable for statistics." : {
       "extractionState" : "manual",
       "localizations" : {
@@ -44378,6 +44496,65 @@
         }
       }
     },
+    "Hypo treatment (rule of 15)" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Hypo-Behandlung (15er-Regel)"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Tratamiento de hipo (regla del 15)"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Traitement d'hypo (règle des 15)"
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Trattamento ipo (regola del 15)"
+          }
+        },
+        "nl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Hypobehandeling (15-regel)"
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Leczenie hipo (reguła 15)"
+          }
+        },
+        "pt" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Tratamento de hipo (regra dos 15)"
+          }
+        },
+        "ro" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Tratament hipoglicemie (regula de 15)"
+          }
+        },
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Лечение гипогликемии (правило 15)"
+          }
+        }
+      }
+    },
     "I have diabetes" : {
       "extractionState" : "manual",
       "localizations" : {
@@ -44964,6 +45141,65 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Если тренд сохранится, расчётный A1c через ~3 мес.: %@"
+          }
+        }
+      }
+    },
+    "If you can safely swallow, take fast-acting carbs now." : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Wenn du sicher schlucken kannst, nimm jetzt schnell wirkende Kohlenhydrate."
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Si puedes tragar con seguridad, toma ahora carbohidratos de acción rápida."
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Si tu peux avaler sans danger, prends des glucides rapides maintenant."
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Se riesci a deglutire in sicurezza, prendi subito carboidrati ad azione rapida."
+          }
+        },
+        "nl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Als je veilig kunt slikken, neem dan nu snelwerkende koolhydraten."
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Jeśli możesz bezpiecznie przełykać, przyjmij teraz szybko działające węglowodany."
+          }
+        },
+        "pt" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Se conseguires engolir em segurança, toma já hidratos de ação rápida."
+          }
+        },
+        "ro" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Dacă poți înghiți în siguranță, ia acum carbohidrați cu acțiune rapidă."
+          }
+        },
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Если вы можете безопасно глотать, примите быстрые углеводы прямо сейчас."
           }
         }
       }
@@ -48681,6 +48917,65 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Может отличаться от лабораторного A1c"
+          }
+        }
+      }
+    },
+    "It took %lld rounds and %lld g in total to recover." : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Es brauchte %lld Runden und insgesamt %lld g zur Erholung."
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Hicieron falta %lld rondas y %lld g en total para recuperarte."
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Il a fallu %lld prises et %lld g au total pour récupérer."
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ci sono voluti %lld giri e %lld g in totale per recuperare."
+          }
+        },
+        "nl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Er waren %lld rondes en in totaal %lld g nodig om te herstellen."
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Potrzeba było %lld rund i łącznie %lld g, aby wrócić do normy."
+          }
+        },
+        "pt" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Foram precisas %lld rondas e %lld g no total para recuperar."
+          }
+        },
+        "ro" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Au fost necesare %lld runde și %lld g în total pentru recuperare."
+          }
+        },
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Для восстановления потребовалось %lld подходов и %lld г в сумме."
           }
         }
       }
@@ -73766,6 +74061,65 @@
         }
       }
     },
+    "Recheck now" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Jetzt nachmessen"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Revisa ahora"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Revérifie maintenant"
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ricontrolla ora"
+          }
+        },
+        "nl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Controleer nu"
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Sprawdź teraz"
+          }
+        },
+        "pt" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Volta a verificar agora"
+          }
+        },
+        "ro" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Reverifică acum"
+          }
+        },
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Проверьте сейчас"
+          }
+        }
+      }
+    },
     "Recheck your glucose. If it's still below 70 mg/dL, take another 15 g of fast carbs and wait 15 minutes again." : {
       "extractionState" : "manual",
       "localizations" : {
@@ -88046,6 +88400,65 @@
         }
       }
     },
+    "The classic rule says 15 g — use the amount that works for you." : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Die klassische Regel sagt 15 g — nimm die Menge, die bei dir funktioniert."
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "La regla clásica dice 15 g — usa la cantidad que te funcione."
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "La règle classique dit 15 g — utilise la quantité qui marche pour toi."
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "La regola classica dice 15 g — usa la quantità che funziona per te."
+          }
+        },
+        "nl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "De klassieke regel zegt 15 g — gebruik de hoeveelheid die voor jou werkt."
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Klasyczna reguła mówi 15 g — użyj ilości, która działa u Ciebie."
+          }
+        },
+        "pt" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "A regra clássica diz 15 g — usa a quantidade que funciona para ti."
+          }
+        },
+        "ro" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Regula clasică spune 15 g — folosește cantitatea care funcționează pentru tine."
+          }
+        },
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Классическое правило — 15 г, но используйте то количество, которое помогает именно вам."
+          }
+        }
+      }
+    },
     "The dawn phenomenon" : {
       "extractionState" : "manual",
       "localizations" : {
@@ -97215,6 +97628,65 @@
         }
       }
     },
+    "Wait %lld minutes" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Warte %lld Minuten"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Espera %lld minutos"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Attends %lld minutes"
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Attendi %lld minuti"
+          }
+        },
+        "nl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Wacht %lld minuten"
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Poczekaj %lld minut"
+          }
+        },
+        "pt" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Aguarda %lld minutos"
+          }
+        },
+        "ro" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Așteaptă %lld minute"
+          }
+        },
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Подождите %lld минут"
+          }
+        }
+      }
+    },
     "Wait 15 minutes. Don't eat more straight away, even though you may feel like it." : {
       "extractionState" : "manual",
       "localizations" : {
@@ -101471,6 +101943,65 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Ваша глюкоза %@, %@, %@."
+          }
+        }
+      }
+    },
+    "Your glucose is still below %@. Take another round of fast carbs." : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Dein Glukosewert liegt noch unter %@. Nimm eine weitere Runde schnelle Kohlenhydrate."
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Tu glucosa sigue por debajo de %@. Toma otra ronda de carbohidratos rápidos."
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ta glycémie est encore sous %@. Prends une nouvelle dose de glucides rapides."
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "La tua glicemia è ancora sotto %@. Prendi un altro giro di carboidrati rapidi."
+          }
+        },
+        "nl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Je glucose is nog onder %@. Neem nog een ronde snelle koolhydraten."
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Glikemia wciąż jest poniżej %@. Przyjmij kolejną porcję szybkich węglowodanów."
+          }
+        },
+        "pt" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "A tua glicose ainda está abaixo de %@. Toma outra ronda de hidratos rápidos."
+          }
+        },
+        "ro" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Glicemia ta este încă sub %@. Ia încă o rundă de carbohidrați rapizi."
+          }
+        },
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Глюкоза всё ещё ниже %@. Примите ещё одну порцию быстрых углеводов."
           }
         }
       }

@@ -7,12 +7,38 @@ import SwiftData
 /// fast-acting carbs, wait 15 minutes, recheck; repeat until back in range. This
 /// is general education, not a dosing tool — it never computes an insulin dose.
 enum RuleOf15 {
-    /// Grams of fast-acting carbohydrate per treatment round.
-    static let fastCarbGrams = 15
+    /// The classic dose of fast-acting carbohydrate per treatment round. Only a
+    /// default — the user enters their own working amount (12 g is a perfectly
+    /// good personal dose), remembered across lows.
+    static let defaultGrams = 15
     /// Minutes to wait before rechecking.
     static let waitMinutes = 15
     /// The wait as seconds, for the countdown.
     static let waitSeconds = waitMinutes * 60
+
+    /// Where the active wait lives (epoch seconds; 0 = none) — persisted so the
+    /// Dashboard's gauge keeps counting down after the sheet closes, and the
+    /// sheet resumes mid-wait when reopened.
+    static let deadlineKey = "ruleOf15.deadline"
+    static let roundStartKey = "ruleOf15.roundStart"
+    /// The user's remembered personal treatment amount, in grams.
+    static let gramsKey = "ruleOf15.grams"
+
+    /// The persisted recheck deadline, if a wait is running (or just ran).
+    static var persistedDeadline: Date? {
+        let ts = UserDefaults.standard.double(forKey: deadlineKey)
+        return ts > 0 ? Date(timeIntervalSince1970: ts) : nil
+    }
+
+    static func persistWait(deadline: Date, roundStart: Date) {
+        UserDefaults.standard.set(deadline.timeIntervalSince1970, forKey: deadlineKey)
+        UserDefaults.standard.set(roundStart.timeIntervalSince1970, forKey: roundStartKey)
+    }
+
+    static func clearPersistedWait() {
+        UserDefaults.standard.removeObject(forKey: deadlineKey)
+        UserDefaults.standard.removeObject(forKey: roundStartKey)
+    }
 
     /// "M:SS" for a remaining-seconds value. Rounds up so the clock reads the full
     /// 15:00 at the start and only reaches 0:00 exactly at the end.
@@ -36,16 +62,26 @@ struct RuleOf15State: Equatable, Sendable {
     }
 
     private(set) var phase: Phase = .treat
-    /// How many times the user has confirmed taking 15 g of fast carbs.
+    /// How many times the user has confirmed taking fast carbs.
     private(set) var round = 0
+    /// Total grams taken across every round of this flow.
+    private(set) var totalGrams = 0
 
     /// True on a `treat` step that was reached by looping back from a still-low
     /// recheck (so the view can show "Still low — treat again").
     var isRepeatTreat: Bool { phase == .treat && round >= 1 }
 
-    /// The user confirms they've taken 15 g — start (or restart) the wait.
-    mutating func takeCarbs() {
+    /// The user confirms they've taken their carbs — start (or restart) the wait.
+    mutating func takeCarbs(grams: Int) {
         round += 1
+        totalGrams += grams
+        phase = .waiting
+    }
+
+    /// Rejoin a wait that was already running when the sheet reopened (the
+    /// deadline survives in defaults; the round count is at least 1 by then).
+    mutating func resumeWaiting() {
+        round = max(round, 1)
         phase = .waiting
     }
 
@@ -87,6 +123,9 @@ struct RuleOf15Sheet: View {
     /// True when a recheck found no reading logged since this round started.
     @State private var awaitingReading = false
     @State private var showFingerstick = false
+    /// The user's own treatment amount — the classic 15 g is only the starting
+    /// default; whatever they set (e.g. 12 g) is remembered for the next low.
+    @AppStorage(RuleOf15.gramsKey) private var grams = RuleOf15.defaultGrams
 
     private var unit: GlucoseUnit { env.preferences.glucoseUnit }
     private var thresholds: GlucoseThresholds { env.preferences.thresholds }
@@ -118,6 +157,18 @@ struct RuleOf15Sheet: View {
                 }
             }
             .sheet(isPresented: $showFingerstick) { GlucoseEntrySheet() }
+            // A wait was already running when the sheet reopened (it survives
+            // in defaults so the Dashboard gauge can count it down) — rejoin
+            // it instead of starting over.
+            .onAppear {
+                if state.phase == .treat, state.round == 0,
+                   let persisted = RuleOf15.persistedDeadline, persisted > Date() {
+                    deadline = persisted
+                    roundStartedAt = Date(timeIntervalSince1970:
+                        UserDefaults.standard.double(forKey: RuleOf15.roundStartKey))
+                    state.resumeWaiting()
+                }
+            }
         }
     }
 
@@ -130,8 +181,8 @@ struct RuleOf15Sheet: View {
                 tint: Theme.zoneWarning,
                 title: state.isRepeatTreat ? "Still low — treat again" : "Treat the low",
                 subtitle: state.isRepeatTreat
-                    ? "Your glucose is still below \(GlucoseFormatting.labeled(mgdL: thresholds.targetLower, unit: unit)). Take another \(RuleOf15.fastCarbGrams) g of fast carbs."
-                    : "If you can safely swallow, take \(RuleOf15.fastCarbGrams) g of fast-acting carbs now."
+                    ? "Your glucose is still below \(GlucoseFormatting.labeled(mgdL: thresholds.targetLower, unit: unit)). Take another round of fast carbs."
+                    : "If you can safely swallow, take fast-acting carbs now."
             )
 
             if state.round >= 1 {
@@ -143,7 +194,34 @@ struct RuleOf15Sheet: View {
                     .frame(maxWidth: .infinity, alignment: .leading)
             }
 
-            SectionCard("\(RuleOf15.fastCarbGrams) g fast-carb options", systemImage: "bolt.fill") {
+            // The amount is the user's, not the rule's: type or step to what
+            // actually recovers you (device feedback: "for me 12 g is fine").
+            SectionCard("How much are you taking?", systemImage: "scalemass") {
+                VStack(alignment: .leading, spacing: 8) {
+                    HStack(spacing: 8) {
+                        TextField("Grams", value: $grams, format: .number)
+                            .keyboardType(.numberPad)
+                            .font(.system(size: 32, weight: .bold, design: .rounded))
+                            .foregroundStyle(Theme.textPrimary)
+                            .frame(width: 84)
+                            .multilineTextAlignment(.center)
+                            .padding(.vertical, 4)
+                            .background(Theme.textPrimary.opacity(0.06), in: .rect(cornerRadius: 10))
+                        Text(verbatim: "g")
+                            .font(.headline)
+                            .foregroundStyle(Theme.textSecondary)
+                        Spacer()
+                        Stepper("", value: $grams, in: 5...60)
+                            .labelsHidden()
+                    }
+                    Text("The classic rule says 15 g — use the amount that works for you.")
+                        .font(.caption)
+                        .foregroundStyle(Theme.textTertiary)
+                        .fixedSize(horizontal: false, vertical: true)
+                }
+            }
+
+            SectionCard("Fast-carb examples", systemImage: "bolt.fill") {
                 VStack(alignment: .leading, spacing: 12) {
                     carbOption(String(localized: "3–4 glucose tablets"))
                     Divider().overlay(Theme.hairline)
@@ -158,7 +236,7 @@ struct RuleOf15Sheet: View {
                 Haptics.play(.medium)
                 startWait()
             } label: {
-                Label("I've taken \(RuleOf15.fastCarbGrams) g", systemImage: "checkmark.circle.fill")
+                Label("I've taken \(clampedGrams) g", systemImage: "checkmark.circle.fill")
                     .font(.headline)
                     .frame(maxWidth: .infinity)
                     .padding(.vertical, 6)
@@ -168,6 +246,9 @@ struct RuleOf15Sheet: View {
             .accessibilityHint("Starts a \(RuleOf15.waitMinutes) minute wait before rechecking")
         }
     }
+
+    /// The entered grams, kept honest (typing "0" or "300" is a slip).
+    private var clampedGrams: Int { min(max(grams, 1), 100) }
 
     private func carbOption(_ text: String) -> some View {
         Label {
@@ -273,7 +354,7 @@ struct RuleOf15Sheet: View {
             )
 
             if state.round > 1 {
-                Text("It took \(state.round) rounds of \(RuleOf15.fastCarbGrams) g to recover.")
+                Text("It took \(state.round) rounds and \(state.totalGrams) g in total to recover.")
                     .font(.subheadline)
                     .foregroundStyle(Theme.textSecondary)
                     .frame(maxWidth: .infinity, alignment: .leading)
@@ -341,10 +422,27 @@ struct RuleOf15Sheet: View {
     // MARK: Actions
 
     private func startWait() {
+        let taken = clampedGrams
         roundStartedAt = Date()
         awaitingReading = false
-        deadline = Date().addingTimeInterval(Double(RuleOf15.waitSeconds))
-        withAnimation(.smooth) { state.takeCarbs() }
+        let end = Date().addingTimeInterval(Double(RuleOf15.waitSeconds))
+        deadline = end
+        // Survives the sheet closing: the Dashboard gauge shows this countdown
+        // under the trend arrow until the low resolves.
+        RuleOf15.persistWait(deadline: end, roundStart: roundStartedAt)
+        // The treatment goes in the journal like any other intake — tagged
+        // "feeling low" so COB is honest and the missed-bolus nudge knows this
+        // meal never needs insulin. Quietly (no Island flash mid-hypo).
+        let entry = env.entryStore.addCarbs(
+            grams: Double(taken), timestamp: roundStartedAt,
+            mealType: Calendar.current.component(.hour, from: roundStartedAt) < 16
+                ? .morningSnack : .eveningSnack,
+            foodDescription: nil,
+            note: String(localized: "Hypo treatment (rule of 15)"),
+            announces: false)
+        entry.tags = [.hypoFeeling]
+        env.entryStore.touch(entry)
+        withAnimation(.smooth) { state.takeCarbs(grams: taken) }
     }
 
     /// Uses the user's own latest reading for the recheck. Only a reading logged
@@ -364,6 +462,7 @@ struct RuleOf15Sheet: View {
             Haptics.play(.warning)      // still low — another round
         } else if !wasResolved {
             Haptics.play(.success)
+            RuleOf15.clearPersistedWait()   // the Dashboard countdown stands down
         }
     }
 }

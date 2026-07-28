@@ -15,14 +15,30 @@ final class RuleOf15StateTests: XCTestCase {
 
     func testTakeCarbsBeginsWaitAndCountsRound() {
         var state = RuleOf15State()
-        state.takeCarbs()
+        state.takeCarbs(grams: 12)
         XCTAssertEqual(state.phase, .waiting)
         XCTAssertEqual(state.round, 1)
+        XCTAssertEqual(state.totalGrams, 12, "the user's own amount counts, not a fixed 15")
+    }
+
+    func testTotalGramsAccumulatesAcrossRounds() {
+        var state = RuleOf15State()
+        state.takeCarbs(grams: 12)
+        state.recheck(mgdL: 60, targetLowerMgdL: low)
+        state.takeCarbs(grams: 15)
+        XCTAssertEqual(state.totalGrams, 27)
+    }
+
+    func testResumeWaitingRejoinsAnActiveWait() {
+        var state = RuleOf15State()
+        state.resumeWaiting()
+        XCTAssertEqual(state.phase, .waiting)
+        XCTAssertEqual(state.round, 1, "a resumed wait implies at least one treat")
     }
 
     func testRecheckAtOrAboveThresholdResolves() {
         var state = RuleOf15State()
-        state.takeCarbs()
+        state.takeCarbs(grams: 12)
         state.recheck(mgdL: low, targetLowerMgdL: low)   // exactly at threshold counts as recovered
         XCTAssertEqual(state.phase, .resolved)
         XCTAssertEqual(state.round, 1)
@@ -30,7 +46,7 @@ final class RuleOf15StateTests: XCTestCase {
 
     func testRecheckStillLowLoopsBackToTreat() {
         var state = RuleOf15State()
-        state.takeCarbs()
+        state.takeCarbs(grams: 12)
         state.recheck(mgdL: 62, targetLowerMgdL: low)
         XCTAssertEqual(state.phase, .treat)
         XCTAssertEqual(state.round, 1)          // round only increments on takeCarbs
@@ -39,9 +55,9 @@ final class RuleOf15StateTests: XCTestCase {
 
     func testSecondRoundThenRecovery() {
         var state = RuleOf15State()
-        state.takeCarbs()                                   // round 1
+        state.takeCarbs(grams: 12)                          // round 1
         state.recheck(mgdL: 60, targetLowerMgdL: low)       // still low -> treat
-        state.takeCarbs()                                   // round 2
+        state.takeCarbs(grams: 15)                          // round 2
         XCTAssertEqual(state.round, 2)
         state.recheck(mgdL: 95, targetLowerMgdL: low)       // recovered
         XCTAssertEqual(state.phase, .resolved)

@@ -8,6 +8,9 @@ struct GlucoseGaugeRing: View {
     let zone: GlucoseZone
     let unit: GlucoseUnit
     var trend: GlucoseTrend?
+    /// An active rule-of-15 recheck deadline: shows a live countdown inside the
+    /// gauge, under the trend (device feedback: the timer belongs on Home).
+    var recheckAt: Date?
     /// Sized for the card-less hero: with no frame around it, the ring can own
     /// the top of the screen (device feedback: "bigger, more refined").
     var diameter: CGFloat = 248
@@ -89,6 +92,9 @@ struct GlucoseGaugeRing: View {
                 if let trend {
                     TrendBadge(trend: trend, showsLabel: true).padding(.top, 2)
                 }
+                if let recheckAt {
+                    recheckCountdown(recheckAt)
+                }
             }
             .scaleEffect(appeared ? 1 : 0.9)
         }
@@ -104,6 +110,35 @@ struct GlucoseGaugeRing: View {
         .accessibilityElement(children: .ignore)
         .accessibilityLabel("Glucose \(GlucoseFormatting.labeled(mgdL: mgdL, unit: unit)), \(zone.label)"
                             + (trend.map { ", \($0.label)" } ?? ""))
+    }
+
+    /// The rule-of-15 wait, ticking inside the gauge: "⏱ 12:34" while the wait
+    /// runs, "Recheck now" once it's up — so treating a low never requires
+    /// keeping the sheet open.
+    private func recheckCountdown(_ recheckAt: Date) -> some View {
+        TimelineView(.periodic(from: .now, by: 1)) { context in
+            let remaining = recheckAt.timeIntervalSince(context.date)
+            HStack(spacing: 4) {
+                Image(systemName: "timer")
+                    .font(.caption2.weight(.bold))
+                if remaining > 0 {
+                    Text(verbatim: RuleOf15.clock(remaining))
+                        .monospacedDigit()
+                        .contentTransition(.numericText())
+                } else {
+                    Text("Recheck now")
+                }
+            }
+            .font(.caption.weight(.semibold))
+            .foregroundStyle(Theme.zoneWarning)
+            .padding(.horizontal, 9)
+            .padding(.vertical, 4)
+            .background(Theme.zoneWarning.opacity(0.14), in: .capsule)
+            .accessibilityLabel(remaining > 0
+                ? "Recheck in \(RuleOf15.clock(remaining))"
+                : "Time to recheck your glucose")
+        }
+        .padding(.top, 4)
     }
 
     /// The glowing endpoint of the sweep, riding exactly on the arc's tip.

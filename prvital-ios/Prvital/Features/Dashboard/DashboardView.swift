@@ -323,7 +323,8 @@ struct DashboardView: View {
                             mgdL: current.valueMgdL,
                             zone: zone,
                             unit: unit,
-                            trend: current.trend
+                            trend: current.trend,
+                            recheckAt: ruleOf15RecheckAt(currentMgdL: current.valueMgdL)
                         )
                         ZonePill(zone: zone, plain: true)
                     }
@@ -433,6 +434,16 @@ struct DashboardView: View {
         guard let minutes = summary.minutesSinceUpdate else { return String(localized: "Updated recently") }
         if minutes <= 0 { return String(localized: "Updated just now") }
         return String(localized: "Updated \(minutes) min ago")
+    }
+
+    /// The rule-of-15 recheck deadline to tick inside the gauge — only while
+    /// the low is actually still on (glucose below the target floor), and only
+    /// up to 20 minutes past the deadline so an abandoned flow fades away.
+    private func ruleOf15RecheckAt(currentMgdL: Double) -> Date? {
+        guard let deadline = RuleOf15.persistedDeadline else { return nil }
+        guard deadline.timeIntervalSinceNow > -20 * 60 else { return nil }
+        guard currentMgdL < env.preferences.thresholds.targetLower else { return nil }
+        return deadline
     }
 
     // MARK: - Customisable deck

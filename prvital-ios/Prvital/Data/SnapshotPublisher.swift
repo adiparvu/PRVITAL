@@ -204,9 +204,13 @@ final class SnapshotPublisher {
         // unlogged climb. Reuses the fetches this refresh already did.
         if preferences.alerts.missedBolusEnabled {
             alerts.evaluateMissedBolus(
-                carbs: recentCarbEntries(now: now).map {
-                    MissedBolusEvaluator.CarbEvent(id: "\($0.id)", timestamp: $0.timestamp, grams: $0.grams)
-                },
+                // Hypo treatments (rule-of-15 carbs, tagged "feeling low") are
+                // carbs that must never prompt for a bolus.
+                carbs: recentCarbEntries(now: now)
+                    .filter { !$0.tags.contains(.hypoFeeling) }
+                    .map {
+                        MissedBolusEvaluator.CarbEvent(id: "\($0.id)", timestamp: $0.timestamp, grams: $0.grams)
+                    },
                 doses: recentInsulinDoses(now: now).map {
                     MissedBolusEvaluator.DoseEvent(timestamp: $0.timestamp, isBolus: !$0.insulinType.isBasal)
                 },
