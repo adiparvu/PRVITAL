@@ -31,7 +31,16 @@ final class CarbEntry: MedicalRecord {
     /// nil default keeps the schema CloudKit-safe; assign it after creation.
     @Attribute(.externalStorage) var photo: Data?
 
+    /// Quick context tags (eating out, alcohol, travel…), raw-stored like the
+    /// observation's. Defaulted so the addition is CloudKit-safe.
+    var tagsRaw: [String] = []
+
     var recordType: RecordType { .carbohydrate }
+
+    var tags: [ObservationTag] {
+        get { tagsRaw.compactMap(ObservationTag.init(rawValue:)) }
+        set { tagsRaw = newValue.map(\.rawValue) }
+    }
 
     var source: DataSource {
         get { DataSource(rawValue: sourceRaw) ?? .manual }

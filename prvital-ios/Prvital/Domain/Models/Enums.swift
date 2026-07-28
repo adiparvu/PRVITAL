@@ -445,7 +445,9 @@ enum ActivityIntensity: String, Codable, CaseIterable, Sendable {
     }
 }
 
-/// A contextual note the user can attach to a day / entry.
+/// A contextual tag the user can attach to entries — observations, glucose
+/// readings and meals (the mySugr-style quick tags). Old raw values must never
+/// change; new cases decode as absent on older builds, which simply drop them.
 enum ObservationTag: String, Codable, CaseIterable, Sendable, Identifiable {
     case illness
     case stress
@@ -453,6 +455,11 @@ enum ObservationTag: String, Codable, CaseIterable, Sendable, Identifiable {
     case dehydration
     case fever
     case menstruation
+    case sport
+    case alcohol
+    case travel
+    case eatingOut = "eating_out"
+    case hypoFeeling = "hypo_feeling"
     case other
 
     var id: String { rawValue }
@@ -465,6 +472,11 @@ enum ObservationTag: String, Codable, CaseIterable, Sendable, Identifiable {
         case .dehydration: return String(localized: "Dehydration")
         case .fever: return String(localized: "Fever")
         case .menstruation: return String(localized: "Menstruation")
+        case .sport: return String(localized: "Sport")
+        case .alcohol: return String(localized: "Alcohol")
+        case .travel: return String(localized: "Travel")
+        case .eatingOut: return String(localized: "Eating out")
+        case .hypoFeeling: return String(localized: "Feeling low")
         case .other: return String(localized: "Other")
         }
     }
@@ -477,6 +489,11 @@ enum ObservationTag: String, Codable, CaseIterable, Sendable, Identifiable {
         case .dehydration: return "drop"
         case .fever: return "thermometer.high"
         case .menstruation: return "calendar.badge.clock"
+        case .sport: return "figure.run"
+        case .alcohol: return "wineglass"
+        case .travel: return "airplane"
+        case .eatingOut: return "fork.knife.circle"
+        case .hypoFeeling: return "arrow.down.heart"
         case .other: return "note.text"
         }
     }

@@ -13,6 +13,7 @@ struct GlucoseEntrySheet: View {
     @State private var measurementType: GlucoseMeasurementType = .fingerstick
     @State private var trend: GlucoseTrend = .stable
     @State private var includeTrend = false
+    @State private var selectedTags: Set<ObservationTag> = []
 
     private var unit: GlucoseUnit { env.preferences.glucoseUnit }
 
@@ -46,6 +47,9 @@ struct GlucoseEntrySheet: View {
                             }
                         }
                     }
+                }
+                Section("Tags") {
+                    EntryTagPicker(selected: $selectedTags)
                 }
                 if existing != nil { deleteSection }
             }
@@ -86,6 +90,7 @@ struct GlucoseEntrySheet: View {
         timestamp = existing.timestamp
         measurementType = existing.measurementType
         if let t = existing.trend { trend = t; includeTrend = true }
+        selectedTags = Set(existing.tags)
     }
 
     private func save() {
@@ -95,13 +100,18 @@ struct GlucoseEntrySheet: View {
             existing.timestamp = timestamp
             existing.measurementType = measurementType
             existing.trend = includeTrend ? trend : nil
+            existing.tags = Array(selectedTags)
             env.entryStore.touch(existing)
         } else {
-            env.entryStore.addGlucose(
+            let reading = env.entryStore.addGlucose(
                 mgdL: mgdL, timestamp: timestamp,
                 measurementType: measurementType,
                 trend: includeTrend ? trend : nil
             )
+            if !selectedTags.isEmpty {
+                reading.tags = Array(selectedTags)
+                env.entryStore.touch(reading)
+            }
         }
         Haptics.play(.success)
         dismiss()

@@ -30,6 +30,7 @@ struct CarbEntrySheet: View {
     @State private var takenMainMealsToday: Set<MealType> = []
     @State private var food = ""
     @State private var note = ""
+    @State private var selectedTags: Set<ObservationTag> = []
     @State private var showingFood = false
     @State private var photoItem: PhotosPickerItem?
     @State private var photoData: Data?
@@ -124,6 +125,7 @@ struct CarbEntrySheet: View {
                     TextField("Food (optional)", text: $food)
                     DatePicker("Time", selection: $timestamp)
                 }
+                Section("Tags") { EntryTagPicker(selected: $selectedTags) }
                 Section("Note") { TextField("Optional", text: $note, axis: .vertical) }
                 Section("Photo") {
                     PhotosPicker(selection: $photoItem, matching: .images, photoLibrary: .shared()) {
@@ -211,6 +213,7 @@ struct CarbEntrySheet: View {
         food = existing.foodDescription ?? ""
         note = existing.note ?? ""
         photoData = existing.photo
+        selectedTags = Set(existing.tags)
         computeImpact(for: existing)
     }
 
@@ -312,6 +315,7 @@ struct CarbEntrySheet: View {
             existing.foodDescription = food.isEmpty ? nil : food
             existing.note = note.isEmpty ? nil : note
             existing.photo = photoData
+            existing.tags = Array(selectedTags)
             env.entryStore.touch(existing)
         } else {
             let entry = env.entryStore.addCarbs(
@@ -319,10 +323,11 @@ struct CarbEntrySheet: View {
                 foodDescription: food.isEmpty ? nil : food,
                 note: note.isEmpty ? nil : note
             )
-            // `init` doesn't take a photo, so attach it after creation and
-            // re-persist through the store's write path.
-            if let photoData {
+            // `init` doesn't take a photo or tags, so attach them after
+            // creation and re-persist through the store's write path.
+            if photoData != nil || !selectedTags.isEmpty {
                 entry.photo = photoData
+                entry.tags = Array(selectedTags)
                 env.entryStore.touch(entry)
             }
             updateFavorites()

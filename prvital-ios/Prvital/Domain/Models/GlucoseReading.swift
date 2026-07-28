@@ -56,7 +56,16 @@ final class GlucoseReading: MedicalRecord {
     /// logbook places the reading automatically.
     var logbookSlotRaw: String?
 
+    /// Quick context tags (stress, sport, illness…), raw-stored like the
+    /// observation's. Defaulted so the addition is CloudKit-safe.
+    var tagsRaw: [String] = []
+
     var recordType: RecordType { .glucose }
+
+    var tags: [ObservationTag] {
+        get { tagsRaw.compactMap(ObservationTag.init(rawValue:)) }
+        set { tagsRaw = newValue.map(\.rawValue) }
+    }
 
     // Typed accessors over the persisted raw values.
     var source: DataSource {

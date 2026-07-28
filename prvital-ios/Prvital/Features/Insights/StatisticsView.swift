@@ -105,7 +105,7 @@ struct StatisticsContent: View {
         StatisticsSignature(
             interval: interval,
             glucose: glucose.count, insulin: insulin.count, carbs: carbs.count,
-            activity: activity.count, labs: labResults.count,
+            activity: activity.count, observations: observations.count, labs: labResults.count,
             newest: glucose.first?.timestamp,
             thresholds: thresholds,
             periodTargets: env.preferences.periodTIRTargets,
@@ -144,6 +144,7 @@ struct StatisticsContent: View {
                     if stats.hasGlucose { timeInRangeBar.appearTransition(delay: 0) }
                     statsGrid.appearTransition(delay: 0.06)
                     if let risk = derived.risk { riskCard(risk).appearTransition(delay: 0.09) }
+                    if !derived.tagImpacts.isEmpty { tagImpactCard.appearTransition(delay: 0.10) }
                     if let insulin = insulinSummary { insulinBalanceCard(insulin).appearTransition(delay: 0.12) }
                     if !carbsByMeal.isEmpty { carbsByMealCard(carbsByMeal).appearTransition(delay: 0.18) }
                     if let overnight = overnightStats, overnight.hasGlucose { overnightCard(overnight).appearTransition(delay: 0.24) }
@@ -192,6 +193,7 @@ struct StatisticsContent: View {
             }
             await derived.rebuild(
                 glucose: glucose, insulin: insulin, carbs: carbs, activity: activity,
+                observations: observations,
                 labResults: labResults, reconReadings: reconReadings,
                 healthExercise: healthExercise, previousReadings: previousReadings,
                 range: range, thresholds: thresholds,
@@ -1010,6 +1012,54 @@ struct StatisticsContent: View {
         }
     }
 
+    // MARK: Tag impact
+
+    /// "Life vs glucose": time-in-range on the days carrying each quick tag,
+    /// against the window's other days — the mySugr trick of making the diary
+    /// answer questions ("what does stress do to me?").
+    private var tagImpactCard: some View {
+        SectionCard("Tags & your glucose", systemImage: "tag") {
+            VStack(alignment: .leading, spacing: 10) {
+                ForEach(derived.tagImpacts) { impact in
+                    HStack(spacing: 10) {
+                        Image(systemName: impact.tag.symbol)
+                            .font(.footnote.weight(.semibold))
+                            .foregroundStyle(Theme.accent)
+                            .frame(width: 24, height: 24)
+                            .background(Theme.accentSoft, in: .circle)
+                        VStack(alignment: .leading, spacing: 1) {
+                            Text(impact.tag.label)
+                                .font(.subheadline.weight(.medium))
+                                .foregroundStyle(Theme.textPrimary)
+                            Text("\(impact.dayCount) days")
+                                .font(.caption2)
+                                .foregroundStyle(Theme.textTertiary)
+                        }
+                        Spacer()
+                        VStack(alignment: .trailing, spacing: 1) {
+                            Text(verbatim: percent(impact.taggedTIR))
+                                .font(.subheadline.weight(.semibold))
+                                .foregroundStyle(Theme.textPrimary)
+                                .monospacedDigit()
+                            if let delta = impact.delta {
+                                let points = Int((delta * 100).rounded())
+                                Text(verbatim: points >= 0 ? "+\(points) %" : "\(points) %")
+                                    .font(.caption2.weight(.semibold))
+                                    .foregroundStyle(points >= 0 ? Theme.zoneInRange : Theme.zoneWarning)
+                                    .monospacedDigit()
+                            }
+                        }
+                    }
+                    .accessibilityElement(children: .combine)
+                }
+                Text("Time in range on days with each tag, and how it differs from your other days.")
+                    .font(.caption2)
+                    .foregroundStyle(Theme.textTertiary)
+                    .fixedSize(horizontal: false, vertical: true)
+            }
+        }
+    }
+
     private func lbgiSeverity(_ lbgi: Double) -> (LocalizedStringKey, Color) {
         switch lbgi {
         case ..<1.1: return ("Minimal", Theme.zoneInRange)
@@ -1195,6 +1245,7 @@ struct StatisticsSignature: Equatable {
     let insulin: Int
     let carbs: Int
     let activity: Int
+    let observations: Int
     let labs: Int
     let newest: Date?
     let thresholds: GlucoseThresholds
@@ -1239,10 +1290,13 @@ final class StatisticsDerived {
     var previousPeriodTIR: Double?
     /// Clinical risk indices (GRI, LBGI/HBGI, MAGE); nil below 24 readings.
     var risk: GlycemicRisk?
+    /// TIR on tagged vs untagged days, for the tags used in this window.
+    var tagImpacts: [TagImpact] = []
 
     func rebuild(
         glucose: [GlucoseReading], insulin: [InsulinDose], carbs: [CarbEntry],
-        activity: [ActivityEntry], labResults: [LabResult], reconReadings: [GlucoseReading],
+        activity: [ActivityEntry], observations: [ObservationEntry],
+        labResults: [LabResult], reconReadings: [GlucoseReading],
         healthExercise: [DailyMetric], previousReadings: [GlucoseReading]?,
         range: ClosedRange<Date>,
         thresholds: GlucoseThresholds, periodTargets: PeriodTIRTargets,
@@ -1292,9 +1346,14 @@ final class StatisticsDerived {
             return prev.hasGlucose ? prev.timeInRange : nil
         }
         let riskIndices = GlycemicRiskEngine.compute(active)
+        let fObservations = observations.filter { range.contains($0.timestamp) }
+        let tagStats = TagImpactAnalyzer.analyze(
+            readings: active, carbs: fCarbs, observations: fObservations,
+            thresholds: thresholds)
 
         self.previousPeriodTIR = previousTIR
         self.risk = riskIndices
+        self.tagImpacts = tagStats
         self.stats = summary
         self.activityMinutes = activityMins
         self.hasAnyData = anyData
