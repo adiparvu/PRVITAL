@@ -736,6 +736,13 @@ struct StatisticsContent: View {
         SectionCard(thresholds.nightModeEnabled ? "Time in range (custom)" : "Time in range",
                     systemImage: "chart.bar.fill") {
             VStack(alignment: .leading, spacing: 16) {
+                // Say which window the numbers cover ("Last 24 hours", "Last
+                // 7 days"…) — Day and Week can genuinely land on similar
+                // percentages, and without this label that read as a bug.
+                Text(verbatim: PrvitalString(interval.periodLabel))
+                    .font(.caption.weight(.semibold))
+                    .foregroundStyle(Theme.textSecondary)
+                    .textCase(.uppercase)
                 HStack(alignment: .center, spacing: 18) {
                     verticalTIRBar
                     VStack(alignment: .leading, spacing: 10) {
@@ -802,7 +809,9 @@ struct StatisticsContent: View {
         return percent(value)
     }
 
-    /// "±X% vs the previous N days" — only when both windows have glucose.
+    /// "±X% vs the previous day/N days" — only when both windows have glucose.
+    /// The figure is the *window's* length (Day compares against the previous
+    /// 24 hours) — `interval.dayCount` is Health-fetch padding, not for display.
     @ViewBuilder
     private var tirChangeLine: some View {
         if let previous = derived.previousPeriodTIR, stats.hasGlucose {
@@ -811,9 +820,15 @@ struct StatisticsContent: View {
             let tint: Color = points > 0 ? Theme.zoneInRange
                 : (points < 0 ? Theme.zoneWarning : Theme.textSecondary)
             Label {
-                Text("\(signed) change vs the previous \(interval.dayCount) days")
-                    .font(.footnote)
-                    .foregroundStyle(Theme.textSecondary)
+                Group {
+                    if interval == .day {
+                        Text("\(signed) change vs the previous 24 hours")
+                    } else {
+                        Text("\(signed) change vs the previous \(interval == .week ? 7 : 30) days")
+                    }
+                }
+                .font(.footnote)
+                .foregroundStyle(Theme.textSecondary)
             } icon: {
                 Image(systemName: points > 0 ? "arrow.up.right" : (points < 0 ? "arrow.down.right" : "arrow.right"))
                     .font(.footnote.weight(.bold))

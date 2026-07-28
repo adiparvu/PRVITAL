@@ -827,6 +827,65 @@
         }
       }
     },
+    "%@ change vs the previous 24 hours" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%@ Veränderung gegenüber den vorherigen 24 Stunden"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Cambio de %@ frente a las 24 horas anteriores"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Variation de %@ par rapport aux 24 heures précédentes"
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Variazione di %@ rispetto alle 24 ore precedenti"
+          }
+        },
+        "nl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%@ verandering t.o.v. de vorige 24 uur"
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Zmiana o %@ względem poprzednich 24 godzin"
+          }
+        },
+        "pt" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Variação de %@ face às 24 horas anteriores"
+          }
+        },
+        "ro" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Modificare de %@ față de precedentele 24 de ore"
+          }
+        },
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Изменение на %@ по сравнению с предыдущими 24 часами"
+          }
+        }
+      }
+    },
     "%@ g" : {
       "extractionState" : "manual",
       "localizations" : {
