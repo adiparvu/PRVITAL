@@ -1,7 +1,7 @@
 import Foundation
 
 /// Total and average carbohydrates for one meal type over a period.
-struct MealTypeCarbs: Identifiable {
+struct MealTypeCarbs: Identifiable, Sendable {
     let mealType: MealType
     let totalGrams: Double
     let count: Int

@@ -1,7 +1,7 @@
 import Foundation
 
 /// One day's time-in-range, used to surface the best and toughest days.
-struct DayTIR: Identifiable {
+struct DayTIR: Identifiable, Sendable {
     let day: Date
     let timeInRange: Double
     let readingCount: Int

@@ -1,7 +1,7 @@
 import Foundation
 
 /// MARD-style agreement between the user's own meter checks and their sensor.
-struct SensorAccuracyResult {
+struct SensorAccuracyResult: Sendable {
     /// Number of reference ↔ sensor pairs the figures below are computed from.
     let pairCount: Int
     /// Mean absolute relative difference across pairs, in percent — the CGM

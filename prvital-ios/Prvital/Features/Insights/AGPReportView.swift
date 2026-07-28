@@ -49,7 +49,9 @@ struct AGPReportView: View {
 
     var body: some View {
         ScrollView {
-            VStack(spacing: 18) {
+            // Lazy: the report is a dozen cards deep and only the top two fit
+            // on screen (see ChartsContent for the same reasoning).
+            LazyVStack(spacing: 18) {
                 if let pinnedHeader { pinnedHeader }
                 Picker("Interval", selection: $interval) {
                     ForEach(InsightsInterval.allCases) { Text($0.label).tag($0) }

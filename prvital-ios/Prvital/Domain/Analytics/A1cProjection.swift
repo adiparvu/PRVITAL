@@ -2,7 +2,7 @@ import Foundation
 
 /// Where the estimated-A1c trend lands 90 days out, with a rough confidence
 /// grade for whether the trajectory is worth showing at all.
-struct A1cProjectionResult {
+struct A1cProjectionResult: Sendable {
     enum Confidence {
         /// Too few weekly points, or the weeks scatter widely around the fitted
         /// line — the trajectory is not trustworthy enough to display.

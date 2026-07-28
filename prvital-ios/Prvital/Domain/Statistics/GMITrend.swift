@@ -1,7 +1,7 @@
 import Foundation
 
 /// One week's estimated A1c (Glucose Management Indicator) point for the trend.
-struct GMIPoint: Identifiable {
+struct GMIPoint: Identifiable, Sendable {
     let weekStart: Date
     let gmi: Double
     let readingCount: Int

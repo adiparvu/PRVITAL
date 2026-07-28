@@ -80,10 +80,15 @@ struct ChartsContent: View {
     // MARK: Body
 
     var body: some View {
-        VStack(spacing: 20) {
+        // LAZY on purpose: a plain VStack inside the ScrollView built every
+        // chart on the page the moment the tab opened — six Swift Charts with
+        // hundreds of marks each, laid out on the main thread before a single
+        // pixel appeared. That was the delay on tapping Analyze. Lazily, only
+        // the charts actually on screen are built.
+        LazyVStack(spacing: 20) {
             if derived.ready {
                 glucoseSection.appearTransition(delay: 0)
-                if derived.overlayDays.count >= 2 {
+                if derived.overlayDayCount >= 2 {
                     overlaySection.appearTransition(delay: 0.03)
                 }
                 distributionSection.appearTransition(delay: 0.06)
@@ -199,19 +204,19 @@ struct ChartsContent: View {
                     )
                     .foregroundStyle(Theme.zoneInRange.opacity(0.10))
 
-                    ForEach(derived.overlayDays) { day in
-                        let isLatest = day.id == derived.overlayDays.last?.id
-                        ForEach(Array(day.points.enumerated()), id: \.offset) { _, point in
-                            LineMark(
-                                x: .value("Hour", point.hour),
-                                y: .value("Glucose", unit.fromMgdL(point.mgdL)),
-                                series: .value("Day", day.id.timeIntervalSince1970)
-                            )
-                            .foregroundStyle(isLatest ? Theme.accent : Theme.textTertiary.opacity(0.32))
-                            .lineStyle(StrokeStyle(lineWidth: isLatest ? 2.5 : 1.2,
-                                                   lineCap: .round, lineJoin: .round))
-                        }
+                    // ONE ForEach over a flat mark list. Nested ForEachs made
+                    // Swift Charts build every point as its own view — the
+                    // single most expensive thing on the page.
+                    ForEach(derived.overlayMarks) { mark in
+                        LineMark(
+                            x: .value("Hour", mark.hour),
+                            y: .value("Glucose", unit.fromMgdL(mark.mgdL)),
+                            series: .value("Day", mark.daySeries)
+                        )
                         .interpolationMethod(.monotone)
+                        .foregroundStyle(mark.isLatest ? Theme.accent : Theme.textTertiary.opacity(0.32))
+                        .lineStyle(StrokeStyle(lineWidth: mark.isLatest ? 2.5 : 1.2,
+                                               lineCap: .round, lineJoin: .round))
                     }
                 }
                 .chartXScale(domain: 0...24)
@@ -248,13 +253,13 @@ struct ChartsContent: View {
                 HStack(spacing: 14) {
                     HStack(spacing: 5) {
                         Capsule().fill(Theme.accent).frame(width: 16, height: 3)
-                        if let latest = derived.overlayDays.last {
-                            Text(latest.id, format: .dateTime.weekday(.wide).day().month())
+                        if let latest = derived.overlayLatestDay {
+                            Text(latest, format: .dateTime.weekday(.wide).day().month())
                         }
                     }
                     HStack(spacing: 5) {
                         Capsule().fill(Theme.textTertiary.opacity(0.5)).frame(width: 16, height: 3)
-                        Text("Previous \(derived.overlayDays.count - 1) days")
+                        Text("Previous \(derived.overlayDayCount - 1) days")
                     }
                 }
                 .font(.caption)
@@ -397,12 +402,16 @@ final class ChartsDerived {
     var insulinBars: [ChartsInsulinBar] = []
     var carbBars: [ChartsDailyBar] = []
     var activityBars: [ChartsDailyBar] = []
-    var overlayDays: [ChartsPayload.OverlayDay] = []
+    var overlayMarks: [ChartsPayload.OverlayMark] = []
+    var overlayDayCount = 0
+    var overlayLatestDay: Date?
     var heatmap = GlucoseHeatmap(blocksPerDay: 8, averages: [])
 
     func apply(_ payload: ChartsPayload) {
         heatmap = payload.heatmap
-        overlayDays = payload.overlayDays
+        overlayMarks = payload.overlayMarks
+        overlayDayCount = payload.overlayDayCount
+        overlayLatestDay = payload.overlayLatestDay
         distribution = payload.distribution
         chartEvents = payload.events
         insulinBars = payload.insulinBars
@@ -428,24 +437,27 @@ struct ChartsPayload: Sendable {
         let typeRaw: String
     }
 
-    /// One day's glucose curve folded onto a 0–24 h axis, for the
-    /// Clarity-style "daily overlay" chart.
-    struct OverlayDay: Sendable, Identifiable {
-        /// Start of the calendar day — doubles as the identity and legend date.
-        let id: Date
-        /// (fractional hour of day, mg/dL), time-ordered, ≤48 points.
-        let points: [OverlayPoint]
-    }
-
-    struct OverlayPoint: Sendable {
+    /// One point of the Clarity-style "daily overlay" chart, already flattened:
+    /// Swift Charts builds a view per mark, so a single ForEach over a flat
+    /// list is dramatically cheaper than one ForEach per day.
+    struct OverlayMark: Sendable, Identifiable {
+        let id: Int
+        /// The day this point belongs to, as the chart's series key.
+        let daySeries: Double
+        /// Fractional hour of day, 0–24.
         let hour: Double
         let mgdL: Double
+        /// The most recent day draws in accent, on top.
+        let isLatest: Bool
     }
 
     var trend: [TrendPoint] = []
-    /// Most recent days of the window (≤14, newest last), each folded onto a
-    /// 24 h axis. Empty when the window spans fewer than 3 calendar days.
-    var overlayDays: [OverlayDay] = []
+    /// The overlay chart's flattened marks. Empty when the window spans fewer
+    /// than 3 calendar days.
+    var overlayMarks: [OverlayMark] = []
+    /// How many days the overlay covers, and the newest one — for the legend.
+    var overlayDayCount = 0
+    var overlayLatestDay: Date?
     var distribution: [DistributionBin] = []
     var events: [ChartEvent] = []
     var insulinBars: [ChartsInsulinBar] = []
@@ -498,37 +510,54 @@ actor ChartsBuilder {
             ChartsPayload.TrendPoint(date: $0.timestamp, mgdL: $0.valueMgdL,
                                      sourceRaw: $0.sourceRaw, typeRaw: $0.measurementTypeRaw)
         }
-        payload.overlayDays = Self.overlayDays(active, range: range)
+        let overlay = Self.overlay(active, range: range)
+        payload.overlayMarks = overlay.marks
+        payload.overlayDayCount = overlay.dayCount
+        payload.overlayLatestDay = overlay.latestDay
         payload.heatmap = GlucoseHeatmap.build(active)
         return payload
     }
 
     /// Folds the window's readings into per-day 24 h curves for the overlay
-    /// chart: the most recent ≤14 calendar days with data, newest last, each
-    /// day thinned to ≤48 points so a full overlay stays under ~700 marks.
-    private static func overlayDays(
+    /// chart, already flattened into one mark list: the most recent ≤10
+    /// calendar days with data, newest last, each thinned to ≤32 points. The
+    /// budget is deliberate — Swift Charts builds a view per mark, so the whole
+    /// overlay stays around 320 of them.
+    private static func overlay(
         _ active: [GlucoseReading], range: ClosedRange<Date>
-    ) -> [ChartsPayload.OverlayDay] {
+    ) -> (marks: [ChartsPayload.OverlayMark], dayCount: Int, latestDay: Date?) {
         let calendar = Calendar.current
         let spanDays = calendar.dateComponents(
             [.day], from: range.lowerBound, to: range.upperBound).day ?? 0
-        guard spanDays >= 3 else { return [] }
+        guard spanDays >= 3 else { return ([], 0, nil) }
 
         var byDay: [Date: [GlucoseReading]] = [:]
         for reading in active {
             byDay[calendar.startOfDay(for: reading.timestamp), default: []].append(reading)
         }
-        let recentDays = byDay.keys.sorted().suffix(14)
-        return recentDays.compactMap { day in
-            guard let readings = byDay[day], readings.count >= 3 else { return nil }
-            let thinned = downsample(readings.sorted { $0.timestamp < $1.timestamp }, maxPoints: 48)
-            let points = thinned.map { reading in
-                ChartsPayload.OverlayPoint(
+        let recentDays = byDay.keys.sorted()
+            .filter { (byDay[$0]?.count ?? 0) >= 3 }
+            .suffix(10)
+        guard let latestDay = recentDays.last else { return ([], 0, nil) }
+
+        var marks: [ChartsPayload.OverlayMark] = []
+        marks.reserveCapacity(recentDays.count * 32)
+        var index = 0
+        for day in recentDays {
+            guard let readings = byDay[day] else { continue }
+            let thinned = downsample(readings.sorted { $0.timestamp < $1.timestamp }, maxPoints: 32)
+            let isLatest = day == latestDay
+            for reading in thinned {
+                marks.append(ChartsPayload.OverlayMark(
+                    id: index,
+                    daySeries: day.timeIntervalSince1970,
                     hour: reading.timestamp.timeIntervalSince(day) / 3600,
-                    mgdL: reading.valueMgdL)
+                    mgdL: reading.valueMgdL,
+                    isLatest: isLatest))
+                index += 1
             }
-            return ChartsPayload.OverlayDay(id: day, points: points)
         }
+        return (marks, recentDays.count, latestDay)
     }
 
     /// Evenly thins a time-ordered reading series down to at most `maxPoints`,

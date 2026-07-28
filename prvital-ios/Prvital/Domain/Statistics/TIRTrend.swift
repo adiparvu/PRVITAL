@@ -1,7 +1,7 @@
 import Foundation
 
 /// One week's time-in-range point for the trend.
-struct TIRPoint: Identifiable {
+struct TIRPoint: Identifiable, Sendable {
     let weekStart: Date
     let timeInRange: Double
     let readingCount: Int

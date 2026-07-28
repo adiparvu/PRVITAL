@@ -34,32 +34,10 @@ struct StatisticsContent: View {
     let interval: InsightsInterval
     var pinnedHeader: AnyView? = nil
 
-    @Environment(\.modelContext) private var modelContext
-
-    @Query private var glucose: [GlucoseReading]
-    @Query private var insulin: [InsulinDose]
-    @Query private var carbs: [CarbEntry]
-    @Query private var activity: [ActivityEntry]
-    @Query private var observations: [ObservationEntry]
-    @Query(sort: \LabResult.timestamp, order: .reverse) private var labResults: [LabResult]
-
-    init(interval: InsightsInterval, pinnedHeader: AnyView? = nil) {
-        self.interval = interval
-        self.pinnedHeader = pinnedHeader
-        // Window every query to the SELECTED interval, so Day loads a day and only
-        // Year loads a year — instead of a fixed 400-day fetch regardless of view.
-        let cutoff = interval.dateRange().lowerBound
-        _glucose = Query(filter: #Predicate<GlucoseReading> { $0.timestamp >= cutoff },
-                         sort: \.timestamp, order: .reverse)
-        _insulin = Query(filter: #Predicate<InsulinDose> { $0.timestamp >= cutoff },
-                         sort: \.timestamp, order: .reverse)
-        _carbs = Query(filter: #Predicate<CarbEntry> { $0.timestamp >= cutoff },
-                       sort: \.timestamp, order: .reverse)
-        _activity = Query(filter: #Predicate<ActivityEntry> { $0.startTimestamp >= cutoff },
-                          sort: \.startTimestamp, order: .reverse)
-        _observations = Query(filter: #Predicate<ObservationEntry> { $0.timestamp >= cutoff },
-                              sort: \.timestamp, order: .reverse)
-    }
+    // No `@Query` here on purpose: six live windowed queries meant entering
+    // Analyze materialised the whole window on the MAIN thread during view
+    // construction, and every sync re-did it. `StatisticsBuilder` fetches and
+    // analyses off-main instead (see ChartsBuilder / AGPBuilder).
     @State private var showingLogLab = false
     /// The day whose detail sheet is open (tapping the best/toughest day).
     @State private var selectedDay: StatDayRef?
@@ -87,7 +65,7 @@ struct StatisticsContent: View {
     private var hasAnyData: Bool { derived.hasAnyData }
     private var hypoRecovery: HypoRecoveryStats? { derived.hypoRecovery }
     private var gmiTrend: [GMIPoint] { derived.gmiTrend }
-    private var labResultsInRange: [LabResult] { derived.labResultsInRange }
+    private var labResultsInRange: [LabPoint] { derived.labResultsInRange }
     private var latestReconciliation: A1cReconciliation? { derived.latestReconciliation }
     private var a1cProjection: A1cProjectionResult? { derived.a1cProjection }
     private var sensorAccuracy: SensorAccuracyResult? { derived.sensorAccuracy }
@@ -99,32 +77,18 @@ struct StatisticsContent: View {
     private var carbsByMeal: [MealTypeCarbs] { derived.carbsByMeal }
     private var periodTIRs: [PeriodTIR] { derived.periodTIRs }
 
-    /// Cheap, Equatable fingerprint — reruns the rebuild only when data is
-    /// added/removed or the interval switches, not on ordinary re-renders.
+    /// Cheap, Equatable fingerprint — rebuilds only when the data actually
+    /// changes (`dataVersion` bumps on every write/sync), the window switches,
+    /// or a target moves. No live query is held to observe it.
     private var signature: StatisticsSignature {
         StatisticsSignature(
             interval: interval,
-            glucose: glucose.count, insulin: insulin.count, carbs: carbs.count,
-            activity: activity.count, observations: observations.count, labs: labResults.count,
-            newest: glucose.first?.timestamp,
+            dataVersion: env.dataVersion,
             thresholds: thresholds,
             periodTargets: env.preferences.periodTIRTargets,
             globalTargetPercent: env.preferences.glucoseGoals.targetTIRPercent,
             healthExerciseDays: healthExercise.count,
             healthExerciseTotal: Int(healthExercise.reduce(0.0) { $0 + $1.value }.rounded()))
-    }
-
-    /// A ~95-day glucose window fetched on demand for the A1c reconciliation (it
-    /// needs the span a lab reflects, wider than the selected interval). Called
-    /// only when a lab result exists, so the common case never pays for it.
-    static func fetchReconReadings(_ env: AppEnvironment) -> [GlucoseReading] {
-        let cutoff = Calendar.current.date(byAdding: .day, value: -95, to: Date())
-            ?? Date().addingTimeInterval(-95 * 86_400)
-        var descriptor = FetchDescriptor<GlucoseReading>(
-            predicate: #Predicate { $0.timestamp >= cutoff },
-            sortBy: [SortDescriptor(\.timestamp)])
-        descriptor.fetchLimit = 40_000
-        return (try? env.modelContainer.mainContext.fetch(descriptor)) ?? []
     }
 
     private let columns = [
@@ -136,7 +100,9 @@ struct StatisticsContent: View {
 
     var body: some View {
         ScrollView {
-            VStack(spacing: 20) {
+            // Lazy: a plain VStack built every card — a dozen of them, several
+            // carrying charts — before the pane could paint (see ChartsContent).
+            LazyVStack(spacing: 20) {
                 if let pinnedHeader { pinnedHeader }
                 if !derived.ready {
                     loadingPlaceholder
@@ -176,32 +142,17 @@ struct StatisticsContent: View {
             .animation(.smooth, value: interval)
         }
         .sheet(isPresented: $showingLogLab) { LogLabA1cSheet() }
+        // Fetch + analyse on a background ModelActor; only the finished value
+        // payload ever touches the main actor.
         .task(id: signature) {
-            // The A1c reconciliation compares a lab result to the CGM estimate over
-            // the ~90 days the lab reflects — wider than the selected interval — so
-            // fetch that window on demand, and only when a lab actually exists.
-            let reconReadings = labResults.first == nil ? [] : Self.fetchReconReadings(env)
-            // The window immediately before this one, for the Clarity-style
-            // "±X% vs the previous N days" delta. Skipped for Year — a second
-            // ~100k-row fetch just for one line isn't worth the stall.
-            let range = interval.dateRange()
-            var previousReadings: [GlucoseReading]?
-            if interval != .year {
-                let duration = range.upperBound.timeIntervalSince(range.lowerBound)
-                let prevLower = range.lowerBound.addingTimeInterval(-duration)
-                let prevUpper = range.lowerBound
-                let descriptor = FetchDescriptor<GlucoseReading>(
-                    predicate: #Predicate { $0.isActive && $0.timestamp >= prevLower && $0.timestamp < prevUpper })
-                previousReadings = (try? modelContext.fetch(descriptor)) ?? []
-            }
-            await derived.rebuild(
-                glucose: glucose, insulin: insulin, carbs: carbs, activity: activity,
-                observations: observations,
-                labResults: labResults, reconReadings: reconReadings,
-                healthExercise: healthExercise, previousReadings: previousReadings,
-                range: range, thresholds: thresholds,
+            let builder = StatisticsBuilder(modelContainer: env.modelContainer)
+            let payload = await builder.build(
+                interval: interval,
+                healthExercise: healthExercise,
+                thresholds: thresholds,
                 periodTargets: env.preferences.periodTIRTargets,
                 globalTargetPercent: env.preferences.glucoseGoals.targetTIRPercent)
+            derived.apply(payload)
         }
         // Pull the window's Apple Health exercise minutes; when they land the
         // signature changes and the rebuild re-runs to merge them into "Active time".
@@ -388,18 +339,32 @@ struct StatisticsContent: View {
         .accessibilityHint("Opens this day")
     }
 
-    /// A day-detail sheet for one calendar day, filtering the windowed queries to
-    /// that day so tapping the best/toughest day opens its full record.
+    /// A day-detail sheet for one calendar day, fetched for that day alone when
+    /// the sheet opens. The pane holds no live queries any more, and one day is
+    /// a trivially small fetch — far less than keeping the whole window resident
+    /// just in case a day is tapped.
     private func dayDetailSheet(for day: Date) -> some View {
         let calendar = Calendar.current
-        func sameDay(_ date: Date) -> Bool { calendar.isDate(date, inSameDayAs: day) }
+        let start = calendar.startOfDay(for: day)
+        let end = calendar.date(byAdding: .day, value: 1, to: start) ?? start.addingTimeInterval(86_400)
+        let context = env.modelContainer.mainContext
+
+        func fetch<T: PersistentModel>(_ predicate: Predicate<T>) -> [T] {
+            (try? context.fetch(FetchDescriptor<T>(predicate: predicate))) ?? []
+        }
+
         return CalendarDayDetailSheet(
             date: day,
-            readings: glucose.filter { $0.isActive && sameDay($0.timestamp) },
-            insulin: insulin.filter { sameDay($0.timestamp) },
-            carbs: carbs.filter { sameDay($0.timestamp) },
-            activity: activity.filter { sameDay($0.startTimestamp) },
-            observations: observations.filter { sameDay($0.timestamp) },
+            readings: fetch(#Predicate<GlucoseReading> {
+                $0.isActive && $0.timestamp >= start && $0.timestamp < end }),
+            insulin: fetch(#Predicate<InsulinDose> {
+                $0.timestamp >= start && $0.timestamp < end }),
+            carbs: fetch(#Predicate<CarbEntry> {
+                $0.timestamp >= start && $0.timestamp < end }),
+            activity: fetch(#Predicate<ActivityEntry> {
+                $0.startTimestamp >= start && $0.startTimestamp < end }),
+            observations: fetch(#Predicate<ObservationEntry> {
+                $0.timestamp >= start && $0.timestamp < end }),
             unit: unit,
             thresholds: thresholds,
             calendar: calendar
@@ -1283,18 +1248,21 @@ struct LogLabA1cSheet: View {
 /// only when this changes, so scrolls/animations/sheet toggles never recompute.
 struct StatisticsSignature: Equatable {
     let interval: InsightsInterval
-    let glucose: Int
-    let insulin: Int
-    let carbs: Int
-    let activity: Int
-    let observations: Int
-    let labs: Int
-    let newest: Date?
+    let dataVersion: Int
     let thresholds: GlucoseThresholds
     let periodTargets: PeriodTIRTargets
     let globalTargetPercent: Double
     let healthExerciseDays: Int
     let healthExerciseTotal: Int
+}
+
+/// A lab A1c result reduced to what the trend chart draws. A value type so the
+/// prepared statistics can be built off the main actor without carrying a
+/// SwiftData model across the boundary.
+struct LabPoint: Identifiable, Equatable, Sendable {
+    let id: UUID
+    let timestamp: Date
+    let value: Double
 }
 
 /// Holds the prepared statistics for the current window. Rebuilt once per data
@@ -1314,7 +1282,7 @@ final class StatisticsDerived {
     var hasAnyData = false
     var hypoRecovery: HypoRecoveryStats?
     var gmiTrend: [GMIPoint] = []
-    var labResultsInRange: [LabResult] = []
+    var labResultsInRange: [LabPoint] = []
     var latestReconciliation: A1cReconciliation?
     var a1cProjection: A1cProjectionResult?
     var sensorAccuracy: SensorAccuracyResult?
@@ -1337,93 +1305,38 @@ final class StatisticsDerived {
     /// What the user's own rule-of-15 treatments did; nil below 3 treatments.
     var hypoTreatments: HypoTreatmentStats?
 
-    func rebuild(
-        glucose: [GlucoseReading], insulin: [InsulinDose], carbs: [CarbEntry],
-        activity: [ActivityEntry], observations: [ObservationEntry],
-        labResults: [LabResult], reconReadings: [GlucoseReading],
-        healthExercise: [DailyMetric], previousReadings: [GlucoseReading]?,
-        range: ClosedRange<Date>,
-        thresholds: GlucoseThresholds, periodTargets: PeriodTIRTargets,
-        globalTargetPercent: Double
-    ) async {
-        let active = glucose.filter { $0.isActive && range.contains($0.timestamp) }
-        let fInsulin = insulin.filter { range.contains($0.timestamp) }
-        let fCarbs = carbs.filter { range.contains($0.timestamp) }
-        let fActivity = activity.filter { range.contains($0.startTimestamp) }
-        // Sensor accuracy is fed *all* readings in range (incl. conflict-superseded
-        // ones), matching the previous behaviour.
-        let inRangeGlucose = glucose.filter { range.contains($0.timestamp) }
-        let labsInRange = labResults.filter { range.contains($0.timestamp) }
-
-        // Let the loading placeholder paint before the heavier analyzers run.
-        await Task.yield()
-
-        let base = StatisticsEngine.glucose(active, thresholds: thresholds)
-        let summary = StatisticsEngine.enrich(base, insulin: fInsulin, carbs: fCarbs, activity: fActivity)
-        let activityMins = Self.mergedActivityMinutes(logged: fActivity, health: healthExercise, range: range)
-        let anyData = summary.hasGlucose || !fInsulin.isEmpty || !fCarbs.isEmpty
-            || !fActivity.isEmpty || activityMins > 0
-
-        let gmi = GMITrend.weekly(active)
-        // Reconciliation uses the full reading history (not the window) so its
-        // ~90-day comparison is always the clinically correct one.
-        let recon: A1cReconciliation? = labResults.first.flatMap {
-            A1cReconciler.reconcile(lab: $0, readings: reconReadings, thresholds: thresholds)
-        }
-        let projection: A1cProjectionResult? = {
-            guard let p = A1cProjection.project(gmi), p.confidence == .ok else { return nil }
-            return p
-        }()
-        let sensor = SensorAccuracyAnalyzer.analyze(inRangeGlucose)
-        let tir = TIRTrend.weekly(active, thresholds: thresholds)
-        let gaps = DataGapDetector.analyze(active)
-        let insulinSum = InsulinAnalyzer.summary(fInsulin)
-        let days = DailyBreakdown.perDay(active, thresholds: thresholds)
-        let overnight = OvernightStability.analyze(active, thresholds: thresholds)
-        let byMeal = CarbDistribution.byMealType(fCarbs)
-        let hypo = HypoRecoveryAnalyzer.analyze(active, thresholds: thresholds)
-        let pTIRs = PeriodTIRAnalyzer.breakdown(
-            active, thresholds: thresholds,
-            targets: periodTargets, globalTargetPercent: globalTargetPercent)
-        let previousTIR: Double? = previousReadings.flatMap { readings in
-            let prev = StatisticsEngine.glucose(readings.filter(\.isActive), thresholds: thresholds)
-            return prev.hasGlucose ? prev.timeInRange : nil
-        }
-        let riskIndices = GlycemicRiskEngine.compute(active)
-        let fObservations = observations.filter { range.contains($0.timestamp) }
-        let tagStats = TagImpactAnalyzer.analyze(
-            readings: active, carbs: fCarbs, observations: fObservations,
-            thresholds: thresholds)
-        let treatmentStats = HypoTreatmentAnalyzer.analyze(readings: active, carbs: fCarbs)
-
-        self.previousPeriodTIR = previousTIR
-        self.risk = riskIndices
-        self.tagImpacts = tagStats
-        self.hypoTreatments = treatmentStats
-        self.stats = summary
-        self.activityMinutes = activityMins
-        self.hasAnyData = anyData
-        self.hypoRecovery = hypo
-        self.gmiTrend = gmi
-        self.labResultsInRange = labsInRange
-        self.latestReconciliation = recon
-        self.a1cProjection = projection
-        self.sensorAccuracy = sensor
-        self.tirTrend = tir
-        self.dataGaps = gaps
-        self.insulinSummary = insulinSum
-        self.dailyDays = days
-        self.overnightStats = overnight
-        self.carbsByMeal = byMeal
-        self.periodTIRs = pTIRs
-        self.ready = true
+    /// Stores the finished payload built off-main by `StatisticsBuilder`.
+    func apply(_ payload: StatisticsPayload) {
+        stats = payload.stats
+        activityMinutes = payload.activityMinutes
+        hasAnyData = payload.hasAnyData
+        hypoRecovery = payload.hypoRecovery
+        gmiTrend = payload.gmiTrend
+        labResultsInRange = payload.labResultsInRange
+        latestReconciliation = payload.latestReconciliation
+        a1cProjection = payload.a1cProjection
+        sensorAccuracy = payload.sensorAccuracy
+        tirTrend = payload.tirTrend
+        dataGaps = payload.dataGaps
+        insulinSummary = payload.insulinSummary
+        dailyDays = payload.dailyDays
+        overnightStats = payload.overnightStats
+        carbsByMeal = payload.carbsByMeal
+        periodTIRs = payload.periodTIRs
+        previousPeriodTIR = payload.previousPeriodTIR
+        risk = payload.risk
+        tagImpacts = payload.tagImpacts
+        hypoTreatments = payload.hypoTreatments
+        ready = true
     }
 
     /// Total active minutes over the window: per day, the LARGER of logged workout
     /// minutes and Apple Health's exercise total (never the sum — Apple Health's
     /// `appleExerciseTime` already counts logged workout time), then summed.
-    static func mergedActivityMinutes(logged: [ActivityEntry], health: [DailyMetric],
-                                      range: ClosedRange<Date>) -> Int {
+    /// `nonisolated`: pure arithmetic over values the caller already owns, so
+    /// `StatisticsBuilder` can call it from its own actor.
+    nonisolated static func mergedActivityMinutes(logged: [ActivityEntry], health: [DailyMetric],
+                                                  range: ClosedRange<Date>) -> Int {
         let calendar = Calendar.current
         var loggedByDay: [Date: Double] = [:]
         for entry in logged {
