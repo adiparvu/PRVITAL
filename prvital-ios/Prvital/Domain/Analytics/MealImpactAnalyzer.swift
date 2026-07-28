@@ -3,7 +3,7 @@ import Foundation
 /// The measured glucose excursion following a single meal: the baseline just
 /// before eating, the peak reached within the post-meal window, how far glucose
 /// rose, and how long it took to peak.
-struct MealImpact: Identifiable {
+struct MealImpact: Identifiable, Sendable {
     let mealID: UUID
     let mealTime: Date
     let mealType: MealType

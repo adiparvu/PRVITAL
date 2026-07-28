@@ -2,7 +2,7 @@ import Foundation
 
 /// One time-of-day bucket of the Ambulatory Glucose Profile: the glucose
 /// percentiles across every day in the period, at that time of day. All mg/dL.
-struct AGPBucket: Identifiable, Equatable {
+struct AGPBucket: Identifiable, Equatable, Sendable {
     let minutesOfDay: Int   // bucket centre, 0...1440
     let p10: Double
     let p25: Double

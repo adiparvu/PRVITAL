@@ -35,6 +35,8 @@ final class Preferences {
         self.weeklyInsightEnabled = self.defaults.bool(forKey: Keys.weeklyInsight)
         self.nightscoutUploadEnabled = self.defaults.bool(forKey: Keys.nightscoutUpload)
         self.accentThemeRaw = self.defaults.string(forKey: Keys.accentTheme) ?? "default"
+        let storedCustomAccent = self.defaults.integer(forKey: AccentTheme.customHexKey)
+        self.accentCustomHex = storedCustomAccent > 0 ? storedCustomAccent : 0x2FD4CE
         self.journalCardDensityRaw = self.defaults.string(forKey: Keys.journalCardDensity) ?? "standard"
         self.lastSeenWhatsNewVersion = self.defaults.string(forKey: Keys.lastSeenWhatsNew) ?? ""
         self.themeModeRaw = self.defaults.string(forKey: Keys.themeMode) ?? ThemeMode.system.rawValue
@@ -213,6 +215,13 @@ final class Preferences {
     /// The chosen accent theme's raw identifier ("default" = the teal brand).
     var accentThemeRaw: String {
         didSet { defaults.set(accentThemeRaw, forKey: Keys.accentTheme) }
+    }
+
+    /// The custom accent colour (0xRRGGBB), used when the theme is "custom".
+    /// Observable so a drag in the colour well repaints the app live; the key
+    /// is `AccentTheme.customHexKey`, where `Theme.accent` resolves it from.
+    var accentCustomHex: Int {
+        didSet { defaults.set(accentCustomHex, forKey: AccentTheme.customHexKey) }
     }
 
     // MARK: Appearance (theme mode, text size, haptics, background)

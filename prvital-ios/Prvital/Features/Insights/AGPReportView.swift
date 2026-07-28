@@ -12,76 +12,40 @@ struct AGPReportView: View {
     var pinnedHeader: AnyView? = nil
 
     @Environment(AppEnvironment.self) private var env
-    @Query private var readings: [GlucoseReading]
-    @Query private var carbs: [CarbEntry]
-    @Query private var activity: [ActivityEntry]
 
     init(pinnedHeader: AnyView? = nil) {
         self.pinnedHeader = pinnedHeader
-        // The AGP offers up to a year; cap at ~400 days so several imported years
-        // don't all load at once.
-        let cutoff = Calendar.current.date(byAdding: .day, value: -400, to: Date())
-            ?? Date().addingTimeInterval(-400 * 86_400)
-        _readings = Query(filter: #Predicate<GlucoseReading> { $0.timestamp >= cutoff },
-                          sort: \.timestamp, order: .reverse)
-        _carbs = Query(filter: #Predicate<CarbEntry> { $0.timestamp >= cutoff },
-                       sort: \.timestamp, order: .reverse)
-        _activity = Query(filter: #Predicate<ActivityEntry> { $0.startTimestamp >= cutoff },
-                          sort: \.startTimestamp, order: .reverse)
     }
 
     @State private var interval: InsightsInterval = .month
+    /// The finished analyses, computed off-main by `AGPBuilder`. The report
+    /// used to hold 400-day live queries and re-run every analyzer per render
+    /// on the main thread — the doctor-visit freeze (0x8BADF00D).
+    @State private var derived: AGPPayload?
 
     private var unit: GlucoseUnit { env.preferences.glucoseUnit }
     private var thresholds: GlucoseThresholds { env.preferences.thresholds }
 
-    private var windowReadings: [GlucoseReading] {
-        let range = interval.dateRange()
-        return readings.filter { $0.isActive && range.contains($0.timestamp) }
+    /// Reruns the build only when the data, window or thresholds change.
+    private struct BuildKey: Equatable {
+        let interval: InsightsInterval
+        let dataVersion: Int
+        let thresholds: GlucoseThresholds
     }
-    private var stats: PeriodStatistics {
-        StatisticsEngine.glucose(windowReadings, thresholds: thresholds)
+    private var buildKey: BuildKey {
+        BuildKey(interval: interval, dataVersion: env.dataVersion, thresholds: thresholds)
     }
-    private var buckets: [AGPBucket] {
-        AGPAggregator.buckets(windowReadings, binMinutes: 60)
-    }
-    private var patterns: [GlucoseInsight] {
-        GlucosePatternDetector.insights(windowReadings, thresholds: thresholds)
-    }
-    private var previousWindowReadings: [GlucoseReading] {
-        let range = interval.previousDateRange()
-        return readings.filter { $0.isActive && range.contains($0.timestamp) }
-    }
-    private var comparison: StatComparison {
-        let previous = previousWindowReadings.isEmpty
-            ? nil
-            : StatisticsEngine.glucose(previousWindowReadings, thresholds: thresholds)
-        return StatComparator.compare(current: stats, previous: previous)
-    }
-    private var mealImpacts: [MealImpact] {
-        let range = interval.dateRange()
-        let windowMeals = carbs.filter { range.contains($0.timestamp) }
-        return MealImpactAnalyzer.analyze(meals: windowMeals, readings: readings)
-    }
-    private var mealImpactSummary: MealImpactSummary? {
-        MealImpactAnalyzer.summary(mealImpacts)
-    }
-    private var dawnPhenomenon: DawnPhenomenonResult? {
-        DawnPhenomenonDetector.analyze(windowReadings)
-    }
-    private var dayTypeComparison: DayTypeStats? {
-        WeekdayWeekendComparator.compare(windowReadings, thresholds: thresholds)
-    }
-    private var rebounds: [ReboundEvent] {
-        ReboundDetector.detect(windowReadings, thresholds: thresholds)
-    }
-    private var activityImpactSummary: ActivityImpactSummary? {
-        let range = interval.dateRange()
-        let windowSessions = activity.filter { range.contains($0.startTimestamp) }
-        return ActivityImpactAnalyzer.summary(
-            ActivityImpactAnalyzer.analyze(sessions: windowSessions, readings: readings)
-        )
-    }
+
+    private var stats: PeriodStatistics { derived?.stats ?? PeriodStatistics() }
+    private var buckets: [AGPBucket] { derived?.buckets ?? [] }
+    private var patterns: [GlucoseInsight] { derived?.patterns ?? [] }
+    private var comparison: StatComparison? { derived?.comparison }
+    private var mealImpacts: [MealImpact] { derived?.mealImpacts ?? [] }
+    private var mealImpactSummary: MealImpactSummary? { derived?.mealImpactSummary }
+    private var dawnPhenomenon: DawnPhenomenonResult? { derived?.dawn }
+    private var dayTypeComparison: DayTypeStats? { derived?.dayType }
+    private var rebounds: [ReboundEvent] { derived?.rebounds ?? [] }
+    private var activityImpactSummary: ActivityImpactSummary? { derived?.activityImpact }
 
     var body: some View {
         ScrollView {
@@ -93,9 +57,17 @@ struct AGPReportView: View {
                 .pickerStyle(.segmented)
                 .onChange(of: interval) { _, _ in Haptics.play(.selection) }
 
-                if stats.hasGlucose {
+                if derived == nil {
+                    VStack(spacing: 16) {
+                        ProgressView().controlSize(.large)
+                        Text("Crunching your numbers…")
+                            .font(.subheadline)
+                            .foregroundStyle(Theme.textSecondary)
+                    }
+                    .frame(maxWidth: .infinity, minHeight: 280)
+                } else if stats.hasGlucose {
                     metrics
-                    if comparison.hasPrevious {
+                    if let comparison, comparison.hasPrevious {
                         comparisonCard(comparison)
                     }
                     SectionCard("Ambulatory Glucose Profile", systemImage: "waveform.path.ecg") {
@@ -148,12 +120,18 @@ struct AGPReportView: View {
             .padding()
             .animation(.smooth, value: interval)
         }
+        // Fetch + analyse on a background ModelActor; only the finished value
+        // payload ever touches the main actor.
+        .task(id: buildKey) {
+            let builder = AGPBuilder(modelContainer: env.modelContainer)
+            derived = await builder.build(interval: interval, thresholds: thresholds)
+        }
     }
 
     private var coverage: Double {
         let range = interval.dateRange()
         let window = range.upperBound.timeIntervalSince(range.lowerBound)
-        return GlucoseCoverage.coverage(readingCount: windowReadings.count, window: window)
+        return GlucoseCoverage.coverage(readingCount: derived?.readingCount ?? 0, window: window)
     }
 
     private var metrics: some View {

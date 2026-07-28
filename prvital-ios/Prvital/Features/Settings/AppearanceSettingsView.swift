@@ -16,6 +16,22 @@ struct AppearanceSettingsView: View {
         AccentTheme(rawValue: env.preferences.accentThemeRaw) ?? .default
     }
 
+    /// The custom colour well: dragging repaints the app live (the hex is an
+    /// observable preference) and adopting a colour selects the custom theme.
+    private var customAccentBinding: Binding<Color> {
+        Binding(
+            get: { Color(hex: UInt(env.preferences.accentCustomHex)) },
+            set: { color in
+                guard let hex = color.hexString,
+                      let value = ProfileFormatting.hexColorValue(hex) else { return }
+                env.preferences.accentCustomHex = Int(value)
+                if env.preferences.accentThemeRaw != AccentTheme.custom.rawValue {
+                    env.preferences.accentThemeRaw = AccentTheme.custom.rawValue
+                }
+            }
+        )
+    }
+
     var body: some View {
         @Bindable var prefs = env.preferences
 
@@ -39,7 +55,8 @@ struct AppearanceSettingsView: View {
             }
             .glassListRow()
 
-            // Accent: a grid of swatch circles, like the avatar-ring picker.
+            // Accent: plain swatch circles plus a custom colour well — the
+            // exact language of the avatar-ring picker (device feedback).
             Section {
                 AccentSwatchGrid(selected: selected) { theme in
                     guard theme != selected else { return }
@@ -48,6 +65,23 @@ struct AppearanceSettingsView: View {
                 }
                 .listRowInsets(EdgeInsets(top: 8, leading: 8, bottom: 8, trailing: 8))
                 .listRowBackground(Color.clear)
+
+                ColorPicker(selection: customAccentBinding, supportsOpacity: false) {
+                    HStack(spacing: 8) {
+                        Label {
+                            Text("Custom colour").foregroundStyle(Theme.textPrimary)
+                        } icon: {
+                            Image(systemName: "eyedropper.halffull")
+                                .foregroundStyle(selected == .custom ? Theme.accent : Theme.textSecondary)
+                        }
+                        if selected == .custom {
+                            Image(systemName: "checkmark")
+                                .font(.caption.weight(.bold))
+                                .foregroundStyle(Theme.accent)
+                        }
+                    }
+                }
+                .glassListRow()
             } header: {
                 Text("Accent colour")
             } footer: {
@@ -195,30 +229,26 @@ private struct AccentSwatchGrid: View {
     let choose: (AccentTheme) -> Void
 
     var body: some View {
+        // Plain circles, no name captions — the avatar-ring picker's exact
+        // look. Custom is not a circle here; it lives in the colour-well row.
         LazyVGrid(columns: Array(repeating: GridItem(.flexible()), count: 4), spacing: 18) {
-            ForEach(AccentTheme.allCases) { theme in
+            ForEach(AccentTheme.allCases.filter { $0 != .custom }) { theme in
                 Button {
                     Haptics.play(.light)
                     choose(theme)
                 } label: {
-                    VStack(spacing: 6) {
-                        ZStack {
-                            Circle().fill(theme.swatch).frame(width: 52, height: 52)
-                            if theme == selected {
-                                Circle()
-                                    .strokeBorder(Theme.textPrimary.opacity(0.9), lineWidth: 3)
-                                    .frame(width: 62, height: 62)
-                                Image(systemName: "checkmark")
-                                    .font(.system(size: 18, weight: .bold))
-                                    .foregroundStyle(.white)
-                            }
+                    ZStack {
+                        Circle().fill(theme.swatch).frame(width: 52, height: 52)
+                        if theme == selected {
+                            Circle()
+                                .strokeBorder(Theme.textPrimary.opacity(0.9), lineWidth: 3)
+                                .frame(width: 62, height: 62)
+                            Image(systemName: "checkmark")
+                                .font(.system(size: 18, weight: .bold))
+                                .foregroundStyle(.white)
                         }
-                        .frame(height: 64)
-                        Text(theme.displayName)
-                            .font(.caption2.weight(.medium))
-                            .foregroundStyle(theme == selected ? Theme.textPrimary : Theme.textSecondary)
-                            .lineLimit(1)
                     }
+                    .frame(height: 64)
                 }
                 .buttonStyle(.plain)
                 .accessibilityLabel(Text(theme.displayName))

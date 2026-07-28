@@ -468,7 +468,9 @@ private struct ThemesHero: View {
                 .foregroundStyle(Theme.brandGradient)
 
             HStack(spacing: 14) {
-                ForEach(AccentTheme.allCases) { theme in
+                // The named presets only — "custom" is a colour well, not a
+                // fixed swatch worth showcasing here.
+                ForEach(AccentTheme.allCases.filter { $0 != .custom }) { theme in
                     Circle()
                         .fill(theme.swatch)
                         .frame(width: 32, height: 32)

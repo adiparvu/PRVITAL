@@ -3,7 +3,7 @@ import Foundation
 /// A rebound high: a low episode followed, within a short window and before the
 /// next low, by a climb above the target range — the classic sign of
 /// over-treating a hypo.
-struct ReboundEvent: Identifiable {
+struct ReboundEvent: Identifiable, Sendable {
     let lowTime: Date
     let lowMgdL: Double
     let highTime: Date

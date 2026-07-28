@@ -64,8 +64,21 @@ enum AccentTheme: String, CaseIterable, Identifiable {
     case sunset
     case rose
     case forest
+    /// A user-picked colour (the hex lives in `customHex`) — the same freedom
+    /// the avatar-ring picker offers, applied to the whole app.
+    case custom
 
     var id: String { rawValue }
+
+    /// Where the custom accent's 0xRRGGBB value lives — the shared suite, so
+    /// the widgets and the Watch resolve the same colour.
+    static let customHexKey = "pref.accentCustomHex"
+
+    /// The stored custom colour, falling back to the teal brand.
+    static var customHex: UInt {
+        let stored = SharedStore.groupDefaults.integer(forKey: customHexKey)
+        return stored > 0 ? UInt(stored) : 0x2FD4CE
+    }
 
     /// The key `Preferences` writes. Duplicated here (rather than referenced) so
     /// Theme keeps compiling in the widget and watch targets, where the app's
@@ -88,14 +101,24 @@ enum AccentTheme: String, CaseIterable, Identifiable {
         case .sunset: String(localized: "Sunset")
         case .rose: String(localized: "Rose")
         case .forest: String(localized: "Forest")
+        case .custom: String(localized: "Custom")
         }
     }
 
     /// The light/dark-adaptive brand accent for this theme.
-    var accent: Color { Color.adaptive(light: accentHex.light, dark: accentHex.dark) }
+    var accent: Color {
+        if self == .custom {
+            let hex = Self.customHex
+            return Color.adaptive(light: hex, dark: hex)
+        }
+        return Color.adaptive(light: accentHex.light, dark: accentHex.dark)
+    }
 
     /// The soft tint used behind accent-coloured glyphs and fills.
-    var accentSoft: Color { Color.adaptive(light: softHex.light, dark: softHex.dark) }
+    var accentSoft: Color {
+        if self == .custom { return Color(hex: Self.customHex).opacity(0.16) }
+        return Color.adaptive(light: softHex.light, dark: softHex.dark)
+    }
 
     /// A single representative colour for swatch circles in pickers.
     var swatch: Color { accent }
@@ -112,6 +135,8 @@ enum AccentTheme: String, CaseIterable, Identifiable {
         case .sunset: (0xC2410C, 0xF59E72)
         case .rose: (0xC13568, 0xF287AE)
         case .forest: (0x22754C, 0x63C793)
+        // Unreachable — `accent` resolves .custom before touching this table.
+        case .custom: (0x0E9F9A, 0x2FD4CE)
         }
     }
 
@@ -123,6 +148,8 @@ enum AccentTheme: String, CaseIterable, Identifiable {
         case .sunset: (0xF9E9E0, 0x3D2418)
         case .rose: (0xF9E6EE, 0x3D1E2B)
         case .forest: (0xE4F1E9, 0x1B3527)
+        // Unreachable — `accentSoft` resolves .custom before touching this table.
+        case .custom: (0xE1F4F3, 0x143A38)
         }
     }
 }
