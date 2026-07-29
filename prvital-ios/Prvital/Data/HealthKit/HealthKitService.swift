@@ -179,6 +179,34 @@ final class HealthKitService: @unchecked Sendable {
             .sorted { $0.timestamp < $1.timestamp }
     }
 
+    /// The single most recent heart-rate sample Apple Health holds — the actual
+    /// last beat the Watch recorded, with its own timestamp.
+    ///
+    /// Deliberately NOT derived from `heartRateBuckets`: a bucket's `average` is
+    /// a 15-minute mean, so presenting it as the current rate both smooths away
+    /// the real value and hides how old it is. Anything claiming to show "now"
+    /// must come from here.
+    func latestHeartRate() async -> HeartRateSample? {
+        guard isAvailable else { return nil }
+        let unit = bpmUnit
+        let type = heartRateType
+        return await withCheckedContinuation { continuation in
+            let sort = [NSSortDescriptor(key: HKSampleSortIdentifierStartDate, ascending: false)]
+            let query = HKSampleQuery(sampleType: type, predicate: nil,
+                                      limit: 1, sortDescriptors: sort) { _, samples, _ in
+                guard let sample = (samples as? [HKQuantitySample])?.first else {
+                    continuation.resume(returning: nil)
+                    return
+                }
+                continuation.resume(returning: HeartRateSample(
+                    id: sample.uuid.uuidString,
+                    bpm: sample.quantity.doubleValue(for: unit),
+                    timestamp: sample.startDate))
+            }
+            store.execute(query)
+        }
+    }
+
     /// Heart rate aggregated into fixed buckets across an arbitrary window —
     /// average, lowest and highest per bucket.
     ///
@@ -587,6 +615,7 @@ final class HealthKitService: @unchecked Sendable {
     enum WriteKind: Sendable { case glucose, insulin, carbs }
     func deleteOwnSamples(_ kind: WriteKind, at date: Date) async {}
     func dailyMetric(_ kind: HealthMetricKind, days: Int) async -> [DailyMetric] { [] }
+    func latestHeartRate() async -> HeartRateSample? { nil }
     func heartRateBuckets(from start: Date, to end: Date, every step: DateComponents) async -> [HeartRateBucket] { [] }
     func latestReading(_ kind: HealthMetricKind) async -> MetricReading? { nil }
     func latestBloodPressure() async -> BloodPressureReading? { nil }

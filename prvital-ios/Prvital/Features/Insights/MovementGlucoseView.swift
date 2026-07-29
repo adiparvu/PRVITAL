@@ -27,6 +27,9 @@ struct MovementGlucoseView: View {
     @State private var ready = false
     @State private var heartRate: [HeartRateBucket] = []
     @State private var loadingHR = true
+    /// The actual last beat Apple Health holds, for the "Now" readout. Kept
+    /// separate from `heartRate` on purpose — see `liveHeartRate`.
+    @State private var latestHeartRate: HeartRateSample?
     /// Drives the one-shot rise of both series whenever the window changes, so
     /// switching period is a movement rather than a swap.
     @State private var reveal: Double = 0
@@ -76,12 +79,24 @@ struct MovementGlucoseView: View {
             derived = payload
             ready = true
         }
-        .task(id: interval) {
-            loadingHR = true
+        // Keyed on the SAME key as the glucose build, so the pulse history grows
+        // alongside it instead of being frozen at whatever was there when the
+        // screen opened. Only the first load shows a spinner.
+        .task(id: buildKey) {
+            loadingHR = heartRate.isEmpty
             let window = interval.dateRange(now: Date())
             heartRate = await env.healthKit.heartRateBuckets(
                 from: window.lowerBound, to: window.upperBound, every: heartRateBucket)
             loadingHR = false
+        }
+        // The "Now" beat, polled on its own cadence. Heart rate arrives from the
+        // Watch on its own schedule, unrelated to CGM readings, so it can't ride
+        // the glucose key.
+        .task {
+            while !Task.isCancelled {
+                latestHeartRate = await env.healthKit.latestHeartRate()
+                try? await Task.sleep(for: .seconds(30))
+            }
         }
         .onChange(of: interval) { _, _ in
             Haptics.play(.selection)
@@ -167,21 +182,29 @@ struct MovementGlucoseView: View {
 
                 Spacer()
 
-                if let bpm = latestBPM {
+                if let sample = latestHeartRate {
+                    let fresh = Date().timeIntervalSince(sample.timestamp) <= Self.heartRateFreshness
                     HStack(spacing: 6) {
-                        BeatingHeart()
-                        HStack(alignment: .firstTextBaseline, spacing: 3) {
-                            Text("\(Int(bpm.rounded()))")
-                                .font(.title3.weight(.semibold))
-                                .foregroundStyle(Theme.textPrimary)
-                                .contentTransition(.numericText())
-                            Text("bpm")
+                        BeatingHeart(beating: fresh)
+                        VStack(alignment: .trailing, spacing: 2) {
+                            HStack(alignment: .firstTextBaseline, spacing: 3) {
+                                Text("\(Int(sample.bpm.rounded()))")
+                                    .font(.title3.weight(.semibold))
+                                    .foregroundStyle(fresh ? Theme.textPrimary : Theme.textTertiary)
+                                    .contentTransition(.numericText())
+                                Text("bpm")
+                                    .font(.caption2)
+                                    .foregroundStyle(Theme.textTertiary)
+                            }
+                            // Its real age, exactly like the glucose beside it —
+                            // so a beat from two hours ago can never pass for now.
+                            Text(sample.timestamp, style: .relative)
                                 .font(.caption2)
                                 .foregroundStyle(Theme.textTertiary)
                         }
                     }
                     .accessibilityElement(children: .combine)
-                    .accessibilityLabel("Latest heart rate \(Int(bpm.rounded())) beats per minute")
+                    .accessibilityLabel("Latest heart rate \(Int(sample.bpm.rounded())) beats per minute")
                 }
             }
             .padding(.horizontal, 16)
@@ -192,7 +215,9 @@ struct MovementGlucoseView: View {
         }
     }
 
-    private var latestBPM: Double? { heartRate.last?.average }
+    /// Past this age a sample stops being dressed up as the current beat: the
+    /// heart stops beating, the number greys out, and the age reads for itself.
+    private static let heartRateFreshness: TimeInterval = 15 * 60
 
     // MARK: Chart
 
@@ -515,22 +540,31 @@ struct MovementGlucoseView: View {
     }
 }
 
-/// A heart that beats — the live tell beside the current bpm.
+/// A heart that beats — the live tell beside the current bpm. It only beats
+/// when the reading really is current; a stale one sits still and dimmed, so the
+/// animation itself never claims something the data doesn't support.
 private struct BeatingHeart: View {
+    var beating = true
     @Environment(\.accessibilityReduceMotion) private var reduceMotion
-    @State private var beating = false
+    @State private var animating = false
 
     var body: some View {
         Image(systemName: "heart.fill")
             .font(.subheadline)
-            .foregroundStyle(Theme.zoneCritical)
-            .scaleEffect(beating ? 1.16 : 0.90)
-            .onAppear {
-                guard !reduceMotion else { return }
-                withAnimation(.easeInOut(duration: 0.55).repeatForever(autoreverses: true)) {
-                    beating = true
-                }
-            }
+            .foregroundStyle(beating ? Theme.zoneCritical : Theme.textTertiary)
+            .scaleEffect(animating ? 1.16 : 0.90)
+            .onAppear { start() }
+            .onChange(of: beating) { _, _ in start() }
             .accessibilityHidden(true)
+    }
+
+    private func start() {
+        guard beating, !reduceMotion else {
+            withAnimation(.smooth) { animating = false }
+            return
+        }
+        withAnimation(.easeInOut(duration: 0.55).repeatForever(autoreverses: true)) {
+            animating = true
+        }
     }
 }
