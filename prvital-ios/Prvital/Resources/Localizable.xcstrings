@@ -5435,6 +5435,65 @@
         }
       }
     },
+    "+%lld more" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "+%lld weitere"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "+%lld más"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "+%lld de plus"
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "+%lld altre"
+          }
+        },
+        "nl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "+%lld meer"
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "+%lld więcej"
+          }
+        },
+        "pt" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "+%lld mais"
+          }
+        },
+        "ro" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "+%lld în plus"
+          }
+        },
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "+%lld ещё"
+          }
+        }
+      }
+    },
     "+%lld more lows" : {
       "extractionState" : "manual",
       "localizations" : {
@@ -31368,6 +31427,65 @@
         }
       }
     },
+    "Each point is an average for its slice of time; the shaded band is the range it covered." : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Jeder Punkt ist ein Durchschnitt für seinen Zeitabschnitt; das schattierte Band zeigt die Spanne."
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Cada punto es la media de su tramo de tiempo; la banda sombreada es el rango que cubrió."
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Chaque point est la moyenne de sa tranche de temps ; la bande ombrée indique l'amplitude."
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ogni punto è la media del suo intervallo di tempo; la banda ombreggiata è l'escursione."
+          }
+        },
+        "nl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Elk punt is een gemiddelde voor zijn tijdvak; de gearceerde band toont de spreiding."
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Każdy punkt to średnia dla swojego przedziału czasu; zacieniony pas pokazuje rozpiętość."
+          }
+        },
+        "pt" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Cada ponto é a média do seu intervalo de tempo; a faixa sombreada é a amplitude."
+          }
+        },
+        "ro" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Fiecare punct este media pe felia lui de timp; banda umbrită arată intervalul acoperit."
+          }
+        },
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Каждая точка — среднее за свой отрезок времени; затенённая полоса показывает разброс."
+          }
+        }
+      }
+    },
     "Early estimate" : {
       "extractionState" : "manual",
       "localizations" : {
@@ -39860,6 +39978,65 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Тепловая карта глюкозы"
+          }
+        }
+      }
+    },
+    "Glucose in milligrams per deciliter and heart rate in beats per minute across %@" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Glukose in Milligramm pro Deziliter und Herzfrequenz in Schlägen pro Minute über %@"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Glucosa en miligramos por decilitro y frecuencia cardiaca en latidos por minuto durante %@"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Glycémie en milligrammes par décilitre et fréquence cardiaque en battements par minute sur %@"
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Glicemia in milligrammi per decilitro e frequenza cardiaca in battiti al minuto su %@"
+          }
+        },
+        "nl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Glucose in milligram per deciliter en hartslag in slagen per minuut over %@"
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Glukoza w miligramach na decylitr i tętno w uderzeniach na minutę w okresie %@"
+          }
+        },
+        "pt" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Glicose em miligramas por decilitro e frequência cardíaca em batimentos por minuto ao longo de %@"
+          }
+        },
+        "ro" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Glicemia în miligrame pe decilitru și pulsul în bătăi pe minut pe %@"
+          }
+        },
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Глюкоза в миллиграммах на децилитр и пульс в ударах в минуту за %@"
           }
         }
       }
@@ -52107,6 +52284,65 @@
         }
       }
     },
+    "Latest heart rate %lld beats per minute" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Letzte Herzfrequenz %lld Schläge pro Minute"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Última frecuencia cardiaca %lld latidos por minuto"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Dernière fréquence cardiaque %lld battements par minute"
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ultima frequenza cardiaca %lld battiti al minuto"
+          }
+        },
+        "nl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Laatste hartslag %lld slagen per minuut"
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ostatnie tętno %lld uderzeń na minutę"
+          }
+        },
+        "pt" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Última frequência cardíaca %lld batimentos por minuto"
+          }
+        },
+        "ro" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ultimul puls %lld bătăi pe minut"
+          }
+        },
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Последний пульс %lld ударов в минуту"
+          }
+        }
+      }
+    },
     "Latest reading" : {
       "extractionState" : "manual",
       "localizations" : {
@@ -62980,6 +63216,65 @@
         }
       }
     },
+    "No glucose or heart-rate data in this period." : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Keine Glukose- oder Herzfrequenzdaten in diesem Zeitraum."
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "No hay datos de glucosa ni de frecuencia cardiaca en este periodo."
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Aucune donnée de glycémie ni de fréquence cardiaque sur cette période."
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Nessun dato di glicemia o frequenza cardiaca in questo periodo."
+          }
+        },
+        "nl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Geen glucose- of hartslaggegevens in deze periode."
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Brak danych o glukozie i tętnie w tym okresie."
+          }
+        },
+        "pt" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Sem dados de glicose ou frequência cardíaca neste período."
+          }
+        },
+        "ro" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Nu există date de glicemie sau puls în această perioadă."
+          }
+        },
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Нет данных о глюкозе или пульсе за этот период."
+          }
+        }
+      }
+    },
     "No glucose or heart-rate data on this day." : {
       "extractionState" : "manual",
       "localizations" : {
@@ -63389,6 +63684,65 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Нет данных о пульсе из Apple Health за этот день. Подключите Apple Health в разделе «Источники», чтобы увидеть их здесь."
+          }
+        }
+      }
+    },
+    "No heart-rate data from Apple Health for this period. Connect Apple Health in Sources to see it here." : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Keine Herzfrequenzdaten aus Apple Health für diesen Zeitraum. Verbinde Apple Health unter Quellen, um sie hier zu sehen."
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "No hay datos de frecuencia cardiaca de Apple Salud para este periodo. Conecta Apple Salud en Fuentes para verlos aquí."
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Aucune donnée de fréquence cardiaque depuis Apple Santé pour cette période. Connecte Apple Santé dans Sources pour les voir ici."
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Nessun dato di frequenza cardiaca da Apple Salute per questo periodo. Collega Apple Salute in Sorgenti per vederli qui."
+          }
+        },
+        "nl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Geen hartslaggegevens uit Apple Gezondheid voor deze periode. Koppel Apple Gezondheid bij Bronnen om ze hier te zien."
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Brak danych o tętnie z Apple Health w tym okresie. Połącz Apple Health w Źródłach, aby je tu zobaczyć."
+          }
+        },
+        "pt" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Sem dados de frequência cardíaca da Apple Saúde neste período. Liga a Apple Saúde em Fontes para os veres aqui."
+          }
+        },
+        "ro" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Nu există date de puls din Apple Health pentru această perioadă. Conectează Apple Health în Surse ca să le vezi aici."
+          }
+        },
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Нет данных о пульсе из Apple Health за этот период. Подключите Apple Health в разделе «Источники», чтобы видеть их здесь."
           }
         }
       }
@@ -80428,6 +80782,65 @@
         }
       }
     },
+    "Sessions" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Einheiten"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Sesiones"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Séances"
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Sessioni"
+          }
+        },
+        "nl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Sessies"
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Sesje"
+          }
+        },
+        "pt" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Sessões"
+          }
+        },
+        "ro" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Sesiuni"
+          }
+        },
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Тренировки"
+          }
+        }
+      }
+    },
     "Sessions can also start themselves: LibreLinkUp reports the worn sensor exactly, and after a sensor expires, the reading gap left by a replacement starts the next one." : {
       "extractionState" : "manual",
       "localizations" : {
@@ -95315,6 +95728,65 @@
         }
       }
     },
+    "Typical drop" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Typischer Abfall"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Bajada típica"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Baisse typique"
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Calo tipico"
+          }
+        },
+        "nl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Typische daling"
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Typowy spadek"
+          }
+        },
+        "pt" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Queda típica"
+          }
+        },
+        "ro" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Scădere tipică"
+          }
+        },
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Типичное снижение"
+          }
+        }
+      }
+    },
     "Typical glucose change during and after your activity — glucose often falls, so stay alert for lows. Based on %lld sessions." : {
       "extractionState" : "manual",
       "localizations" : {
@@ -95429,6 +95901,65 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Типичный утренний подъём"
+          }
+        }
+      }
+    },
+    "Typical rise" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Typischer Anstieg"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Subida típica"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Hausse typique"
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Aumento tipico"
+          }
+        },
+        "nl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Typische stijging"
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Typowy wzrost"
+          }
+        },
+        "pt" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Subida típica"
+          }
+        },
+        "ro" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Creștere tipică"
+          }
+        },
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Типичный рост"
           }
         }
       }

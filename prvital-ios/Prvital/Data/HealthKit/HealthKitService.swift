@@ -39,6 +39,21 @@ struct HeartRateSample: Sendable, Identifiable {
     let timestamp: Date
 }
 
+/// One time bucket of heart rate — its average plus the true sample extremes —
+/// as produced by a HealthKit statistics collection query.
+///
+/// Raw samples only scale to a single day; over a week, a month or a year Apple
+/// Health holds hundreds of thousands of beats, so the movement chart plots one
+/// of these per bucket instead (average as the line, min…max as a soft band).
+struct HeartRateBucket: Sendable, Identifiable {
+    let start: Date
+    let average: Double
+    let minimum: Double
+    let maximum: Double
+
+    var id: Date { start }
+}
+
 /// Wraps HealthKit read/write for glucose, insulin, carbohydrates and workouts.
 ///
 /// Reads pull samples already in Apple Health (including those written by other
@@ -162,6 +177,44 @@ final class HealthKitService: @unchecked Sendable {
                                    bpm: $0.quantity.doubleValue(for: bpmUnit),
                                    timestamp: $0.startDate) }
             .sorted { $0.timestamp < $1.timestamp }
+    }
+
+    /// Heart rate aggregated into fixed buckets across an arbitrary window —
+    /// average, lowest and highest per bucket.
+    ///
+    /// A statistics collection query makes HealthKit do the aggregation, so a
+    /// year-long window costs the app one value per bucket instead of the
+    /// hundreds of thousands of raw beats `fetchHeartRateSamples` would return
+    /// (and which its 3000-sample cap would silently truncate anyway).
+    func heartRateBuckets(from start: Date, to end: Date, every step: DateComponents) async -> [HeartRateBucket] {
+        guard isAvailable, start < end else { return [] }
+        let unit = bpmUnit
+        let type = heartRateType
+        // Anchoring on a day boundary keeps hour/6-hour/day buckets aligned to
+        // the clock, so their labels read as whole hours rather than offsets
+        // from whenever the rolling window happens to begin.
+        let anchor = Calendar.current.startOfDay(for: start)
+        let predicate = HKQuery.predicateForSamples(withStart: start, end: end, options: .strictStartDate)
+        return await withCheckedContinuation { continuation in
+            let query = HKStatisticsCollectionQuery(
+                quantityType: type, quantitySamplePredicate: predicate,
+                options: [.discreteAverage, .discreteMin, .discreteMax],
+                anchorDate: anchor, intervalComponents: step)
+            query.initialResultsHandler = { _, results, _ in
+                var buckets: [HeartRateBucket] = []
+                results?.enumerateStatistics(from: start, to: end) { stat, _ in
+                    guard let average = stat.averageQuantity() else { return }
+                    let mean = average.doubleValue(for: unit)
+                    buckets.append(HeartRateBucket(
+                        start: stat.startDate,
+                        average: mean,
+                        minimum: stat.minimumQuantity()?.doubleValue(for: unit) ?? mean,
+                        maximum: stat.maximumQuantity()?.doubleValue(for: unit) ?? mean))
+                }
+                continuation.resume(returning: buckets)
+            }
+            store.execute(query)
+        }
     }
 
     private func quantitySamplesWindowed(of type: HKQuantityType, from start: Date, to end: Date, limit: Int) async throws -> [HKQuantitySample] {
@@ -534,6 +587,7 @@ final class HealthKitService: @unchecked Sendable {
     enum WriteKind: Sendable { case glucose, insulin, carbs }
     func deleteOwnSamples(_ kind: WriteKind, at date: Date) async {}
     func dailyMetric(_ kind: HealthMetricKind, days: Int) async -> [DailyMetric] { [] }
+    func heartRateBuckets(from start: Date, to end: Date, every step: DateComponents) async -> [HeartRateBucket] { [] }
     func latestReading(_ kind: HealthMetricKind) async -> MetricReading? { nil }
     func latestBloodPressure() async -> BloodPressureReading? { nil }
     func sleepHoursByNight(days: Int) async -> [DailyMetric] { [] }

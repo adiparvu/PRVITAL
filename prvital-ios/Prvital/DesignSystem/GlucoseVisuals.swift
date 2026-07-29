@@ -201,7 +201,10 @@ struct GlucoseGaugeRing: View {
 /// A live, breathing ring for the latest reading: a soft ping that keeps expanding
 /// and fading out around the current point, so the chart reads as alive. Drawn over
 /// the existing static "now" dot, so the dot stays put and only the halo animates.
-private struct PulsingLiveDot: View {
+///
+/// Shared: the trend chart overlays it on its last point, and the movement screen
+/// uses it both on its chart and beside the live "now" readout.
+struct PulsingLiveDot: View {
     let color: Color
     @State private var pulsing = false
 

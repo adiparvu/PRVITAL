@@ -337,7 +337,9 @@ struct ChartsContent: View {
 
                 Divider().overlay(Theme.hairline)
                 NavigationLink {
-                    MovementGlucoseView(date: Date())
+                    // Opens on whatever period Insights is showing, and carries
+                    // its own picker from there.
+                    MovementGlucoseView(interval: interval)
                 } label: {
                     HStack(spacing: 8) {
                         Image(systemName: "heart.text.square.fill")
