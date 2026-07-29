@@ -25,12 +25,10 @@ struct GlucoseGaugeRing: View {
     /// the top of the screen (device feedback: "bigger, more refined").
     var diameter: CGFloat = 248
 
-    /// A COMPLETE circle, starting at twelve o'clock and running clockwise —
-    /// the Activity-ring language everyone already reads. It replaced a 270°
-    /// dial with an opening at the bottom, which left the ring looking cut and
-    /// pushed the zone label up into the gap (device feedback).
+    /// A COMPLETE circle, running clockwise — the Activity-ring language
+    /// everyone already reads. It replaced a 270° dial with an opening at the
+    /// bottom, which left the ring looking cut (device feedback).
     private static let sweepDegrees: Double = 360
-    private static let startDegrees: Double = -90
 
     /// Display scale for the ring sweep (clamped).
     private let scaleLow = 40.0
@@ -48,8 +46,29 @@ struct GlucoseGaugeRing: View {
 
     private var fraction: Double { position(of: mgdL) }
 
+    /// Where the scale begins on the screen circle (0° is three o'clock).
+    ///
+    /// The dial is oriented so the TARGET BAND straddles twelve o'clock: an
+    /// in-range value therefore sits at the top, where the eye reads "good",
+    /// lows swing round to the left and highs to the right. The 270° dial got
+    /// that for free from its opening; closing the ring lost it, and a plain
+    /// twelve-o'clock start parked a perfectly healthy 125 down at four
+    /// o'clock, which reads as though something were wrong (device feedback:
+    /// "bila nu este poziționată unde trebuie").
+    ///
+    /// Falls back to twelve o'clock when no target band was supplied.
+    private var startDegrees: Double {
+        guard let targetArc else { return -90 }
+        let middle = (targetArc.lowerBound + targetArc.upperBound) / 2
+        return -90 - middle * Self.sweepDegrees
+    }
+
     var body: some View {
-        VStack(spacing: 6) {
+        // Generous, so the zone label reads as its own line under the hero and
+        // not as something bolted to the ring — it also has to clear the glow,
+        // which spills 14pt past the dial's frame (device feedback: "«în
+        // interval» trebuie mai jos, nu are legătură cu cercul").
+        VStack(spacing: 20) {
             dial
             // Under the ring, where it was before — not tucked into a gap in it.
             if showsZoneLabel {
@@ -107,7 +126,7 @@ struct GlucoseGaugeRing: View {
                     .trim(from: targetArc.lowerBound, to: targetArc.upperBound)
                     .stroke(Theme.zoneInRange.opacity(0.22),
                             style: StrokeStyle(lineWidth: ringWidth, lineCap: .butt))
-                    .rotationEffect(.degrees(Self.startDegrees))
+                    .rotationEffect(.degrees(startDegrees))
             }
 
             hourTrail
@@ -127,7 +146,7 @@ struct GlucoseGaugeRing: View {
                     ),
                     style: StrokeStyle(lineWidth: ringWidth, lineCap: .butt)
                 )
-                .rotationEffect(.degrees(Self.startDegrees))
+                .rotationEffect(.degrees(startDegrees))
                 .animation(.smooth, value: fraction)
 
             // The bead seated in the track at the sweep's end.
@@ -203,7 +222,7 @@ struct GlucoseGaugeRing: View {
     /// interior" — it used to be smaller than the track and sat behind the
     /// sweep's round cap, which read as floating loose inside the ring.
     private var tipDot: some View {
-        let angle = (Self.startDegrees + fraction * Self.sweepDegrees) * .pi / 180
+        let angle = (startDegrees + fraction * Self.sweepDegrees) * .pi / 180
         let radius = diameter / 2
         return Circle()
             .fill(.white)
@@ -245,7 +264,7 @@ struct GlucoseGaugeRing: View {
                     style: StrokeStyle(lineWidth: trailWidth, lineCap: .butt)
                 )
                 .frame(width: diameter - trailInset, height: diameter - trailInset)
-                .rotationEffect(.degrees(Self.startDegrees))
+                .rotationEffect(.degrees(startDegrees))
                 .opacity(appeared ? 1 : 0)
                 .animation(.smooth, value: fraction)
         }
