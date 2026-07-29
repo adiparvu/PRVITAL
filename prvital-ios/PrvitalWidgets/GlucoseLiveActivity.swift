@@ -422,19 +422,21 @@ private struct LockScreenBanner: View {
                     .lineLimit(1).minimumScaleFactor(0.8)
             }
             Spacer(minLength: 8)
-            // The trend as a quiet glass chip — reads as one object, not a
-            // floating arrow with a stray caption.
-            VStack(spacing: 3) {
+            // The trend, bare: a big arrow with its word underneath and nothing
+            // drawn around it (device feedback: "săgeata mai mare și fără
+            // chenarul acela din jurul ei"). At 30pt it holds its own against
+            // the 46pt value instead of hiding inside a chip.
+            VStack(spacing: 1) {
                 Image(systemName: state.trendSymbol)
-                    .font(.headline.weight(.bold)).foregroundStyle(tint)
+                    .font(.system(size: 30, weight: .bold))
+                    .foregroundStyle(tint)
                     .contentTransition(.symbolEffect(.replace))
                     .animation(.smooth, value: state.trendSymbol)
-                Text(state.trendLabel).font(.system(size: 10, weight: .medium))
+                Text(state.trendLabel).font(.system(size: 11, weight: .medium))
                     .foregroundStyle(.white.opacity(0.7))
                     .lineLimit(1).minimumScaleFactor(0.7)
             }
-            .padding(.horizontal, 10).padding(.vertical, 7)
-            .background(.white.opacity(0.08), in: .rect(cornerRadius: 12, style: .continuous))
+            .fixedSize(horizontal: true, vertical: false)
         }
         // The prediction gets its own full-width line so the (often long)
         // localized text is never truncated.
