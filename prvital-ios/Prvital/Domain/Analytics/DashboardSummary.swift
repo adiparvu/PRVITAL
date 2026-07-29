@@ -33,6 +33,33 @@ struct DashboardSummary {
         return GlucoseTrendAnalyzer.velocity(recent, now: now)
     }
 
+    /// How far back the gauge's hour trail reaches.
+    static let trailWindow: TimeInterval = 60 * 60
+    /// How far from that instant a reading may sit and still anchor the trail.
+    /// Wide enough to absorb a missed CGM reading or two, tight enough that a
+    /// gap in the trace draws nothing rather than a trail measured from
+    /// somewhere else entirely.
+    static let trailTolerance: TimeInterval = 12 * 60
+
+    /// Where glucose stood an hour before the CURRENT reading — the anchor for
+    /// the dashboard gauge's hour trail.
+    ///
+    /// Measured from the reading's own timestamp, not from `now`: with a reading
+    /// eight minutes old, "an hour ago" from now would only be 52 minutes of
+    /// trace, and the trail would quietly shrink as the reading aged.
+    var mgdLAnHourAgo: Double? {
+        guard let current, !isStale else { return nil }
+        let target = current.timestamp.addingTimeInterval(-Self.trailWindow)
+        let nearest = recent.min {
+            abs($0.timestamp.timeIntervalSince(target)) < abs($1.timestamp.timeIntervalSince(target))
+        }
+        guard let nearest,
+              nearest.timestamp < current.timestamp,
+              abs(nearest.timestamp.timeIntervalSince(target)) <= Self.trailTolerance
+        else { return nil }
+        return nearest.valueMgdL
+    }
+
     static func make(
         readings: [GlucoseReading],
         insulin: [InsulinDose],

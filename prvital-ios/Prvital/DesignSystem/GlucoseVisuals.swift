@@ -8,6 +8,10 @@ struct GlucoseGaugeRing: View {
     let zone: GlucoseZone
     let unit: GlucoseUnit
     var trend: GlucoseTrend?
+    /// Where glucose stood an hour ago. Draws a quiet trail along the dial from
+    /// there to the bead, so the direction AND the size of the last hour's move
+    /// read straight off the ring — not only from the arrow.
+    var previousMgdL: Double?
     /// An active rule-of-15 recheck deadline: shows a live countdown inside the
     /// gauge, under the trend (device feedback: the timer belongs on Home).
     var recheckAt: Date?
@@ -32,6 +36,11 @@ struct GlucoseGaugeRing: View {
     private let scaleLow = 40.0
     private let scaleHigh = 320.0
     private let ringWidth: CGFloat = 16
+    /// The hour trail rides on its own rail, in the clear band between the
+    /// track's inner edge and the tick ring — never over the sweep, which would
+    /// read as a scratch across it.
+    private let trailInset: CGFloat = 32
+    private let trailWidth: CGFloat = 3.5
 
     @State private var pulse = false
     @State private var appeared = false
@@ -100,6 +109,8 @@ struct GlucoseGaugeRing: View {
                             style: StrokeStyle(lineWidth: ringWidth, lineCap: .butt))
                     .rotationEffect(.degrees(Self.startDegrees))
             }
+
+            hourTrail
 
             // The sweep brightens toward its tip, giving the arc direction.
             // Butt caps, deliberately: the bead below IS the cap, and a round
@@ -202,6 +213,42 @@ struct GlucoseGaugeRing: View {
             .offset(x: cos(angle) * radius, y: sin(angle) * radius)
             .opacity(appeared ? 1 : 0)
             .animation(.smooth, value: fraction)
+    }
+
+    /// The last hour, drawn as a thin rail from where glucose stood an hour ago
+    /// to where the bead is now, fading from almost nothing at the old end to
+    /// solid at the bead — so which end is "now" is never in question.
+    ///
+    /// A trail rather than a second dot, on purpose: the scale is ~1.3° per
+    /// mg/dL, so a steady hour would have parked a ghost dot right on top of the
+    /// bead and read as a rendering fault. A trail just gets shorter, and
+    /// disappears entirely when nothing moved — no arbitrary "only draw it if it
+    /// moved more than X" threshold to tune.
+    @ViewBuilder private var hourTrail: some View {
+        if let previousMgdL {
+            let from = position(of: previousMgdL)
+            let to = fraction
+            let rising = to >= from
+            let lower = min(from, to)
+            let upper = max(from, to)
+            Circle()
+                .trim(from: lower, to: upper)
+                .stroke(
+                    AngularGradient(
+                        colors: rising
+                            ? [zone.color.opacity(0.05), zone.color.opacity(0.7)]
+                            : [zone.color.opacity(0.7), zone.color.opacity(0.05)],
+                        center: .center,
+                        startAngle: .degrees(lower * Self.sweepDegrees),
+                        endAngle: .degrees(upper * Self.sweepDegrees)
+                    ),
+                    style: StrokeStyle(lineWidth: trailWidth, lineCap: .butt)
+                )
+                .frame(width: diameter - trailInset, height: diameter - trailInset)
+                .rotationEffect(.degrees(Self.startDegrees))
+                .opacity(appeared ? 1 : 0)
+                .animation(.smooth, value: fraction)
+        }
     }
 
     /// The target band as a `Circle.trim` range on the same scale as the sweep,

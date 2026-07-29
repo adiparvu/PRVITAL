@@ -318,14 +318,16 @@ struct DashboardView: View {
                     Haptics.play(.light)
                     showGlucoseEntry = true
                 } label: {
-                    // The gauge carries its own zone label underneath, and marks
-                    // the user's target band on the track so the bead's position
-                    // reads against the goal.
+                    // The gauge carries its own zone label underneath, marks the
+                    // user's target band on the track so the bead's position
+                    // reads against the goal, and trails the last hour along the
+                    // dial so the move is visible on the ring itself.
                     GlucoseGaugeRing(
                         mgdL: current.valueMgdL,
                         zone: zone,
                         unit: unit,
                         trend: current.trend,
+                        previousMgdL: summary.mgdLAnHourAgo,
                         recheckAt: ruleOf15RecheckAt(currentMgdL: current.valueMgdL),
                         targetRange: thresholds.targetLower...thresholds.targetUpper
                     )
