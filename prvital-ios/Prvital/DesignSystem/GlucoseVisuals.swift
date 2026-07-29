@@ -11,22 +11,22 @@ struct GlucoseGaugeRing: View {
     /// An active rule-of-15 recheck deadline: shows a live countdown inside the
     /// gauge, under the trend (device feedback: the timer belongs on Home).
     var recheckAt: Date?
-    /// Draws the zone label in the dial's bottom opening. The arc deliberately
-    /// stops short of the bottom, so the label has a home of its own instead of
-    /// colliding with the sweep's tip (device feedback: "things got messy there").
+    /// Draws the zone label under the ring (device feedback: "«în interval» să
+    /// fie sub cerc ca și înainte").
     var showsZoneLabel: Bool = true
+    /// The user's target band, marked as a brighter segment of the track, so the
+    /// bead's position reads against the goal and not just against the scale.
+    var targetRange: ClosedRange<Double>?
     /// Sized for the card-less hero: with no frame around it, the ring can own
     /// the top of the screen (device feedback: "bigger, more refined").
     var diameter: CGFloat = 248
 
-    /// The dial spans 270°, opening at the bottom: it starts bottom-left, runs
-    /// clockwise over the top and ends bottom-right. Lows land on the left,
-    /// in-range values near the top, highs on the right — and nothing is ever
-    /// drawn where the zone label and the source line sit.
-    private static let sweepDegrees: Double = 270
-    private static let startDegrees: Double = 135
-    /// Fraction of a full turn the dial covers, for `Circle.trim`.
-    private static let sweepFraction: Double = sweepDegrees / 360
+    /// A COMPLETE circle, starting at twelve o'clock and running clockwise —
+    /// the Activity-ring language everyone already reads. It replaced a 270°
+    /// dial with an opening at the bottom, which left the ring looking cut and
+    /// pushed the zone label up into the gap (device feedback).
+    private static let sweepDegrees: Double = 360
+    private static let startDegrees: Double = -90
 
     /// Display scale for the ring sweep (clamped).
     private let scaleLow = 40.0
@@ -37,11 +37,21 @@ struct GlucoseGaugeRing: View {
     @State private var appeared = false
     @Environment(\.accessibilityReduceMotion) private var reduceMotion
 
-    private var fraction: Double {
-        min(max((mgdL - scaleLow) / (scaleHigh - scaleLow), 0), 1)
-    }
+    private var fraction: Double { position(of: mgdL) }
 
     var body: some View {
+        VStack(spacing: 6) {
+            dial
+            // Under the ring, where it was before — not tucked into a gap in it.
+            if showsZoneLabel {
+                // The dial's own accessibility label already names the zone;
+                // a second element would just repeat it.
+                ZonePill(zone: zone, plain: true).accessibilityHidden(true)
+            }
+        }
+    }
+
+    private var dial: some View {
         ZStack {
             // Soft glow that breathes behind the ring, tinted by the zone.
             // Drawn as a radial gradient, NOT a blurred stroke: this pulses
@@ -65,38 +75,51 @@ struct GlucoseGaugeRing: View {
 
             // A faint instrument tick ring just inside the track — the quiet
             // "dial" detail that makes the gauge read as crafted, not generic.
-            // Spaced along the 270° arc, so no tick strays into the opening.
-            ForEach(0...45, id: \.self) { index in
-                let progress = Double(index) / 45
+            // Sixty of them now, all the way round, with a longer one at each
+            // quarter.
+            ForEach(0..<60, id: \.self) { index in
+                let major = index.isMultiple(of: 15)
                 Rectangle()
-                    .fill(Theme.textSecondary.opacity(index.isMultiple(of: 15) ? 0.35 : 0.16))
-                    .frame(width: 1.5, height: index.isMultiple(of: 15) ? 7 : 4)
+                    .fill(Theme.textSecondary.opacity(major ? 0.35 : 0.16))
+                    .frame(width: 1.5, height: major ? 7 : 4)
                     .offset(y: -diameter / 2 + ringWidth + 13)
-                    // A tick at rotation 0 points up (12 o'clock = 270° on the
-                    // screen circle), hence the −270 shift.
-                    .rotationEffect(.degrees(Self.startDegrees + progress * Self.sweepDegrees - 270))
+                    .rotationEffect(.degrees(Double(index) / 60 * 360))
             }
 
+            // The unlit track — a complete circle.
             Circle()
-                .trim(from: 0, to: Self.sweepFraction)
-                .stroke(Theme.hairline.opacity(0.7), style: StrokeStyle(lineWidth: ringWidth, lineCap: .round))
-                .rotationEffect(.degrees(Self.startDegrees))
+                .stroke(Theme.hairline.opacity(0.7), lineWidth: ringWidth)
+
+            // Where the target band falls on the scale, lit faintly into the
+            // track: the bead's position now reads against the goal, not only
+            // against the 40–320 scale.
+            if let targetArc {
+                Circle()
+                    .trim(from: targetArc.lowerBound, to: targetArc.upperBound)
+                    .stroke(Theme.zoneInRange.opacity(0.22),
+                            style: StrokeStyle(lineWidth: ringWidth, lineCap: .butt))
+                    .rotationEffect(.degrees(Self.startDegrees))
+            }
+
             // The sweep brightens toward its tip, giving the arc direction.
+            // Butt caps, deliberately: the bead below IS the cap, and a round
+            // one overshot it by half the ring width — which is exactly why the
+            // bead looked like it had slipped off the track and inward.
             Circle()
-                .trim(from: 0, to: (appeared ? fraction : 0) * Self.sweepFraction)
+                .trim(from: 0, to: appeared ? fraction : 0)
                 .stroke(
                     AngularGradient(
                         colors: [zone.color.opacity(0.45), zone.color],
                         center: .center,
                         startAngle: .degrees(0),
-                        endAngle: .degrees(fraction * Self.sweepDegrees)
+                        endAngle: .degrees(max(fraction, 0.001) * Self.sweepDegrees)
                     ),
-                    style: StrokeStyle(lineWidth: ringWidth, lineCap: .round)
+                    style: StrokeStyle(lineWidth: ringWidth, lineCap: .butt)
                 )
                 .rotationEffect(.degrees(Self.startDegrees))
                 .animation(.smooth, value: fraction)
 
-            // A bright cap at the arc's tip — the "you are here" of the scale.
+            // The bead seated in the track at the sweep's end.
             tipDot
 
             VStack(spacing: 2) {
@@ -116,18 +139,8 @@ struct GlucoseGaugeRing: View {
                 }
             }
             .scaleEffect(appeared ? 1 : 0.9)
-            // Optically centred in the C: the dial's mass sits above the
-            // opening, so dead-centre reads a touch low.
-            .offset(y: -ringWidth / 2)
-
-            // The zone label lives in the dial's opening — the one place the
-            // sweep can never reach.
-            if showsZoneLabel {
-                VStack {
-                    Spacer(minLength: 0)
-                    ZonePill(zone: zone, plain: true)
-                }
-            }
+            // Dead centre now the ring is closed — the old upward nudge existed
+            // only to balance the opening at the bottom.
         }
         .frame(width: diameter, height: diameter)
         .onAppear {
@@ -172,18 +185,38 @@ struct GlucoseGaugeRing: View {
         .padding(.top, 4)
     }
 
-    /// The glowing endpoint of the sweep, riding exactly on the arc's tip.
+    /// The bead: a bright pearl SET INTO the track at the sweep's end, sized to
+    /// the ring so it fills the groove edge to edge, and centred on the stroke's
+    /// centreline (radius = `diameter / 2`, where SwiftUI draws an unstroked
+    /// `Circle`'s path). Device feedback: "bila să fie introdusă în cerc, nu în
+    /// interior" — it used to be smaller than the track and sat behind the
+    /// sweep's round cap, which read as floating loose inside the ring.
     private var tipDot: some View {
         let angle = (Self.startDegrees + fraction * Self.sweepDegrees) * .pi / 180
         let radius = diameter / 2
         return Circle()
-            .fill(zone.color)
-            .frame(width: ringWidth - 4, height: ringWidth - 4)
-            .overlay(Circle().stroke(.white.opacity(0.85), lineWidth: 1.5))
-            .shadow(color: zone.color.opacity(0.8), radius: 5)
+            .fill(.white)
+            .frame(width: ringWidth - 1, height: ringWidth - 1)
+            .overlay(Circle().stroke(zone.color, lineWidth: 1.5))
+            .shadow(color: zone.color.opacity(0.9), radius: 6)
             .offset(x: cos(angle) * radius, y: sin(angle) * radius)
             .opacity(appeared ? 1 : 0)
             .animation(.smooth, value: fraction)
+    }
+
+    /// The target band as a `Circle.trim` range on the same scale as the sweep,
+    /// or nil when no band was supplied or it falls outside the dial's scale.
+    private var targetArc: ClosedRange<Double>? {
+        guard let targetRange else { return nil }
+        let low = position(of: targetRange.lowerBound)
+        let high = position(of: targetRange.upperBound)
+        guard high > low else { return nil }
+        return low...high
+    }
+
+    /// Where a glucose value sits on the dial, 0…1 of a full turn.
+    private func position(of mgdL: Double) -> Double {
+        min(max((mgdL - scaleLow) / (scaleHigh - scaleLow), 0), 1)
     }
 }
 

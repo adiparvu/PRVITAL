@@ -318,14 +318,16 @@ struct DashboardView: View {
                     Haptics.play(.light)
                     showGlucoseEntry = true
                 } label: {
-                    // The zone label is drawn inside the dial's opening now, so
-                    // the hero is the gauge alone — nothing crowds the arc's tip.
+                    // The gauge carries its own zone label underneath, and marks
+                    // the user's target band on the track so the bead's position
+                    // reads against the goal.
                     GlucoseGaugeRing(
                         mgdL: current.valueMgdL,
                         zone: zone,
                         unit: unit,
                         trend: current.trend,
-                        recheckAt: ruleOf15RecheckAt(currentMgdL: current.valueMgdL)
+                        recheckAt: ruleOf15RecheckAt(currentMgdL: current.valueMgdL),
+                        targetRange: thresholds.targetLower...thresholds.targetUpper
                     )
                 }
                 .buttonStyle(PressableCardStyle())
