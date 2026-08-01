@@ -65,10 +65,12 @@ struct GlucoseGaugeRing: View {
 
     var body: some View {
         // Generous, so the zone label reads as its own line under the hero and
-        // not as something bolted to the ring — it also has to clear the glow,
-        // which spills 14pt past the dial's frame (device feedback: "«în
-        // interval» trebuie mai jos, nu are legătură cu cercul").
-        VStack(spacing: 20) {
+        // never touches the ring (device feedback twice: "mai jos, nu să se
+        // suprapună cu cercul"). The rings themselves are now pinned inside the
+        // dial's frame, which was the real cause of the collision; this clears
+        // the glow on top of that, which still breathes out to 21pt past the
+        // frame at the peak of its pulse.
+        VStack(spacing: 26) {
             dial
             // Under the ring, where it was before — not tucked into a gap in it.
             if showsZoneLabel {
@@ -115,8 +117,19 @@ struct GlucoseGaugeRing: View {
             }
 
             // The unlit track — a complete circle.
+            //
+            // EVERY ring is pinned to `diameter` explicitly. Without a frame a
+            // `Circle` is flexible, so it grew to the ZStack's own size — and
+            // the ZStack is sized by its largest child, the glow, at
+            // `diameter + 28`. The rings were therefore drawn 28pt wider than
+            // the ticks, the hour trail and the bead, all of which are placed
+            // from `diameter` in points. That single mismatch is both bugs the
+            // device reported: the bead sat a ring's width inside the track,
+            // and the rings spilled past their own frame far enough to run into
+            // the zone label underneath.
             Circle()
                 .stroke(Theme.hairline.opacity(0.7), lineWidth: ringWidth)
+                .frame(width: diameter, height: diameter)
 
             // Where the target band falls on the scale, lit faintly into the
             // track: the bead's position now reads against the goal, not only
@@ -126,6 +139,7 @@ struct GlucoseGaugeRing: View {
                     .trim(from: targetArc.lowerBound, to: targetArc.upperBound)
                     .stroke(Theme.zoneInRange.opacity(0.22),
                             style: StrokeStyle(lineWidth: ringWidth, lineCap: .butt))
+                    .frame(width: diameter, height: diameter)
                     .rotationEffect(.degrees(startDegrees))
             }
 
@@ -133,8 +147,7 @@ struct GlucoseGaugeRing: View {
 
             // The sweep brightens toward its tip, giving the arc direction.
             // Butt caps, deliberately: the bead below IS the cap, and a round
-            // one overshot it by half the ring width — which is exactly why the
-            // bead looked like it had slipped off the track and inward.
+            // one overshoots the trim end by half the ring width.
             Circle()
                 .trim(from: 0, to: appeared ? fraction : 0)
                 .stroke(
@@ -146,6 +159,7 @@ struct GlucoseGaugeRing: View {
                     ),
                     style: StrokeStyle(lineWidth: ringWidth, lineCap: .butt)
                 )
+                .frame(width: diameter, height: diameter)
                 .rotationEffect(.degrees(startDegrees))
                 .animation(.smooth, value: fraction)
 
@@ -217,10 +231,14 @@ struct GlucoseGaugeRing: View {
 
     /// The bead: a bright pearl SET INTO the track at the sweep's end, sized to
     /// the ring so it fills the groove edge to edge, and centred on the stroke's
-    /// centreline (radius = `diameter / 2`, where SwiftUI draws an unstroked
-    /// `Circle`'s path). Device feedback: "bila să fie introdusă în cerc, nu în
-    /// interior" — it used to be smaller than the track and sat behind the
-    /// sweep's round cap, which read as floating loose inside the ring.
+    /// centreline — `diameter / 2`, where SwiftUI draws an unstroked `Circle`'s
+    /// path inside a `diameter`-wide frame.
+    ///
+    /// Placed with `.position` inside an explicit `diameter` box rather than
+    /// `.offset` from wherever the ZStack happened to centre it, so it is
+    /// anchored to exactly the same number as the rings above and cannot drift
+    /// from them again (device feedback, twice: "bila nu este poziționată unde
+    /// trebuie").
     private var tipDot: some View {
         let angle = (startDegrees + fraction * Self.sweepDegrees) * .pi / 180
         let radius = diameter / 2
@@ -229,7 +247,9 @@ struct GlucoseGaugeRing: View {
             .frame(width: ringWidth - 1, height: ringWidth - 1)
             .overlay(Circle().stroke(zone.color, lineWidth: 1.5))
             .shadow(color: zone.color.opacity(0.9), radius: 6)
-            .offset(x: cos(angle) * radius, y: sin(angle) * radius)
+            .position(x: radius + cos(angle) * radius,
+                      y: radius + sin(angle) * radius)
+            .frame(width: diameter, height: diameter)
             .opacity(appeared ? 1 : 0)
             .animation(.smooth, value: fraction)
     }
