@@ -114,6 +114,8 @@ struct RemindersSettingsView: View {
                     .foregroundStyle(Theme.textTertiary)
             }
             .glassListRow()
+
+            morningReportSection
         }
         .scrollContentBackground(.hidden)
         .prvitalScreenBackground()
@@ -126,6 +128,8 @@ struct RemindersSettingsView: View {
             }
             refreshAuthorization()
         }
+        .onChange(of: morningEnabled) { _, _ in env.rearmMorningReport() }
+        .onChange(of: morningTime) { _, _ in env.rearmMorningReport() }
         // Coming back from the Settings app after flipping the permission —
         // re-read the real state so the card is never stale.
         .onChange(of: scenePhase) { _, phase in
@@ -187,6 +191,45 @@ struct RemindersSettingsView: View {
             #endif
         } footer: {
             Text("Reminders are delivered by the system as local notifications. Grant permission once so scheduled reminders can appear.")
+                .font(.footnote)
+                .foregroundStyle(Theme.textTertiary)
+        }
+        .glassListRow()
+    }
+
+    // MARK: Morning report
+
+    /// The overnight summary lives on Preferences directly (not in the
+    /// ReminderPreferences blob) because its content is data-driven and
+    /// re-armed by the sync pipeline, not by the static scheduler.
+    private var morningEnabled: Bool { env.preferences.morningReportEnabled }
+    private var morningTime: Int { env.preferences.morningReportMinutes }
+
+    @ViewBuilder private var morningReportSection: some View {
+        @Bindable var preferences = env.preferences
+        Section {
+            Toggle(isOn: $preferences.morningReportEnabled) {
+                RemindersLabel(title: "Morning report", systemImage: "sunrise.fill", tint: Theme.zoneWarning)
+            }
+            .tint(Theme.accent)
+            if preferences.morningReportEnabled {
+                DatePicker(
+                    "Delivery time",
+                    selection: Binding(
+                        get: {
+                            Calendar.current.startOfDay(for: Date())
+                                .addingTimeInterval(TimeInterval(preferences.morningReportMinutes * 60))
+                        },
+                        set: { date in
+                            let comps = Calendar.current.dateComponents([.hour, .minute], from: date)
+                            preferences.morningReportMinutes = (comps.hour ?? 7) * 60 + (comps.minute ?? 30)
+                        }
+                    ),
+                    displayedComponents: .hourAndMinute
+                )
+            }
+        } footer: {
+            Text("A quiet note when you wake: overnight time in range, the lowest point and when. No sound, no alarm — just the night, summarised.")
                 .font(.footnote)
                 .foregroundStyle(Theme.textTertiary)
         }

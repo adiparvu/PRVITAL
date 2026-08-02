@@ -126,6 +126,42 @@ final class GlucoseAlertService {
         saveMissedBolusState(decision.state)
     }
 
+    /// The smart basal nudge: usual time passed, nothing logged today.
+    func evaluateMissedBasal(
+        basalDoseTimes: [Date],
+        preferences: AlertPreferences,
+        now: Date = Date()
+    ) {
+        guard preferences.enabled, preferences.basalNudgeEnabled else { return }
+        let lastFired = defaults.object(forKey: Self.missedBasalDayKey) as? Date
+        let decision = MissedBasalEvaluator.decide(
+            now: now,
+            usualMinutesFromMidnight: preferences.basalNudgeMinutesFromMidnight,
+            basalDoseTimes: basalDoseTimes,
+            lastFiredDay: lastFired)
+        if decision.fire {
+            fireMissedBasal()
+            defaults.set(decision.lastFiredDay, forKey: Self.missedBasalDayKey)
+        }
+    }
+
+    private static let missedBasalDayKey = "glucose.missedBasalFiredDay"
+
+    private func fireMissedBasal() {
+        #if canImport(UserNotifications)
+        let content = UNMutableNotificationContent()
+        content.title = String(localized: "Basal logged yet?")
+        content.body = String(localized: "Your usual basal time has passed and nothing is logged today. If you took it, log it — if not, better now than later.")
+        content.sound = AlertSoundStore.load().important.notificationSound
+        content.relevanceScore = 0.7
+        let request = UNNotificationRequest(
+            identifier: "glucose-missed-basal",
+            content: content,
+            trigger: nil)
+        UNUserNotificationCenter.current().add(request)
+        #endif
+    }
+
     /// Fires a "no recent readings" alert once per data gap.
     func evaluateSignalLoss(
         lastReadingAt: Date?,

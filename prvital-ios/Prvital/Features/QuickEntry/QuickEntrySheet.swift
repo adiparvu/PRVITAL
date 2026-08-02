@@ -70,6 +70,7 @@ struct EntryEditor: View {
 struct QuickEntrySheet: View {
     @Environment(AppEnvironment.self) private var env
     @Environment(\.dismiss) private var dismiss
+    @Environment(\.modelContext) private var modelContext
 
     @Query private var recentInsulin: [InsulinDose]
 
@@ -79,6 +80,8 @@ struct QuickEntrySheet: View {
     @State private var showKetones = false
     /// The free-typed sentence in the natural-language card.
     @State private var phraseText = ""
+    /// The user's repeat meals ("the usual breakfast"), one tap to re-log.
+    @State private var combos: [MealCombo] = []
 
     init() {
         // Only the doses that can still carry insulin-on-board — bounded.
@@ -119,12 +122,16 @@ struct QuickEntrySheet: View {
                         treatLowButton.appearTransition(delay: 0.03)
                     }
                     naturalLogCard.appearTransition(delay: 0.05)
+                    if !combos.isEmpty {
+                        combosRow.appearTransition(delay: 0.055)
+                    }
                     entryList.appearTransition(delay: 0.06)
                 }
                 .padding()
             }
             .background(Theme.background)
             .navigationTitle("Add entry")
+            .task { loadCombos() }
             .navigationBarTitleDisplayMode(.inline)
             .toolbar { ToolbarItem(placement: .cancellationAction) { Button("Done") { dismiss() } } }
             .sheet(item: $editor) { EntryEditor(kind: $0) }
@@ -145,6 +152,67 @@ struct QuickEntrySheet: View {
             .sheet(isPresented: $showKetones) { LogKetoneSheet() }
         }
         .presentationDetents([.medium, .large])
+    }
+
+    // MARK: Frequent combos
+
+    /// "The usual" row: repeat meals detected from the last month, re-logged
+    /// (grams + the usual dose) in one tap.
+    private var combosRow: some View {
+        ScrollView(.horizontal, showsIndicators: false) {
+            HStack(spacing: 8) {
+                ForEach(combos) { combo in
+                    Button {
+                        logCombo(combo)
+                    } label: {
+                        HStack(spacing: 6) {
+                            Image(systemName: "arrow.counterclockwise")
+                                .font(.caption2.weight(.bold))
+                            Text(comboLabel(combo))
+                                .font(.footnote.weight(.semibold))
+                                .lineLimit(1)
+                        }
+                        .foregroundStyle(Theme.accent)
+                        .padding(.horizontal, 12)
+                        .padding(.vertical, 8)
+                        .background(Theme.accentSoft, in: .capsule)
+                    }
+                    .buttonStyle(.plain)
+                }
+            }
+        }
+    }
+
+    private func comboLabel(_ combo: MealCombo) -> String {
+        var label = combo.foodDescription ?? String(localized: "Meal")
+        label += " \(Int(combo.grams.rounded())) g"
+        if let units = combo.units {
+            label += " + \(units.formatted(.number.precision(.fractionLength(0...1)))) U"
+        }
+        return label
+    }
+
+    private func logCombo(_ combo: MealCombo) {
+        env.entryStore.addCarbs(grams: combo.grams,
+                                mealType: suggestedMealType(),
+                                foodDescription: combo.foodDescription)
+        if let units = combo.units {
+            env.entryStore.addInsulin(units: units)
+        }
+        Haptics.play(.success)
+        dismiss()
+    }
+
+    /// One bounded fetch of the last month, folded into habit combos.
+    private func loadCombos() {
+        let cutoff = Date().addingTimeInterval(-30 * 86_400)
+        let carbs = (try? modelContext.fetch(FetchDescriptor<CarbEntry>(
+            predicate: #Predicate { $0.timestamp >= cutoff }))) ?? []
+        let doses = (try? modelContext.fetch(FetchDescriptor<InsulinDose>(
+            predicate: #Predicate { $0.timestamp >= cutoff }))) ?? []
+        combos = FrequentCombos.detect(
+            meals: carbs.map { ($0.timestamp, $0.grams, $0.foodDescription) },
+            doses: doses.map { ($0.timestamp, $0.units) })
     }
 
     // MARK: Natural-language log

@@ -45,6 +45,13 @@ struct AlertPreferences: Codable, Equatable, Sendable {
     /// meal-sized climb. Opt-in — only meaningful for people who bolus.
     var missedBolusEnabled = false
 
+    // MARK: Missed basal
+
+    /// The smart basal nudge: only when the usual time passed with no basal
+    /// logged today. Off by default; time in minutes from midnight.
+    var basalNudgeEnabled = false
+    var basalNudgeMinutesFromMidnight = 21 * 60
+
     // MARK: Persistence filter
 
     /// How long a NON-urgent excursion must hold before it alerts (0 = alert on
@@ -81,6 +88,7 @@ struct AlertPreferences: Codable, Equatable, Sendable {
         case signalLossEnabled, signalLossMinutes
         case missedBolusEnabled
         case persistenceMinutes
+        case basalNudgeEnabled, basalNudgeMinutesFromMidnight
     }
 
     init() {}
@@ -100,6 +108,8 @@ struct AlertPreferences: Codable, Equatable, Sendable {
         signalLossMinutes = try c.decodeIfPresent(Int.self, forKey: .signalLossMinutes) ?? 25
         missedBolusEnabled = try c.decodeIfPresent(Bool.self, forKey: .missedBolusEnabled) ?? false
         persistenceMinutes = try c.decodeIfPresent(Int.self, forKey: .persistenceMinutes) ?? 0
+        basalNudgeEnabled = try c.decodeIfPresent(Bool.self, forKey: .basalNudgeEnabled) ?? false
+        basalNudgeMinutesFromMidnight = try c.decodeIfPresent(Int.self, forKey: .basalNudgeMinutesFromMidnight) ?? 21 * 60
     }
 }
 

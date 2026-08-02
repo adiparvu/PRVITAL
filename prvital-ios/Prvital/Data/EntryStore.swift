@@ -457,6 +457,9 @@ final class EntryStore {
         let session = SensorSession(startDate: start, kind: kind)
         context.insert(session)
         finish(.manualEdit, detail: "Sensor session started (\(kind.displayName))")
+        // Arm the 48h / 24h / at-expiry countdown notifications for this wear.
+        SensorExpiryScheduler.reschedule(expiryDate: session.expiryDate,
+                                         sensorName: kind.displayName)
         return session
     }
 

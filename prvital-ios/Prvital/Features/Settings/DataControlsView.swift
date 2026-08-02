@@ -161,10 +161,25 @@ struct DataControlsView: View {
                     }
                 }
                 .disabled(isRestoring)
+                Toggle(isOn: Binding(
+                    get: { AutoBackup.isEnabled },
+                    set: { on in
+                        Haptics.play(.selection)
+                        AutoBackup.isEnabled = on
+                        if on { AutoBackup.runIfDue(modelContainer: env.modelContainer) }
+                    }
+                )) {
+                    Label {
+                        Text("Weekly auto-backup").foregroundStyle(Theme.textPrimary)
+                    } icon: {
+                        Image(systemName: "calendar.badge.clock").foregroundStyle(Theme.accent)
+                    }
+                }
+                .tint(Theme.accent)
             } header: {
                 Text("Backup")
             } footer: {
-                Text("The complete journal — every record family, with ids and provenance — as one JSON file you own. Restoring inserts only the records you don't already have; nothing is overwritten or duplicated.")
+                Text("The complete journal — every record family, with ids and provenance — as one JSON file you own. Restoring inserts only the records you don't already have; nothing is overwritten or duplicated. Auto-backup writes the same file weekly to Files → On My iPhone → Prvital → Backups, keeping the last four.")
                     .font(.footnote)
                     .foregroundStyle(Theme.textTertiary)
             }

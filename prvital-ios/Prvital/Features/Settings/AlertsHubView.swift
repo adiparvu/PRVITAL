@@ -53,6 +53,7 @@ struct AlertsHubView: View {
                 rateOfChangeSection
                 signalLossSection
                 missedBolusSection
+                basalNudgeSection
                 sensorSection
                 snoozeSection
             }
@@ -205,6 +206,44 @@ struct AlertsHubView: View {
             Text("Bolus")
         } footer: {
             Text("A gentle nudge ~25 minutes after a logged meal that has no bolus around it — and when glucose climbs fast with nothing logged at all. For people who dose insulin at meals.")
+                .font(.footnote).foregroundStyle(Theme.textTertiary)
+        }
+        .glassListRow()
+    }
+
+    /// The SMART basal nudge — unlike the fixed daily reminder, it only rings
+    /// when the usual time has passed with no basal actually logged.
+    private var basalNudgeSection: some View {
+        Section {
+            Toggle(isOn: $prefs.basalNudgeEnabled) {
+                VStack(alignment: .leading, spacing: 2) {
+                    Text("Missed basal").foregroundStyle(Theme.textPrimary)
+                    Text("only when nothing is logged by your usual time")
+                        .font(.caption).foregroundStyle(Theme.textSecondary)
+                }
+            }
+            .tint(Theme.accent)
+            if prefs.basalNudgeEnabled {
+                DatePicker(
+                    "Usual basal time",
+                    selection: Binding(
+                        get: {
+                            Calendar.current.startOfDay(for: Date())
+                                .addingTimeInterval(TimeInterval(prefs.basalNudgeMinutesFromMidnight * 60))
+                        },
+                        set: { date in
+                            let calendar = Calendar.current
+                            let comps = calendar.dateComponents([.hour, .minute], from: date)
+                            prefs.basalNudgeMinutesFromMidnight = (comps.hour ?? 21) * 60 + (comps.minute ?? 0)
+                        }
+                    ),
+                    displayedComponents: .hourAndMinute
+                )
+            }
+        } header: {
+            Text("Basal")
+        } footer: {
+            Text("Checks about 45 minutes after your usual time; if a basal dose is already logged, it stays silent. One nudge per evening at most.")
                 .font(.footnote).foregroundStyle(Theme.textTertiary)
         }
         .glassListRow()

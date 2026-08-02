@@ -76,7 +76,10 @@ enum SensorAutoTracker {
             // session defaults to Libre 3 (the LibreLinkUp mainstay).
             let kind: SensorKind = (last?.kind.isLibre == true) ? last!.kind : .freeStyleLibre3
             if last == nil || pending.activatedAt > last!.startDate.addingTimeInterval(3600) {
-                context.insert(SensorSession(startDate: pending.activatedAt, kind: kind))
+                let session = SensorSession(startDate: pending.activatedAt, kind: kind)
+                context.insert(session)
+                SensorExpiryScheduler.reschedule(expiryDate: session.expiryDate,
+                                                 sensorName: kind.displayName)
                 try? context.save()
             }
             // Mark consumed either way — an older serial must not retry forever.

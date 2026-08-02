@@ -10633,6 +10633,65 @@
         }
       }
     },
+    "A huge, night-friendly reading for StandBy on your nightstand." : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ein riesiger, nachtfreundlicher Wert für StandBy auf dem Nachttisch."
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Una lectura enorme y amable con la noche para StandBy en tu mesilla."
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Une lecture géante et douce pour la nuit, pour StandBy sur la table de chevet."
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Una lettura enorme e adatta alla notte per StandBy sul comodino."
+          }
+        },
+        "nl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Een enorme, nachtvriendelijke waarde voor StandBy op je nachtkastje."
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ogromny, przyjazny nocy odczyt dla StandBy na szafce nocnej."
+          }
+        },
+        "pt" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Uma leitura enorme e amiga da noite para o StandBy na mesa de cabeceira."
+          }
+        },
+        "ro" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "O citire uriașă, prietenoasă cu noaptea, pentru StandBy pe noptieră."
+          }
+        },
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Огромное ночное показание для StandBy на тумбочке."
+          }
+        }
+      }
+    },
     "A little low right now — treat it and you'll be back on track." : {
       "extractionState" : "manual",
       "localizations" : {
@@ -11160,6 +11219,65 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Тихое локальное уведомление, когда итоги недели готовы. Сами итоги вычисляются на вашем устройстве при открытии."
+          }
+        }
+      }
+    },
+    "A quiet note when you wake: overnight time in range, the lowest point and when. No sound, no alarm — just the night, summarised." : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Eine leise Notiz zum Aufwachen: nächtliche Zeit im Zielbereich, der Tiefstwert und wann. Kein Ton, kein Alarm — nur die Nacht, zusammengefasst."
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Una nota silenciosa al despertar: tiempo en rango nocturno, el punto más bajo y cuándo. Sin sonido ni alarma — solo la noche, resumida."
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Une note discrète au réveil : temps dans la cible cette nuit, le point le plus bas et quand. Pas de son, pas d'alarme — juste la nuit, résumée."
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Una nota silenziosa al risveglio: tempo nel range notturno, il punto più basso e quando. Nessun suono, nessun allarme — solo la notte, riassunta."
+          }
+        },
+        "nl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Een stille notitie bij het ontwaken: nachtelijke tijd binnen bereik, het laagste punt en wanneer. Geen geluid, geen alarm — gewoon de nacht, samengevat."
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Cicha notatka po przebudzeniu: nocny czas w zakresie, najniższy punkt i kiedy. Bez dźwięku, bez alarmu — po prostu noc w skrócie."
+          }
+        },
+        "pt" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Uma nota silenciosa ao acordar: tempo no intervalo durante a noite, o ponto mais baixo e quando. Sem som, sem alarme — só a noite, resumida."
+          }
+        },
+        "ro" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "O notă discretă la trezire: timpul în interval peste noapte, punctul cel mai jos și când. Fără sunet, fără alarmă — doar noaptea, pe scurt."
+          }
+        },
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Тихая заметка при пробуждении: ночное время в диапазоне, самая низкая точка и когда. Без звука и тревоги — просто ночь, кратко."
           }
         }
       }
@@ -19242,6 +19360,65 @@
         }
       }
     },
+    "Basal logged yet?" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Basal schon eingetragen?"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "¿Basal registrada?"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Basale consignée ?"
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Basale registrata?"
+          }
+        },
+        "nl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Basaal al gelogd?"
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Bazalna zapisana?"
+          }
+        },
+        "pt" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Basal registada?"
+          }
+        },
+        "ro" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ai logat bazala?"
+          }
+        },
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Базал записан?"
+          }
+        }
+      }
+    },
     "Basal only" : {
       "extractionState" : "manual",
       "localizations" : {
@@ -21079,6 +21256,65 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Болюсный инсулин"
+          }
+        }
+      }
+    },
+    "Both days, hour by hour" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Beide Tage, Stunde für Stunde"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ambos días, hora a hora"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Les deux jours, heure par heure"
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Entrambi i giorni, ora per ora"
+          }
+        },
+        "nl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Beide dagen, uur voor uur"
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Oba dni, godzina po godzinie"
+          }
+        },
+        "pt" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Os dois dias, hora a hora"
+          }
+        },
+        "ro" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ambele zile, oră cu oră"
+          }
+        },
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Оба дня, час за часом"
           }
         }
       }
@@ -24228,6 +24464,65 @@
         }
       }
     },
+    "Checks about 45 minutes after your usual time; if a basal dose is already logged, it stays silent. One nudge per evening at most." : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Prüft etwa 45 Minuten nach deiner üblichen Zeit; ist bereits ein Basal eingetragen, bleibt es still. Höchstens ein Hinweis pro Abend."
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Comprueba unos 45 minutos después de tu hora habitual; si ya hay una dosis basal registrada, guarda silencio. Como mucho un aviso por noche."
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Vérifie environ 45 minutes après l'heure habituelle ; si une basale est déjà consignée, il reste silencieux. Au plus un rappel par soir."
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Controlla circa 45 minuti dopo l'orario abituale; se una basale è già registrata, resta in silenzio. Al massimo un promemoria a sera."
+          }
+        },
+        "nl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Controleert zo'n 45 minuten na je gebruikelijke tijd; is er al een basaal gelogd, dan blijft het stil. Hooguit één duwtje per avond."
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Sprawdza ok. 45 minut po zwykłej porze; jeśli bazalna jest już zapisana, milczy. Najwyżej jedno przypomnienie na wieczór."
+          }
+        },
+        "pt" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Verifica cerca de 45 minutos após a tua hora habitual; se já houver basal registada, fica em silêncio. No máximo um lembrete por noite."
+          }
+        },
+        "ro" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Verifică la circa 45 de minute după ora obișnuită; dacă bazala e deja logată, tace. Cel mult o atenționare pe seară."
+          }
+        },
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Проверяет примерно через 45 минут после обычного времени; если базал уже записан — молчит. Не более одного напоминания за вечер."
+          }
+        }
+      }
+    },
     "Chime" : {
       "extractionState" : "manual",
       "localizations" : {
@@ -25481,6 +25776,124 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Компактная"
+          }
+        }
+      }
+    },
+    "Compare days" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Tage vergleichen"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Comparar días"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Comparer des jours"
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Confronta giorni"
+          }
+        },
+        "nl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Dagen vergelijken"
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Porównaj dni"
+          }
+        },
+        "pt" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Comparar dias"
+          }
+        },
+        "ro" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Compară zile"
+          }
+        },
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Сравнить дни"
+          }
+        }
+      }
+    },
+    "Compare two days" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Zwei Tage vergleichen"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Comparar dos días"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Comparer deux jours"
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Confronta due giorni"
+          }
+        },
+        "nl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Twee dagen vergelijken"
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Porównaj dwa dni"
+          }
+        },
+        "pt" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Comparar dois dias"
+          }
+        },
+        "ro" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Compară două zile"
+          }
+        },
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Сравнить два дня"
           }
         }
       }
@@ -29871,6 +30284,65 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Введение"
+          }
+        }
+      }
+    },
+    "Delivery time" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Zustellzeit"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Hora de entrega"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Heure d'envoi"
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Orario di consegna"
+          }
+        },
+        "nl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Bezorgtijd"
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Godzina dostarczenia"
+          }
+        },
+        "pt" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Hora de entrega"
+          }
+        },
+        "ro" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ora livrării"
+          }
+        },
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Время доставки"
           }
         }
       }
@@ -37205,6 +37677,65 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Прокол пальца"
+          }
+        }
+      }
+    },
+    "First day" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Erster Tag"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Primer día"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Premier jour"
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Primo giorno"
+          }
+        },
+        "nl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Eerste dag"
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Pierwszy dzień"
+          }
+        },
+        "pt" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Primeiro dia"
+          }
+        },
+        "ro" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Prima zi"
+          }
+        },
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Первый день"
           }
         }
       }
@@ -61146,6 +61677,65 @@
         }
       }
     },
+    "Missed basal" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Verpasstes Basal"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Basal omitida"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Basale manquée"
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Basale mancata"
+          }
+        },
+        "nl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Gemiste basaal"
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Pominięta bazalna"
+          }
+        },
+        "pt" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Basal em falta"
+          }
+        },
+        "ro" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Bazală ratată"
+          }
+        },
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Пропущенный базал"
+          }
+        }
+      }
+    },
     "Missed bolus" : {
       "extractionState" : "manual",
       "localizations" : {
@@ -61790,6 +62380,65 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Утро"
+          }
+        }
+      }
+    },
+    "Morning report" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Morgenbericht"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Informe matinal"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Rapport du matin"
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Rapporto del mattino"
+          }
+        },
+        "nl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ochtendrapport"
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Poranny raport"
+          }
+        },
+        "pt" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Relatório da manhã"
+          }
+        },
+        "ro" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Raportul de dimineață"
+          }
+        },
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Утренний отчёт"
           }
         }
       }
@@ -63334,6 +63983,65 @@
         }
       }
     },
+    "Night glance" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Nachtblick"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Vista nocturna"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Coup d'œil nocturne"
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Sguardo notturno"
+          }
+        },
+        "nl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Nachtblik"
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Nocny rzut oka"
+          }
+        },
+        "pt" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Vista noturna"
+          }
+        },
+        "ro" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Privire de noapte"
+          }
+        },
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ночной взгляд"
+          }
+        }
+      }
+    },
     "Night target high" : {
       "extractionState" : "manual",
       "localizations" : {
@@ -64805,6 +65513,65 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Нет измерений глюкозы за этот период."
+          }
+        }
+      }
+    },
+    "No glucose readings on either day." : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "An keinem der Tage gibt es Glukosewerte."
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "No hay lecturas de glucosa en ninguno de los días."
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Aucune mesure de glycémie sur ces deux jours."
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Nessuna lettura glicemica in nessuno dei due giorni."
+          }
+        },
+        "nl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Geen glucosemetingen op beide dagen."
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Brak odczytów glukozy w obu dniach."
+          }
+        },
+        "pt" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Sem leituras de glicose em nenhum dos dias."
+          }
+        },
+        "ro" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Nicio citire de glicemie în niciuna dintre zile."
+          }
+        },
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Нет показаний глюкозы ни в один из дней."
           }
         }
       }
@@ -71089,6 +71856,183 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Ночь (0–6)"
+          }
+        }
+      }
+    },
+    "Overnight: %lld%% in range, lowest %@ at %@, no lows." : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Nachts: %lld %% im Zielbereich, Tiefstwert %@ um %@, keine Unterzuckerungen."
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Esta noche: %lld%% en rango, mínimo %@ a las %@, sin hipoglucemias."
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Cette nuit : %lld %% dans la cible, minimum %@ à %@, aucune hypo."
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Stanotte: %lld%% nel range, minimo %@ alle %@, nessuna ipo."
+          }
+        },
+        "nl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Vannacht: %lld%% binnen bereik, laagste %@ om %@, geen lage waarden."
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "W nocy: %lld%% w zakresie, minimum %@ o %@, bez niedocukrzeń."
+          }
+        },
+        "pt" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Esta noite: %lld%% no intervalo, mínimo %@ às %@, sem hipoglicemias."
+          }
+        },
+        "ro" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Peste noapte: %lld%% în interval, minim %@ la %@, fără hipoglicemii."
+          }
+        },
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ночью: %lld%% в диапазоне, минимум %@ в %@, без гипо."
+          }
+        }
+      }
+    },
+    "Overnight: %lld%% in range, lowest %@ at %@. Worth a glance at the chart." : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Nachts: %lld %% im Zielbereich, Tiefstwert %@ um %@. Ein Blick aufs Diagramm lohnt sich."
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Esta noche: %lld%% en rango, mínimo %@ a las %@. Merece un vistazo al gráfico."
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Cette nuit : %lld %% dans la cible, minimum %@ à %@. Un œil au graphique s'impose."
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Stanotte: %lld%% nel range, minimo %@ alle %@. Vale un'occhiata al grafico."
+          }
+        },
+        "nl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Vannacht: %lld%% binnen bereik, laagste %@ om %@. De grafiek is een blik waard."
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "W nocy: %lld%% w zakresie, minimum %@ o %@. Warto zerknąć na wykres."
+          }
+        },
+        "pt" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Esta noite: %lld%% no intervalo, mínimo %@ às %@. Vale a pena olhar o gráfico."
+          }
+        },
+        "ro" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Peste noapte: %lld%% în interval, minim %@ la %@. Merită o privire pe grafic."
+          }
+        },
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ночью: %lld%% в диапазоне, минимум %@ в %@. Стоит взглянуть на график."
+          }
+        }
+      }
+    },
+    "Overnight: %lld%% in range." : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Nachts: %lld %% im Zielbereich."
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Esta noche: %lld%% en rango."
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Cette nuit : %lld %% dans la cible."
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Stanotte: %lld%% nel range."
+          }
+        },
+        "nl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Vannacht: %lld%% binnen bereik."
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "W nocy: %lld%% w zakresie."
+          }
+        },
+        "pt" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Esta noite: %lld%% no intervalo."
+          }
+        },
+        "ro" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Peste noapte: %lld%% în interval."
+          }
+        },
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ночью: %lld%% в диапазоне."
           }
         }
       }
@@ -81844,6 +82788,65 @@
         }
       }
     },
+    "Second day" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Zweiter Tag"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Segundo día"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Deuxième jour"
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Secondo giorno"
+          }
+        },
+        "nl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Tweede dag"
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Drugi dzień"
+          }
+        },
+        "pt" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Segundo dia"
+          }
+        },
+        "ro" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "A doua zi"
+          }
+        },
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Второй день"
+          }
+        }
+      }
+    },
     "Security" : {
       "extractionState" : "manual",
       "localizations" : {
@@ -82548,6 +83551,65 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Батарея датчика"
+          }
+        }
+      }
+    },
+    "Sensor change" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Sensorwechsel"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Cambio de sensor"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Changement de capteur"
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Cambio sensore"
+          }
+        },
+        "nl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Sensorwissel"
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Wymiana sensora"
+          }
+        },
+        "pt" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Troca de sensor"
+          }
+        },
+        "ro" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Schimbare senzor"
+          }
+        },
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Замена датчика"
           }
         }
       }
@@ -84796,6 +85858,65 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Режим болезни включён"
+          }
+        }
+      }
+    },
+    "Side by side" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Nebeneinander"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Lado a lado"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Côte à côte"
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Fianco a fianco"
+          }
+        },
+        "nl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Naast elkaar"
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Obok siebie"
+          }
+        },
+        "pt" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Lado a lado"
+          }
+        },
+        "ro" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Una lângă alta"
+          }
+        },
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Бок о бок"
           }
         }
       }
@@ -92172,6 +93293,65 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Полный дневник — все типы записей, с id и происхождением — в одном JSON-файле, который принадлежит вам. Восстановление добавляет только отсутствующие записи; ничего не перезаписывается и не дублируется."
+          }
+        }
+      }
+    },
+    "The complete journal — every record family, with ids and provenance — as one JSON file you own. Restoring inserts only the records you don't already have; nothing is overwritten or duplicated. Auto-backup writes the same file weekly to Files → On My iPhone → Prvital → Backups, keeping the last four." : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Das komplette Tagebuch — jede Datenart, mit IDs und Herkunft — als eine JSON-Datei, die dir gehört. Beim Wiederherstellen werden nur fehlende Einträge eingefügt; nichts wird überschrieben oder doppelt angelegt. Das Auto-Backup schreibt dieselbe Datei wöchentlich nach Dateien → Auf meinem iPhone → Prvital → Backups und behält die letzten vier."
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "El diario completo — cada tipo de registro, con ids y procedencia — en un archivo JSON tuyo. Al restaurar solo se insertan los registros que falten; nada se sobrescribe ni se duplica. La copia automática escribe el mismo archivo cada semana en Archivos → En mi iPhone → Prvital → Backups, guardando las últimas cuatro."
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Le journal complet — chaque famille d'enregistrements, avec ids et provenance — en un fichier JSON à toi. La restauration n'insère que les enregistrements manquants ; rien n'est écrasé ni dupliqué. La sauvegarde auto écrit le même fichier chaque semaine dans Fichiers → Sur mon iPhone → Prvital → Backups, en gardant les quatre dernières."
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Il diario completo — ogni famiglia di record, con id e provenienza — in un unico file JSON tuo. Il ripristino inserisce solo i record mancanti; niente viene sovrascritto o duplicato. Il backup automatico scrive lo stesso file ogni settimana in File → Sul mio iPhone → Prvital → Backups, conservando gli ultimi quattro."
+          }
+        },
+        "nl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Het volledige dagboek — elke recordsoort, met ids en herkomst — als één JSON-bestand van jou. Herstellen voegt alleen ontbrekende records toe; niets wordt overschreven of gedupliceerd. De auto-back-up schrijft hetzelfde bestand wekelijks naar Bestanden → Op mijn iPhone → Prvital → Backups en bewaart de laatste vier."
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Cały dziennik — każdy typ rekordu, z id i pochodzeniem — jako jeden Twój plik JSON. Przywracanie wstawia tylko brakujące rekordy; nic nie jest nadpisywane ani duplikowane. Auto-kopia zapisuje ten sam plik co tydzień w Pliki → Na moim iPhonie → Prvital → Backups, zachowując cztery ostatnie."
+          }
+        },
+        "pt" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "O diário completo — cada família de registos, com ids e proveniência — num único ficheiro JSON teu. A restauração insere apenas os registos em falta; nada é substituído nem duplicado. A cópia automática escreve o mesmo ficheiro semanalmente em Ficheiros → No meu iPhone → Prvital → Backups, mantendo as últimas quatro."
+          }
+        },
+        "ro" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Jurnalul complet — fiecare familie de înregistrări, cu id-uri și proveniență — într-un singur fișier JSON al tău. Restaurarea inserează doar înregistrările lipsă; nimic nu se suprascrie sau duplică. Backupul automat scrie același fișier săptămânal în Fișiere → Pe iPhone-ul meu → Prvital → Backups, păstrând ultimele patru."
+          }
+        },
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Полный дневник — все типы записей, с id и происхождением — в одном вашем JSON-файле. Восстановление добавляет только недостающие записи; ничего не перезаписывается и не дублируется. Автокопия еженедельно пишет тот же файл в Файлы → На iPhone → Prvital → Backups, храня последние четыре."
           }
         }
       }
@@ -100932,6 +102112,65 @@
         }
       }
     },
+    "Usual basal time" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Übliche Basalzeit"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Hora habitual de basal"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Heure habituelle de basale"
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Orario abituale basale"
+          }
+        },
+        "nl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Gebruikelijke basaaltijd"
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Zwykła pora bazalnej"
+          }
+        },
+        "pt" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Hora habitual da basal"
+          }
+        },
+        "ro" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ora obișnuită a bazalei"
+          }
+        },
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Обычное время базала"
+          }
+        }
+      }
+    },
     "Value" : {
       "extractionState" : "manual",
       "localizations" : {
@@ -102934,6 +104173,65 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Выходные"
+          }
+        }
+      }
+    },
+    "Weekly auto-backup" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Wöchentliches Auto-Backup"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Copia automática semanal"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Sauvegarde auto hebdo"
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Backup automatico settimanale"
+          }
+        },
+        "nl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Wekelijkse auto-back-up"
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Cotygodniowa auto-kopia"
+          }
+        },
+        "pt" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Cópia automática semanal"
+          }
+        },
+        "ro" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Backup automat săptămânal"
+          }
+        },
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Еженедельная автокопия"
           }
         }
       }
@@ -106012,6 +107310,183 @@
         }
       }
     },
+    "Your %@ expires in 2 days. A good moment to check you have the next one." : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Dein %@ läuft in 2 Tagen ab. Ein guter Moment zu prüfen, ob der nächste bereitliegt."
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Tu %@ caduca en 2 días. Buen momento para comprobar que tienes el siguiente."
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ton %@ expire dans 2 jours. Le bon moment pour vérifier que tu as le suivant."
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Il tuo %@ scade tra 2 giorni. Un buon momento per controllare di avere il prossimo."
+          }
+        },
+        "nl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Je %@ verloopt over 2 dagen. Een goed moment om te checken of je de volgende hebt."
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Twój %@ wygasa za 2 dni. Dobry moment, by sprawdzić, czy masz następny."
+          }
+        },
+        "pt" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "O teu %@ expira em 2 dias. Boa altura para confirmar que tens o próximo."
+          }
+        },
+        "ro" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Senzorul %@ expiră în 2 zile. Un moment bun să verifici că îl ai pe următorul."
+          }
+        },
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ваш %@ истекает через 2 дня. Самое время проверить, есть ли следующий."
+          }
+        }
+      }
+    },
+    "Your %@ expires tomorrow." : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Dein %@ läuft morgen ab."
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Tu %@ caduca mañana."
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ton %@ expire demain."
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Il tuo %@ scade domani."
+          }
+        },
+        "nl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Je %@ verloopt morgen."
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Twój %@ wygasa jutro."
+          }
+        },
+        "pt" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "O teu %@ expira amanhã."
+          }
+        },
+        "ro" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Senzorul %@ expiră mâine."
+          }
+        },
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ваш %@ истекает завтра."
+          }
+        }
+      }
+    },
+    "Your %@ has reached the end of its wear time. Replace it to keep readings coming." : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Dein %@ hat das Ende seiner Tragezeit erreicht. Ersetze ihn, damit die Werte weiterkommen."
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Tu %@ llegó al final de su tiempo de uso. Sustitúyelo para seguir recibiendo lecturas."
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ton %@ a atteint la fin de sa durée de port. Remplace-le pour continuer à recevoir des mesures."
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Il tuo %@ ha raggiunto la fine del tempo di utilizzo. Sostituiscilo per continuare a ricevere letture."
+          }
+        },
+        "nl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Je %@ heeft het einde van de draagtijd bereikt. Vervang hem om metingen te blijven ontvangen."
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Twój %@ osiągnął koniec czasu noszenia. Wymień go, aby odczyty nadal przychodziły."
+          }
+        },
+        "pt" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "O teu %@ chegou ao fim do tempo de uso. Substitui-o para continuares a receber leituras."
+          }
+        },
+        "ro" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Senzorul %@ a ajuns la finalul purtării. Înlocuiește-l ca să continue citirile."
+          }
+        },
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ваш %@ отработал срок ношения. Замените его, чтобы показания продолжались."
+          }
+        }
+      }
+    },
     "Your %@ is your steadiest window; %@ needs the most attention." : {
       "extractionState" : "manual",
       "localizations" : {
@@ -107979,6 +109454,65 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Ваше предупреждение о срочно низком уровне не подтверждено. Проверьте глюкозу и при необходимости примите меры. (Напоминание %lld из %lld)"
+          }
+        }
+      }
+    },
+    "Your usual basal time has passed and nothing is logged today. If you took it, log it — if not, better now than later." : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Deine übliche Basalzeit ist vorbei und heute ist nichts eingetragen. Falls du sie genommen hast, trag sie ein — falls nicht, besser jetzt als später."
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Tu hora habitual de basal ya pasó y hoy no hay nada registrado. Si te la pusiste, regístrala — si no, mejor ahora que después."
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ton heure habituelle de basale est passée et rien n'est consigné aujourd'hui. Si tu l'as prise, note-la — sinon, mieux vaut maintenant que plus tard."
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "L'orario abituale della basale è passato e oggi non c'è nulla di registrato. Se l'hai fatta, registrala — altrimenti, meglio ora che dopo."
+          }
+        },
+        "nl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Je gebruikelijke basaaltijd is voorbij en er is vandaag niets gelogd. Heb je hem genomen, log hem — zo niet, beter nu dan later."
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Twoja zwykła pora bazalnej minęła, a dziś nic nie zapisano. Jeśli ją wziąłeś, zapisz — jeśli nie, lepiej teraz niż później."
+          }
+        },
+        "pt" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "A tua hora habitual da basal já passou e nada foi registado hoje. Se a tomaste, regista — se não, antes agora do que depois."
+          }
+        },
+        "ro" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ora ta obișnuită de bazală a trecut și azi nu e nimic logat. Dacă ai luat-o, noteaz-o — dacă nu, mai bine acum decât mai târziu."
+          }
+        },
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Обычное время базала прошло, а сегодня ничего не записано. Если укололи — запишите; если нет — лучше сейчас, чем позже."
           }
         }
       }
@@ -110693,6 +112227,65 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "углеводов"
+          }
+        }
+      }
+    },
+    "only when nothing is logged by your usual time" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "nur wenn bis zur üblichen Zeit nichts eingetragen ist"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "solo si no hay nada registrado a tu hora habitual"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "seulement si rien n'est consigné à l'heure habituelle"
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "solo se non c'è nulla registrato entro l'orario abituale"
+          }
+        },
+        "nl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "alleen als er niets is gelogd op je gebruikelijke tijd"
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "tylko gdy nic nie zapisano do zwykłej pory"
+          }
+        },
+        "pt" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "só quando nada foi registado à tua hora habitual"
+          }
+        },
+        "ro" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "doar când nu e nimic logat până la ora obișnuită"
+          }
+        },
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "только если к обычному времени ничего не записано"
           }
         }
       }

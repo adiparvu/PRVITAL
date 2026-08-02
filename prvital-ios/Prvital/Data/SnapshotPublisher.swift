@@ -234,6 +234,18 @@ final class SnapshotPublisher {
                 now: now
             )
         }
+
+        // Smart basal nudge: fires only when the usual time passed and no basal
+        // is logged today (unlike the fixed reminder, which rings regardless).
+        if preferences.alerts.basalNudgeEnabled {
+            alerts.evaluateMissedBasal(
+                basalDoseTimes: recentInsulinDoses(now: now)
+                    .filter { $0.insulinType.isBasal }
+                    .map(\.timestamp),
+                preferences: preferences.alerts,
+                now: now
+            )
+        }
     }
 
     /// Forces a widget timeline reload, bypassing the save throttle. Called once on

@@ -41,6 +41,8 @@ final class Preferences {
         self.textSizeRaw = self.defaults.string(forKey: Keys.textSize) ?? AppTextSize.large.rawValue
         self.hapticsEnabled = (self.defaults.object(forKey: Keys.hapticsEnabled) as? Bool) ?? true
         self.appLockEnabled = (self.defaults.object(forKey: Keys.appLock) as? Bool) ?? false
+        self.morningReportEnabled = (self.defaults.object(forKey: Keys.morningReport) as? Bool) ?? false
+        self.morningReportMinutes = (self.defaults.object(forKey: Keys.morningReportTime) as? Int) ?? 450
         self.showDailyCompanion = (self.defaults.object(forKey: Keys.showDailyCompanion) as? Bool) ?? true
         self.showContextualLessons = (self.defaults.object(forKey: Keys.showContextualLessons) as? Bool) ?? true
         self.minimalistIcons = (self.defaults.object(forKey: Keys.minimalistIcons) as? Bool) ?? false
@@ -286,6 +288,15 @@ final class Preferences {
         didSet { defaults.set(appLockEnabled, forKey: Keys.appLock) }
     }
 
+    /// The wake-up overnight summary notification, and when it arrives
+    /// (minutes from midnight; 450 = 07:30).
+    var morningReportEnabled: Bool {
+        didSet { defaults.set(morningReportEnabled, forKey: Keys.morningReport) }
+    }
+    var morningReportMinutes: Int {
+        didSet { defaults.set(morningReportMinutes, forKey: Keys.morningReportTime) }
+    }
+
     /// The dashboard deck's card order (raw `DashboardCard` values). Empty means
     /// the default order; unknown/new cards append automatically on resolve.
     var dashboardCardOrder: [String] {
@@ -366,6 +377,8 @@ final class Preferences {
         static let textSize = AppTextSize.preferenceKey
         static let hapticsEnabled = "pref.hapticsEnabled"
         static let appLock = "pref.appLockEnabled"
+        static let morningReport = "pref.morningReportEnabled"
+        static let morningReportTime = "pref.morningReportMinutes"
         static let showDailyCompanion = "pref.showDailyCompanion"
         static let showContextualLessons = "pref.showContextualLessons"
         static let minimalistIcons = "pref.minimalistIcons"

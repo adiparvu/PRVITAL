@@ -76,6 +76,10 @@ targets:
               - prvital
         UIBackgroundModes:
           - fetch
+        # Makes Documents (and its Backups folder, written by the weekly
+        # auto-backup) visible in the Files app under On My iPhone → Prvital.
+        UIFileSharingEnabled: true
+        LSSupportsOpeningDocumentsInPlace: true
         BGTaskSchedulerPermittedIdentifiers:
           - com.prvital.refresh
         UISupportedInterfaceOrientations:

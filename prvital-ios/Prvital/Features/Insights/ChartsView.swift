@@ -47,6 +47,8 @@ struct ChartsContent: View {
     @State private var derived = ChartsDerived()
     /// Drives the distribution histogram's one-shot rise (bars grow from zero).
     @State private var histogramRisen = false
+    /// Presents the two-day comparison sheet (from the overlay card's button).
+    @State private var showDayCompare = false
     @Environment(\.accessibilityReduceMotion) private var reduceMotion
     // Apple Health's daily exercise minutes (appleExerciseTime — the Watch's green
     // ring) for the window, fetched off the render path and merged into the
@@ -119,6 +121,7 @@ struct ChartsContent: View {
         .task(id: interval) {
             healthExercise = await env.healthKit.dailyMetric(.exercise, days: interval.dayCount)
         }
+        .sheet(isPresented: $showDayCompare) { DayCompareView() }
     }
 
     private var loadingPlaceholder: some View {
@@ -204,7 +207,23 @@ struct ChartsContent: View {
     /// "I always rise at 7 AM". Faded days carry no identity on purpose; the
     /// pattern, not any single line, is the reading.
     private var overlaySection: some View {
-        SectionCard("Days overlaid", systemImage: "square.stack.3d.up") {
+        SectionCard(
+            "Days overlaid", systemImage: "square.stack.3d.up",
+            // Pick any TWO days and study them side by side — the sibling of
+            // this card's anonymous pile-up.
+            accessory: AnyView(Button {
+                Haptics.play(.selection)
+                showDayCompare = true
+            } label: {
+                Image(systemName: "rectangle.on.rectangle")
+                    .font(.system(size: 15))
+                    .foregroundStyle(Theme.textTertiary)
+                    .padding(6)
+                    .contentShape(.rect)
+            }
+            .buttonStyle(.plain)
+            .accessibilityLabel("Compare two days"))
+        ) {
             VStack(alignment: .leading, spacing: 10) {
                 Chart {
                     RectangleMark(

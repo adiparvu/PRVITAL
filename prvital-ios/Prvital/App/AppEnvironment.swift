@@ -149,6 +149,20 @@ final class AppEnvironment {
         startHealthKitBackgroundDelivery()
     }
 
+    /// (Re)schedules today's morning overnight-summary notification with the
+    /// freshest numbers. Cheap no-op outside the 04:00→delivery window.
+    func rearmMorningReport() {
+        let enabled = preferences.morningReportEnabled
+        let minutes = preferences.morningReportMinutes
+        let unit = preferences.glucoseUnit
+        let thresholds = preferences.thresholds
+        let scheduler = MorningReportScheduler(modelContainer: modelContainer)
+        Task {
+            await scheduler.update(enabled: enabled, minutesFromMidnight: minutes,
+                                   unit: unit, thresholds: thresholds)
+        }
+    }
+
     /// Re-arms the Sunday-evening insight notification with the CURRENT top
     /// insight headline. Local notifications are static once scheduled, so the
     /// body is refreshed on every launch and foreground activation — the same
@@ -281,6 +295,10 @@ final class AppEnvironment {
     /// the app can notify the user while it isn't open.
     func performBackgroundRefresh() async {
         _ = await sync.syncAll()
+        // Refresh the morning report's numbers (no-op outside its window) and
+        // run the weekly auto-backup when it's due.
+        rearmMorningReport()
+        AutoBackup.runIfDue(modelContainer: modelContainer)
         scheduleBackgroundRefresh()
     }
 
