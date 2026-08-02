@@ -8,7 +8,9 @@ struct InsulinEntrySheet: View {
 
     var existing: InsulinDose?
 
-    @State private var units: Double = 0
+    // Nil until typed — the field opens EMPTY with a gray "0" placeholder, so
+    // there's never a real zero to delete first (device feedback).
+    @State private var units: Double?
     @State private var timestamp = Date()
     @State private var type: InsulinType = .rapidActing
     @State private var name = ""
@@ -54,6 +56,7 @@ struct InsulinEntrySheet: View {
                         Spacer()
                     }
                     .onChange(of: units) { _, value in
+                        guard let value else { return }
                         if value < 0 { units = 0 } else if value > 100 { units = 100 }
                     }
                 }
@@ -113,7 +116,7 @@ struct InsulinEntrySheet: View {
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
                 ToolbarItem(placement: .cancellationAction) { Button("Cancel") { dismiss() } }
-                ToolbarItem(placement: .confirmationAction) { Button("Save", action: save).disabled(units <= 0) }
+                ToolbarItem(placement: .confirmationAction) { Button("Save", action: save).disabled((units ?? 0) <= 0) }
             }
             .onAppear(perform: load)
             // Keep the name in step with the chosen type, but never overwrite
@@ -207,7 +210,7 @@ struct InsulinEntrySheet: View {
         // The meal word only makes sense on a meal bolus.
         let tag = context == .mealBolus ? mealTag : nil
         if let existing {
-            existing.units = units
+            existing.units = units ?? 0
             existing.timestamp = timestamp
             existing.insulinType = type
             existing.insulinName = name.isEmpty ? nil : name
@@ -218,7 +221,7 @@ struct InsulinEntrySheet: View {
             env.entryStore.touch(existing)
         } else {
             env.entryStore.addInsulin(
-                units: units, timestamp: timestamp, type: type,
+                units: units ?? 0, timestamp: timestamp, type: type,
                 name: name.isEmpty ? nil : name, deliveryMethod: delivery,
                 context: context, mealTag: tag, note: note.isEmpty ? nil : note
             )

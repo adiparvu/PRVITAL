@@ -43,7 +43,12 @@ struct MedicationEditorSheet: View {
                     HStack {
                         Text("Dose")
                         Spacer()
-                        TextField("0", value: $schedule.amount, format: .number)
+                        // An unset dose shows the gray "0" placeholder instead
+                        // of a real zero the user must delete first.
+                        TextField("0", value: Binding<Double?>(
+                            get: { schedule.amount == 0 ? nil : schedule.amount },
+                            set: { schedule.amount = $0 ?? 0 }
+                        ), format: .number)
                             .keyboardType(.decimalPad)
                             .multilineTextAlignment(.trailing)
                             .frame(maxWidth: 90)

@@ -27,8 +27,11 @@ struct BolusCalculatorView: View {
                              sort: \.timestamp, order: .reverse)
     }
 
-    @State private var carbs: Double = 0
-    @State private var glucoseDisplay: Double = 0
+    // Nil until typed — both fields open empty instead of holding a real zero
+    // the user has to delete first. Glucose is prefilled from the latest
+    // reading when one exists.
+    @State private var carbs: Double?
+    @State private var glucoseDisplay: Double?
     /// "I'll be moving in the next couple of hours" — scales the suggestion
     /// down by `activityReductionPercent`.
     @State private var activityPlanned = false
@@ -50,10 +53,10 @@ struct BolusCalculatorView: View {
         CarbMath.carbsOnBoard(entries: carbEntries, at: Date())
     }
     private var currentMgdL: Double? {
-        glucoseDisplay > 0 ? unit.toMgdL(glucoseDisplay) : nil
+        glucoseDisplay.flatMap { $0 > 0 ? unit.toMgdL($0) : nil }
     }
     private var estimate: BolusEstimate {
-        var base = InsulinMath.suggestBolus(carbs: carbs, currentMgdL: currentMgdL,
+        var base = InsulinMath.suggestBolus(carbs: carbs ?? 0, currentMgdL: currentMgdL,
                                             activeInsulin: iob, parameters: params, thresholds: thresholds)
         // Planned exercise: insulin sensitivity rises during and after movement,
         // so the whole suggestion is scaled down by the chosen fraction — the
@@ -206,7 +209,7 @@ struct BolusCalculatorView: View {
 
     // MARK: Rows
 
-    private func inputRow(_ title: String, value: Binding<Double>, suffix: String, digits: Int) -> some View {
+    private func inputRow(_ title: String, value: Binding<Double?>, suffix: String, digits: Int) -> some View {
         HStack {
             Text(title).foregroundStyle(Theme.textPrimary)
             Spacer()

@@ -306,7 +306,9 @@ struct LogKetoneSheet: View {
     @Environment(\.dismiss) private var dismiss
     @Environment(\.modelContext) private var modelContext
 
-    @State private var value: Double = 0.0
+    // Nil until typed — the field opens empty (gray "0" placeholder) instead of
+    // holding a real zero the user has to delete first.
+    @State private var value: Double?
     @State private var sample: KetoneSample = .blood
     @State private var date = Date()
     @State private var note = ""
@@ -328,13 +330,14 @@ struct LogKetoneSheet: View {
                         Spacer()
                     }
                     .onChange(of: value) { _, newValue in
+                        guard let newValue else { return }
                         if newValue < 0 { value = 0 } else if newValue > 8 { value = 8 }
                     }
                     Picker("Sample", selection: $sample) {
                         ForEach(KetoneSample.allCases) { Text($0.label).tag($0) }
                     }
                     .pickerStyle(.segmented)
-                    if value >= KetoneBands.elevatedThreshold {
+                    if let value, value >= KetoneBands.elevatedThreshold {
                         Text(KetoneBands.band(forMmolPerL: value).guidance)
                             .font(.caption)
                             .foregroundStyle(Theme.textSecondary)
@@ -356,14 +359,18 @@ struct LogKetoneSheet: View {
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
                 ToolbarItem(placement: .cancellationAction) { Button("Cancel") { dismiss() } }
-                ToolbarItem(placement: .confirmationAction) { Button("Save", action: save) }
+                ToolbarItem(placement: .confirmationAction) {
+                    // A typed 0 is a real reading ("no ketones") and stays
+                    // savable; only an untouched empty field is not.
+                    Button("Save", action: save).disabled(value == nil)
+                }
             }
         }
     }
 
     private func save() {
         let reading = KetoneReading(
-            value: value, sample: sample, timestamp: date,
+            value: value ?? 0, sample: sample, timestamp: date,
             note: note.isEmpty ? nil : note)
         modelContext.insert(reading)
         try? modelContext.save()

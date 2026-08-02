@@ -19,10 +19,11 @@ struct CarbEntrySheet: View {
     // through the view's `modelContext` rather than the audited `EntryStore`.
     @Query(sort: \FavoriteMeal.createdAt) private var favorites: [FavoriteMeal]
 
-    // Starts at 0 — the person types what they actually ate (a prefilled 40 g
-    // was one habit-tap away from logging a meal that never happened). Save
-    // stays disabled until a real amount is entered.
-    @State private var grams: Double = 0
+    // Nil until typed — the field opens EMPTY with a gray "0" placeholder, so
+    // there's never a real zero to delete first (device feedback), and a
+    // prefilled amount can't log a meal that never happened. Save stays
+    // disabled until a real amount is entered.
+    @State private var grams: Double?
     @State private var timestamp = Date()
     @State private var mealType: MealType = .lunch
     /// Main meals already logged today — shown disabled in the picker so
@@ -111,6 +112,7 @@ struct CarbEntrySheet: View {
                         Spacer()
                     }
                     .onChange(of: grams) { _, value in
+                        guard let value else { return }
                         if value < 0 { grams = 0 } else if value > 300 { grams = 300 }
                     }
                 }
@@ -246,7 +248,7 @@ struct CarbEntrySheet: View {
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
                 ToolbarItem(placement: .cancellationAction) { Button("Cancel") { dismiss() } }
-                ToolbarItem(placement: .confirmationAction) { Button("Save", action: save).disabled(grams <= 0) }
+                ToolbarItem(placement: .confirmationAction) { Button("Save", action: save).disabled((grams ?? 0) <= 0) }
             }
             .onAppear(perform: load)
             .onChange(of: photoItem) { _, newItem in
@@ -387,7 +389,7 @@ struct CarbEntrySheet: View {
 
     private func completeSave() {
         if let existing {
-            existing.grams = grams
+            existing.grams = grams ?? 0
             existing.timestamp = timestamp
             existing.mealType = mealType
             existing.foodDescription = food.isEmpty ? nil : food
@@ -397,7 +399,7 @@ struct CarbEntrySheet: View {
             env.entryStore.touch(existing)
         } else {
             let entry = env.entryStore.addCarbs(
-                grams: grams, timestamp: timestamp, mealType: mealType,
+                grams: grams ?? 0, timestamp: timestamp, mealType: mealType,
                 foodDescription: food.isEmpty ? nil : food,
                 note: note.isEmpty ? nil : note
             )
@@ -435,7 +437,7 @@ struct CarbEntrySheet: View {
 
     private var defaultFavoriteName: String {
         let trimmed = food.trimmingCharacters(in: .whitespacesAndNewlines)
-        return trimmed.isEmpty ? "Meal, \(grams.formatted()) g" : trimmed
+        return trimmed.isEmpty ? "Meal, \((grams ?? 0).formatted()) g" : trimmed
     }
 
     /// Copies a favorite into the editable fields — the user still reviews and
@@ -541,13 +543,13 @@ struct CarbEntrySheet: View {
         if let match = favorites.first(where: {
             $0.name.compare(name, options: .caseInsensitive) == .orderedSame
         }) {
-            match.grams = grams
+            match.grams = grams ?? 0
             match.mealType = mealType
             match.foodDescription = description
             return match
         }
         let favorite = FavoriteMeal(
-            name: name, grams: grams, mealType: mealType, foodDescription: description
+            name: name, grams: grams ?? 0, mealType: mealType, foodDescription: description
         )
         modelContext.insert(favorite)
         return favorite
