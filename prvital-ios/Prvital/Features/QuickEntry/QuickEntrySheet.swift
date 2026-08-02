@@ -82,6 +82,9 @@ struct QuickEntrySheet: View {
     @State private var phraseText = ""
     /// The user's repeat meals ("the usual breakfast"), one tap to re-log.
     @State private var combos: [MealCombo] = []
+    /// Workout mode: live banner vs start button.
+    @State private var exerciseActive = ExerciseMode.isActive()
+    @State private var showExerciseStart = false
 
     init() {
         // Only the doses that can still carry insulin-on-board — bounded.
@@ -125,6 +128,7 @@ struct QuickEntrySheet: View {
                     if !combos.isEmpty {
                         combosRow.appearTransition(delay: 0.055)
                     }
+                    exerciseCard.appearTransition(delay: 0.058)
                     entryList.appearTransition(delay: 0.06)
                 }
                 .padding()
@@ -152,6 +156,78 @@ struct QuickEntrySheet: View {
             .sheet(isPresented: $showKetones) { LogKetoneSheet() }
         }
         .presentationDetents([.medium, .large])
+    }
+
+    // MARK: Exercise mode
+
+    /// Start a workout (raised low limit for its duration, auto-logged at the
+    /// end) — or, while one runs, the live banner with elapsed time and Stop.
+    @ViewBuilder private var exerciseCard: some View {
+        if exerciseActive, let started = ExerciseMode.startedAt {
+            HStack(spacing: 12) {
+                Image(systemName: "figure.run")
+                    .font(.title3.weight(.semibold))
+                    .foregroundStyle(Theme.zoneInRange)
+                VStack(alignment: .leading, spacing: 2) {
+                    Text("Workout running")
+                        .font(.subheadline.weight(.semibold))
+                        .foregroundStyle(Theme.textPrimary)
+                    Text(started, style: .timer)
+                        .font(.caption)
+                        .monospacedDigit()
+                        .foregroundStyle(Theme.textSecondary)
+                }
+                Spacer()
+                Button {
+                    Haptics.play(.success)
+                    ExerciseMode.finish(entryStore: env.entryStore, force: true)
+                    exerciseActive = false
+                } label: {
+                    Text("Stop & log")
+                        .font(.subheadline.weight(.semibold))
+                        .padding(.horizontal, 12).padding(.vertical, 7)
+                        .background(Theme.zoneInRange, in: .capsule)
+                        .foregroundStyle(.white)
+                }
+                .buttonStyle(.plain)
+            }
+            .padding(14)
+            .frame(maxWidth: .infinity, alignment: .leading)
+            .glassCard()
+        } else {
+            Button {
+                Haptics.play(.selection)
+                showExerciseStart = true
+            } label: {
+                HStack(spacing: 12) {
+                    Image(systemName: "figure.run")
+                        .font(.title3.weight(.semibold))
+                        .foregroundStyle(Theme.zoneInRange)
+                    VStack(alignment: .leading, spacing: 2) {
+                        Text("Start a workout")
+                            .font(.subheadline.weight(.semibold))
+                            .foregroundStyle(Theme.textPrimary)
+                        Text("raised low alert while you move, logged when you stop")
+                            .font(.caption)
+                            .foregroundStyle(Theme.textSecondary)
+                    }
+                    Spacer()
+                    Image(systemName: "chevron.right")
+                        .font(.caption.weight(.semibold))
+                        .foregroundStyle(Theme.textTertiary)
+                }
+                .padding(14)
+                .frame(maxWidth: .infinity, alignment: .leading)
+                .contentShape(.rect)
+            }
+            .buttonStyle(.plain)
+            .glassCard()
+            .sheet(isPresented: $showExerciseStart) {
+                ExerciseStartSheet {
+                    exerciseActive = true
+                }
+            }
+        }
     }
 
     // MARK: Frequent combos
@@ -449,4 +525,53 @@ struct QuickEntrySheet: View {
     return QuickEntrySheet()
         .environment(env)
         .modelContainer(env.modelContainer)
+}
+
+/// Choosing the workout: type, planned length, and how far to raise the low
+/// alert while it runs. Everything else is automatic.
+private struct ExerciseStartSheet: View {
+    let onStart: () -> Void
+    @Environment(AppEnvironment.self) private var env
+    @Environment(\.dismiss) private var dismiss
+
+    @State private var type: ActivityType = .walking
+    @State private var minutes = 60
+    @State private var raisedLow = 90.0
+
+    var body: some View {
+        NavigationStack {
+            Form {
+                Picker("Activity", selection: $type) {
+                    ForEach([ActivityType.walking, .running, .gym, .cycling, .swimming], id: \.self) { option in
+                        Label(option.label, systemImage: "figure.run").tag(option)
+                    }
+                }
+                Picker("Planned length", selection: $minutes) {
+                    Text("30 min").tag(30)
+                    Text("60 min").tag(60)
+                    Text("90 min").tag(90)
+                    Text("120 min").tag(120)
+                }
+                Picker("Low alert during it", selection: $raisedLow) {
+                    Text(GlucoseFormatting.labeled(mgdL: 80, unit: env.preferences.glucoseUnit)).tag(80.0)
+                    Text(GlucoseFormatting.labeled(mgdL: 90, unit: env.preferences.glucoseUnit)).tag(90.0)
+                    Text(GlucoseFormatting.labeled(mgdL: 100, unit: env.preferences.glucoseUnit)).tag(100.0)
+                }
+            }
+            .navigationTitle("Start a workout")
+            .navigationBarTitleDisplayMode(.inline)
+            .toolbar {
+                ToolbarItem(placement: .cancellationAction) { Button("Cancel") { dismiss() } }
+                ToolbarItem(placement: .confirmationAction) {
+                    Button("Start") {
+                        Haptics.play(.success)
+                        ExerciseMode.start(type: type, minutes: minutes, raisedLowMgdL: raisedLow)
+                        onStart()
+                        dismiss()
+                    }
+                }
+            }
+        }
+        .presentationDetents([.medium])
+    }
 }

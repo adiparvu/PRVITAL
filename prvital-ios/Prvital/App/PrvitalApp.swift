@@ -185,6 +185,9 @@ struct RootView: View {
                 env.rearmWeeklyInsight()
                 // Same activation hook keeps the morning report's numbers fresh.
                 env.rearmMorningReport()
+                // A workout whose planned end passed while the app was away
+                // logs itself now.
+                ExerciseMode.finish(entryStore: env.entryStore)
                 // Re-arm the ~15-minute background sync on every activation.
                 // Submitting is idempotent (same identifier replaces), and
                 // without this the chain silently dies whenever iOS discards

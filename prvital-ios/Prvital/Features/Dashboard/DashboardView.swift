@@ -1690,6 +1690,21 @@ struct GoalsEditorSheet: View {
                 }
 
                 Section("A1c") {
+                    DatePicker(
+                        "Next clinic visit",
+                        selection: Binding(
+                            get: { preferences.glucoseGoals.nextVisitDate ?? Date().addingTimeInterval(60 * 86_400) },
+                            set: { preferences.glucoseGoals.nextVisitDate = $0 }
+                        ),
+                        in: Date()...,
+                        displayedComponents: .date
+                    )
+                    if preferences.glucoseGoals.nextVisitDate != nil {
+                        Button("Clear visit date", role: .destructive) {
+                            preferences.glucoseGoals.nextVisitDate = nil
+                        }
+                        .font(.footnote)
+                    }
                     Stepper(value: $preferences.glucoseGoals.targetA1c, in: 5.0...9.0, step: 0.1) {
                         HStack {
                             Text("Target")

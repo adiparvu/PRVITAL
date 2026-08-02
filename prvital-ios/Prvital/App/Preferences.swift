@@ -529,6 +529,9 @@ struct GlucoseGoals: Codable, Equatable, Sendable {
     var targetA1c: Double = 7.0
     /// Whether the goals card and streak are shown.
     var enabled: Bool = false
+    /// The next clinic visit, when set — frames the A1c projection as "will I
+    /// be at target by then?". Optional, so old saved goals still decode.
+    var nextVisitDate: Date?
 
     static let `default` = GlucoseGoals()
 

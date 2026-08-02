@@ -30,8 +30,16 @@ final class GlucoseAlertService {
         now: Date = Date()
     ) {
         guard preferences.enabled, let current else { return }
+        // Exercise mode raises the low limit for its duration: during movement
+        // a fall from 100 is already worth catching, and waiting for the
+        // normal threshold cedes the head start the workout demands.
+        var effectiveThresholds = thresholds
+        if let raisedLow = ExerciseMode.raisedLowMgdL(now: now),
+           raisedLow > effectiveThresholds.targetLower {
+            effectiveThresholds.targetLower = raisedLow
+        }
         let decision = GlucoseAlertEvaluator.decide(
-            reading: current, thresholds: thresholds, preferences: preferences,
+            reading: current, thresholds: effectiveThresholds, preferences: preferences,
             unit: unit, last: loadState(), now: now
         )
         if let alert = decision.alert {

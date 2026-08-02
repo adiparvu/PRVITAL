@@ -298,6 +298,7 @@ final class AppEnvironment {
         // Refresh the morning report's numbers (no-op outside its window) and
         // run the weekly auto-backup when it's due.
         rearmMorningReport()
+        ExerciseMode.finish(entryStore: entryStore)
         AutoBackup.runIfDue(modelContainer: modelContainer)
         scheduleBackgroundRefresh()
     }

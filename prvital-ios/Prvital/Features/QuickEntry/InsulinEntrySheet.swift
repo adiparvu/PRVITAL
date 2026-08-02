@@ -73,6 +73,24 @@ struct InsulinEntrySheet: View {
                     DatePicker("Time", selection: $timestamp)
                 }
                 Section("Note") { TextField("Optional", text: $note, axis: .vertical) }
+                if existing == nil {
+                    Section {
+                        NavigationLink {
+                            InjectionSitesView()
+                        } label: {
+                            HStack {
+                                Label("Injection sites", systemImage: "scope")
+                                    .foregroundStyle(Theme.textPrimary)
+                                Spacer()
+                                Text(InjectionSiteStore.mostRested().label)
+                                    .font(.footnote)
+                                    .foregroundStyle(Theme.accent)
+                            }
+                        }
+                    } footer: {
+                        Text("The suggested spot is the one that has rested longest.")
+                    }
+                }
                 if existing != nil {
                     Section {
                         Button("Delete", role: .destructive) {

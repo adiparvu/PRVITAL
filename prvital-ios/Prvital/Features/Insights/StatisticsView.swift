@@ -547,6 +547,20 @@ struct StatisticsContent: View {
                         Text("If this trend holds, estimated A1c in ~3 months: \(projectedA1cText(projection.projectedA1cPercent))")
                             .font(.caption)
                             .foregroundStyle(Theme.textSecondary)
+                        // The visit framing: the same projection, read against
+                        // the user's own target and their actual appointment.
+                        if let visit = env.preferences.glucoseGoals.nextVisitDate, visit > Date() {
+                            let target = env.preferences.glucoseGoals.targetA1c
+                            let onTrack = projection.projectedA1cPercent <= target
+                            Label(
+                                onTrack
+                                    ? String(localized: "On track for your \(projectedA1cText(target)) goal by \(visit.formatted(date: .abbreviated, time: .omitted)).")
+                                    : String(localized: "Trending above your \(projectedA1cText(target)) goal for \(visit.formatted(date: .abbreviated, time: .omitted)) — small steady changes count most now."),
+                                systemImage: onTrack ? "checkmark.seal.fill" : "arrow.up.right.circle"
+                            )
+                            .font(.caption.weight(.semibold))
+                            .foregroundStyle(onTrack ? Theme.zoneInRange : Theme.zoneWarning)
+                        }
                         Text("A projection, not a prediction — talk to your care team before changing therapy.")
                             .font(.caption2)
                             .foregroundStyle(Theme.textTertiary)
