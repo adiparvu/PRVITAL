@@ -20,6 +20,10 @@ struct LiveVitals: Equatable, Sendable {
     /// The instant that next reading is expected — lets the dashboard tick a
     /// live seconds countdown over the final minute.
     var nextReadingAt: Date?
+    /// The per-dose story behind `insulinOnBoard`, newest first — so two
+    /// overlapping boluses (lunch still tailing + a fresh correction) can be
+    /// told apart instead of hiding inside one summed number.
+    var activeDoses: [InsulinMath.ActiveDose] = []
 
     var hasInsulinOnBoard: Bool { insulinOnBoard >= 0.05 }
     var hasCarbsOnBoard: Bool { carbsOnBoard >= 0.5 }
@@ -39,6 +43,9 @@ struct LiveVitals: Equatable, Sendable {
         var v = LiveVitals()
         v.insulinOnBoard = bolus.isValid
             ? InsulinMath.activeInsulin(doses: insulin, at: now, parameters: bolus) : 0
+        if bolus.isValid {
+            v.activeDoses = InsulinMath.activeDoses(doses: insulin, at: now, parameters: bolus)
+        }
         v.carbsOnBoard = CarbMath.carbsOnBoard(entries: carbs, at: now)
 
         let diaSeconds = bolus.durationHours * 3600

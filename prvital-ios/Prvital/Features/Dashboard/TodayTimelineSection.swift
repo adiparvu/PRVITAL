@@ -22,7 +22,13 @@ struct TodayTimelineCard: View {
     /// When true, renders only the rows — the parent supplies the card chrome.
     var embedded = false
 
-    private static let cap = 12
+    /// A busy day quickly buries the dashboard under its own history, so only
+    /// the freshest few rows show by default; "Show all" unfolds the rest in
+    /// place and "Show fewer" folds them back.
+    @State private var expanded = false
+
+    private static let collapsedCap = 4
+    private static let cap = 40
 
     var body: some View {
         if !events.isEmpty {
@@ -35,10 +41,33 @@ struct TodayTimelineCard: View {
     }
 
     private var rows: some View {
-        VStack(spacing: 0) {
-            ForEach(Array(events.prefix(Self.cap).enumerated()), id: \.element.id) { index, event in
+        let visible = expanded ? Array(events.prefix(Self.cap)) : Array(events.prefix(Self.collapsedCap))
+        return VStack(spacing: 0) {
+            ForEach(Array(visible.enumerated()), id: \.element.id) { index, event in
                 if index > 0 { Divider().overlay(Theme.hairline) }
                 TodayEventRow(event: event)
+            }
+            if events.count > Self.collapsedCap {
+                Divider().overlay(Theme.hairline)
+                Button {
+                    Haptics.play(.selection)
+                    withAnimation(.snappy) { expanded.toggle() }
+                } label: {
+                    HStack(spacing: 5) {
+                        Text(expanded
+                             ? String(localized: "Show fewer")
+                             : String(localized: "Show all (\(events.count))"))
+                        Image(systemName: expanded ? "chevron.up" : "chevron.down")
+                            .font(.caption2.weight(.semibold))
+                    }
+                    .font(.footnote.weight(.semibold))
+                    .foregroundStyle(Theme.accent)
+                    .frame(maxWidth: .infinity)
+                    .padding(.top, 10)
+                    .padding(.bottom, 2)
+                    .contentShape(.rect)
+                }
+                .buttonStyle(.plain)
             }
         }
     }

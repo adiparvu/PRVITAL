@@ -123,4 +123,50 @@ final class InsulinMathTests: XCTestCase {
         XCTAssertEqual(estimate.suggested, 0, accuracy: 1e-9)
         XCTAssertFalse(estimate.warnings.isEmpty)
     }
+
+    // MARK: Per-dose breakdown
+
+    func testActiveDosesSplitMatchesTheSum() {
+        let now = Date()
+        var p = BolusParameters.default
+        p.durationHours = 5
+        // Lunch bolus 2.5 h ago + a correction 3 minutes ago.
+        let lunch = InsulinDose(units: 5, timestamp: now.addingTimeInterval(-2.5 * 3600), insulinType: .rapidActing)
+        lunch.doseContext = .mealBolus
+        let correction = InsulinDose(units: 1.5, timestamp: now.addingTimeInterval(-180), insulinType: .rapidActing)
+        correction.doseContext = .correction
+
+        let split = InsulinMath.activeDoses(doses: [lunch, correction], at: now, parameters: p)
+        XCTAssertEqual(split.count, 2)
+        // Newest first: the fresh correction leads.
+        XCTAssertEqual(split[0].context, .correction)
+        XCTAssertEqual(split[1].context, .mealBolus)
+        XCTAssertGreaterThan(split[0].remainingUnits, split[1].remainingUnits)
+        // The components must sum to exactly the number the strip shows.
+        let total = InsulinMath.activeInsulin(doses: [lunch, correction], at: now, parameters: p)
+        XCTAssertEqual(split.map(\.remainingUnits).reduce(0, +), total, accuracy: 1e-9)
+        // Each dose ends its own duration after its own timestamp.
+        XCTAssertEqual(split[0].endsAt.timeIntervalSince(correction.timestamp), 5 * 3600, accuracy: 1)
+    }
+
+    func testActiveDosesDropBasalExpiredAndCrumbs() {
+        let now = Date()
+        var p = BolusParameters.default
+        p.durationHours = 5
+        let basal = InsulinDose(units: 20, timestamp: now.addingTimeInterval(-600), insulinType: .longActing)
+        let expired = InsulinDose(units: 8, timestamp: now.addingTimeInterval(-6 * 3600), insulinType: .rapidActing)
+        // 0.1 U logged 4.9 h into a 5 h duration — a negligible crumb.
+        let crumb = InsulinDose(units: 0.1, timestamp: now.addingTimeInterval(-4.9 * 3600), insulinType: .rapidActing)
+        let split = InsulinMath.activeDoses(doses: [basal, expired, crumb], at: now, parameters: p)
+        XCTAssertTrue(split.isEmpty)
+    }
+
+    func testActiveDoseUsedFractionIsBounded() {
+        let now = Date()
+        let dose = InsulinDose(units: 4, timestamp: now.addingTimeInterval(-3600), insulinType: .rapidActing)
+        let split = InsulinMath.activeDoses(doses: [dose], at: now, parameters: .default)
+        XCTAssertEqual(split.count, 1)
+        XCTAssertGreaterThanOrEqual(split[0].usedFraction, 0)
+        XCTAssertLessThanOrEqual(split[0].usedFraction, 1)
+    }
 }

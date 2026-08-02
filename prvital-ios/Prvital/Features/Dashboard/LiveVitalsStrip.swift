@@ -14,17 +14,50 @@ struct LiveVitalsStrip: View {
     /// when the sensor's value should be there, instead of sitting on "0 s".
     var onReadingOverdue: (() -> Void)? = nil
 
+    @State private var showActiveInsulin = false
+
     var body: some View {
         let cells = cells
         if !cells.isEmpty {
             VStack(alignment: .leading, spacing: 6) {
-                ForEach(cells) {
-                    VitalRow(model: $0, monochrome: monochrome, onOverdue: onReadingOverdue)
+                ForEach(cells) { cell in
+                    // The IOB row opens the per-dose sheet — the one row whose
+                    // single number can hide two stories (lunch + correction).
+                    if cell.id == "iob", !vitals.activeDoses.isEmpty {
+                        Button {
+                            Haptics.play(.selection)
+                            showActiveInsulin = true
+                        } label: {
+                            VitalRow(model: cell, monochrome: monochrome, onOverdue: onReadingOverdue)
+                        }
+                        .buttonStyle(.plain)
+                    } else {
+                        VitalRow(model: cell, monochrome: monochrome, onOverdue: onReadingOverdue)
+                    }
                 }
             }
             .frame(maxWidth: .infinity, alignment: .leading)
             .transition(.opacity)
+            .sheet(isPresented: $showActiveInsulin) {
+                ActiveInsulinSheet(doses: vitals.activeDoses)
+            }
         }
+    }
+
+    /// "1.5 U Correction · 3 min + 0.4 U Meal · 2h 28m" — only when at least two
+    /// doses overlap; a single active bolus needs no split. "U" stays a bare
+    /// unit symbol, as everywhere else in the app.
+    private var iobBreakdown: String? {
+        let doses = vitals.activeDoses
+        guard doses.count >= 2 else { return nil }
+        let now = Date()
+        var parts = doses.prefix(3).map { dose in
+            let minutes = Int(now.timeIntervalSince(dose.timestamp) / 60)
+            let units = dose.remainingUnits.formatted(.number.precision(.fractionLength(1)))
+            return "\(units) U \(dose.context.label) · \(Self.duration(minutes))"
+        }
+        if doses.count > 3 { parts.append("…") }
+        return parts.joined(separator: "  +  ")
     }
 
     private var cells: [VitalCellModel] {
@@ -32,7 +65,8 @@ struct LiveVitalsStrip: View {
         if vitals.hasInsulinOnBoard {
             out.append(.init(id: "iob", icon: "syringe.fill", tint: Theme.accent,
                              value: vitals.insulinOnBoard.formatted(.number.precision(.fractionLength(1))),
-                             unit: "U", label: String(localized: "Insulin")))
+                             unit: "U", label: String(localized: "Insulin"),
+                             subtitle: iobBreakdown))
         }
         if vitals.hasCarbsOnBoard {
             out.append(.init(id: "cob", icon: "fork.knife", tint: Theme.zoneHigh,
@@ -76,6 +110,8 @@ private struct VitalCellModel: Identifiable {
     /// When set, the value renders as a live countdown to this instant —
     /// minutes while far out, ticking seconds over the final minute.
     var deadline: Date? = nil
+    /// An optional caption under the row — the IOB row's per-dose breakdown.
+    var subtitle: String? = nil
 }
 
 private struct VitalRow: View {
@@ -85,32 +121,44 @@ private struct VitalRow: View {
     var onOverdue: (() -> Void)? = nil
 
     var body: some View {
-        // Everything on one line: icon, value, then the label — no card.
-        HStack(alignment: .firstTextBaseline, spacing: 7) {
-            Image(systemName: model.icon)
-                .font(.system(size: 12, weight: .semibold))
-                .foregroundStyle(monochrome ? Theme.textSecondary : model.tint)
-                .frame(width: 18, alignment: .leading)
-                .accessibilityHidden(true)
-            if let deadline = model.deadline {
-                TimelineView(.periodic(from: .now, by: 1)) { context in
-                    valueText(Self.countdown(to: deadline, now: context.date))
+        // Everything on one line: icon, value, then the label — no card. A
+        // subtitle (the IOB per-dose split) hangs underneath, aligned past the
+        // icon column.
+        VStack(alignment: .leading, spacing: 2) {
+            HStack(alignment: .firstTextBaseline, spacing: 7) {
+                Image(systemName: model.icon)
+                    .font(.system(size: 12, weight: .semibold))
+                    .foregroundStyle(monochrome ? Theme.textSecondary : model.tint)
+                    .frame(width: 18, alignment: .leading)
+                    .accessibilityHidden(true)
+                if let deadline = model.deadline {
+                    TimelineView(.periodic(from: .now, by: 1)) { context in
+                        valueText(Self.countdown(to: deadline, now: context.date))
+                    }
+                } else {
+                    valueText(model.value)
                 }
-            } else {
-                valueText(model.value)
+                if let unit = model.unit {
+                    Text(unit).font(.caption2).foregroundStyle(Theme.textSecondary)
+                }
+                Text(model.label)
+                    .font(.caption)
+                    .foregroundStyle(Theme.textSecondary)
+                    .lineLimit(1)
+                Spacer(minLength: 0)
             }
-            if let unit = model.unit {
-                Text(unit).font(.caption2).foregroundStyle(Theme.textSecondary)
+            if let subtitle = model.subtitle {
+                Text(subtitle)
+                    .font(.caption2)
+                    .foregroundStyle(Theme.textTertiary)
+                    .lineLimit(2)
+                    .monospacedDigit()
+                    .padding(.leading, 25)
             }
-            Text(model.label)
-                .font(.caption)
-                .foregroundStyle(Theme.textSecondary)
-                .lineLimit(1)
-            Spacer(minLength: 0)
         }
         .contentTransition(.numericText())
         .accessibilityElement(children: .combine)
-        .accessibilityLabel("\(model.label): \(model.value)\(model.unit.map { " " + $0 } ?? "")")
+        .accessibilityLabel("\(model.label): \(model.value)\(model.unit.map { " " + $0 } ?? "")\(model.subtitle.map { ". " + $0 } ?? "")")
         // A few seconds after the deadline passes with no fresh data (a new
         // reading replaces the deadline and restarts this task), poke the
         // owner to sync — the "0 s but nothing updated" report.

@@ -98,6 +98,50 @@ enum InsulinMath {
         }
     }
 
+    /// One dose still contributing to the IOB — what was injected, what's left
+    /// of it right now, and when it runs out. The per-dose answer to "is this
+    /// the correction from just now or what's left of lunch?".
+    struct ActiveDose: Identifiable, Equatable, Sendable {
+        let id: UUID
+        let timestamp: Date
+        /// Units injected.
+        let units: Double
+        /// Units still active at the evaluation instant.
+        let remainingUnits: Double
+        let context: InsulinDoseContext
+        /// When this dose's duration of action ends.
+        let endsAt: Date
+
+        /// 0…1 of the dose already used up — drives the decay bar.
+        var usedFraction: Double {
+            units > 0 ? min(1, max(0, 1 - remainingUnits / units)) : 1
+        }
+    }
+
+    /// The doses behind `activeInsulin`, newest first — same filter, same curve,
+    /// just not summed. Doses with a negligible remainder (< 0.05 U) are
+    /// dropped, matching the strip's own display threshold.
+    static func activeDoses(
+        doses: [InsulinDose],
+        at date: Date,
+        parameters: BolusParameters
+    ) -> [ActiveDose] {
+        let duration = parameters.durationHours * 60
+        let peak = parameters.peakMinutes
+        return doses.compactMap { dose -> ActiveDose? in
+            guard dose.insulinType == .rapidActing else { return nil }
+            let elapsed = date.timeIntervalSince(dose.timestamp) / 60
+            guard elapsed >= 0, elapsed < duration else { return nil }
+            let remaining = dose.units * remainingFraction(minutes: elapsed, peak: peak, duration: duration)
+            guard remaining >= 0.05 else { return nil }
+            return ActiveDose(
+                id: dose.id, timestamp: dose.timestamp, units: dose.units,
+                remainingUnits: remaining, context: dose.doseContext,
+                endsAt: dose.timestamp.addingTimeInterval(duration * 60))
+        }
+        .sorted { $0.timestamp > $1.timestamp }
+    }
+
     // MARK: Bolus suggestion
 
     /// A transparent bolus suggestion for `carbs` grams at the current glucose,

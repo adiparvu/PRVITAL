@@ -63,6 +63,8 @@ struct DashboardView: View {
 
     @State private var showGlucoseEntry = false
     @State private var showGoalsEditor = false
+    @State private var showActiveInsulinDetail = false
+    @State private var activeInsulinDoses: [InsulinMath.ActiveDose] = []
     @State private var showCustomize = false
     @State private var showRuleOf15 = false
     // The reports/tools menu (moved here from Analize — device feedback:
@@ -245,6 +247,9 @@ struct DashboardView: View {
                 GlucoseEntrySheet()
             }
             .sheet(isPresented: $showCustomize) { DashboardCustomizeView() }
+            .sheet(isPresented: $showActiveInsulinDetail) {
+                ActiveInsulinSheet(doses: activeInsulinDoses)
+            }
             .fullScreenCover(isPresented: $showDoctorMode) { DoctorVisitModeView() }
             .sheet(isPresented: $showWeeklyDigest) { WeeklyDigestView() }
             .sheet(isPresented: $showHealthHub) {
@@ -530,7 +535,8 @@ struct DashboardView: View {
                     let now = Date()
                     onBoardRow(
                         iob: InsulinMath.activeInsulin(doses: insulin, at: now, parameters: bolus),
-                        cob: CarbMath.carbsOnBoard(entries: carbs, at: now)
+                        cob: CarbMath.carbsOnBoard(entries: carbs, at: now),
+                        insulin: insulin, bolus: bolus
                     )
                 }
                 if !events.isEmpty {
@@ -1296,10 +1302,22 @@ struct DashboardView: View {
 
     // MARK: - On board (insulin + carbs)
 
-    /// The on-board figures row inside the Today's-log card.
-    private func onBoardRow(iob: Double, cob: Double) -> some View {
+    /// The on-board figures row inside the Today's-log card. The insulin figure
+    /// opens the per-dose sheet, so a summed IOB can be split back into "the
+    /// correction from just now + what's left of lunch".
+    private func onBoardRow(iob: Double, cob: Double,
+                            insulin: [InsulinDose], bolus: BolusParameters) -> some View {
         HStack(spacing: 18) {
-            onBoardMetric(value: iob.formatted(.number.precision(.fractionLength(1))), unit: "U", label: String(localized: "Insulin"), tint: Theme.accent)
+            Button {
+                let doses = InsulinMath.activeDoses(doses: insulin, at: Date(), parameters: bolus)
+                guard !doses.isEmpty else { return }
+                Haptics.play(.selection)
+                activeInsulinDoses = doses
+                showActiveInsulinDetail = true
+            } label: {
+                onBoardMetric(value: iob.formatted(.number.precision(.fractionLength(1))), unit: "U", label: String(localized: "Insulin"), tint: Theme.accent)
+            }
+            .buttonStyle(.plain)
             Divider().frame(height: 34).overlay(Theme.hairline)
             onBoardMetric(value: cob.formatted(.number.precision(.fractionLength(0))), unit: "g", label: String(localized: "Carbs"), tint: Theme.zoneHigh)
             Spacer()
