@@ -54,6 +54,59 @@ final class Preferences {
         self.backgroundPhotoDimming = (self.defaults.object(forKey: Keys.backgroundPhotoDimming) as? Double) ?? 0.3
     }
 
+    /// Re-reads every preference from the defaults — the one caller is restoring
+    /// a backup, which writes settings straight into `UserDefaults` underneath
+    /// this live object. Mirrors the `init` assignments exactly; a field added
+    /// to one belongs in the other.
+    func reload() {
+        glucoseUnit = Self.readUnit(defaults)
+        thresholds = Self.readThresholds(defaults)
+        reminders = Self.readReminders(defaults)
+        nightscout = Self.readNightscout(defaults)
+        bolusParameters = Self.readBolus(defaults)
+        alerts = Self.readAlerts(defaults)
+        community = Self.readCommunity(defaults)
+        glucoseSchedule = Self.readGlucoseSchedule(defaults)
+        glucoseGoals = Self.readGlucoseGoals(defaults)
+        ringGoals = Self.readRingGoals(defaults)
+        activityGoals = Self.readActivityGoals(defaults)
+        periodTIRTargets = Self.readPeriodTIRTargets(defaults)
+        chartEventKinds = Self.readChartEventKinds(defaults)
+        medicationPlan = Self.readMedicationPlan(defaults)
+        liveSyncSeconds = (defaults.object(forKey: Keys.liveSync) as? Int) ?? 60
+        postprandialWindowHours = (defaults.object(forKey: Keys.postprandialWindow) as? Int) ?? 3
+        sickDayEnabled = defaults.bool(forKey: Keys.sickDayEnabled)
+        sickDayStartedAt = defaults.object(forKey: Keys.sickDayStartedAt) as? Date
+        emergencyInfo = Self.readEmergencyInfo(defaults)
+        criticalAlarm = Self.readCriticalAlarm(defaults)
+        alertSounds = Self.readAlertSounds(defaults)
+        weeklyDigestEnabled = defaults.bool(forKey: Keys.weeklyDigest)
+        weeklyInsightEnabled = defaults.bool(forKey: Keys.weeklyInsight)
+        nightscoutUploadEnabled = defaults.bool(forKey: Keys.nightscoutUpload)
+        journalCardDensityRaw = defaults.string(forKey: Keys.journalCardDensity) ?? "standard"
+        lastSeenWhatsNewVersion = defaults.string(forKey: Keys.lastSeenWhatsNew) ?? ""
+        themeModeRaw = defaults.string(forKey: Keys.themeMode) ?? ThemeMode.system.rawValue
+        useSystemTextSize = (defaults.object(forKey: Keys.useSystemTextSize) as? Bool) ?? true
+        textSizeRaw = defaults.string(forKey: Keys.textSize) ?? AppTextSize.large.rawValue
+        hapticsEnabled = (defaults.object(forKey: Keys.hapticsEnabled) as? Bool) ?? true
+        appLockEnabled = (defaults.object(forKey: Keys.appLock) as? Bool) ?? false
+        morningReportEnabled = (defaults.object(forKey: Keys.morningReport) as? Bool) ?? false
+        morningReportMinutes = (defaults.object(forKey: Keys.morningReportTime) as? Int) ?? 450
+        showDailyCompanion = (defaults.object(forKey: Keys.showDailyCompanion) as? Bool) ?? true
+        showContextualLessons = (defaults.object(forKey: Keys.showContextualLessons) as? Bool) ?? true
+        minimalistIcons = (defaults.object(forKey: Keys.minimalistIcons) as? Bool) ?? false
+        showYesterdayShadow = (defaults.object(forKey: Keys.showYesterdayShadow) as? Bool) ?? true
+        dashboardCardOrder = defaults.stringArray(forKey: Keys.dashboardCardOrder) ?? []
+        dashboardHiddenCards = defaults.stringArray(forKey: Keys.dashboardHiddenCards) ?? []
+        backgroundKindRaw = defaults.string(forKey: Keys.backgroundKind) ?? AppBackgroundKind.standard.rawValue
+        backgroundGradientRaw = defaults.string(forKey: Keys.backgroundGradient) ?? BackgroundGradient.aurora.rawValue
+        backgroundPhotoDimming = (defaults.object(forKey: Keys.backgroundPhotoDimming) as? Double) ?? 0.3
+        // The accent lives in AccentPreference; pushing the stored values through
+        // its setters is what repaints every `Theme.accent` on screen.
+        accentThemeRaw = defaults.string(forKey: "pref.accentTheme") ?? accentThemeRaw
+        accentCustomHex = (defaults.object(forKey: "pref.accentCustomHex") as? Int) ?? accentCustomHex
+    }
+
     /// How much detail the journal's day cards show ("compact" / "standard" /
     /// "detailed"), in the spirit of a presets picker. Raw string so the enum can
     /// live beside the view that owns it.

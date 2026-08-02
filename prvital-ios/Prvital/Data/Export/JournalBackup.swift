@@ -2,15 +2,18 @@ import Foundation
 import SwiftData
 
 /// The whole journal as one portable JSON document — every record family, with
-/// ids, provenance and timestamps intact. This is the "all of it, mine" export:
-/// insurance against a lost phone, a way to leave the app without losing a
-/// single reading, and the file `restore` reads back.
+/// ids, provenance and timestamps intact, plus the things that make the journal
+/// *yours*: favorite meals, lab results, sensor sessions, the profile and the
+/// app's settings. This is the "all of it, mine" export: insurance against a
+/// lost phone, a way to leave the app without losing a single reading, and the
+/// file `restore` reads back.
 ///
 /// Format notes: dates are ISO-8601 so the file is legible in any editor, and
 /// the version field lets a future schema read old backups deliberately rather
-/// than by accident.
+/// than by accident. Version 1 files (records only) restore cleanly: every
+/// added field decodes as absent-with-default.
 struct JournalBackup: Codable, Sendable {
-    static let currentVersion = 1
+    static let currentVersion = 2
 
     var version = JournalBackup.currentVersion
     var exportedAt = Date()
@@ -21,10 +24,45 @@ struct JournalBackup: Codable, Sendable {
     var observations: [ObservationRecord] = []
     var medications: [MedicationRecord] = []
     var ketones: [KetoneRecord] = []
+    var favorites: [FavoriteRecord] = []
+    var labResults: [LabRecord] = []
+    var sensorSessions: [SensorRecord] = []
+    var profile: ProfileRecord?
+    var settings: [String: SettingValue] = [:]
 
     var totalCount: Int {
         glucose.count + insulin.count + carbs.count + activity.count
             + observations.count + medications.count + ketones.count
+            + favorites.count + labResults.count + sensorSessions.count
+    }
+
+    init() {}
+
+    // Tolerant decoding: a version-1 file has none of the newer keys, and a
+    // future version may carry keys this build doesn't know — both must decode
+    // without a throw. Encoding stays synthesized.
+    private enum CodingKeys: String, CodingKey {
+        case version, exportedAt, glucose, insulin, carbs, activity
+        case observations, medications, ketones
+        case favorites, labResults, sensorSessions, profile, settings
+    }
+
+    init(from decoder: Decoder) throws {
+        let c = try decoder.container(keyedBy: CodingKeys.self)
+        version = try c.decodeIfPresent(Int.self, forKey: .version) ?? 1
+        exportedAt = try c.decodeIfPresent(Date.self, forKey: .exportedAt) ?? Date()
+        glucose = try c.decodeIfPresent([GlucoseRecord].self, forKey: .glucose) ?? []
+        insulin = try c.decodeIfPresent([InsulinRecord].self, forKey: .insulin) ?? []
+        carbs = try c.decodeIfPresent([CarbRecord].self, forKey: .carbs) ?? []
+        activity = try c.decodeIfPresent([ActivityRecord].self, forKey: .activity) ?? []
+        observations = try c.decodeIfPresent([ObservationRecord].self, forKey: .observations) ?? []
+        medications = try c.decodeIfPresent([MedicationRecord].self, forKey: .medications) ?? []
+        ketones = try c.decodeIfPresent([KetoneRecord].self, forKey: .ketones) ?? []
+        favorites = try c.decodeIfPresent([FavoriteRecord].self, forKey: .favorites) ?? []
+        labResults = try c.decodeIfPresent([LabRecord].self, forKey: .labResults) ?? []
+        sensorSessions = try c.decodeIfPresent([SensorRecord].self, forKey: .sensorSessions) ?? []
+        profile = try c.decodeIfPresent(ProfileRecord.self, forKey: .profile)
+        settings = try c.decodeIfPresent([String: SettingValue].self, forKey: .settings) ?? [:]
     }
 
     struct GlucoseRecord: Codable, Sendable {
@@ -99,12 +137,151 @@ struct JournalBackup: Codable, Sendable {
         var sampleRaw: String
         var note: String?
     }
+
+    struct FavoriteRecord: Codable, Sendable {
+        var id: UUID
+        var name: String
+        var grams: Double
+        var mealTypeRaw: String
+        var foodDescription: String?
+        var usualMinutesFromMidnight: Int?
+        var timesUsed: Int
+        var lastUsedAt: Date?
+        var createdAt: Date
+    }
+
+    struct LabRecord: Codable, Sendable {
+        var id: UUID
+        var value: Double
+        var timestamp: Date
+        var note: String?
+    }
+
+    struct SensorRecord: Codable, Sendable {
+        var id: UUID
+        var startDate: Date
+        var kindRaw: String
+        var createdAt: Date
+    }
+
+    struct ProfileRecord: Codable, Sendable {
+        var id: UUID
+        var displayName: String
+        var avatarSymbol: String
+        var diabetesTypeRaw: String
+        var therapyRaw: String
+        var diagnosisYear: Int?
+        var careTeamNote: String?
+        var avatarColorHex: String?
+        var avatarImageData: Data?
+        var birthYear: Int?
+        var weightKg: Double?
+        var heightCm: Double?
+        var basalInsulinName: String?
+        var bolusInsulinName: String?
+        var cgmModel: String?
+        var meterModel: String?
+        var pumpModel: String?
+        var doctorName: String?
+        var doctorPhone: String?
+        var nextAppointment: Date?
+    }
+
+    /// One preference value, preserving its stored type so a restore writes the
+    /// same plist shape the app reads back. Unknown shapes are simply skipped.
+    enum SettingValue: Codable, Sendable, Equatable {
+        case bool(Bool)
+        case int(Int)
+        case double(Double)
+        case string(String)
+        case stringArray([String])
+        case data(Data)
+        case date(Date)
+        case dateDict([String: Date])
+
+        /// Wraps a value read from `UserDefaults`, or nil for unsupported types.
+        /// Booleans hide inside `NSNumber`, so the CF type check keeps a stored
+        /// `true` from coming back as the integer 1.
+        init?(any value: Any) {
+            switch value {
+            case let number as NSNumber:
+                if CFGetTypeID(number) == CFBooleanGetTypeID() {
+                    self = .bool(number.boolValue)
+                } else if CFNumberIsFloatType(number) {
+                    self = .double(number.doubleValue)
+                } else {
+                    self = .int(number.intValue)
+                }
+            case let text as String: self = .string(text)
+            case let blob as Data: self = .data(blob)
+            case let stamp as Date: self = .date(stamp)
+            case let list as [String]: self = .stringArray(list)
+            case let map as [String: Date]: self = .dateDict(map)
+            default: return nil
+            }
+        }
+
+        /// The value in the shape `UserDefaults.set(_:forKey:)` accepts.
+        var plistValue: Any {
+            switch self {
+            case .bool(let v): return v
+            case .int(let v): return v
+            case .double(let v): return v
+            case .string(let v): return v
+            case .stringArray(let v): return v
+            case .data(let v): return v
+            case .date(let v): return v
+            case .dateDict(let v): return v
+            }
+        }
+
+        private enum CodingKeys: String, CodingKey {
+            case bool, int, double, string, stringArray, data, date, dateDict
+        }
+
+        init(from decoder: Decoder) throws {
+            let c = try decoder.container(keyedBy: CodingKeys.self)
+            if let v = try c.decodeIfPresent(Bool.self, forKey: .bool) { self = .bool(v) }
+            else if let v = try c.decodeIfPresent(Int.self, forKey: .int) { self = .int(v) }
+            else if let v = try c.decodeIfPresent(Double.self, forKey: .double) { self = .double(v) }
+            else if let v = try c.decodeIfPresent(String.self, forKey: .string) { self = .string(v) }
+            else if let v = try c.decodeIfPresent([String].self, forKey: .stringArray) { self = .stringArray(v) }
+            else if let v = try c.decodeIfPresent(Data.self, forKey: .data) { self = .data(v) }
+            else if let v = try c.decodeIfPresent(Date.self, forKey: .date) { self = .date(v) }
+            else if let v = try c.decodeIfPresent([String: Date].self, forKey: .dateDict) { self = .dateDict(v) }
+            else {
+                throw DecodingError.dataCorrupted(.init(
+                    codingPath: decoder.codingPath,
+                    debugDescription: "No recognised setting value"))
+            }
+        }
+
+        func encode(to encoder: Encoder) throws {
+            var c = encoder.container(keyedBy: CodingKeys.self)
+            switch self {
+            case .bool(let v): try c.encode(v, forKey: .bool)
+            case .int(let v): try c.encode(v, forKey: .int)
+            case .double(let v): try c.encode(v, forKey: .double)
+            case .string(let v): try c.encode(v, forKey: .string)
+            case .stringArray(let v): try c.encode(v, forKey: .stringArray)
+            case .data(let v): try c.encode(v, forKey: .data)
+            case .date(let v): try c.encode(v, forKey: .date)
+            case .dateDict(let v): try c.encode(v, forKey: .dateDict)
+            }
+        }
+    }
 }
 
 /// Builds and restores full-journal backups on a background ModelActor — a
 /// long history is far too many rows for the main thread.
 @ModelActor
 actor JournalBackupStore {
+
+    /// The two settings that live in the STANDARD defaults rather than the App
+    /// Group suite (injection-site rotation and the auto-backup switch itself).
+    private static let standardDefaultsKeys = [
+        "injectionSites.lastUsed", "backup.autoWeeklyEnabled",
+    ]
 
     /// Every record in the store, as one encodable document.
     func makeBackup() -> JournalBackup {
@@ -143,7 +320,52 @@ actor JournalBackupStore {
             .init(id: $0.id, timestamp: $0.timestamp, value: $0.value,
                   sampleRaw: $0.sampleRaw, note: $0.note)
         }
+        backup.favorites = ((try? modelContext.fetch(FetchDescriptor<FavoriteMeal>())) ?? []).map {
+            .init(id: $0.id, name: $0.name, grams: $0.grams, mealTypeRaw: $0.mealTypeRaw,
+                  foodDescription: $0.foodDescription,
+                  usualMinutesFromMidnight: $0.usualMinutesFromMidnight,
+                  timesUsed: $0.timesUsed, lastUsedAt: $0.lastUsedAt, createdAt: $0.createdAt)
+        }
+        backup.labResults = ((try? modelContext.fetch(FetchDescriptor<LabResult>())) ?? []).map {
+            .init(id: $0.id, value: $0.value, timestamp: $0.timestamp, note: $0.note)
+        }
+        backup.sensorSessions = ((try? modelContext.fetch(FetchDescriptor<SensorSession>())) ?? []).map {
+            .init(id: $0.id, startDate: $0.startDate, kindRaw: $0.kindRaw, createdAt: $0.createdAt)
+        }
+        if let p = (try? modelContext.fetch(FetchDescriptor<UserProfile>()))?.first {
+            backup.profile = .init(
+                id: p.id, displayName: p.displayName, avatarSymbol: p.avatarSymbol,
+                diabetesTypeRaw: p.diabetesTypeRaw, therapyRaw: p.therapyRaw,
+                diagnosisYear: p.diagnosisYear, careTeamNote: p.careTeamNote,
+                avatarColorHex: p.avatarColorHex, avatarImageData: p.avatarImageData,
+                birthYear: p.birthYear, weightKg: p.weightKg, heightCm: p.heightCm,
+                basalInsulinName: p.basalInsulinName, bolusInsulinName: p.bolusInsulinName,
+                cgmModel: p.cgmModel, meterModel: p.meterModel, pumpModel: p.pumpModel,
+                doctorName: p.doctorName, doctorPhone: p.doctorPhone,
+                nextAppointment: p.nextAppointment)
+        }
+        backup.settings = Self.settingsSnapshot()
         return backup
+    }
+
+    /// Every preference the app stores, keyed exactly as `UserDefaults` holds it
+    /// — the `pref.*` family from the shared App Group suite plus the two
+    /// standard-defaults strays. The legacy background-photo blob is excluded on
+    /// purpose: it can be megabytes and lives in its own file today.
+    private static func settingsSnapshot() -> [String: JournalBackup.SettingValue] {
+        var out: [String: JournalBackup.SettingValue] = [:]
+        let group = UserDefaults(suiteName: AppSchema.appGroupIdentifier) ?? .standard
+        for (key, value) in group.dictionaryRepresentation()
+        where key.hasPrefix("pref.") && key != "pref.backgroundPhoto" {
+            if let wrapped = JournalBackup.SettingValue(any: value) { out[key] = wrapped }
+        }
+        for key in standardDefaultsKeys {
+            if let value = UserDefaults.standard.object(forKey: key),
+               let wrapped = JournalBackup.SettingValue(any: value) {
+                out[key] = wrapped
+            }
+        }
+        return out
     }
 
     /// Encodes the backup to a shareable file in the temporary directory.
@@ -163,7 +385,9 @@ actor JournalBackupStore {
 
     /// Inserts every record from the file that is not already in the store —
     /// matched by each record's own id, so restoring a backup on top of a live
-    /// journal never duplicates and never overwrites an edit.
+    /// journal never duplicates and never overwrites an edit. The same caution
+    /// extends to the profile (filled only while still blank) and settings
+    /// (written only for keys the user hasn't touched on this device).
     func restore(from url: URL) throws -> Int {
         let secured = url.startAccessingSecurityScopedResource()
         defer { if secured { url.stopAccessingSecurityScopedResource() } }
@@ -249,9 +473,90 @@ actor JournalBackupStore {
                 timestamp: r.timestamp, note: r.note))
             inserted += 1
         }
+        let favoriteIDs = existingIDs(FavoriteMeal.self, \.id)
+        for r in backup.favorites where !favoriteIDs.contains(r.id) {
+            let meal = FavoriteMeal(
+                id: r.id, name: r.name, grams: r.grams,
+                mealType: MealType(rawValue: r.mealTypeRaw) ?? .lunch,
+                foodDescription: r.foodDescription)
+            meal.usualMinutesFromMidnight = r.usualMinutesFromMidnight
+            meal.timesUsed = r.timesUsed
+            meal.lastUsedAt = r.lastUsedAt
+            meal.createdAt = r.createdAt
+            modelContext.insert(meal)
+            inserted += 1
+        }
+        let labIDs = existingIDs(LabResult.self, \.id)
+        for r in backup.labResults where !labIDs.contains(r.id) {
+            modelContext.insert(LabResult(
+                id: r.id, value: r.value, timestamp: r.timestamp, note: r.note))
+            inserted += 1
+        }
+        let sensorIDs = existingIDs(SensorSession.self, \.id)
+        for r in backup.sensorSessions where !sensorIDs.contains(r.id) {
+            modelContext.insert(SensorSession(
+                id: r.id, startDate: r.startDate,
+                kind: SensorKind(rawValue: r.kindRaw) ?? .other,
+                createdAt: r.createdAt))
+            inserted += 1
+        }
+        if let record = backup.profile, restoreProfile(record) {
+            inserted += 1
+        }
+        restoreSettings(backup.settings)
 
         try modelContext.save()
         return inserted
+    }
+
+    /// Applies the backed-up profile only where it cannot clobber anything: onto
+    /// a store with no profile row, or onto the blank row first launch creates.
+    /// A profile the user has already named stays exactly as it is.
+    private func restoreProfile(_ record: JournalBackup.ProfileRecord) -> Bool {
+        let existing = (try? modelContext.fetch(FetchDescriptor<UserProfile>()))?.first
+        if let existing, !existing.displayName.isEmpty { return false }
+        guard !record.displayName.isEmpty || existing == nil else { return false }
+
+        let target = existing ?? {
+            let fresh = UserProfile(id: record.id)
+            modelContext.insert(fresh)
+            return fresh
+        }()
+        target.displayName = record.displayName
+        target.avatarSymbol = record.avatarSymbol
+        target.diabetesTypeRaw = record.diabetesTypeRaw
+        target.therapyRaw = record.therapyRaw
+        target.diagnosisYear = record.diagnosisYear
+        target.careTeamNote = record.careTeamNote
+        target.avatarColorHex = record.avatarColorHex
+        target.avatarImageData = record.avatarImageData
+        target.birthYear = record.birthYear
+        target.weightKg = record.weightKg
+        target.heightCm = record.heightCm
+        target.basalInsulinName = record.basalInsulinName
+        target.bolusInsulinName = record.bolusInsulinName
+        target.cgmModel = record.cgmModel
+        target.meterModel = record.meterModel
+        target.pumpModel = record.pumpModel
+        target.doctorName = record.doctorName
+        target.doctorPhone = record.doctorPhone
+        target.nextAppointment = record.nextAppointment
+        target.updatedAt = Date()
+        return true
+    }
+
+    /// Writes each backed-up setting only where this device has never stored a
+    /// value for that key — a fresh install gets the whole configuration back,
+    /// while every switch the user has touched here stays exactly as set.
+    private func restoreSettings(_ settings: [String: JournalBackup.SettingValue]) {
+        guard !settings.isEmpty else { return }
+        let group = UserDefaults(suiteName: AppSchema.appGroupIdentifier) ?? .standard
+        for (key, value) in settings {
+            let target = key.hasPrefix("pref.") ? group : UserDefaults.standard
+            if target.object(forKey: key) == nil {
+                target.set(value.plistValue, forKey: key)
+            }
+        }
     }
 
     private func existingIDs<T: PersistentModel>(_ type: T.Type, _ keyPath: KeyPath<T, UUID>) -> Set<UUID> {

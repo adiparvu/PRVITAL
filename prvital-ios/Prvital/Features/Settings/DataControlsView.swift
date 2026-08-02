@@ -179,7 +179,7 @@ struct DataControlsView: View {
             } header: {
                 Text("Backup")
             } footer: {
-                Text("The complete journal — every record family, with ids and provenance — as one JSON file you own. Restoring inserts only the records you don't already have; nothing is overwritten or duplicated. Auto-backup writes the same file weekly to Files → On My iPhone → Prvital → Backups, keeping the last four.")
+                Text("Everything in one JSON file you own: every record family, your favorite meals, lab results, sensor sessions, profile and settings. Restoring inserts only what you don't already have and fills settings only where they're still untouched. Auto-backup writes the same file weekly to Files → On My iPhone → Prvital → Backups, keeping the last four.")
                     .font(.footnote)
                     .foregroundStyle(Theme.textTertiary)
             }
@@ -409,6 +409,10 @@ struct DataControlsView: View {
             showingImportResult = true
             refreshCounts()
             env.entryStore.onChange()
+            // The backup may have written settings straight into the defaults —
+            // pull them into the live preferences and rearm what depends on them.
+            env.preferences.reload()
+            env.rearmMorningReport()
         }
     }
 

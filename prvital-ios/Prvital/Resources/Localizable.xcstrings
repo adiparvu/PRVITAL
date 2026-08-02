@@ -36560,6 +36560,65 @@
         }
       }
     },
+    "Everything in one JSON file you own: every record family, your favorite meals, lab results, sensor sessions, profile and settings. Restoring inserts only what you don't already have and fills settings only where they're still untouched. Auto-backup writes the same file weekly to Files → On My iPhone → Prvital → Backups, keeping the last four." : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Alles in einer JSON-Datei, die dir gehört: jede Datenfamilie, deine Lieblingsmahlzeiten, Laborwerte, Sensor-Sitzungen, Profil und Einstellungen. Beim Wiederherstellen wird nur eingefügt, was noch fehlt, und Einstellungen werden nur dort übernommen, wo sie noch unberührt sind. Das Auto-Backup schreibt dieselbe Datei wöchentlich nach Dateien → Auf meinem iPhone → Prvital → Backups und behält die letzten vier."
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Todo en un único archivo JSON tuyo: cada familia de registros, tus comidas favoritas, resultados de laboratorio, sesiones de sensor, perfil y ajustes. Restaurar solo añade lo que aún no tienes y completa los ajustes únicamente donde siguen intactos. La copia automática escribe el mismo archivo cada semana en Archivos → En mi iPhone → Prvital → Backups, conservando las últimas cuatro."
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Tout dans un seul fichier JSON qui vous appartient : chaque famille d'enregistrements, vos repas favoris, résultats de laboratoire, sessions de capteur, profil et réglages. La restauration n'ajoute que ce qui vous manque et ne remplit les réglages que là où ils sont encore intacts. La sauvegarde automatique écrit le même fichier chaque semaine dans Fichiers → Sur mon iPhone → Prvital → Backups, en conservant les quatre dernières."
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Tutto in un unico file JSON che ti appartiene: ogni famiglia di record, i pasti preferiti, i risultati di laboratorio, le sessioni del sensore, il profilo e le impostazioni. Il ripristino aggiunge solo ciò che non hai già e compila le impostazioni solo dove sono ancora intatte. Il backup automatico scrive lo stesso file ogni settimana in File → Sul mio iPhone → Prvital → Backups, conservando gli ultimi quattro."
+          }
+        },
+        "nl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Alles in één JSON-bestand dat van jou is: elke recordfamilie, je favoriete maaltijden, laboratoriumuitslagen, sensorsessies, profiel en instellingen. Herstellen voegt alleen toe wat je nog niet hebt en vult instellingen alleen in waar ze nog onaangeroerd zijn. De automatische back-up schrijft hetzelfde bestand wekelijks naar Bestanden → Op mijn iPhone → Prvital → Backups en bewaart de laatste vier."
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Wszystko w jednym pliku JSON, który należy do Ciebie: każda rodzina zapisów, ulubione posiłki, wyniki laboratoryjne, sesje sensora, profil i ustawienia. Przywracanie dodaje tylko to, czego jeszcze nie masz, i uzupełnia ustawienia wyłącznie tam, gdzie są nietknięte. Automatyczna kopia zapisuje ten sam plik co tydzień w Pliki → Na moim iPhonie → Prvital → Backups, zachowując cztery ostatnie."
+          }
+        },
+        "pt" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Tudo num único ficheiro JSON que é teu: cada família de registos, as refeições favoritas, os resultados de laboratório, as sessões do sensor, o perfil e as definições. Restaurar acrescenta apenas o que ainda não tens e preenche as definições só onde continuam intactas. A cópia automática grava o mesmo ficheiro todas as semanas em Ficheiros → No meu iPhone → Prvital → Backups, mantendo as últimas quatro."
+          }
+        },
+        "ro" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Totul într-un singur fișier JSON al tău: fiecare familie de înregistrări, mesele favorite, analizele de laborator, sesiunile de senzor, profilul și setările. Restaurarea adaugă doar ce nu ai deja și completează setările doar acolo unde sunt încă neatinse. Backupul automat scrie săptămânal același fișier în Fișiere → Pe iPhone-ul meu → Prvital → Backups, păstrând ultimele patru."
+          }
+        },
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Всё в одном JSON-файле, который принадлежит вам: каждая семья записей, любимые блюда, лабораторные результаты, сессии сенсора, профиль и настройки. Восстановление добавляет только то, чего ещё нет, и заполняет настройки лишь там, где они не тронуты. Автокопия еженедельно записывает тот же файл в Файлы → На iPhone → Prvital → Backups, сохраняя последние четыре."
+          }
+        }
+      }
+    },
     "Everything is fine." : {
       "extractionState" : "manual",
       "localizations" : {
@@ -63560,6 +63619,65 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Утренний отчёт"
+          }
+        }
+      }
+    },
+    "Morning report: see how your night went." : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Morgenbericht: sieh dir an, wie deine Nacht war."
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Informe matinal: mira cómo fue tu noche."
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Rapport du matin : voyez comment s'est passée votre nuit."
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Rapporto del mattino: guarda com'è andata la notte."
+          }
+        },
+        "nl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ochtendrapport: bekijk hoe je nacht was."
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Poranny raport: zobacz, jak minęła Twoja noc."
+          }
+        },
+        "pt" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Relatório da manhã: vê como correu a tua noite."
+          }
+        },
+        "ro" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Raport de dimineață: vezi cum a fost noaptea ta."
+          }
+        },
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Утренний отчёт: посмотрите, как прошла ваша ночь."
           }
         }
       }
@@ -94886,65 +95004,6 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Полный дневник — все типы записей, с id и происхождением — в одном JSON-файле, который принадлежит вам. Восстановление добавляет только отсутствующие записи; ничего не перезаписывается и не дублируется."
-          }
-        }
-      }
-    },
-    "The complete journal — every record family, with ids and provenance — as one JSON file you own. Restoring inserts only the records you don't already have; nothing is overwritten or duplicated. Auto-backup writes the same file weekly to Files → On My iPhone → Prvital → Backups, keeping the last four." : {
-      "extractionState" : "manual",
-      "localizations" : {
-        "de" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Das komplette Tagebuch — jede Datenart, mit IDs und Herkunft — als eine JSON-Datei, die dir gehört. Beim Wiederherstellen werden nur fehlende Einträge eingefügt; nichts wird überschrieben oder doppelt angelegt. Das Auto-Backup schreibt dieselbe Datei wöchentlich nach Dateien → Auf meinem iPhone → Prvital → Backups und behält die letzten vier."
-          }
-        },
-        "es" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "El diario completo — cada tipo de registro, con ids y procedencia — en un archivo JSON tuyo. Al restaurar solo se insertan los registros que falten; nada se sobrescribe ni se duplica. La copia automática escribe el mismo archivo cada semana en Archivos → En mi iPhone → Prvital → Backups, guardando las últimas cuatro."
-          }
-        },
-        "fr" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Le journal complet — chaque famille d'enregistrements, avec ids et provenance — en un fichier JSON à toi. La restauration n'insère que les enregistrements manquants ; rien n'est écrasé ni dupliqué. La sauvegarde auto écrit le même fichier chaque semaine dans Fichiers → Sur mon iPhone → Prvital → Backups, en gardant les quatre dernières."
-          }
-        },
-        "it" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Il diario completo — ogni famiglia di record, con id e provenienza — in un unico file JSON tuo. Il ripristino inserisce solo i record mancanti; niente viene sovrascritto o duplicato. Il backup automatico scrive lo stesso file ogni settimana in File → Sul mio iPhone → Prvital → Backups, conservando gli ultimi quattro."
-          }
-        },
-        "nl" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Het volledige dagboek — elke recordsoort, met ids en herkomst — als één JSON-bestand van jou. Herstellen voegt alleen ontbrekende records toe; niets wordt overschreven of gedupliceerd. De auto-back-up schrijft hetzelfde bestand wekelijks naar Bestanden → Op mijn iPhone → Prvital → Backups en bewaart de laatste vier."
-          }
-        },
-        "pl" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Cały dziennik — każdy typ rekordu, z id i pochodzeniem — jako jeden Twój plik JSON. Przywracanie wstawia tylko brakujące rekordy; nic nie jest nadpisywane ani duplikowane. Auto-kopia zapisuje ten sam plik co tydzień w Pliki → Na moim iPhonie → Prvital → Backups, zachowując cztery ostatnie."
-          }
-        },
-        "pt" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "O diário completo — cada família de registos, com ids e proveniência — num único ficheiro JSON teu. A restauração insere apenas os registos em falta; nada é substituído nem duplicado. A cópia automática escreve o mesmo ficheiro semanalmente em Ficheiros → No meu iPhone → Prvital → Backups, mantendo as últimas quatro."
-          }
-        },
-        "ro" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Jurnalul complet — fiecare familie de înregistrări, cu id-uri și proveniență — într-un singur fișier JSON al tău. Restaurarea inserează doar înregistrările lipsă; nimic nu se suprascrie sau duplică. Backupul automat scrie același fișier săptămânal în Fișiere → Pe iPhone-ul meu → Prvital → Backups, păstrând ultimele patru."
-          }
-        },
-        "ru" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Полный дневник — все типы записей, с id и происхождением — в одном вашем JSON-файле. Восстановление добавляет только недостающие записи; ничего не перезаписывается и не дублируется. Автокопия еженедельно пишет тот же файл в Файлы → На iPhone → Prvital → Backups, храня последние четыре."
           }
         }
       }
