@@ -1240,6 +1240,65 @@
         }
       }
     },
+    "%@ is the toughest day (%lld%% in range)." : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%@ ist der schwierigste Tag (%lld %% im Zielbereich)."
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%@ es el día más difícil (%lld%% en rango)."
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%@ est le jour le plus difficile (%lld %% dans la cible)."
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%@ è il giorno più difficile (%lld%% nel range)."
+          }
+        },
+        "nl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%@ is de lastigste dag (%lld%% binnen bereik)."
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%@ to najtrudniejszy dzień (%lld%% w zakresie)."
+          }
+        },
+        "pt" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%@ é o dia mais difícil (%lld%% no intervalo)."
+          }
+        },
+        "ro" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%@ este ziua cea mai grea (%lld%% în interval)."
+          }
+        },
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%@ — самый трудный день (%lld%% в диапазоне)."
+          }
+        }
+      }
+    },
     "%@ left" : {
       "extractionState" : "manual",
       "localizations" : {
@@ -3419,6 +3478,124 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "%lld h"
+          }
+        }
+      }
+    },
+    "%lld lows, down from %lld." : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%lld Unterzuckerungen, zuvor %lld."
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%lld hipoglucemias, antes %lld."
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%lld hypos, contre %lld avant."
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%lld ipo, in calo da %lld."
+          }
+        },
+        "nl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%lld lage waarden, tegenover %lld eerder."
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%lld niedocukrzeń, mniej niż %lld."
+          }
+        },
+        "pt" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%lld hipoglicemias, menos do que %lld."
+          }
+        },
+        "ro" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%lld hipoglicemii, în scădere de la %lld."
+          }
+        },
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%lld гипо — меньше, чем %lld."
+          }
+        }
+      }
+    },
+    "%lld lows, up from %lld." : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%lld Unterzuckerungen, zuvor %lld."
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%lld hipoglucemias, antes %lld."
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%lld hypos, contre %lld avant."
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%lld ipo, in aumento da %lld."
+          }
+        },
+        "nl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%lld lage waarden, meer dan %lld eerder."
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%lld niedocukrzeń, więcej niż %lld."
+          }
+        },
+        "pt" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%lld hipoglicemias, mais do que %lld."
+          }
+        },
+        "ro" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%lld hipoglicemii, în creștere de la %lld."
+          }
+        },
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%lld гипо — больше, чем %lld."
           }
         }
       }
@@ -6680,6 +6857,65 @@
         }
       }
     },
+    "10 min" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "10 Min."
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "10 min"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "10 min"
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "10 min"
+          }
+        },
+        "nl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "10 min"
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "10 min"
+          }
+        },
+        "pt" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "10 min"
+          }
+        },
+        "ro" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "10 min"
+          }
+        },
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "10 мин"
+          }
+        }
+      }
+    },
     "10 minutes" : {
       "extractionState" : "manual",
       "localizations" : {
@@ -7030,6 +7266,65 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "15 г"
+          }
+        }
+      }
+    },
+    "15 min" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "15 Min."
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "15 min"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "15 min"
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "15 min"
+          }
+        },
+        "nl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "15 min"
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "15 min"
+          }
+        },
+        "pt" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "15 min"
+          }
+        },
+        "ro" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "15 min"
+          }
+        },
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "15 мин"
           }
         }
       }
@@ -8387,6 +8682,65 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "5 дней с хорошим покрытием сенсора."
+          }
+        }
+      }
+    },
+    "5 min" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "5 Min."
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "5 min"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "5 min"
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "5 min"
+          }
+        },
+        "nl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "5 min"
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "5 min"
+          }
+        },
+        "pt" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "5 min"
+          }
+        },
+        "ro" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "5 min"
+          }
+        },
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "5 мин"
           }
         }
       }
@@ -10928,6 +11282,65 @@
         }
       }
     },
+    "A realistic demo week you can remove any time in Settings → Your data." : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Eine realistische Demowoche, die du jederzeit unter Einstellungen → Deine Daten entfernen kannst."
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Una semana de demostración realista que puedes eliminar cuando quieras en Ajustes → Tus datos."
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Une semaine de démo réaliste, supprimable à tout moment dans Réglages → Tes données."
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Una settimana demo realistica, rimovibile in ogni momento da Impostazioni → I tuoi dati."
+          }
+        },
+        "nl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Een realistische demoweek die je altijd kunt verwijderen via Instellingen → Jouw gegevens."
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Realistyczny tydzień demo, który możesz usunąć w Ustawienia → Twoje dane."
+          }
+        },
+        "pt" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Uma semana de demonstração realista que podes remover em Definições → Os teus dados."
+          }
+        },
+        "ro" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "O săptămână demo realistă, pe care o poți șterge oricând din Setări → Datele tale."
+          }
+        },
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Реалистичная демонстрационная неделя — её можно удалить в Настройках → Ваши данные."
+          }
+        }
+      }
+    },
     "A repeating reminder to drink water through the day." : {
       "extractionState" : "manual",
       "localizations" : {
@@ -12881,6 +13294,65 @@
         }
       }
     },
+    "Activity in the next 2 hours" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Aktivität in den nächsten 2 Stunden"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Actividad en las próximas 2 horas"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Activité dans les 2 prochaines heures"
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Attività nelle prossime 2 ore"
+          }
+        },
+        "nl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Activiteit in de komende 2 uur"
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Aktywność w ciągu 2 godzin"
+          }
+        },
+        "pt" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Atividade nas próximas 2 horas"
+          }
+        },
+        "ro" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Activitate în următoarele 2 ore"
+          }
+        },
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Активность в ближайшие 2 часа"
+          }
+        }
+      }
+    },
     "Activity lowers your glucose" : {
       "extractionState" : "manual",
       "localizations" : {
@@ -14598,6 +15070,124 @@
         }
       }
     },
+    "After a longer night, your mornings tend to start higher." : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Nach einer längeren Nacht starten deine Morgen meist höher."
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Tras una noche más larga, tus mañanas suelen empezar más altas."
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Après une nuit plus longue, tes matins démarrent souvent plus haut."
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Dopo una notte più lunga, le tue mattine partono più alte."
+          }
+        },
+        "nl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Na een langere nacht beginnen je ochtenden meestal hoger."
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Po dłuższej nocy poranki zaczynają się zwykle wyżej."
+          }
+        },
+        "pt" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Depois de uma noite mais longa, as manhãs começam mais altas."
+          }
+        },
+        "ro" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "După o noapte mai lungă, diminețile tale pornesc de obicei mai sus."
+          }
+        },
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "После более долгой ночи утро обычно начинается выше."
+          }
+        }
+      }
+    },
+    "After a longer night, your mornings tend to start lower." : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Nach einer längeren Nacht starten deine Morgen meist niedriger."
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Tras una noche más larga, tus mañanas suelen empezar más bajas."
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Après une nuit plus longue, tes matins démarrent souvent plus bas."
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Dopo una notte più lunga, le tue mattine partono più basse."
+          }
+        },
+        "nl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Na een langere nacht beginnen je ochtenden meestal lager."
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Po dłuższej nocy poranki zaczynają się zwykle niżej."
+          }
+        },
+        "pt" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Depois de uma noite mais longa, as manhãs começam mais baixas."
+          }
+        },
+        "ro" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "După o noapte mai lungă, diminețile tale pornesc de obicei mai jos."
+          }
+        },
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "После более долгой ночи утро обычно начинается ниже."
+          }
+        }
+      }
+    },
     "After more sleep, your glucose tends to run higher." : {
       "extractionState" : "manual",
       "localizations" : {
@@ -15066,6 +15656,65 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Алкоголь"
+          }
+        }
+      }
+    },
+    "Alert after it lasts" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Alarm, wenn es anhält"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Avisar cuando dure"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Alerter si ça persiste"
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Avvisa se persiste"
+          }
+        },
+        "nl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Waarschuw als het aanhoudt"
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Alarm, gdy się utrzymuje"
+          }
+        },
+        "pt" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Alertar se persistir"
+          }
+        },
+        "ro" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Alertă dacă persistă"
+          }
+        },
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Сигнал, если держится"
           }
         }
       }
@@ -16805,6 +17454,65 @@
         }
       }
     },
+    "Ask for Face ID or your passcode every time the app opens, so your journal stays private even on an unlocked phone." : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Fragt bei jedem Öffnen nach Face ID oder deinem Code, damit dein Tagebuch auch auf einem entsperrten iPhone privat bleibt."
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Pide Face ID o tu código cada vez que se abre la app, para que tu diario siga siendo privado incluso con el teléfono desbloqueado."
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Demande Face ID ou ton code à chaque ouverture, pour que ton journal reste privé même sur un téléphone déverrouillé."
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Richiede Face ID o il codice a ogni apertura, così il diario resta privato anche su un telefono sbloccato."
+          }
+        },
+        "nl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Vraagt bij elke opening om Face ID of je code, zodat je dagboek privé blijft, zelfs op een ontgrendelde telefoon."
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Prosi o Face ID lub kod przy każdym otwarciu, aby dziennik pozostał prywatny nawet na odblokowanym telefonie."
+          }
+        },
+        "pt" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Pede Face ID ou o teu código sempre que a app abre, para o diário ficar privado mesmo num telemóvel desbloqueado."
+          }
+        },
+        "ro" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Cere Face ID sau codul de fiecare dată când se deschide aplicația, ca jurnalul să rămână privat chiar și pe un telefon deblocat."
+          }
+        },
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Запрашивает Face ID или код при каждом открытии, чтобы дневник оставался личным даже на разблокированном телефоне."
+          }
+        }
+      }
+    },
     "Ask us anything about Prvital." : {
       "extractionState" : "manual",
       "localizations" : {
@@ -18176,6 +18884,65 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Тип фона"
+          }
+        }
+      }
+    },
+    "Backup" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Backup"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Copia de seguridad"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Sauvegarde"
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Backup"
+          }
+        },
+        "nl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Back-up"
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Kopia zapasowa"
+          }
+        },
+        "pt" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Cópia de segurança"
+          }
+        },
+        "ro" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Copie de siguranță"
+          }
+        },
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Резервная копия"
           }
         }
       }
@@ -23221,6 +23988,65 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Проверяйте кетоны при высоких значениях"
+          }
+        }
+      }
+    },
+    "Check that the sensor is in range of your phone." : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Prüfe, ob der Sensor in Reichweite deines iPhones ist."
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Comprueba que el sensor esté al alcance del teléfono."
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Vérifie que le capteur est à portée du téléphone."
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Controlla che il sensore sia a portata del telefono."
+          }
+        },
+        "nl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Controleer of de sensor binnen bereik van je telefoon is."
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Sprawdź, czy sensor jest w zasięgu telefonu."
+          }
+        },
+        "pt" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Confirma que o sensor está ao alcance do telemóvel."
+          }
+        },
+        "ro" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Verifică dacă senzorul este în raza telefonului."
+          }
+        },
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Проверьте, что датчик в зоне действия телефона."
           }
         }
       }
@@ -28927,6 +29753,65 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Удалить все локальные данные?"
+          }
+        }
+      }
+    },
+    "Deletes exactly the sample week added during onboarding — nothing you logged yourself." : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Löscht genau die Beispielwoche aus der Einrichtung — nichts, was du selbst eingetragen hast."
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Elimina exactamente la semana de ejemplo añadida al empezar — nada de lo que registraste tú."
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Supprime exactement la semaine d'exemple ajoutée à l'accueil — rien de ce que tu as consigné toi-même."
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Elimina esattamente la settimana di esempio aggiunta all'inizio — nulla di ciò che hai registrato tu."
+          }
+        },
+        "nl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Verwijdert precies de voorbeeldweek uit de introductie — niets van wat je zelf logde."
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Usuwa dokładnie przykładowy tydzień dodany na starcie — nic z tego, co sam zapisałeś."
+          }
+        },
+        "pt" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Apaga exatamente a semana de exemplo adicionada no início — nada do que registaste tu."
+          }
+        },
+        "ro" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Șterge exact săptămâna demonstrativă adăugată la început — nimic din ce ai notat tu."
+          }
+        },
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Удаляет ровно демонстрационную неделю из настройки — ничего из того, что вы записали сами."
           }
         }
       }
@@ -34908,6 +35793,65 @@
         }
       }
     },
+    "Explore with sample data" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Mit Beispieldaten erkunden"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Explorar con datos de ejemplo"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Explorer avec des données d'exemple"
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Esplora con dati di esempio"
+          }
+        },
+        "nl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Verkennen met voorbeelddata"
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Poznaj z danymi przykładowymi"
+          }
+        },
+        "pt" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Explorar com dados de exemplo"
+          }
+        },
+        "ro" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Explorează cu date demonstrative"
+          }
+        },
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Изучить на примере данных"
+          }
+        }
+      }
+    },
     "Export" : {
       "extractionState" : "manual",
       "localizations" : {
@@ -35140,6 +36084,65 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Экспортировать отчёт"
+          }
+        }
+      }
+    },
+    "Export everything (JSON)" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Alles exportieren (JSON)"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Exportar todo (JSON)"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Tout exporter (JSON)"
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Esporta tutto (JSON)"
+          }
+        },
+        "nl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Alles exporteren (JSON)"
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Eksportuj wszystko (JSON)"
+          }
+        },
+        "pt" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Exportar tudo (JSON)"
+          }
+        },
+        "ro" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Exportă tot (JSON)"
+          }
+        },
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Экспортировать всё (JSON)"
           }
         }
       }
@@ -39274,6 +40277,65 @@
         }
       }
     },
+    "Glucose chart" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Glukose-Diagramm"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Gráfico de glucosa"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Graphique de glycémie"
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Grafico glicemico"
+          }
+        },
+        "nl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Glucosegrafiek"
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Wykres glukozy"
+          }
+        },
+        "pt" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Gráfico de glicose"
+          }
+        },
+        "ro" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Grafic glicemie"
+          }
+        },
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "График глюкозы"
+          }
+        }
+      }
+    },
     "Glucose checks" : {
       "extractionState" : "manual",
       "localizations" : {
@@ -40218,6 +41280,65 @@
         }
       }
     },
+    "Glucose is steadier — variability down %lld points." : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Der Glukoseverlauf ist ruhiger — Variabilität um %lld Punkte gesunken."
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "La glucosa está más estable — variabilidad %lld puntos menos."
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "La glycémie est plus stable — variabilité en baisse de %lld points."
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "La glicemia è più stabile — variabilità giù di %lld punti."
+          }
+        },
+        "nl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Glucose is stabieler — variabiliteit %lld punten lager."
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Glukoza jest stabilniejsza — zmienność niższa o %lld pkt."
+          }
+        },
+        "pt" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "A glicose está mais estável — variabilidade %lld pontos abaixo."
+          }
+        },
+        "ro" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Glicemia e mai liniștită — variabilitatea a scăzut %lld puncte."
+          }
+        },
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Глюкоза ровнее — вариабельность ниже на %lld п."
+          }
+        }
+      }
+    },
     "Glucose is too high!" : {
       "extractionState" : "manual",
       "localizations" : {
@@ -40863,6 +41984,65 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Глюкоза стабильна"
+          }
+        }
+      }
+    },
+    "Glucose swung more — variability up %lld points." : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Der Glukoseverlauf schwankte stärker — Variabilität um %lld Punkte gestiegen."
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "La glucosa osciló más — variabilidad %lld puntos más."
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "La glycémie a plus oscillé — variabilité en hausse de %lld points."
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "La glicemia ha oscillato di più — variabilità su di %lld punti."
+          }
+        },
+        "nl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Glucose schommelde meer — variabiliteit %lld punten hoger."
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Glukoza wahała się bardziej — zmienność wyższa o %lld pkt."
+          }
+        },
+        "pt" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "A glicose oscilou mais — variabilidade %lld pontos acima."
+          }
+        },
+        "ro" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Glicemia a oscilat mai mult — variabilitatea a crescut %lld puncte."
+          }
+        },
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Глюкоза колебалась сильнее — вариабельность выше на %lld п."
           }
         }
       }
@@ -46557,6 +47737,65 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Требуется немедленное внимание!"
+          }
+        }
+      }
+    },
+    "Immediately" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Sofort"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Inmediatamente"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Immédiatement"
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Subito"
+          }
+        },
+        "nl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Meteen"
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Natychmiast"
+          }
+        },
+        "pt" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Imediatamente"
+          }
+        },
+        "ro" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Imediat"
+          }
+        },
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Сразу"
           }
         }
       }
@@ -53352,6 +54591,65 @@
         }
       }
     },
+    "Lock with Face ID" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Mit Face ID sperren"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Bloquear con Face ID"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Verrouiller avec Face ID"
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Blocca con Face ID"
+          }
+        },
+        "nl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Vergrendel met Face ID"
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Blokuj przez Face ID"
+          }
+        },
+        "pt" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Bloquear com Face ID"
+          }
+        },
+        "ro" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Blocare cu Face ID"
+          }
+        },
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Блокировка по Face ID"
+          }
+        }
+      }
+    },
     "Locked" : {
       "extractionState" : "manual",
       "localizations" : {
@@ -54351,6 +55649,65 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Записать активность"
+          }
+        }
+      }
+    },
+    "Log all" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Alles eintragen"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Registrar todo"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Tout consigner"
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Registra tutto"
+          }
+        },
+        "nl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Alles loggen"
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Zapisz wszystko"
+          }
+        },
+        "pt" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Registar tudo"
+          }
+        },
+        "ro" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Adaugă tot"
+          }
+        },
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Записать всё"
           }
         }
       }
@@ -63865,6 +65222,65 @@
         }
       }
     },
+    "No lows this period — last period had %lld." : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Keine Unterzuckerungen in diesem Zeitraum — zuvor waren es %lld."
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Sin hipoglucemias en este periodo — el anterior tuvo %lld."
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Aucune hypo sur cette période — la précédente en comptait %lld."
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Nessuna ipo in questo periodo — il precedente ne aveva %lld."
+          }
+        },
+        "nl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Geen lage waarden deze periode — vorige periode had er %lld."
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Brak niedocukrzeń w tym okresie — poprzedni miał %lld."
+          }
+        },
+        "pt" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Sem hipoglicemias neste período — o anterior teve %lld."
+          }
+        },
+        "ro" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Nicio hipoglicemie în această perioadă — cea anterioară a avut %lld."
+          }
+        },
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "В этот период не было гипо — в прошлый было %lld."
+          }
+        }
+      }
+    },
     "No mail account" : {
       "extractionState" : "manual",
       "localizations" : {
@@ -64569,6 +65985,65 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Нет недавних измерений"
+          }
+        }
+      }
+    },
+    "No sensor data for %lld min" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Keine Sensordaten seit %lld Min."
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Sin datos del sensor desde hace %lld min"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Aucune donnée du capteur depuis %lld min"
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Nessun dato dal sensore da %lld min"
+          }
+        },
+        "nl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Geen sensordata sinds %lld min"
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Brak danych z sensora od %lld min"
+          }
+        },
+        "pt" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Sem dados do sensor há %lld min"
+          }
+        },
+        "ro" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Fără date de la senzor de %lld min"
+          }
+        },
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Нет данных датчика уже %lld мин"
           }
         }
       }
@@ -72692,6 +74167,65 @@
         }
       }
     },
+    "Prvital is locked" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Prvital ist gesperrt"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Prvital está bloqueado"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Prvital est verrouillé"
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Prvital è bloccato"
+          }
+        },
+        "nl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Prvital is vergrendeld"
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Prvital jest zablokowany"
+          }
+        },
+        "pt" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "O Prvital está bloqueado"
+          }
+        },
+        "ro" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Prvital este blocat"
+          }
+        },
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Prvital заблокирован"
+          }
+        }
+      }
+    },
     "Prvital is private by design. Your health data lives on this device (and, only if you turn it on, your own private iCloud). It is never sold, never used for advertising, and never used to train models without your consent." : {
       "extractionState" : "manual",
       "localizations" : {
@@ -75595,6 +77129,124 @@
         }
       }
     },
+    "Reduce dose by %lld%%" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Dosis um %lld %% senken"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Reducir la dosis un %lld%%"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Réduire la dose de %lld %%"
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Riduci la dose del %lld%%"
+          }
+        },
+        "nl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Dosis verlagen met %lld%%"
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Zmniejsz dawkę o %lld%%"
+          }
+        },
+        "pt" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Reduzir a dose em %lld%%"
+          }
+        },
+        "ro" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Redu doza cu %lld%%"
+          }
+        },
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Снизить дозу на %lld%%"
+          }
+        }
+      }
+    },
+    "Reduced %lld%% for the planned activity. Carry fast carbs and recheck after." : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Um %lld %% reduziert wegen der geplanten Aktivität. Nimm schnelle Kohlenhydrate mit und miss danach nach."
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Reducida un %lld%% por la actividad prevista. Lleva carbohidratos rápidos y vuelve a medir después."
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Réduite de %lld %% pour l'activité prévue. Emporte des glucides rapides et recontrôle après."
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ridotta del %lld%% per l'attività prevista. Porta carboidrati rapidi e ricontrolla dopo."
+          }
+        },
+        "nl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Met %lld%% verlaagd voor de geplande activiteit. Neem snelle koolhydraten mee en meet daarna opnieuw."
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Zmniejszona o %lld%% z powodu planowanej aktywności. Miej przy sobie szybkie węglowodany i zmierz się ponownie."
+          }
+        },
+        "pt" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Reduzida em %lld%% pela atividade planeada. Leva hidratos rápidos e volta a medir depois."
+          }
+        },
+        "ro" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Redusă cu %lld%% pentru activitatea planificată. Ia carbohidrați rapizi la tine și verifică din nou după."
+          }
+        },
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Снижена на %lld%% из-за планируемой активности. Возьмите быстрые углеводы и перепроверьте после."
+          }
+        }
+      }
+    },
     "Refresh" : {
       "extractionState" : "manual",
       "localizations" : {
@@ -75650,6 +77302,65 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Обновить"
+          }
+        }
+      }
+    },
+    "Refresh now" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Jetzt aktualisieren"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Actualizar ahora"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Actualiser maintenant"
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Aggiorna ora"
+          }
+        },
+        "nl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Nu vernieuwen"
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Odśwież teraz"
+          }
+        },
+        "pt" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Atualizar agora"
+          }
+        },
+        "ro" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Reîmprospătează acum"
+          }
+        },
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Обновить сейчас"
           }
         }
       }
@@ -76492,6 +78203,65 @@
         }
       }
     },
+    "Remove demo data" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Demodaten entfernen"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Eliminar datos de demostración"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Supprimer les données de démo"
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Rimuovi dati demo"
+          }
+        },
+        "nl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Demogegevens verwijderen"
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Usuń dane demo"
+          }
+        },
+        "pt" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Remover dados de demonstração"
+          }
+        },
+        "ro" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Șterge datele demo"
+          }
+        },
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Удалить демо-данные"
+          }
+        }
+      }
+    },
     "Remove medication" : {
       "extractionState" : "manual",
       "localizations" : {
@@ -76907,6 +78677,65 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Повторять каждые"
+          }
+        }
+      }
+    },
+    "Repeat now" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Jetzt wiederholen"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Repetir ahora"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Répéter maintenant"
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ripeti ora"
+          }
+        },
+        "nl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Nu herhalen"
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Powtórz teraz"
+          }
+        },
+        "pt" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Repetir agora"
+          }
+        },
+        "ro" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Repetă acum"
+          }
+        },
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Повторить сейчас"
           }
         }
       }
@@ -77438,6 +79267,124 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Пульс в покое"
+          }
+        }
+      }
+    },
+    "Restore from backup" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Aus Backup wiederherstellen"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Restaurar desde copia"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Restaurer une sauvegarde"
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ripristina da backup"
+          }
+        },
+        "nl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Herstel uit back-up"
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Przywróć z kopii"
+          }
+        },
+        "pt" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Restaurar da cópia"
+          }
+        },
+        "ro" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Restaurează din copie"
+          }
+        },
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Восстановить из копии"
+          }
+        }
+      }
+    },
+    "Restored %lld records from the backup." : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%lld Einträge aus dem Backup wiederhergestellt."
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Se restauraron %lld registros de la copia."
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%lld enregistrements restaurés depuis la sauvegarde."
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ripristinati %lld record dal backup."
+          }
+        },
+        "nl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%lld records hersteld uit de back-up."
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Przywrócono %lld rekordów z kopii."
+          }
+        },
+        "pt" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Restaurados %lld registos da cópia."
+          }
+        },
+        "ro" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Au fost restaurate %lld înregistrări din copie."
+          }
+        },
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Восстановлено %lld записей из копии."
           }
         }
       }
@@ -78811,6 +80758,65 @@
         }
       }
     },
+    "Sample week added" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Beispielwoche hinzugefügt"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Semana de ejemplo añadida"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Semaine d'exemple ajoutée"
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Settimana di esempio aggiunta"
+          }
+        },
+        "nl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Voorbeeldweek toegevoegd"
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Dodano przykładowy tydzień"
+          }
+        },
+        "pt" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Semana de exemplo adicionada"
+          }
+        },
+        "ro" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Săptămâna demo a fost adăugată"
+          }
+        },
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Демонстрационная неделя добавлена"
+          }
+        }
+      }
+    },
     "Save" : {
       "extractionState" : "manual",
       "localizations" : {
@@ -78984,6 +80990,65 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Сохранить в избранное"
+          }
+        }
+      }
+    },
+    "Save it somewhere only you control — Files, iCloud Drive, or straight to another device." : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Speichere sie an einem Ort, den nur du kontrollierst — Dateien, iCloud Drive oder direkt auf ein anderes Gerät."
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Guárdalo en un lugar que solo tú controles — Archivos, iCloud Drive o directo a otro dispositivo."
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Enregistre-la dans un endroit que toi seul contrôles — Fichiers, iCloud Drive ou directement sur un autre appareil."
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Salvalo dove controlli solo tu — File, iCloud Drive o direttamente su un altro dispositivo."
+          }
+        },
+        "nl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Bewaar het ergens dat alleen jij beheert — Bestanden, iCloud Drive of direct naar een ander apparaat."
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Zapisz ją w miejscu, które kontrolujesz tylko Ty — Pliki, iCloud Drive albo prosto na inne urządzenie."
+          }
+        },
+        "pt" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Guarda-a num sítio que só tu controlas — Ficheiros, iCloud Drive ou direto para outro aparelho."
+          }
+        },
+        "ro" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Salveaz-o undeva unde doar tu ai control — Fișiere, iCloud Drive sau direct pe alt dispozitiv."
+          }
+        },
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Сохраните её там, где контролируете только вы — Файлы, iCloud Drive или сразу на другое устройство."
           }
         }
       }
@@ -79354,6 +81419,65 @@
         }
       }
     },
+    "Search notes, foods, tags…" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Notizen, Mahlzeiten, Tags suchen …"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Buscar notas, comidas, etiquetas…"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Rechercher notes, aliments, tags…"
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Cerca note, alimenti, tag…"
+          }
+        },
+        "nl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Zoek notities, maaltijden, tags…"
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Szukaj notatek, posiłków, tagów…"
+          }
+        },
+        "pt" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Procurar notas, alimentos, etiquetas…"
+          }
+        },
+        "ro" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Caută note, alimente, etichete…"
+          }
+        },
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Поиск заметок, еды, меток…"
+          }
+        }
+      }
+    },
     "Search or scan a food" : {
       "extractionState" : "manual",
       "localizations" : {
@@ -79716,6 +81840,65 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Посоли, поперчи и подавай."
+          }
+        }
+      }
+    },
+    "Security" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Sicherheit"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Seguridad"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Sécurité"
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Sicurezza"
+          }
+        },
+        "nl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Beveiliging"
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Bezpieczeństwo"
+          }
+        },
+        "pt" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Segurança"
+          }
+        },
+        "ro" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Securitate"
+          }
+        },
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Безопасность"
           }
         }
       }
@@ -81319,6 +83502,65 @@
         }
       }
     },
+    "Share backup" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Backup teilen"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Compartir copia"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Partager la sauvegarde"
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Condividi backup"
+          }
+        },
+        "nl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Back-up delen"
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Udostępnij kopię"
+          }
+        },
+        "pt" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Partilhar cópia"
+          }
+        },
+        "ro" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Trimite copia"
+          }
+        },
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Поделиться копией"
+          }
+        }
+      }
+    },
     "Share care summary" : {
       "extractionState" : "manual",
       "localizations" : {
@@ -81374,6 +83616,65 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Поделиться медицинской сводкой"
+          }
+        }
+      }
+    },
+    "Share chart" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Diagramm teilen"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Compartir gráfico"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Partager le graphique"
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Condividi grafico"
+          }
+        },
+        "nl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Grafiek delen"
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Udostępnij wykres"
+          }
+        },
+        "pt" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Partilhar gráfico"
+          }
+        },
+        "ro" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Trimite graficul"
+          }
+        },
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Поделиться графиком"
           }
         }
       }
@@ -81551,6 +83852,65 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Поделиться отчётом"
+          }
+        }
+      }
+    },
+    "Share this chart as an image" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Dieses Diagramm als Bild teilen"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Compartir este gráfico como imagen"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Partager ce graphique en image"
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Condividi questo grafico come immagine"
+          }
+        },
+        "nl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Deel deze grafiek als afbeelding"
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Udostępnij wykres jako obraz"
+          }
+        },
+        "pt" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Partilhar este gráfico como imagem"
+          }
+        },
+        "ro" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Trimite graficul ca imagine"
+          }
+        },
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Поделиться графиком как изображением"
           }
         }
       }
@@ -83392,6 +85752,65 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Сон"
+          }
+        }
+      }
+    },
+    "Sleep & mornings" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Schlaf & Morgen"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Sueño y mañanas"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Sommeil & matins"
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Sonno e mattine"
+          }
+        },
+        "nl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Slaap & ochtenden"
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Sen i poranki"
+          }
+        },
+        "pt" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Sono e manhãs"
+          }
+        },
+        "ro" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Somn și dimineți"
+          }
+        },
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Сон и утро"
           }
         }
       }
@@ -86230,6 +88649,65 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Смешай овсяные хлопья, молоко, йогурт, семена чиа и корицу в банке."
+          }
+        }
+      }
+    },
+    "Stop timer" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Timer stoppen"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Detener temporizador"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Arrêter le minuteur"
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ferma il timer"
+          }
+        },
+        "nl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Timer stoppen"
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Zatrzymaj minutnik"
+          }
+        },
+        "pt" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Parar temporizador"
+          }
+        },
+        "ro" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Oprește cronometrul"
+          }
+        },
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Остановить таймер"
           }
         }
       }
@@ -89639,6 +92117,65 @@
         }
       }
     },
+    "The complete journal — every record family, with ids and provenance — as one JSON file you own. Restoring inserts only the records you don't already have; nothing is overwritten or duplicated." : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Das komplette Tagebuch — jede Datenart, mit IDs und Herkunft — als eine JSON-Datei, die dir gehört. Beim Wiederherstellen werden nur Einträge eingefügt, die du noch nicht hast; nichts wird überschrieben oder doppelt angelegt."
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "El diario completo — cada tipo de registro, con ids y procedencia — en un archivo JSON tuyo. Al restaurar solo se insertan los registros que no tengas; nada se sobrescribe ni se duplica."
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Le journal complet — chaque famille d'enregistrements, avec ids et provenance — en un fichier JSON qui t'appartient. La restauration n'insère que les enregistrements que tu n'as pas déjà ; rien n'est écrasé ni dupliqué."
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Il diario completo — ogni famiglia di record, con id e provenienza — in un unico file JSON tuo. Il ripristino inserisce solo i record che non hai già; niente viene sovrascritto o duplicato."
+          }
+        },
+        "nl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Het volledige dagboek — elke recordsoort, met ids en herkomst — als één JSON-bestand van jou. Herstellen voegt alleen records toe die je nog niet hebt; niets wordt overschreven of gedupliceerd."
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Cały dziennik — każdy typ rekordu, z id i pochodzeniem — jako jeden plik JSON, który należy do Ciebie. Przywracanie wstawia tylko rekordy, których nie masz; nic nie jest nadpisywane ani duplikowane."
+          }
+        },
+        "pt" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "O diário completo — cada família de registos, com ids e proveniência — num único ficheiro JSON teu. A restauração insere apenas os registos que ainda não tens; nada é substituído nem duplicado."
+          }
+        },
+        "ro" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Jurnalul complet — fiecare familie de înregistrări, cu id-uri și proveniență — într-un singur fișier JSON al tău. Restaurarea inserează doar înregistrările pe care nu le ai deja; nimic nu se suprascrie sau duplică."
+          }
+        },
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Полный дневник — все типы записей, с id и происхождением — в одном JSON-файле, который принадлежит вам. Восстановление добавляет только отсутствующие записи; ничего не перезаписывается и не дублируется."
+          }
+        }
+      }
+    },
     "The dawn phenomenon" : {
       "extractionState" : "manual",
       "localizations" : {
@@ -90284,6 +92821,65 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Одно и то же оповещение не повторится в течение этого окна. Изменение — например, с низкого на критически низкий или новое направление — всегда оповещает сразу."
+          }
+        }
+      }
+    },
+    "The same alert won't repeat within this window. A change — such as low to urgent low, or a new direction — always alerts right away. Requiring an excursion to last a few minutes filters the false nighttime low from lying on the sensor; urgent alerts always fire immediately." : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Derselbe Alarm wiederholt sich in diesem Fenster nicht. Eine Änderung — etwa von niedrig zu dringend niedrig oder eine neue Richtung — meldet sich immer sofort. Wenn eine Abweichung erst einige Minuten anhalten muss, werden falsche nächtliche Tiefs durch Liegen auf dem Sensor gefiltert; dringende Alarme kommen immer sofort."
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "La misma alerta no se repite dentro de esta ventana. Un cambio — como de baja a baja urgente, o una nueva dirección — siempre avisa al momento. Exigir que la desviación dure unos minutos filtra la falsa hipoglucemia nocturna por dormir sobre el sensor; las alertas urgentes siempre suenan de inmediato."
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "La même alerte ne se répète pas dans cette fenêtre. Un changement — de bas à bas urgent, ou une nouvelle direction — alerte toujours immédiatement. Exiger que l'écart dure quelques minutes filtre la fausse hypo nocturne due à l'appui sur le capteur ; les alertes urgentes sonnent toujours tout de suite."
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Lo stesso avviso non si ripete in questa finestra. Un cambiamento — da basso a basso urgente, o una nuova direzione — avvisa sempre subito. Richiedere che l'escursione duri qualche minuto filtra la falsa ipo notturna da compressione del sensore; gli avvisi urgenti suonano sempre immediatamente."
+          }
+        },
+        "nl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Dezelfde melding herhaalt zich niet binnen dit venster. Een verandering — zoals laag naar urgent laag, of een nieuwe richting — meldt zich altijd direct. Door te eisen dat een afwijking enkele minuten aanhoudt, filter je de valse nachtelijke lage waarde door op de sensor te liggen; urgente meldingen klinken altijd meteen."
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ten sam alarm nie powtórzy się w tym oknie. Zmiana — np. z niskiego na pilnie niski albo nowy kierunek — zawsze alarmuje od razu. Wymóg, by odchylenie trwało kilka minut, odfiltrowuje fałszywe nocne spadki od leżenia na sensorze; pilne alarmy zawsze odzywają się natychmiast."
+          }
+        },
+        "pt" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "O mesmo alerta não se repete dentro desta janela. Uma mudança — como de baixa para baixa urgente, ou uma nova direção — alerta sempre de imediato. Exigir que o desvio dure alguns minutos filtra a falsa hipo noturna por dormir sobre o sensor; os alertas urgentes soam sempre imediatamente."
+          }
+        },
+        "ro" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Aceeași alertă nu se repetă în această fereastră. O schimbare — cum ar fi din scăzut în scăzut urgent, sau o direcție nouă — alertează mereu imediat. Cerând ca abaterea să dureze câteva minute, filtrezi falsa hipoglicemie nocturnă din culcatul pe senzor; alertele urgente sună întotdeauna imediat."
+          }
+        },
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Один и тот же сигнал не повторяется в этом окне. Изменение — например, с низкого на срочно низкий или новое направление — всегда срабатывает сразу. Требование, чтобы отклонение длилось несколько минут, отсекает ложные ночные снижения от лежания на датчике; срочные сигналы всегда срабатывают немедленно."
           }
         }
       }
@@ -92654,6 +95250,124 @@
         }
       }
     },
+    "Time in range fell %lld points to %lld%%." : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Zeit im Zielbereich fiel um %lld Punkte auf %lld %%."
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "El tiempo en rango bajó %lld puntos, hasta el %lld%%."
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Le temps dans la cible a perdu %lld points, à %lld %%."
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Il tempo nel range è sceso di %lld punti, al %lld%%."
+          }
+        },
+        "nl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Tijd binnen bereik daalde %lld punten naar %lld%%."
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Czas w zakresie spadł o %lld pkt, do %lld%%."
+          }
+        },
+        "pt" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "O tempo no intervalo desceu %lld pontos, para %lld%%."
+          }
+        },
+        "ro" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Timpul în interval a scăzut %lld puncte, la %lld%%."
+          }
+        },
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Время в диапазоне снизилось на %lld п., до %lld%%."
+          }
+        }
+      }
+    },
+    "Time in range held steady at %lld%%." : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Zeit im Zielbereich blieb stabil bei %lld %%."
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "El tiempo en rango se mantuvo en el %lld%%."
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Le temps dans la cible est resté stable à %lld %%."
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Il tempo nel range è rimasto stabile al %lld%%."
+          }
+        },
+        "nl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Tijd binnen bereik bleef stabiel op %lld%%."
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Czas w zakresie utrzymał się na %lld%%."
+          }
+        },
+        "pt" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "O tempo no intervalo manteve-se nos %lld%%."
+          }
+        },
+        "ro" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Timpul în interval s-a menținut la %lld%%."
+          }
+        },
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Время в диапазоне держится на уровне %lld%%."
+          }
+        }
+      }
+    },
     "Time in range on days with each tag, and how it differs from your other days." : {
       "extractionState" : "manual",
       "localizations" : {
@@ -92709,6 +95423,65 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Время в диапазоне в дни с каждой меткой и отличие от остальных дней."
+          }
+        }
+      }
+    },
+    "Time in range rose %lld points to %lld%%." : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Zeit im Zielbereich stieg um %lld Punkte auf %lld %%."
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "El tiempo en rango subió %lld puntos, hasta el %lld%%."
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Le temps dans la cible a gagné %lld points, à %lld %%."
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Il tempo nel range è salito di %lld punti, al %lld%%."
+          }
+        },
+        "nl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Tijd binnen bereik steeg %lld punten naar %lld%%."
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Czas w zakresie wzrósł o %lld pkt, do %lld%%."
+          }
+        },
+        "pt" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "O tempo no intervalo subiu %lld pontos, para %lld%%."
+          }
+        },
+        "ro" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Timpul în interval a urcat %lld puncte, la %lld%%."
+          }
+        },
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Время в диапазоне выросло на %lld п., до %lld%%."
           }
         }
       }
@@ -95604,6 +98377,65 @@
         }
       }
     },
+    "Type it: e.g. 45g pasta and 4 units" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Tipp es: z. B. 45g Pasta und 4 Einheiten"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Escríbelo: p. ej. 45g pasta y 4 unidades"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Écris-le : p. ex. 45g pâtes et 4 unités"
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Scrivilo: es. 45g pasta e 4 unità"
+          }
+        },
+        "nl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Typ het: bv. 45g pasta en 4 eenheden"
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Wpisz: np. 45g makaronu i 4 jednostki"
+          }
+        },
+        "pt" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Escreve: p. ex. 45g massa e 4 unidades"
+          }
+        },
+        "ro" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Scrie liber: ex. 45g paste și 4 unități"
+          }
+        },
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Напишите: напр. 45г пасты и 4 единицы"
+          }
+        }
+      }
+    },
     "Type to search, tap to choose, or keep exactly what you typed. Just a label for your records — never used to calculate doses." : {
       "extractionState" : "manual",
       "localizations" : {
@@ -96491,6 +99323,124 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Единицы и цели"
+          }
+        }
+      }
+    },
+    "Unlock" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Entsperren"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Desbloquear"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Déverrouiller"
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Sblocca"
+          }
+        },
+        "nl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ontgrendel"
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Odblokuj"
+          }
+        },
+        "pt" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Desbloquear"
+          }
+        },
+        "ro" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Deblochează"
+          }
+        },
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Разблокировать"
+          }
+        }
+      }
+    },
+    "Unlock your glucose journal" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Entsperre dein Glukose-Tagebuch"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Desbloquea tu diario de glucosa"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Déverrouille ton journal de glycémie"
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Sblocca il tuo diario glicemico"
+          }
+        },
+        "nl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ontgrendel je glucosedagboek"
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Odblokuj swój dziennik glukozy"
+          }
+        },
+        "pt" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Desbloqueia o teu diário de glicose"
+          }
+        },
+        "ro" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Deblochează-ți jurnalul de glicemie"
+          }
+        },
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Разблокируйте свой дневник глюкозы"
           }
         }
       }
@@ -100171,6 +103121,65 @@
         }
       }
     },
+    "What changed" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Was sich geändert hat"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Qué ha cambiado"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ce qui a changé"
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Cosa è cambiato"
+          }
+        },
+        "nl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Wat er veranderde"
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Co się zmieniło"
+          }
+        },
+        "pt" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "O que mudou"
+          }
+        },
+        "ro" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ce s-a schimbat"
+          }
+        },
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Что изменилось"
+          }
+        }
+      }
+    },
     "What counts as low" : {
       "extractionState" : "manual",
       "localizations" : {
@@ -102291,6 +105300,65 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Вы провели %lld%% времени ниже целевого диапазона. Снижение числа гипогликемий обычно становится первой победой."
+          }
+        }
+      }
+    },
+    "You still have %@ U working — most of this meal is already covered." : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Es wirken noch %@ E — der Großteil dieser Mahlzeit ist schon abgedeckt."
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Aún tienes %@ U activas — la mayor parte de esta comida ya está cubierta."
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Il te reste %@ U actives — l'essentiel de ce repas est déjà couvert."
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Hai ancora %@ U attive — gran parte di questo pasto è già coperta."
+          }
+        },
+        "nl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Er werkt nog %@ E — het grootste deel van deze maaltijd is al gedekt."
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Nadal działa %@ j. — większość tego posiłku jest już pokryta."
+          }
+        },
+        "pt" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ainda tens %@ U ativas — a maior parte desta refeição já está coberta."
+          }
+        },
+        "ro" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Mai ai %@ U active — cea mai mare parte a acestei mese e deja acoperită."
+          }
+        },
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ещё действует %@ ед. — большая часть этой еды уже покрыта."
           }
         }
       }
@@ -108160,6 +111228,65 @@
         }
       }
     },
+    "then recheck" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "dann nachmessen"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "luego vuelve a medir"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "puis recontrôle"
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "poi ricontrolla"
+          }
+        },
+        "nl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "daarna opnieuw meten"
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "potem zmierz ponownie"
+          }
+        },
+        "pt" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "depois volta a medir"
+          }
+        },
+        "ro" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "apoi verifică din nou"
+          }
+        },
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "затем перепроверьте"
+          }
+        }
+      }
+    },
     "units" : {
       "extractionState" : "manual",
       "localizations" : {
@@ -108628,6 +111755,65 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "~%lld мин"
+          }
+        }
+      }
+    },
+    "×%lld" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "×%lld"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "×%lld"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "×%lld"
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "×%lld"
+          }
+        },
+        "nl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "×%lld"
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "×%lld"
+          }
+        },
+        "pt" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "×%lld"
+          }
+        },
+        "ro" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "×%lld"
+          }
+        },
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "×%lld"
           }
         }
       }

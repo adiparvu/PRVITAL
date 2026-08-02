@@ -1,5 +1,6 @@
 import SwiftUI
 import Foundation
+import WatchKit
 
 /// Root of the watch experience: a vertically-paged glance stack.
 ///
@@ -344,8 +345,18 @@ private struct WatchGlucosePage: View {
 /// 15 g of fast-acting carbs (the "rule of 15") in a single confirmed tap.
 private struct WatchTreatLowPage: View {
     private let grams: Double = 15
+    /// The rule-of-15 recheck deadline, watch-local. `@AppStorage` so the
+    /// countdown survives the page being torn down (wrist drop, app switch);
+    /// 0 means no wait is running. The phone runs its own richer timer — this
+    /// one exists so treating a low FROM THE WATCH gives you the countdown on
+    /// the same wrist, without a round-trip.
+    @AppStorage("watch.ruleOf15.deadline") private var deadlineEpoch: Double = 0
     @State private var pending = false
     @State private var done = false
+
+    private var deadline: Date? {
+        deadlineEpoch > 0 ? Date(timeIntervalSince1970: deadlineEpoch) : nil
+    }
 
     var body: some View {
         VStack(spacing: 8) {
@@ -356,24 +367,52 @@ private struct WatchTreatLowPage: View {
 
             Spacer(minLength: 0)
 
-            Button {
-                pending = true
-            } label: {
-                VStack(spacing: 2) {
-                    Text("15 g")
-                        .font(.system(size: 30, weight: .bold, design: .rounded))
-                    Text("fast carbs")
-                        .font(.caption2)
+            if let deadline {
+                // The wait, live on the wrist. TimelineView ticks the clock;
+                // when it runs out the page flips to "recheck now".
+                TimelineView(.periodic(from: .now, by: 1)) { context in
+                    let remaining = deadline.timeIntervalSince(context.date)
+                    VStack(spacing: 4) {
+                        if remaining > 0 {
+                            Text(verbatim: clock(remaining))
+                                .font(.system(size: 34, weight: .bold, design: .rounded))
+                                .monospacedDigit()
+                                .foregroundStyle(Theme.zoneWarning)
+                            Text("then recheck")
+                                .font(.caption2)
+                                .foregroundStyle(Theme.textTertiary)
+                        } else {
+                            Text("Recheck now")
+                                .font(.headline)
+                                .foregroundStyle(Theme.zoneWarning)
+                        }
+                    }
+                    .frame(maxWidth: .infinity, minHeight: 64)
                 }
-                .frame(maxWidth: .infinity, minHeight: 64)
-                .foregroundStyle(Theme.zoneCritical)
-                .background(Theme.zoneCritical.opacity(0.18), in: RoundedRectangle(cornerRadius: 16, style: .continuous))
-            }
-            .buttonStyle(.plain)
+                Button("Stop timer") { deadlineEpoch = 0 }
+                    .font(.caption2)
+                    .buttonStyle(.plain)
+                    .foregroundStyle(Theme.textTertiary)
+            } else {
+                Button {
+                    pending = true
+                } label: {
+                    VStack(spacing: 2) {
+                        Text("15 g")
+                            .font(.system(size: 30, weight: .bold, design: .rounded))
+                        Text("fast carbs")
+                            .font(.caption2)
+                    }
+                    .frame(maxWidth: .infinity, minHeight: 64)
+                    .foregroundStyle(Theme.zoneCritical)
+                    .background(Theme.zoneCritical.opacity(0.18), in: RoundedRectangle(cornerRadius: 16, style: .continuous))
+                }
+                .buttonStyle(.plain)
 
-            Text("Recheck in 15 min.")
-                .font(.caption2)
-                .foregroundStyle(Theme.textTertiary)
+                Text("Recheck in 15 min.")
+                    .font(.caption2)
+                    .foregroundStyle(Theme.textTertiary)
+            }
 
             Spacer(minLength: 0)
         }
@@ -409,6 +448,14 @@ private struct WatchTreatLowPage: View {
         WatchSessionManager.shared.sendQuickEntry(kind: "carbs", amount: grams)
         pending = false
         done = true
+        // Start the wrist-side wait alongside the log; haptic marks the start.
+        deadlineEpoch = Date().addingTimeInterval(15 * 60).timeIntervalSince1970
+        WKInterfaceDevice.current().play(.start)
+    }
+
+    private func clock(_ seconds: TimeInterval) -> String {
+        let total = max(0, Int(seconds.rounded()))
+        return String(format: "%d:%02d", total / 60, total % 60)
     }
 }
 

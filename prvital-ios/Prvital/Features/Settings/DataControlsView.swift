@@ -22,6 +22,13 @@ struct DataControlsView: View {
     @State private var showingImportResult = false
     @State private var importResultMessage = ""
     @State private var isImporting = false
+    // Full-journal JSON backup: the written file to share, and restore state.
+    @State private var backupFileURL: URL?
+    @State private var isExportingBackup = false
+    @State private var showingRestorePicker = false
+    @State private var isRestoring = false
+    /// Whether the onboarding demo week is still in the store.
+    @State private var hasDemoData = DemoDataSeeder.hasDemoData
 
     // Past imports, newest first — each removable as a unit (undo a wrong file).
     @Query(sort: \ImportBatch.importedAt, order: .reverse) private var importBatches: [ImportBatch]
@@ -125,6 +132,66 @@ struct DataControlsView: View {
             }
             .glassListRow()
 
+            Section {
+                Button {
+                    Haptics.play(.selection)
+                    exportBackup()
+                } label: {
+                    HStack {
+                        Label {
+                            Text("Export everything (JSON)").foregroundStyle(Theme.textPrimary)
+                        } icon: {
+                            Image(systemName: "square.and.arrow.up.on.square").foregroundStyle(Theme.accent)
+                        }
+                        if isExportingBackup { Spacer(); ProgressView() }
+                    }
+                }
+                .disabled(isExportingBackup)
+                Button {
+                    Haptics.play(.selection)
+                    showingRestorePicker = true
+                } label: {
+                    HStack {
+                        Label {
+                            Text("Restore from backup").foregroundStyle(Theme.textPrimary)
+                        } icon: {
+                            Image(systemName: "clock.arrow.circlepath").foregroundStyle(Theme.accent)
+                        }
+                        if isRestoring { Spacer(); ProgressView() }
+                    }
+                }
+                .disabled(isRestoring)
+            } header: {
+                Text("Backup")
+            } footer: {
+                Text("The complete journal — every record family, with ids and provenance — as one JSON file you own. Restoring inserts only the records you don't already have; nothing is overwritten or duplicated.")
+                    .font(.footnote)
+                    .foregroundStyle(Theme.textTertiary)
+            }
+            .glassListRow()
+
+            if hasDemoData {
+                Section {
+                    Button(role: .destructive) {
+                        Haptics.play(.warning)
+                        Task {
+                            let seeder = DemoDataSeeder(modelContainer: env.modelContainer)
+                            _ = await seeder.removeAll()
+                            hasDemoData = false
+                            refreshCounts()
+                            env.entryStore.onChange()
+                        }
+                    } label: {
+                        Label("Remove demo data", systemImage: "sparkles")
+                    }
+                } footer: {
+                    Text("Deletes exactly the sample week added during onboarding — nothing you logged yourself.")
+                        .font(.footnote)
+                        .foregroundStyle(Theme.textTertiary)
+                }
+                .glassListRow()
+            }
+
             if !importBatches.isEmpty {
                 Section {
                     ForEach(importBatches) { batch in
@@ -216,6 +283,19 @@ struct DataControlsView: View {
         ) { result in
             handleImport(result)
         }
+        .fileImporter(
+            isPresented: $showingRestorePicker,
+            allowedContentTypes: [.json]
+        ) { result in
+            handleRestore(result)
+        }
+        // Written file in hand → straight to the share sheet.
+        .sheet(item: Binding(
+            get: { backupFileURL.map(BackupFileItem.init) },
+            set: { if $0 == nil { backupFileURL = nil } }
+        )) { item in
+            BackupShareSheet(url: item.url)
+        }
         .alert("Import", isPresented: $showingImportResult) {
             Button("OK", role: .cancel) {}
         } message: {
@@ -291,6 +371,30 @@ struct DataControlsView: View {
             Text(count.formatted())
         }
         .foregroundStyle(tint)
+    }
+
+    private func exportBackup() {
+        isExportingBackup = true
+        Task {
+            let store = JournalBackupStore(modelContainer: env.modelContainer)
+            let url = try? await store.writeBackupFile()
+            isExportingBackup = false
+            backupFileURL = url
+        }
+    }
+
+    private func handleRestore(_ result: Result<URL, Error>) {
+        guard case .success(let url) = result else { return }
+        isRestoring = true
+        Task {
+            let store = JournalBackupStore(modelContainer: env.modelContainer)
+            let inserted = (try? await store.restore(from: url)) ?? 0
+            isRestoring = false
+            importResultMessage = String(localized: "Restored \(inserted) records from the backup.")
+            showingImportResult = true
+            refreshCounts()
+            env.entryStore.onChange()
+        }
     }
 
     private func handleImport(_ result: Result<URL, Error>) {
@@ -392,4 +496,53 @@ private struct DataCountRow: View {
     return NavigationStack { DataControlsView() }
         .environment(env)
         .modelContainer(env.modelContainer)
+}
+
+// MARK: - Backup share plumbing
+
+/// Wraps the written backup file so `.sheet(item:)` can present it.
+private struct BackupFileItem: Identifiable {
+    let url: URL
+    var id: URL { url }
+}
+
+/// Hands the finished backup file to the system share sheet.
+private struct BackupShareSheet: View {
+    let url: URL
+    @Environment(\.dismiss) private var dismiss
+
+    var body: some View {
+        NavigationStack {
+            VStack(spacing: 16) {
+                Image(systemName: "doc.badge.arrow.up.fill")
+                    .font(.system(size: 44))
+                    .foregroundStyle(Theme.accent)
+                Text(url.lastPathComponent)
+                    .font(.subheadline.weight(.semibold))
+                    .foregroundStyle(Theme.textPrimary)
+                Text("Save it somewhere only you control — Files, iCloud Drive, or straight to another device.")
+                    .font(.footnote)
+                    .foregroundStyle(Theme.textSecondary)
+                    .multilineTextAlignment(.center)
+                ShareLink(item: url) {
+                    Text("Share backup")
+                        .font(.headline)
+                        .frame(maxWidth: .infinity)
+                        .padding(.vertical, 13)
+                        .background(Theme.accent, in: .capsule)
+                        .foregroundStyle(.white)
+                }
+                .padding(.horizontal, 24)
+            }
+            .padding()
+            .frame(maxWidth: .infinity, maxHeight: .infinity)
+            .background(Theme.background)
+            .toolbar {
+                ToolbarItem(placement: .cancellationAction) {
+                    Button("Done") { dismiss() }
+                }
+            }
+        }
+        .presentationDetents([.medium])
+    }
 }

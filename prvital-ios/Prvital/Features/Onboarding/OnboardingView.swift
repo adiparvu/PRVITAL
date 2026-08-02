@@ -267,6 +267,10 @@ private struct OnboardingPersonalizeStep: View {
 
 /// Final confirmation step.
 private struct OnboardingReadyStep: View {
+    @Environment(AppEnvironment.self) private var env
+    @State private var seeding = false
+    @State private var seededDone = false
+
     var body: some View {
         ScrollView {
             VStack(spacing: 20) {
@@ -282,6 +286,40 @@ private struct OnboardingReadyStep: View {
                     .foregroundStyle(Theme.textSecondary)
                     .multilineTextAlignment(.center)
                     .fixedSize(horizontal: false, vertical: true)
+
+                // No sensor yet? Seed a sample week so every screen has
+                // something to show. Removable in one tap from Settings.
+                Button {
+                    Haptics.play(.selection)
+                    seeding = true
+                    Task {
+                        let seeder = DemoDataSeeder(modelContainer: env.modelContainer)
+                        let seeded = await seeder.seedIfEmpty()
+                        seeding = false
+                        seededDone = seeded
+                        if seeded { env.entryStore.onChange() }
+                    }
+                } label: {
+                    HStack(spacing: 8) {
+                        if seeding {
+                            ProgressView().controlSize(.small)
+                        } else {
+                            Image(systemName: seededDone ? "checkmark.circle.fill" : "sparkles")
+                        }
+                        Text(seededDone ? "Sample week added" : "Explore with sample data")
+                            .font(.subheadline.weight(.semibold))
+                    }
+                    .foregroundStyle(Theme.accent)
+                    .padding(.horizontal, 16)
+                    .padding(.vertical, 10)
+                    .background(Theme.accentSoft, in: .capsule)
+                }
+                .buttonStyle(.plain)
+                .disabled(seeding || seededDone)
+                Text("A realistic demo week you can remove any time in Settings → Your data.")
+                    .font(.caption2)
+                    .foregroundStyle(Theme.textTertiary)
+                    .multilineTextAlignment(.center)
             }
             .frame(maxWidth: .infinity)
             .padding(20)
