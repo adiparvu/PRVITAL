@@ -72,7 +72,13 @@ struct AGPReportView: View {
                     if let comparison, comparison.hasPrevious {
                         comparisonCard(comparison)
                     }
-                    SectionCard("Ambulatory Glucose Profile", systemImage: "waveform.path.ecg") {
+                    SectionCard(
+                        "Ambulatory Glucose Profile", systemImage: "waveform.path.ecg",
+                        accessory: AnyView(
+                            ChartExportButton(title: "Ambulatory Glucose Profile") {
+                                AGPChart(buckets: buckets, thresholds: thresholds, unit: unit)
+                            })
+                    ) {
                         AGPChart(buckets: buckets, thresholds: thresholds, unit: unit)
                         agpLegend
                     }

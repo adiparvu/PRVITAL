@@ -108,6 +108,9 @@ struct StatisticsContent: View {
                     loadingPlaceholder
                 } else if hasAnyData {
                     if stats.hasGlucose { timeInRangeBar.appearTransition(delay: 0) }
+                    if !narrativeSentences.isEmpty {
+                        narrativeCard.appearTransition(delay: 0.03)
+                    }
                     statsGrid.appearTransition(delay: 0.06)
                     if let risk = derived.risk { riskCard(risk).appearTransition(delay: 0.09) }
                     if !derived.tagImpacts.isEmpty { tagImpactCard.appearTransition(delay: 0.10) }
@@ -875,6 +878,34 @@ struct StatisticsContent: View {
     /// The clinic-grade risk indices (GRI headline + LBGI/HBGI/MAGE rows) that
     /// Clarity/Glooko print — computed with the fixed clinical cutoffs, so the
     /// figures match what a doctor's report would say.
+    /// The period's story in plain words — TIR moved, lows changed, the
+    /// weekday that keeps underperforming — before any numbers.
+    private var narrativeSentences: [String] {
+        PeriodNarrative.sentences(
+            current: derived.stats,
+            previous: derived.previousStats,
+            dailyDays: derived.dailyDays)
+    }
+
+    private var narrativeCard: some View {
+        SectionCard("What changed", systemImage: "text.alignleft") {
+            VStack(alignment: .leading, spacing: 8) {
+                ForEach(narrativeSentences, id: \.self) { sentence in
+                    HStack(alignment: .top, spacing: 8) {
+                        Circle()
+                            .fill(Theme.accent)
+                            .frame(width: 5, height: 5)
+                            .padding(.top, 6)
+                        Text(sentence)
+                            .font(.subheadline)
+                            .foregroundStyle(Theme.textPrimary)
+                            .fixedSize(horizontal: false, vertical: true)
+                    }
+                }
+            }
+        }
+    }
+
     private func riskCard(_ risk: GlycemicRisk) -> some View {
         SectionCard("Glycaemic risk", systemImage: "waveform.path.ecg") {
             VStack(alignment: .leading, spacing: 14) {
@@ -1298,6 +1329,8 @@ final class StatisticsDerived {
     /// second year just for one delta line isn't worth it) — drives the
     /// Clarity-style "±X% vs the previous N days" line.
     var previousPeriodTIR: Double?
+    /// Full previous-window statistics, for the "what changed" narrative.
+    var previousStats: PeriodStatistics?
     /// Clinical risk indices (GRI, LBGI/HBGI, MAGE); nil below 24 readings.
     var risk: GlycemicRisk?
     /// TIR on tagged vs untagged days, for the tags used in this window.
@@ -1324,6 +1357,7 @@ final class StatisticsDerived {
         carbsByMeal = payload.carbsByMeal
         periodTIRs = payload.periodTIRs
         previousPeriodTIR = payload.previousPeriodTIR
+        previousStats = payload.previousStats
         risk = payload.risk
         tagImpacts = payload.tagImpacts
         hypoTreatments = payload.hypoTreatments

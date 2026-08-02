@@ -29,6 +29,10 @@ struct BolusCalculatorView: View {
 
     @State private var carbs: Double = 0
     @State private var glucoseDisplay: Double = 0
+    /// "I'll be moving in the next couple of hours" — scales the suggestion
+    /// down by `activityReductionPercent`.
+    @State private var activityPlanned = false
+    @State private var activityReductionPercent: Double = 25
     @State private var didLoad = false
 
     private var params: BolusParameters { env.preferences.bolusParameters }
@@ -49,8 +53,23 @@ struct BolusCalculatorView: View {
         glucoseDisplay > 0 ? unit.toMgdL(glucoseDisplay) : nil
     }
     private var estimate: BolusEstimate {
-        InsulinMath.suggestBolus(carbs: carbs, currentMgdL: currentMgdL,
-                                 activeInsulin: iob, parameters: params, thresholds: thresholds)
+        var base = InsulinMath.suggestBolus(carbs: carbs, currentMgdL: currentMgdL,
+                                            activeInsulin: iob, parameters: params, thresholds: thresholds)
+        // Planned exercise: insulin sensitivity rises during and after movement,
+        // so the whole suggestion is scaled down by the chosen fraction — the
+        // standard pre-exercise reduction, applied openly rather than leaving
+        // the user to do mental arithmetic on our number.
+        if activityPlanned, base.suggested > 0 {
+            base.suggested = (base.suggested * (1 - activityReductionPercent / 100) * 10).rounded() / 10
+            base.warnings.append(String(localized: "Reduced \(Int(activityReductionPercent))% for the planned activity. Carry fast carbs and recheck after."))
+        }
+        // A large IOB deserves more than a quiet breakdown row when it swallows
+        // most of the dose: say it, in words, next to the number.
+        if iob >= 1, base.carbBolus + base.correctionBolus > 0,
+           iob >= (base.carbBolus + base.correctionBolus) * 0.5 {
+            base.warnings.append(String(localized: "You still have \(iob.formatted(.number.precision(.fractionLength(1)))) U working — most of this meal is already covered."))
+        }
+        return base
     }
 
     var body: some View {
@@ -62,6 +81,21 @@ struct BolusCalculatorView: View {
                     inputRow(String(localized: "Carbohydrates"), value: $carbs, suffix: "g", digits: 0)
                     Divider().overlay(Theme.hairline)
                     inputRow(String(localized: "Current glucose"), value: $glucoseDisplay, suffix: unit.rawValue, digits: unit.fractionDigits)
+                    Divider().overlay(Theme.hairline)
+                    Toggle(isOn: $activityPlanned.animation(.snappy)) {
+                        Label("Activity in the next 2 hours", systemImage: "figure.run")
+                            .font(.subheadline)
+                            .foregroundStyle(Theme.textPrimary)
+                    }
+                    .tint(Theme.accent)
+                    if activityPlanned {
+                        Stepper(value: $activityReductionPercent, in: 10...50, step: 5) {
+                            Text("Reduce dose by \(Int(activityReductionPercent))%")
+                                .font(.subheadline)
+                                .contentTransition(.numericText())
+                                .animation(.snappy, value: activityReductionPercent)
+                        }
+                    }
                 }
 
                 onBoardContext

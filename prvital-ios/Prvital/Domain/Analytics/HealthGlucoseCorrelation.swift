@@ -8,7 +8,7 @@ import Foundation
 /// generally favourable direction for all three metrics (more movement, more
 /// sleep, better recovery). This is an *association*, never proof of cause.
 struct HealthGlucoseCorrelation: Sendable, Identifiable {
-    enum Kind: String, Sendable { case steps, sleep, hrv }
+    enum Kind: String, Sendable { case steps, sleep, hrv, sleepMorning }
 
     let kind: Kind
     /// Pearson correlation coefficient, clamped to -1…1.

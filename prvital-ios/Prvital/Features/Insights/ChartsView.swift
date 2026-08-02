@@ -176,7 +176,17 @@ struct ChartsContent: View {
     }
 
     private var glucoseSection: some View {
-        SectionCard("Glucose trend", systemImage: "waveform.path.ecg") {
+        SectionCard(
+            "Glucose trend", systemImage: "waveform.path.ecg",
+            // One chart straight to the doctor, without the whole PDF report.
+            // The export re-renders a clean copy (no scrub state, no buttons).
+            accessory: derived.chartReadings.isEmpty ? nil : AnyView(
+                ChartExportButton(title: "Glucose trend") {
+                    GlucoseTrendChart(readings: derived.chartReadings,
+                                      thresholds: thresholds, unit: unit)
+                        .frame(height: 260)
+                })
+        ) {
             if derived.chartReadings.isEmpty {
                 emptyChart("No glucose readings in this period.")
             } else {

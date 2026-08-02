@@ -21,6 +21,8 @@ struct StatisticsPayload: Sendable {
     var carbsByMeal: [MealTypeCarbs] = []
     var periodTIRs: [PeriodTIR] = []
     var previousPeriodTIR: Double?
+    /// The whole previous-window statistics, for the "what changed" narrative.
+    var previousStats: PeriodStatistics?
     var risk: GlycemicRisk?
     var tagImpacts: [TagImpact] = []
     var hypoTreatments: HypoTreatmentStats?
@@ -128,6 +130,7 @@ actor StatisticsBuilder {
                 }))) ?? []
             let prevStats = StatisticsEngine.glucose(previous, thresholds: thresholds)
             payload.previousPeriodTIR = prevStats.hasGlucose ? prevStats.timeInRange : nil
+            payload.previousStats = prevStats.hasGlucose ? prevStats : nil
         }
 
         return payload

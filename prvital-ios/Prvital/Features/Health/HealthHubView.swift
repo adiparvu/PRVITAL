@@ -73,11 +73,13 @@ struct HealthHubView: View {
         .task(id: env.preferences.activityGoals) {
             try? await env.healthKit.requestAuthorization()
             await model.load(env.healthKit, glucoseDaily: Self.dailyAverageGlucose(glucose),
+                             glucoseMorning: Self.morningAverageGlucose(glucose),
                              goals: env.preferences.activityGoals)
         }
         .refreshable {
             try? await env.healthKit.requestAuthorization()
             await model.load(env.healthKit, glucoseDaily: Self.dailyAverageGlucose(glucose),
+                             glucoseMorning: Self.morningAverageGlucose(glucose),
                              goals: env.preferences.activityGoals)
         }
     }
@@ -95,6 +97,26 @@ struct HealthHubView: View {
         }
         return sum.compactMap { day, total -> DailyMetric? in
             guard let n = count[day], n > 0 else { return nil }
+            return DailyMetric(day: day, value: total / Double(n))
+        }
+        .sorted { $0.day < $1.day }
+    }
+
+    /// One average per day over just the morning hours (06:00-11:00) — the
+    /// window where last night's sleep shows up first.
+    static func morningAverageGlucose(_ readings: [GlucoseReading]) -> [DailyMetric] {
+        let calendar = Calendar.current
+        var sum: [Date: Double] = [:]
+        var count: [Date: Int] = [:]
+        for reading in readings where reading.isActive {
+            let hour = calendar.component(.hour, from: reading.timestamp)
+            guard (6..<11).contains(hour) else { continue }
+            let day = calendar.startOfDay(for: reading.timestamp)
+            sum[day, default: 0] += reading.valueMgdL
+            count[day, default: 0] += 1
+        }
+        return sum.compactMap { day, total -> DailyMetric? in
+            guard let n = count[day], n >= 3 else { return nil }
             return DailyMetric(day: day, value: total / Double(n))
         }
         .sorted { $0.day < $1.day }
@@ -141,7 +163,8 @@ final class HealthHubModel {
     var bestStepStreak = 0
     var loaded = false
 
-    func load(_ hk: HealthKitService, glucoseDaily: [DailyMetric], goals: ActivityGoals) async {
+    func load(_ hk: HealthKitService, glucoseDaily: [DailyMetric],
+              glucoseMorning: [DailyMetric], goals: ActivityGoals) async {
         let stepGoal = Double(goals.stepGoal)
         let moveGoal = Double(goals.moveGoalKcal)
         let exerciseGoal = Double(goals.exerciseMinutesGoal)
@@ -231,6 +254,9 @@ final class HealthHubModel {
             HealthGlucoseCorrelator.correlate(kind: .steps, health: stepsMonth, glucose: glucoseDaily),
             HealthGlucoseCorrelator.correlate(kind: .sleep, health: sleepMonth, glucose: glucoseDaily),
             HealthGlucoseCorrelator.correlate(kind: .hrv, health: hrvMonth, glucose: glucoseDaily),
+            // The sharper cut: last night's sleep against THIS MORNING's
+            // glucose (06-11), where the sleep effect actually shows first.
+            HealthGlucoseCorrelator.correlate(kind: .sleepMorning, health: sleepMonth, glucose: glucoseMorning),
         ] {
             if let c = candidate, c.isMeaningful { found.append(c) }
         }
@@ -465,6 +491,7 @@ private struct CorrelationCardView: View {
         case .steps: return "figure.walk"
         case .sleep: return "bed.double.fill"
         case .hrv:   return "waveform.path.ecg"
+        case .sleepMorning: return "sunrise.fill"
         }
     }
 
@@ -473,6 +500,7 @@ private struct CorrelationCardView: View {
         case .steps: return "Steps"
         case .sleep: return "Sleep"
         case .hrv:   return "Heart rate variability"
+        case .sleepMorning: return "Sleep & mornings"
         }
     }
 
@@ -484,6 +512,8 @@ private struct CorrelationCardView: View {
         case (.sleep, false): return "After more sleep, your glucose tends to run higher."
         case (.hrv, true):    return "When your HRV is higher, your glucose tends to run lower."
         case (.hrv, false):   return "When your HRV is higher, your glucose tends to run higher."
+        case (.sleepMorning, true):  return "After a longer night, your mornings tend to start lower."
+        case (.sleepMorning, false): return "After a longer night, your mornings tend to start higher."
         }
     }
 

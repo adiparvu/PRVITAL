@@ -36,6 +36,15 @@ struct MovementPayload: Sendable {
     var sessionCount = 0
     var totalMinutes = 0
     var impact: ActivityImpactSummary?
+    /// Which sport moves glucose how much: the average change per activity
+    /// type, for every type with at least two scored sessions in the window.
+    struct TypeImpact: Sendable, Identifiable {
+        let typeRaw: String
+        let sessions: Int
+        let averageChangeMgdL: Double
+        var id: String { typeRaw }
+    }
+    var typeImpacts: [TypeImpact] = []
     var readingCount = 0
     /// The newest reading in the window, drawn as the live "now" point.
     var latestDate: Date?
@@ -97,9 +106,28 @@ actor MovementBuilder {
         payload.totalMinutes = flattened.reduce(0) { $0 + $1.minutes }
         payload.bands = Array(flattened.suffix(Self.maxBands))
         payload.recentSessions = Array(flattened.suffix(Self.maxListed).reversed())
-        payload.impact = ActivityImpactAnalyzer.summary(
-            ActivityImpactAnalyzer.analyze(sessions: sessions, readings: readings))
+        let impacts = ActivityImpactAnalyzer.analyze(sessions: sessions, readings: readings)
+        payload.impact = ActivityImpactAnalyzer.summary(impacts)
+        payload.typeImpacts = Self.byType(impacts)
         return payload
+    }
+
+    /// Groups scored sessions by activity type — biggest average drop first,
+    /// and only types with at least two sessions, so one odd walk doesn't
+    /// masquerade as a pattern.
+    private static func byType(_ impacts: [ActivityImpact]) -> [MovementPayload.TypeImpact] {
+        var grouped: [String: [Double]] = [:]
+        for impact in impacts {
+            grouped[impact.activityType.rawValue, default: []].append(impact.deltaMgdL)
+        }
+        return grouped.compactMap { typeRaw, deltas -> MovementPayload.TypeImpact? in
+            guard deltas.count >= 2 else { return nil }
+            return MovementPayload.TypeImpact(
+                typeRaw: typeRaw,
+                sessions: deltas.count,
+                averageChangeMgdL: deltas.reduce(0, +) / Double(deltas.count))
+        }
+        .sorted { $0.averageChangeMgdL < $1.averageChangeMgdL }
     }
 
     /// Evenly thins a time-ordered series to at most `maxPoints`, always keeping

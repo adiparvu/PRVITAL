@@ -431,6 +431,29 @@ struct MovementGlucoseView: View {
                         }
                     }
 
+                    // Which sport moves glucose how much — the reason to open
+                    // this screen at all once the chart is familiar.
+                    if !derived.typeImpacts.isEmpty {
+                        Divider().overlay(Theme.hairline)
+                        ForEach(derived.typeImpacts) { impact in
+                            HStack {
+                                Text(ActivityType(rawValue: impact.typeRaw)?.label
+                                     ?? ActivityType.walking.label)
+                                    .font(.subheadline)
+                                    .foregroundStyle(Theme.textPrimary)
+                                Text("×\(impact.sessions)")
+                                    .font(.caption)
+                                    .foregroundStyle(Theme.textTertiary)
+                                Spacer()
+                                Text(deltaText(impact.averageChangeMgdL))
+                                    .font(.subheadline.weight(.semibold))
+                                    .monospacedDigit()
+                                    .foregroundStyle(impact.averageChangeMgdL <= 0
+                                                     ? Theme.zoneInRange : Theme.zoneHigh)
+                            }
+                        }
+                    }
+
                     Divider().overlay(Theme.hairline)
 
                     ForEach(derived.recentSessions) { session in
@@ -472,6 +495,12 @@ struct MovementGlucoseView: View {
         }
         .frame(maxWidth: .infinity)
         .accessibilityElement(children: .combine)
+    }
+
+    /// "−18 mg/dL" / "+6 mg/dL" in the user's display unit, sign always shown.
+    private func deltaText(_ deltaMgdL: Double) -> String {
+        let magnitude = GlucoseFormatting.string(mgdL: abs(deltaMgdL), unit: unit)
+        return (deltaMgdL <= 0 ? "−" : "+") + magnitude
     }
 
     private func durationText(_ minutes: Int) -> String {
