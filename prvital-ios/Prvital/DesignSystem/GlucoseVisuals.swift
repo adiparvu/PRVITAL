@@ -1022,7 +1022,7 @@ extension View {
 
 // MARK: - Audio Graph
 
-extension GlucoseTrendChart: AXChartDescriptorRepresentable {
+extension GlucoseTrendChart: @MainActor AXChartDescriptorRepresentable {
     /// Describes the trend chart to VoiceOver's Audio Graph: time on x, the
     /// glucose value on y, one continuous series — so the curve can be heard
     /// as pitch, with the same bounds the visual plot uses.
