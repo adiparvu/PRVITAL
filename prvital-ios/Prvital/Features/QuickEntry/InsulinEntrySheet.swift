@@ -18,15 +18,24 @@ struct InsulinEntrySheet: View {
     @State private var note = ""
     /// The connected glucose story for an existing dose (before → after + IOB).
     @State private var impact: EventInsight?
+    /// The raw material behind it, kept so the impact section can re-window
+    /// (2–5 h) and draw the response curve without refetching.
+    @State private var impactReadings: [GlucoseReading] = []
+    @State private var impactDoses: [InsulinDose] = []
 
     var body: some View {
         NavigationStack {
             Form {
-                if let impact, impact.hasContext {
+                if let existing, let impact, impact.hasContext {
                     Section("Impact") {
-                        EventImpactSection(insight: impact,
-                                           unit: env.preferences.glucoseUnit,
-                                           thresholds: env.preferences.thresholds)
+                        EventImpactSection(
+                            eventDate: existing.timestamp,
+                            readings: impactReadings, insulin: impactDoses,
+                            excludingDoseID: existing.id,
+                            bolus: env.preferences.bolusParameters,
+                            unit: env.preferences.glucoseUnit,
+                            thresholds: env.preferences.thresholds,
+                            initialWindowHours: env.preferences.postprandialWindowHours)
                     }
                 }
                 Section {
@@ -174,7 +183,9 @@ struct InsulinEntrySheet: View {
     private func computeImpact(for dose: InsulinDose) {
         let event = dose.timestamp
         let lo = event.addingTimeInterval(-60 * 60)
-        let hi = event.addingTimeInterval(4 * 3600)
+        // 5 h is the widest window the impact section offers, plus its ±30 min
+        // reading-match slack.
+        let hi = event.addingTimeInterval(5 * 3600 + 30 * 60)
         let gDesc = FetchDescriptor<GlucoseReading>(
             predicate: #Predicate { $0.timestamp >= lo && $0.timestamp <= hi },
             sortBy: [SortDescriptor(\.timestamp)])
@@ -184,6 +195,8 @@ struct InsulinEntrySheet: View {
             predicate: #Predicate { $0.timestamp >= diaLo && $0.timestamp <= event },
             sortBy: [SortDescriptor(\.timestamp)])
         let doses = (try? env.modelContainer.mainContext.fetch(iDesc)) ?? []
+        impactReadings = readings
+        impactDoses = doses
         impact = EventInsight.make(
             eventDate: event, excludingDoseID: dose.id,
             readings: readings, insulin: doses,

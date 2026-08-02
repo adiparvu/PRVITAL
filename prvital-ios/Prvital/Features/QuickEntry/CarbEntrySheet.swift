@@ -44,17 +44,26 @@ struct CarbEntrySheet: View {
     @State private var favoriteName = ""
     /// The connected glucose story for an existing meal (before → after + IOB).
     @State private var impact: EventInsight?
+    /// The raw material behind it, kept so the impact section can re-window
+    /// (2–5 h) and draw the response curve without refetching.
+    @State private var impactReadings: [GlucoseReading] = []
+    @State private var impactDoses: [InsulinDose] = []
     /// What this meal did last time (matched by name), or nil.
     @State private var recall: MealMemoryRecall?
 
     var body: some View {
         NavigationStack {
             Form {
-                if let impact, impact.hasContext {
+                if let existing, let impact, impact.hasContext {
                     Section("Impact") {
-                        EventImpactSection(insight: impact,
-                                           unit: env.preferences.glucoseUnit,
-                                           thresholds: env.preferences.thresholds)
+                        EventImpactSection(
+                            eventDate: existing.timestamp,
+                            readings: impactReadings, insulin: impactDoses,
+                            excludingDoseID: nil,
+                            bolus: env.preferences.bolusParameters,
+                            unit: env.preferences.glucoseUnit,
+                            thresholds: env.preferences.thresholds,
+                            initialWindowHours: env.preferences.postprandialWindowHours)
                     }
                 }
                 if existing == nil, !favorites.isEmpty {
@@ -345,7 +354,9 @@ struct CarbEntrySheet: View {
     private func computeImpact(for meal: CarbEntry) {
         let event = meal.timestamp
         let lo = event.addingTimeInterval(-60 * 60)
-        let hi = event.addingTimeInterval(4 * 3600)
+        // 5 h is the widest window the impact section offers, plus its ±30 min
+        // reading-match slack.
+        let hi = event.addingTimeInterval(5 * 3600 + 30 * 60)
         let gDesc = FetchDescriptor<GlucoseReading>(
             predicate: #Predicate { $0.timestamp >= lo && $0.timestamp <= hi },
             sortBy: [SortDescriptor(\.timestamp)])
@@ -355,6 +366,8 @@ struct CarbEntrySheet: View {
             predicate: #Predicate { $0.timestamp >= diaLo && $0.timestamp <= event },
             sortBy: [SortDescriptor(\.timestamp)])
         let doses = (try? modelContext.fetch(iDesc)) ?? []
+        impactReadings = readings
+        impactDoses = doses
         impact = EventInsight.make(
             eventDate: event, excludingDoseID: nil,
             readings: readings, insulin: doses,
