@@ -9,7 +9,7 @@ import SwiftData
 enum AutoBackup {
     static let enabledKey = "backup.autoWeeklyEnabled"
     static let lastRunKey = "backup.lastAutoBackupAt"
-    static let keepCount = 4
+    nonisolated static let keepCount = 4
 
     static var isEnabled: Bool {
         get { UserDefaults.standard.bool(forKey: enabledKey) }
