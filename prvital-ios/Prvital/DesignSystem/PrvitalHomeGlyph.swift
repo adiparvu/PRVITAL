@@ -158,8 +158,10 @@ enum PrvitalTabGlyph {
         render(PrvitalPersonGlyph(filled: true).fill()), optical: 21)
 
     /// The canvas every glyph is centred in — identical for all five, so the
-    /// tab bar lays them out on the same baseline.
-    private static let side: CGFloat = 22
+    /// tab bar lays them out on the same baseline. Two-plus points larger than
+    /// the biggest optical size, so antialiased fringes always keep a margin
+    /// and can never be sliced flat by the canvas edge.
+    private static let side: CGFloat = 24
 
     private static func symbol(_ name: String, weight: UIImage.SymbolWeight = .semibold) -> UIImage {
         let configuration = UIImage.SymbolConfiguration(pointSize: side - 1, weight: weight)
@@ -212,9 +214,11 @@ enum PrvitalTabGlyph {
             bitmapInfo: CGImageAlphaInfo.premultipliedLast.rawValue) else { return nil }
         context.draw(cg, in: CGRect(x: 0, y: 0, width: width, height: height))
 
+        // ANY inked pixel counts — a soft antialiased fringe left outside the
+        // measured box would land outside the canvas and read as a flat cut.
         var minX = width, maxX = -1, minY = height, maxY = -1
         for y in 0..<height {
-            for x in 0..<width where pixels[(y * width + x) * 4 + 3] > 16 {
+            for x in 0..<width where pixels[(y * width + x) * 4 + 3] > 0 {
                 if x < minX { minX = x }
                 if x > maxX { maxX = x }
                 if y < minY { minY = y }
