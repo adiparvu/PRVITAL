@@ -47,6 +47,10 @@ struct PrvitalApp: App {
 struct RootView: View {
     @Environment(AppEnvironment.self) private var env
     @Environment(\.scenePhase) private var scenePhase
+    /// Starts covered whenever the preference is on; `bootstrapLock` aligns it
+    /// with the real preference on first appear (the preference store isn't
+    /// available at property-init time).
+    @State private var appLock = AppLock(enabled: true)
     @State private var showOnboarding = false
     @State private var showQuickEntry = false
     @State private var showEmergency = false
@@ -78,6 +82,32 @@ struct RootView: View {
         MainTabView()
             .preferredColorScheme(resolvedColorScheme)
             .dynamicTypeSize(typeRange)
+            // Face ID gate: an opaque cover while locked, over EVERYTHING —
+            // including sheets, since it lives at the root.
+            .overlay {
+                if env.preferences.appLockEnabled && appLock.isLocked {
+                    AppLockScreen { Task { await appLock.unlock() } }
+                        .transition(.opacity)
+                }
+            }
+            .animation(.smooth(duration: 0.2), value: appLock.isLocked)
+            .onChange(of: scenePhase) { _, phase in
+                guard env.preferences.appLockEnabled else { return }
+                if phase == .background {
+                    appLock.lock()
+                } else if phase == .active, appLock.isLocked {
+                    Task { await appLock.unlock() }
+                }
+            }
+            .onAppear {
+                // Align the cover with the real preference, then try Face ID
+                // straight away on a locked cold start.
+                if env.preferences.appLockEnabled {
+                    Task { await appLock.unlock() }
+                } else {
+                    appLock = AppLock(enabled: false)
+                }
+            }
             .onAppear {
                 // Kick the one-time photo load (and the legacy-blob migration
                 // out of the shared plist) before the first background renders.

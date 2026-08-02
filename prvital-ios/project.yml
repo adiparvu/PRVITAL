@@ -86,6 +86,9 @@ targets:
         NSCameraUsageDescription: >-
           Prvital uses the camera to scan food barcodes and look up their
           nutrition and carbohydrate content.
+        NSFaceIDUsageDescription: >-
+          Prvital uses Face ID to lock the app so only you can open your
+          glucose journal.
         NSHealthShareUsageDescription: >-
           Prvital reads your glucose, insulin, carbohydrate and workout
           data from Apple Health so your journal stays complete automatically.

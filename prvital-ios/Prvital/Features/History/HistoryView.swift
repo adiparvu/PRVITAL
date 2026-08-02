@@ -25,6 +25,8 @@ struct HistoryContent: View {
     @State private var showingCustomRange = false
     @State private var customStart = Calendar.current.date(byAdding: .day, value: -7, to: Date()) ?? Date()
     @State private var customEnd = Date()
+    /// Free-text search across notes, foods, tags and values in the window.
+    @State private var searchText = ""
 
     /// The half-open day-aligned interval selected by the current filter.
     private var dateInterval: DateInterval {
@@ -59,12 +61,16 @@ struct HistoryContent: View {
             HistoryListView(
                 start: interval.start, end: interval.end, showSensor: showSensor,
                 kindFilter: kindFilter, sortNewestFirst: sortNewestFirst,
-                rangeLabel: range.label
+                rangeLabel: range.label, searchText: searchText
             )
             // New identity per window / sensor choice → the bounded queries are
-            // rebuilt for exactly that slice, and pagination starts over.
+            // rebuilt for exactly that slice, and pagination starts over. The
+            // search text is deliberately NOT part of the identity — typing
+            // filters the already-built timeline in place.
             .id("\(interval.start.timeIntervalSince1970)|\(interval.end.timeIntervalSince1970)|\(showSensor)")
         }
+            .searchable(text: $searchText, placement: .navigationBarDrawer(displayMode: .automatic),
+                        prompt: Text("Search notes, foods, tags…"))
             .animation(.snappy, value: kindFilter)
             .animation(.default, value: range)
             .background(Theme.background)
@@ -173,6 +179,7 @@ private struct HistoryListView: View {
     let kindFilter: HistoryKindFilter
     let sortNewestFirst: Bool
     let rangeLabel: String
+    let searchText: String
     private let showSensor: Bool
 
     /// The merged timeline, newest first — built once per data change in
@@ -189,11 +196,13 @@ private struct HistoryListView: View {
     private static let pageSize = 200
 
     init(start: Date, end: Date, showSensor: Bool,
-         kindFilter: HistoryKindFilter, sortNewestFirst: Bool, rangeLabel: String) {
+         kindFilter: HistoryKindFilter, sortNewestFirst: Bool, rangeLabel: String,
+         searchText: String = "") {
         self.showSensor = showSensor
         self.kindFilter = kindFilter
         self.sortNewestFirst = sortNewestFirst
         self.rangeLabel = rangeLabel
+        self.searchText = searchText
 
         // Sensor readings are excluded in the predicate itself when hidden, so
         // SwiftData never materialises the 5-minute stream just to drop it.
@@ -231,9 +240,13 @@ private struct HistoryListView: View {
     /// The chip-filtered timeline in display order. Cheap: it maps over the
     /// cached array, no re-merge and no re-sort beyond an optional reverse.
     private var filteredItems: [JournalTimelineItem] {
-        let matching = kindFilter == .all
+        var matching = kindFilter == .all
             ? items
             : items.filter { kindFilter.matches($0.kind) }
+        let query = searchText.trimmingCharacters(in: .whitespaces)
+        if !query.isEmpty {
+            matching = matching.filter { $0.matchesSearch(query) }
+        }
         return sortNewestFirst ? matching : matching.reversed()
     }
 
@@ -276,6 +289,21 @@ private struct HistoryListView: View {
                                         delete(item)
                                     } label: {
                                         Label("Delete", systemImage: "trash")
+                                    }
+                                }
+                                // "The same meal as yesterday" in one gesture:
+                                // re-logs the entry as of NOW. Sensor readings
+                                // are excluded — duplicating a CGM point would
+                                // fabricate data the sensor never produced.
+                                .swipeActions(edge: .leading) {
+                                    if item.glucose?.measurementType != .cgm,
+                                       item.glucose?.measurementType != .calibration {
+                                        Button {
+                                            duplicate(item)
+                                        } label: {
+                                            Label("Repeat now", systemImage: "plus.square.on.square")
+                                        }
+                                        .tint(Theme.accent)
                                     }
                                 }
                         }
@@ -326,6 +354,46 @@ private struct HistoryListView: View {
         count == 1
             ? String(localized: "\(count) entry · \(rangeLabel)")
             : String(localized: "\(count) entries · \(rangeLabel)")
+    }
+
+    /// Re-logs the entry with the current timestamp — the values travel, the
+    /// moment doesn't. Manual provenance regardless of the original's source.
+    private func duplicate(_ item: JournalTimelineItem) {
+        switch item.kind {
+        case .glucose:
+            if let reading = item.glucose {
+                _ = env.entryStore.addGlucose(
+                    mgdL: reading.valueMgdL,
+                    measurementType: reading.measurementType == .laboratory
+                        ? .manual : reading.measurementType)
+            }
+        case .insulin:
+            if let dose = item.insulin {
+                env.entryStore.addInsulin(
+                    units: dose.units, type: dose.insulinType, name: dose.insulinName,
+                    deliveryMethod: dose.deliveryMethod, context: dose.doseContext,
+                    mealTag: dose.mealTag, note: dose.note)
+            }
+        case .carbs:
+            if let entry = item.carbs {
+                env.entryStore.addCarbs(
+                    grams: entry.grams, mealType: entry.mealType,
+                    foodDescription: entry.foodDescription, note: entry.note)
+            }
+        case .activity:
+            if let entry = item.activity {
+                env.entryStore.addActivity(
+                    type: entry.activityType, durationSeconds: entry.durationSeconds,
+                    intensity: entry.intensity, caloriesBurned: entry.caloriesBurned,
+                    distanceMeters: entry.distanceMeters, note: entry.note)
+            }
+        case .observation:
+            if let entry = item.observation {
+                env.entryStore.addObservation(tags: entry.tags, text: entry.text)
+            }
+        }
+        Haptics.play(.success)
+        dataVersion += 1
     }
 
     private func delete(_ item: JournalTimelineItem) {
@@ -434,4 +502,41 @@ private enum HistoryKindFilter: String, CaseIterable, Identifiable {
 private struct HistoryEditTarget: Identifiable {
     let id = UUID()
     let item: JournalTimelineItem
+}
+
+// MARK: - Free-text search
+
+extension JournalTimelineItem {
+    /// Case- and diacritic-insensitive match over everything a person might
+    /// remember about an entry: food names, notes, tags, kinds and values.
+    func matchesSearch(_ query: String) -> Bool {
+        haystack.range(of: query, options: [.caseInsensitive, .diacriticInsensitive]) != nil
+    }
+
+    private var haystack: String {
+        var parts: [String] = []
+        if let glucose {
+            parts.append(String(Int(glucose.valueMgdL.rounded())))
+            parts.append(glucose.measurementType.label)
+        }
+        if let insulin {
+            parts.append(insulin.insulinName ?? "")
+            parts.append(insulin.note ?? "")
+            parts.append(insulin.insulinType.label)
+        }
+        if let carbs {
+            parts.append(carbs.foodDescription ?? "")
+            parts.append(carbs.note ?? "")
+            parts.append(carbs.mealType.label)
+        }
+        if let activity {
+            parts.append(activity.note ?? "")
+            parts.append(activity.activityType.label)
+        }
+        if let observation {
+            parts.append(observation.text ?? "")
+            parts.append(contentsOf: observation.tags.map(\.label))
+        }
+        return parts.joined(separator: " ")
+    }
 }

@@ -27,11 +27,40 @@ struct PrivacyDashboardView: View {
                     .foregroundStyle(Theme.textTertiary)
             }
             .glassListRow()
+
+            Section {
+                Toggle(isOn: appLockBinding) {
+                    Label {
+                        Text("Lock with Face ID")
+                            .foregroundStyle(Theme.textPrimary)
+                    } icon: {
+                        Image(systemName: "faceid").foregroundStyle(Theme.accent)
+                    }
+                }
+                .tint(Theme.accent)
+            } header: {
+                Text("Security")
+            } footer: {
+                Text("Ask for Face ID or your passcode every time the app opens, so your journal stays private even on an unlocked phone.")
+                    .font(.footnote)
+                    .foregroundStyle(Theme.textTertiary)
+            }
+            .glassListRow()
         }
         .scrollContentBackground(.hidden)
         .prvitalScreenBackground()
         .navigationTitle("Privacy")
         .navigationBarTitleDisplayMode(.inline)
+    }
+
+    private var appLockBinding: Binding<Bool> {
+        Binding(
+            get: { env.preferences.appLockEnabled },
+            set: { on in
+                Haptics.play(.selection)
+                env.preferences.appLockEnabled = on
+            }
+        )
     }
 
     private func consentBinding(for scope: ConsentScope) -> Binding<Bool> {

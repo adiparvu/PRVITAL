@@ -45,6 +45,14 @@ struct AlertPreferences: Codable, Equatable, Sendable {
     /// meal-sized climb. Opt-in — only meaningful for people who bolus.
     var missedBolusEnabled = false
 
+    // MARK: Persistence filter
+
+    /// How long a NON-urgent excursion must hold before it alerts (0 = alert on
+    /// the first reading). Cuts the classic false nighttime low: lying on the
+    /// sensor squeezes a dip that recovers within a few readings. Urgent levels
+    /// deliberately ignore this — an urgent low is never worth filtering.
+    var persistenceMinutes = 0
+
     static let `default` = AlertPreferences()
 
     func isEnabled(_ level: GlucoseAlertLevel) -> Bool {
@@ -72,6 +80,7 @@ struct AlertPreferences: Codable, Equatable, Sendable {
         case riseRateEnabled, fallRateEnabled, rateThresholdPerMinute
         case signalLossEnabled, signalLossMinutes
         case missedBolusEnabled
+        case persistenceMinutes
     }
 
     init() {}
@@ -90,6 +99,7 @@ struct AlertPreferences: Codable, Equatable, Sendable {
         signalLossEnabled = try c.decodeIfPresent(Bool.self, forKey: .signalLossEnabled) ?? false
         signalLossMinutes = try c.decodeIfPresent(Int.self, forKey: .signalLossMinutes) ?? 25
         missedBolusEnabled = try c.decodeIfPresent(Bool.self, forKey: .missedBolusEnabled) ?? false
+        persistenceMinutes = try c.decodeIfPresent(Int.self, forKey: .persistenceMinutes) ?? 0
     }
 }
 
@@ -107,6 +117,11 @@ struct GlucoseAlertState: Codable, Equatable, Sendable {
     var lastLevel: String?
     var lastFiredAt: Date?
     var lastReadingAt: Date?
+    /// The excursion currently waiting out the persistence filter: which level,
+    /// and the timestamp of the first reading that showed it. Cleared the
+    /// moment a reading comes back in range (or the level changes).
+    var pendingLevel: String?
+    var pendingSince: Date?
 
     static let empty = GlucoseAlertState()
 }
@@ -162,7 +177,30 @@ enum GlucoseAlertEvaluator {
             var state = last
             state.lastLevel = nil
             state.lastReadingAt = reading.timestamp
+            state.pendingLevel = nil
+            state.pendingSince = nil
             return Decision(alert: nil, state: state)
+        }
+
+        // Persistence filter: a NON-urgent excursion must hold for the user's
+        // chosen minutes before it alerts, measured across reading timestamps —
+        // the cure for compression lows (lying on the sensor at night squeezes
+        // a dip that recovers within a few readings). Urgent levels bypass it
+        // entirely: an urgent low is never worth filtering.
+        if level.severity < 2, preferences.persistenceMinutes > 0 {
+            if last.pendingLevel != level.rawValue {
+                var state = last
+                state.pendingLevel = level.rawValue
+                state.pendingSince = reading.timestamp
+                state.lastReadingAt = reading.timestamp
+                return Decision(alert: nil, state: state)
+            }
+            if let since = last.pendingSince,
+               reading.timestamp.timeIntervalSince(since) < TimeInterval(preferences.persistenceMinutes * 60) {
+                var state = last
+                state.lastReadingAt = reading.timestamp
+                return Decision(alert: nil, state: state)
+            }
         }
 
         // Snooze only when the level is unchanged; any change in level (worse,
@@ -178,7 +216,12 @@ enum GlucoseAlertEvaluator {
         }
 
         let alert = makeAlert(level: level, mgdL: reading.mgdL, unit: unit)
-        let state = GlucoseAlertState(lastLevel: level.rawValue, lastFiredAt: now, lastReadingAt: reading.timestamp)
+        // The pending marker survives the fire: the excursion has matured, so
+        // while it lasts only the snooze gates repeats — without this, every
+        // re-alert would sit out the persistence wait a second time.
+        let state = GlucoseAlertState(
+            lastLevel: level.rawValue, lastFiredAt: now, lastReadingAt: reading.timestamp,
+            pendingLevel: level.rawValue, pendingSince: last.pendingSince ?? reading.timestamp)
         return Decision(alert: alert, state: state)
     }
 

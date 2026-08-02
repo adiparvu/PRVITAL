@@ -274,8 +274,14 @@ struct AlertsHubView: View {
                     .contentTransition(.numericText())
                     .animation(.snappy, value: prefs.snoozeMinutes)
             }
+            Picker("Alert after it lasts", selection: $prefs.persistenceMinutes) {
+                Text("Immediately").tag(0)
+                Text("5 min").tag(5)
+                Text("10 min").tag(10)
+                Text("15 min").tag(15)
+            }
         } footer: {
-            Text("The same alert won't repeat within this window. A change — such as low to urgent low, or a new direction — always alerts right away.")
+            Text("The same alert won't repeat within this window. A change — such as low to urgent low, or a new direction — always alerts right away. Requiring an excursion to last a few minutes filters the false nighttime low from lying on the sensor; urgent alerts always fire immediately.")
                 .font(.footnote).foregroundStyle(Theme.textTertiary)
         }
         .glassListRow()

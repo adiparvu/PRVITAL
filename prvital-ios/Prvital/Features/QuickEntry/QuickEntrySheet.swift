@@ -77,6 +77,8 @@ struct QuickEntrySheet: View {
     @State private var showBolusCalculator = false
     @State private var showRuleOf15 = false
     @State private var showKetones = false
+    /// The free-typed sentence in the natural-language card.
+    @State private var phraseText = ""
 
     init() {
         // Only the doses that can still carry insulin-on-board — bounded.
@@ -116,6 +118,7 @@ struct QuickEntrySheet: View {
                     if showTreatLow {
                         treatLowButton.appearTransition(delay: 0.03)
                     }
+                    naturalLogCard.appearTransition(delay: 0.05)
                     entryList.appearTransition(delay: 0.06)
                 }
                 .padding()
@@ -142,6 +145,97 @@ struct QuickEntrySheet: View {
             .sheet(isPresented: $showKetones) { LogKetoneSheet() }
         }
         .presentationDetents([.medium, .large])
+    }
+
+    // MARK: Natural-language log
+
+    /// One typed sentence — "45g paste și 4 unități" — split on device into the
+    /// entries it names, previewed as chips before anything is saved.
+    @ViewBuilder private var naturalLogCard: some View {
+        let phrase = QuickPhraseParser.parse(phraseText, unit: env.preferences.glucoseUnit)
+        VStack(alignment: .leading, spacing: 10) {
+            HStack(spacing: 8) {
+                Image(systemName: "text.cursor")
+                    .foregroundStyle(Theme.accent)
+                TextField("Type it: e.g. 45g pasta and 4 units", text: $phraseText)
+                    .textFieldStyle(.plain)
+                    .autocorrectionDisabled()
+                    .submitLabel(.done)
+                    .onSubmit { commitPhrase(phrase) }
+            }
+            if !phrase.isEmpty {
+                HStack(spacing: 8) {
+                    if let mgdL = phrase.glucoseMgdL {
+                        phraseChip(
+                            GlucoseFormatting.labeled(mgdL: mgdL, unit: env.preferences.glucoseUnit),
+                            symbol: "drop.fill")
+                    }
+                    if let grams = phrase.carbGrams {
+                        phraseChip("\(Int(grams.rounded())) g", symbol: "fork.knife")
+                    }
+                    if let units = phrase.insulinUnits {
+                        phraseChip("\(units.formatted(.number.precision(.fractionLength(0...1)))) U",
+                                   symbol: "syringe.fill")
+                    }
+                    Spacer()
+                    Button {
+                        commitPhrase(phrase)
+                    } label: {
+                        Text("Log all")
+                            .font(.subheadline.weight(.semibold))
+                            .padding(.horizontal, 14)
+                            .padding(.vertical, 7)
+                            .background(Theme.accent, in: .capsule)
+                            .foregroundStyle(.white)
+                    }
+                    .buttonStyle(.plain)
+                }
+                .transition(.opacity)
+            }
+        }
+        .padding(14)
+        .frame(maxWidth: .infinity, alignment: .leading)
+        .glassCard()
+        .animation(.snappy, value: phrase)
+    }
+
+    private func phraseChip(_ text: String, symbol: String) -> some View {
+        Label(text, systemImage: symbol)
+            .font(.caption.weight(.semibold))
+            .foregroundStyle(Theme.accent)
+            .padding(.horizontal, 10)
+            .padding(.vertical, 5)
+            .background(Theme.accentSoft, in: .capsule)
+    }
+
+    /// The meal slot the clock suggests — the free-text field never asks.
+    private func suggestedMealType(now: Date = Date()) -> MealType {
+        switch Calendar.current.component(.hour, from: now) {
+        case 5..<11: return .breakfast
+        case 11..<15: return .lunch
+        case 15..<18: return .morningSnack
+        case 18..<22: return .dinner
+        default: return .eveningSnack
+        }
+    }
+
+    private func commitPhrase(_ phrase: QuickPhrase) {
+        guard !phrase.isEmpty else { return }
+        if let mgdL = phrase.glucoseMgdL {
+            _ = env.entryStore.addGlucose(mgdL: mgdL)
+        }
+        if let grams = phrase.carbGrams {
+            env.entryStore.addCarbs(
+                grams: grams,
+                mealType: suggestedMealType(),
+                foodDescription: phrase.foodDescription)
+        }
+        if let units = phrase.insulinUnits {
+            env.entryStore.addInsulin(units: units)
+        }
+        Haptics.play(.success)
+        phraseText = ""
+        dismiss()
     }
 
     // MARK: Context banner

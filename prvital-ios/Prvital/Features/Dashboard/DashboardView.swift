@@ -75,6 +75,8 @@ struct DashboardView: View {
     @State private var syncFailure: String?
     @State private var trendRange: DashboardTrendRange = .threeHours
     @State private var showCustomRange = false
+    /// Spinner state for the sensor-gap card's manual pull.
+    @State private var refreshingGap = false
     @State private var customStart = Date().addingTimeInterval(-6 * 3600)
     @State private var customEnd = Date()
     /// Today's Apple Health exercise minutes (the Watch's green ring), read live so
@@ -359,7 +361,7 @@ struct DashboardView: View {
                             .font(.caption)
                             .foregroundStyle(Theme.textSecondary)
                     }
-                    if summary.isStale {
+                    if summary.isStale, !current.source.isCGM {
                         Label("Stale reading", systemImage: "clock.badge.exclamationmark")
                             .font(.caption2)
                             .foregroundStyle(Theme.zoneWarning)
@@ -367,6 +369,20 @@ struct DashboardView: View {
                     }
                 }
                 .accessibilityElement(children: .combine)
+                // A zone crossing is worth a physical tick: green→amber on the
+                // way up, amber→green on recovery. Distinct weights so worse
+                // feels different from better without looking at the screen.
+                .onChange(of: zone) { old, new in
+                    guard old != new else { return }
+                    Haptics.play(new == .inRange ? .light : .medium)
+                }
+
+                // A silent CGM is a fact worth a card, not a quietly aging
+                // timestamp: say how long it's been and offer a manual pull.
+                if summary.isStale, current.source.isCGM {
+                    sensorGapCard(minutes: summary.minutesSinceUpdate ?? 0)
+                        .transition(.move(edge: .top).combined(with: .opacity))
+                }
 
                 // The live "how am I right now?" vitals: IOB, COB, time since bolus,
                 // time until insulin clears, time to the next reading.
@@ -626,11 +642,78 @@ struct DashboardView: View {
                     eventKindsBinding: eventKindsBinding,
                     inlineLegendButton: false,
                     eventBand: true,
-                    yesterday: derived.yesterdayReadings
+                    yesterday: derived.yesterdayReadings,
+                    // The dashed continuation of the curve. Only when the shown
+                    // window actually ends at the live reading — a historical
+                    // custom range gets no future painted onto it.
+                    forecast: trendForecast(summary: summary, windowReadings: windowReadings)
                 )
             }
         }
         .sheet(isPresented: $showCustomRange) { trendCustomRangeSheet }
+    }
+
+    /// The card shown while the sensor has gone quiet: how long, and a manual
+    /// pull. The spinner state is local so the button visibly works even when
+    /// the refresh comes back empty-handed.
+    private func sensorGapCard(minutes: Int) -> some View {
+        HStack(spacing: 12) {
+            Image(systemName: "antenna.radiowaves.left.and.right.slash")
+                .font(.title3.weight(.semibold))
+                .foregroundStyle(Theme.zoneWarning)
+            VStack(alignment: .leading, spacing: 2) {
+                Text("No sensor data for \(minutes) min")
+                    .font(.subheadline.weight(.semibold))
+                    .foregroundStyle(Theme.textPrimary)
+                Text("Check that the sensor is in range of your phone.")
+                    .font(.caption)
+                    .foregroundStyle(Theme.textSecondary)
+            }
+            Spacer(minLength: 8)
+            Button {
+                Haptics.play(.light)
+                refreshingGap = true
+                Task {
+                    await env.sync.refreshLatest()
+                    refreshingGap = false
+                }
+            } label: {
+                if refreshingGap {
+                    ProgressView().controlSize(.small)
+                } else {
+                    Image(systemName: "arrow.clockwise")
+                        .font(.body.weight(.semibold))
+                        .foregroundStyle(Theme.accent)
+                }
+            }
+            .buttonStyle(.plain)
+            .frame(width: 32, height: 32)
+            .accessibilityLabel("Refresh now")
+        }
+        .padding(14)
+        .frame(maxWidth: .infinity, alignment: .leading)
+        .glassCard()
+    }
+
+    /// The forecast drawn onto the trend chart, or nil when the window is
+    /// historical (its newest point is not the live reading) or the stream is
+    /// stale — the same conditions under which the velocity line disappears.
+    private func trendForecast(summary: DashboardSummary,
+                               windowReadings: [GlucoseReading]) -> GlucoseForecast? {
+        guard let current = summary.current, !summary.isStale,
+              windowReadings.last?.timestamp == current.timestamp,
+              let velocity = GlucoseTrendAnalyzer.bestVelocity(summary.recent, now: summary.now)
+        else { return nil }
+        let vitals = LiveVitals.make(
+            latestReadingAt: current.timestamp, sourceIsCGM: current.source.isCGM,
+            cgmCadenceMinutes: 5, insulin: insulin, carbs: carbs,
+            bolus: env.preferences.bolusParameters)
+        return GlucoseForecast.project(
+            currentMgdL: current.valueMgdL, velocityMgdLPerMin: velocity.mgdLPerMinute,
+            iob: vitals.insulinOnBoard, cob: vitals.carbsOnBoard,
+            minutesSinceReading: summary.now.timeIntervalSince(current.timestamp) / 60,
+            sigmaMgdL: velocity.sigmaMgdL, slopeSEPerMinute: velocity.slopeSEPerMinute,
+            horizonMinutes: 30)
     }
 
     /// Non-glucose events within the same span as the shown trend readings, so

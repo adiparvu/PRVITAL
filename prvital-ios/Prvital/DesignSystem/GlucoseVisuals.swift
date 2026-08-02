@@ -390,6 +390,11 @@ struct GlucoseTrendChart: View {
     /// under today's curve, time-shifted +24h onto today's axis — instant
     /// context for "is today usual?". Empty hides the ghost.
     var yesterday: [GlucoseReading] = []
+    /// A short-horizon forecast to draw PAST the newest reading: a dashed
+    /// continuation of the curve with the plausible band shaded around it. The
+    /// host passes it only when the window actually ends at the live reading —
+    /// a historical window gets no future painted onto it.
+    var forecast: GlucoseForecast? = nil
 
     @State private var selectedDate: Date?
     @State private var appeared = false
@@ -518,9 +523,46 @@ struct GlucoseTrendChart: View {
         }
     }
 
+    /// Where the dashed forecast continuation starts and ends. Only on
+    /// full-size charts, and only when a forecast was supplied.
+    private var projectionPath: (start: (Date, Double), end: (Date, Double))? {
+        guard let forecast, !compact, let last = sorted.last else { return nil }
+        let end = last.timestamp.addingTimeInterval(TimeInterval(forecast.horizonMinutes * 60))
+        return ((last.timestamp, last.valueMgdL), (end, forecast.projectedMgdL))
+    }
+
     var body: some View {
         VStack(spacing: 0) {
         Chart {
+            // The forecast, painted as a future: the plausible band widening
+            // out of the newest reading, with a dashed centre line to the
+            // projected point. Drawn FIRST so the real curve and its dots stay
+            // on top of it.
+            if let path = projectionPath, let forecast {
+                AreaMark(x: .value("Time", path.start.0),
+                         yStart: .value("Low", path.start.1),
+                         yEnd: .value("High", path.start.1),
+                         series: .value("Band", "forecast"))
+                    .foregroundStyle(Theme.accent.opacity(0.10))
+                    .interpolationMethod(.catmullRom)
+                AreaMark(x: .value("Time", path.end.0),
+                         yStart: .value("Low", forecast.lowMgdL),
+                         yEnd: .value("High", forecast.highMgdL),
+                         series: .value("Band", "forecast"))
+                    .foregroundStyle(Theme.accent.opacity(0.10))
+                    .interpolationMethod(.catmullRom)
+                LineMark(x: .value("Time", path.start.0),
+                         y: .value("Glucose", path.start.1),
+                         series: .value("Series", "forecast"))
+                    .foregroundStyle(Theme.textSecondary.opacity(0.8))
+                    .lineStyle(StrokeStyle(lineWidth: 2, lineCap: .round, dash: [3, 5]))
+                LineMark(x: .value("Time", path.end.0),
+                         y: .value("Glucose", path.end.1),
+                         series: .value("Series", "forecast"))
+                    .foregroundStyle(Theme.textSecondary.opacity(0.8))
+                    .lineStyle(StrokeStyle(lineWidth: 2, lineCap: .round, dash: [3, 5]))
+            }
+
             // Threshold lines carry the colour of the zone they border, so the
             // top dashed line reads as the high limit and the bottom one as the
             // low limit at a glance (matching how readings are tinted).
@@ -858,7 +900,12 @@ struct GlucoseTrendChart: View {
             let now = Date()
             return now.addingTimeInterval(-3600)...now
         }
-        let pad = max(120, last.timeIntervalSince(first) * 0.03)
+        var pad = max(120, last.timeIntervalSince(first) * 0.03)
+        // With a forecast drawn, the domain must reach its far end (plus a
+        // touch of breathing room past the dashed tip).
+        if let path = projectionPath {
+            pad = max(pad, path.end.0.timeIntervalSince(last) + 120)
+        }
         return first...last.addingTimeInterval(pad)
     }
 
@@ -874,8 +921,14 @@ struct GlucoseTrendChart: View {
         // scale (it's context; an outlier there just clips).
         let pad: Double = compact ? 20 : 30   // room for the extreme labels
         let values = sorted.map(\.valueMgdL)
-        let dataHigh = max(values.max() ?? thresholds.targetUpper, thresholds.targetUpper)
-        let dataLow = min(values.min() ?? thresholds.targetLower, thresholds.targetLower)
+        var dataHigh = max(values.max() ?? thresholds.targetUpper, thresholds.targetUpper)
+        var dataLow = min(values.min() ?? thresholds.targetLower, thresholds.targetLower)
+        // The forecast band participates in the scale, so its shaded edges are
+        // never clipped by the frame.
+        if projectionPath != nil, let forecast {
+            dataHigh = max(dataHigh, forecast.highMgdL)
+            dataLow = min(dataLow, forecast.lowMgdL)
+        }
         let tiers: [Double] = [200, 250, 300, 350, 400]
         let high = tiers.first { $0 >= dataHigh + pad } ?? (dataHigh + pad)
         let low = max(0, ((dataLow - pad) / 20).rounded(.down) * 20)

@@ -135,4 +135,83 @@ final class GlucoseAlertEvaluatorTests: XCTestCase {
         XCTAssertFalse(p.isEnabled(.low))
         XCTAssertTrue(p.isEnabled(.urgentLow))
     }
+
+    // MARK: Persistence filter
+
+    private func persistentPrefs(minutes: Int) -> AlertPreferences {
+        var p = enabledPrefs()
+        p.persistenceMinutes = minutes
+        return p
+    }
+
+    func testPersistenceHoldsTheFirstLowReading() {
+        let now = Date()
+        let d = GlucoseAlertEvaluator.decide(
+            reading: .init(mgdL: 60, timestamp: now), thresholds: .standard,
+            preferences: persistentPrefs(minutes: 10), unit: .mgdL, last: .empty, now: now)
+        XCTAssertNil(d.alert)
+        XCTAssertEqual(d.state.pendingLevel, "low")
+        XCTAssertEqual(d.state.pendingSince, now)
+    }
+
+    func testPersistenceFiresOnceTheExcursionMatures() {
+        let start = Date()
+        var state = GlucoseAlertState.empty
+        // t=0 arms, t=5 still waiting, t=10 fires.
+        for minutes in [0.0, 5.0] {
+            let t = start.addingTimeInterval(minutes * 60)
+            let d = GlucoseAlertEvaluator.decide(
+                reading: .init(mgdL: 60, timestamp: t), thresholds: .standard,
+                preferences: persistentPrefs(minutes: 10), unit: .mgdL, last: state, now: t)
+            XCTAssertNil(d.alert)
+            state = d.state
+        }
+        let t = start.addingTimeInterval(10 * 60)
+        let d = GlucoseAlertEvaluator.decide(
+            reading: .init(mgdL: 60, timestamp: t), thresholds: .standard,
+            preferences: persistentPrefs(minutes: 10), unit: .mgdL, last: state, now: t)
+        XCTAssertEqual(d.alert?.level, .low)
+    }
+
+    func testCompressionDipRecoversWithoutAlerting() {
+        let start = Date()
+        var state = GlucoseAlertState.empty
+        let dip = GlucoseAlertEvaluator.decide(
+            reading: .init(mgdL: 62, timestamp: start), thresholds: .standard,
+            preferences: persistentPrefs(minutes: 10), unit: .mgdL, last: state, now: start)
+        XCTAssertNil(dip.alert)
+        state = dip.state
+        // Back in range five minutes later: pending clears, nothing ever fired.
+        let t = start.addingTimeInterval(5 * 60)
+        let recovered = GlucoseAlertEvaluator.decide(
+            reading: .init(mgdL: 95, timestamp: t), thresholds: .standard,
+            preferences: persistentPrefs(minutes: 10), unit: .mgdL, last: state, now: t)
+        XCTAssertNil(recovered.alert)
+        XCTAssertNil(recovered.state.pendingLevel)
+        XCTAssertNil(recovered.state.pendingSince)
+    }
+
+    func testUrgentLowBypassesPersistence() {
+        let now = Date()
+        let d = GlucoseAlertEvaluator.decide(
+            reading: .init(mgdL: 45, timestamp: now), thresholds: .standard,
+            preferences: persistentPrefs(minutes: 15), unit: .mgdL, last: .empty, now: now)
+        XCTAssertEqual(d.alert?.level, .urgentLow)
+    }
+
+    func testMaturedExcursionOnlyWaitsOutTheSnoozeOnRepeats() {
+        let start = Date()
+        // Already fired at t=0 with the pending marker carried through.
+        let state = GlucoseAlertState(
+            lastLevel: "low", lastFiredAt: start, lastReadingAt: start,
+            pendingLevel: "low", pendingSince: start.addingTimeInterval(-10 * 60))
+        var prefs = persistentPrefs(minutes: 10)
+        prefs.snoozeMinutes = 20
+        // After the snooze expires the repeat fires WITHOUT a second persistence wait.
+        let t = start.addingTimeInterval(21 * 60)
+        let d = GlucoseAlertEvaluator.decide(
+            reading: .init(mgdL: 60, timestamp: t), thresholds: .standard,
+            preferences: prefs, unit: .mgdL, last: state, now: t)
+        XCTAssertEqual(d.alert?.level, .low)
+    }
 }

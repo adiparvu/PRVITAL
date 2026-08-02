@@ -40,6 +40,7 @@ final class Preferences {
         self.useSystemTextSize = (self.defaults.object(forKey: Keys.useSystemTextSize) as? Bool) ?? true
         self.textSizeRaw = self.defaults.string(forKey: Keys.textSize) ?? AppTextSize.large.rawValue
         self.hapticsEnabled = (self.defaults.object(forKey: Keys.hapticsEnabled) as? Bool) ?? true
+        self.appLockEnabled = (self.defaults.object(forKey: Keys.appLock) as? Bool) ?? false
         self.showDailyCompanion = (self.defaults.object(forKey: Keys.showDailyCompanion) as? Bool) ?? true
         self.showContextualLessons = (self.defaults.object(forKey: Keys.showContextualLessons) as? Bool) ?? true
         self.minimalistIcons = (self.defaults.object(forKey: Keys.minimalistIcons) as? Bool) ?? false
@@ -280,6 +281,11 @@ final class Preferences {
         didSet { defaults.set(showYesterdayShadow, forKey: Keys.showYesterdayShadow) }
     }
 
+    /// Require Face ID / passcode whenever the app returns to the foreground.
+    var appLockEnabled: Bool {
+        didSet { defaults.set(appLockEnabled, forKey: Keys.appLock) }
+    }
+
     /// The dashboard deck's card order (raw `DashboardCard` values). Empty means
     /// the default order; unknown/new cards append automatically on resolve.
     var dashboardCardOrder: [String] {
@@ -359,6 +365,7 @@ final class Preferences {
         static let useSystemTextSize = "pref.useSystemTextSize"
         static let textSize = AppTextSize.preferenceKey
         static let hapticsEnabled = "pref.hapticsEnabled"
+        static let appLock = "pref.appLockEnabled"
         static let showDailyCompanion = "pref.showDailyCompanion"
         static let showContextualLessons = "pref.showContextualLessons"
         static let minimalistIcons = "pref.minimalistIcons"
