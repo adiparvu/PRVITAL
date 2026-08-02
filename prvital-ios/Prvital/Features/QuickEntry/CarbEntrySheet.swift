@@ -44,6 +44,8 @@ struct CarbEntrySheet: View {
     @State private var favoriteName = ""
     /// The connected glucose story for an existing meal (before → after + IOB).
     @State private var impact: EventInsight?
+    /// What this meal did last time (matched by name), or nil.
+    @State private var recall: MealMemoryRecall?
 
     var body: some View {
         NavigationStack {
@@ -127,6 +129,27 @@ struct CarbEntrySheet: View {
                     TextField("Food (optional)", text: $food)
                     DatePicker("Time", selection: $timestamp)
                 }
+                // "Last time you ate this": the same-named meal's actual
+                // response, shown at the one moment it can still change a
+                // decision. Only for new entries with a matching history.
+                if existing == nil, let recall {
+                    Section("Last time") {
+                        VStack(alignment: .leading, spacing: 6) {
+                            HStack(spacing: 6) {
+                                Image(systemName: "clock.arrow.circlepath")
+                                    .foregroundStyle(Theme.accent)
+                                Text(recall.when, format: .dateTime.day().month(.abbreviated))
+                                    .font(.caption.weight(.semibold))
+                                    .foregroundStyle(Theme.textTertiary)
+                                Spacer()
+                            }
+                            Text(recallText(recall))
+                                .font(.subheadline)
+                                .foregroundStyle(Theme.textPrimary)
+                                .fixedSize(horizontal: false, vertical: true)
+                        }
+                    }
+                }
                 Section("Tags") { EntryTagPicker(selected: $selectedTags) }
                 Section("Note") { TextField("Optional", text: $note, axis: .vertical) }
                 Section("Photo") {
@@ -200,6 +223,17 @@ struct CarbEntrySheet: View {
                 }
             }
             .navigationTitle(existing == nil ? "Log carbs" : "Edit carbs")
+            // Debounced name lookup: waits half a second of typing quiet, then
+            // one bounded 90-day fetch to find the same meal's last response.
+            .task(id: food) {
+                guard existing == nil, food.count >= MealMemory.minimumQueryLength else {
+                    recall = nil
+                    return
+                }
+                try? await Task.sleep(for: .milliseconds(500))
+                guard !Task.isCancelled else { return }
+                recall = lookupRecall(query: food)
+            }
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
                 ToolbarItem(placement: .cancellationAction) { Button("Cancel") { dismiss() } }
@@ -393,6 +427,64 @@ struct CarbEntrySheet: View {
 
     /// Copies a favorite into the editable fields — the user still reviews and
     /// taps Save, nothing is logged yet.
+    /// Bounded lookup: 90 days of meals + doses (light rows), then ONLY the
+    /// matched meal's own ±3.5 h of glucose — never a quarter of CGM history.
+    private func lookupRecall(query: String) -> MealMemoryRecall? {
+        let cutoff = Date().addingTimeInterval(-90 * 86_400)
+        let meals = (try? modelContext.fetch(FetchDescriptor<CarbEntry>(
+            predicate: #Predicate { $0.timestamp >= cutoff }))) ?? []
+        let doses = (try? modelContext.fetch(FetchDescriptor<InsulinDose>(
+            predicate: #Predicate { $0.timestamp >= cutoff }))) ?? []
+        return scoreNewestMatch(query: query, meals: meals, doses: doses)
+    }
+
+    /// Finds the newest name-matched meals, fetches each one's own window of
+    /// readings, and returns the first with enough coverage to tell a story.
+    private func scoreNewestMatch(
+        query: String, meals: [CarbEntry], doses: [InsulinDose]
+    ) -> MealMemoryRecall? {
+        let needle = query.lowercased().folding(options: .diacriticInsensitive, locale: nil)
+            .trimmingCharacters(in: .whitespaces)
+        guard needle.count >= MealMemory.minimumQueryLength else { return nil }
+        let matches = meals
+            .filter { meal in
+                let name = (meal.foodDescription ?? "").lowercased()
+                    .folding(options: .diacriticInsensitive, locale: nil)
+                guard !name.isEmpty,
+                      Date().timeIntervalSince(meal.timestamp) >= MealMemory.postWindowHours * 3600
+                else { return false }
+                return name.contains(needle) || needle.contains(name)
+            }
+            .sorted { $0.timestamp > $1.timestamp }
+            .prefix(5)
+        for meal in matches {
+            let start = meal.timestamp.addingTimeInterval(-35 * 60)
+            let end = meal.timestamp.addingTimeInterval(MealMemory.postWindowHours * 3600)
+            let readings = (try? modelContext.fetch(FetchDescriptor<GlucoseReading>(
+                predicate: #Predicate { $0.isActive && $0.timestamp >= start && $0.timestamp <= end },
+                sortBy: [SortDescriptor(\.timestamp)]))) ?? []
+            if let recall = MealMemory.recall(
+                query: query,
+                meals: [(meal.timestamp, meal.grams, meal.foodDescription)],
+                readings: readings.map { ($0.timestamp, $0.valueMgdL) },
+                doses: doses.map { ($0.timestamp, $0.units) }) {
+                return recall
+            }
+        }
+        return nil
+    }
+
+    private func recallText(_ recall: MealMemoryRecall) -> String {
+        let unit = env.preferences.glucoseUnit
+        let rise = GlucoseFormatting.labeled(mgdL: recall.riseMgdL, unit: unit)
+        let peak = GlucoseFormatting.labeled(mgdL: recall.peakMgdL, unit: unit)
+        var text = String(localized: "\(Int(recall.grams.rounded())) g last time — rose \(rise) to a peak of \(peak) after \(recall.minutesToPeak) min.")
+        if let units = recall.dosedUnits {
+            text += " " + String(localized: "You dosed \(units.formatted(.number.precision(.fractionLength(0...1)))) U with it.")
+        }
+        return text
+    }
+
     private func fill(from favorite: FavoriteMeal) {
         grams = favorite.grams
         mealType = favorite.mealType

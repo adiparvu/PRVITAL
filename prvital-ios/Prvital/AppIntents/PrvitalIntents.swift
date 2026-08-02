@@ -97,6 +97,43 @@ private enum IntentAudit {
     }
 }
 
+
+/// "Log entry: 45g pasta and 4 units" — one dictated sentence, split on device
+/// by the same parser the Add sheet's free-text field uses.
+struct LogPhraseIntent: AppIntent {
+    static let title: LocalizedStringResource = "Log a sentence"
+    static let description = IntentDescription("Speak one sentence — carbs, insulin and glucose are split out and logged.")
+
+    @Parameter(title: "Sentence")
+    var phrase: String
+
+    @MainActor
+    func perform() async throws -> some IntentResult & ProvidesDialog {
+        let context = PersistenceController.makeContainer().mainContext
+        let unit = Preferences().glucoseUnit
+        let parsed = QuickPhraseParser.parse(phrase, unit: unit)
+        guard !parsed.isEmpty else {
+            return .result(dialog: IntentDialog(stringLiteral: String(localized: "I couldn't find an amount in that. Try something like: 45 g pasta and 4 units.")))
+        }
+        var parts: [String] = []
+        if let mgdL = parsed.glucoseMgdL {
+            context.insert(GlucoseReading(valueMgdL: mgdL))
+            parts.append(GlucoseFormatting.labeled(mgdL: mgdL, unit: unit))
+        }
+        if let grams = parsed.carbGrams {
+            context.insert(CarbEntry(grams: grams, foodDescription: parsed.foodDescription))
+            parts.append(String(localized: "\(Int(grams.rounded())) g carbs"))
+        }
+        if let units = parsed.insulinUnits {
+            context.insert(InsulinDose(units: units))
+            parts.append(String(localized: "\(units.formatted()) U insulin"))
+        }
+        IntentAudit.record(.manualEdit, in: context, detail: "Phrase log via Siri")
+        try? context.save()
+        return .result(dialog: IntentDialog(stringLiteral: String(localized: "Logged: \(parts.joined(separator: ", ")).")))
+    }
+}
+
 /// Exposes the intents to Siri / Spotlight with spoken phrases.
 struct PrvitalShortcuts: AppShortcutsProvider {
     static var appShortcuts: [AppShortcut] {
@@ -120,6 +157,12 @@ struct PrvitalShortcuts: AppShortcutsProvider {
             phrases: ["Log carbs in \(.applicationName)"],
             shortTitle: "Log carbs",
             systemImageName: "fork.knife"
+        )
+        AppShortcut(
+            intent: LogPhraseIntent(),
+            phrases: ["Log an entry in \(.applicationName)"],
+            shortTitle: "Log a sentence",
+            systemImageName: "text.bubble"
         )
         AppShortcut(
             intent: LogGlucoseIntent(),
