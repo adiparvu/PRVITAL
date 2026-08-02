@@ -823,47 +823,6 @@ struct GlucoseTrendChart: View {
         .accessibilityChartDescriptor(self)
     }
 
-// MARK: - Audio Graph
-
-extension GlucoseTrendChart: AXChartDescriptorRepresentable {
-    /// Describes the trend chart to VoiceOver's Audio Graph: time on x, the
-    /// glucose value on y, one continuous series — so the curve can be heard
-    /// as pitch, with the same bounds the visual plot uses.
-    func makeChartDescriptor() -> AXChartDescriptor {
-        let start = sorted.first?.timestamp ?? Date()
-        let points = sorted.map { reading in
-            AXDataPoint(x: reading.timestamp.timeIntervalSince(start) / 60,
-                        y: reading.valueMgdL)
-        }
-        let totalMinutes = max(1, (sorted.last?.timestamp.timeIntervalSince(start) ?? 0) / 60)
-
-        let xAxis = AXNumericDataAxisDescriptor(
-            title: String(localized: "Time"),
-            range: 0...totalMinutes,
-            gridlinePositions: []
-        ) { minutes in
-            Duration.seconds(minutes * 60).formatted(.units(allowed: [.hours, .minutes], width: .abbreviated))
-        }
-        let domain = yDomain
-        let yAxis = AXNumericDataAxisDescriptor(
-            title: String(localized: "Glucose"),
-            range: domain.lowerBound...domain.upperBound,
-            gridlinePositions: [thresholds.targetLower, thresholds.targetUpper]
-        ) { value in
-            GlucoseFormatting.labeled(mgdL: value, unit: unit)
-        }
-        let series = AXDataSeriesDescriptor(
-            name: String(localized: "Glucose"),
-            isContinuous: true,
-            dataPoints: points)
-
-        return AXChartDescriptor(
-            title: String(localized: "Glucose trend"),
-            summary: accessibilitySummary,
-            xAxis: xAxis, yAxis: yAxis, series: [series])
-    }
-}
-
     /// A slim lane beneath the chart that lines each non-glucose event (insulin,
     /// meal, medication, …) up on the SAME time axis as the curve above. Uses the
     /// chart's `xDomain`, so a badge sits directly under the moment it happened —
@@ -1059,4 +1018,45 @@ extension View {
     }
     .padding()
     .background(Theme.background)
+}
+
+// MARK: - Audio Graph
+
+extension GlucoseTrendChart: AXChartDescriptorRepresentable {
+    /// Describes the trend chart to VoiceOver's Audio Graph: time on x, the
+    /// glucose value on y, one continuous series — so the curve can be heard
+    /// as pitch, with the same bounds the visual plot uses.
+    func makeChartDescriptor() -> AXChartDescriptor {
+        let start = sorted.first?.timestamp ?? Date()
+        let points = sorted.map { reading in
+            AXDataPoint(x: reading.timestamp.timeIntervalSince(start) / 60,
+                        y: reading.valueMgdL)
+        }
+        let totalMinutes = max(1, (sorted.last?.timestamp.timeIntervalSince(start) ?? 0) / 60)
+
+        let xAxis = AXNumericDataAxisDescriptor(
+            title: String(localized: "Time"),
+            range: 0...totalMinutes,
+            gridlinePositions: []
+        ) { minutes in
+            Duration.seconds(minutes * 60).formatted(.units(allowed: [.hours, .minutes], width: .abbreviated))
+        }
+        let domain = yDomain
+        let yAxis = AXNumericDataAxisDescriptor(
+            title: String(localized: "Glucose"),
+            range: domain.lowerBound...domain.upperBound,
+            gridlinePositions: [thresholds.targetLower, thresholds.targetUpper]
+        ) { value in
+            GlucoseFormatting.labeled(mgdL: value, unit: unit)
+        }
+        let series = AXDataSeriesDescriptor(
+            name: String(localized: "Glucose"),
+            isContinuous: true,
+            dataPoints: points)
+
+        return AXChartDescriptor(
+            title: String(localized: "Glucose trend"),
+            summary: accessibilitySummary,
+            xAxis: xAxis, yAxis: yAxis, series: [series])
+    }
 }
