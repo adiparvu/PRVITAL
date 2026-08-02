@@ -143,19 +143,27 @@ struct PrvitalPersonGlyph: Shape {
 /// the user's accent colour still apply.
 @MainActor
 enum PrvitalTabGlyph {
-    static let home: UIImage = render(PrvitalHomeGlyph().fill(style: FillStyle(eoFill: true)))
-    static let journal: UIImage = symbol("square.grid.2x2.fill")
-    static let add: UIImage = symbol("plus", weight: .heavy)
-    static let insights: UIImage = symbol("chart.bar.fill")
-    static let profile: UIImage = render(PrvitalPersonGlyph(filled: true).fill())
+    // Every glyph is measured by the pixels it actually inks and scaled to one
+    // shared optical size, because neither route produces equal footprints on
+    // its own: SF Symbols at the same point size draw different-sized shapes,
+    // and the custom paths don't reach the edges of their boxes. Rounded,
+    // organic shapes (the house, the person) get a touch more than the boxy
+    // symbols — same-height rounded forms read smaller.
+    static let home: UIImage = normalized(
+        render(PrvitalHomeGlyph().fill(style: FillStyle(eoFill: true))), optical: 21)
+    static let journal: UIImage = normalized(symbol("square.grid.2x2.fill"), optical: 19.5)
+    static let add: UIImage = normalized(symbol("plus", weight: .heavy), optical: 19)
+    static let insights: UIImage = normalized(symbol("chart.bar.fill"), optical: 19.5)
+    static let profile: UIImage = normalized(
+        render(PrvitalPersonGlyph(filled: true).fill()), optical: 21)
 
-    /// The optical size every glyph is drawn at.
+    /// The canvas every glyph is centred in — identical for all five, so the
+    /// tab bar lays them out on the same baseline.
     private static let side: CGFloat = 22
 
     private static func symbol(_ name: String, weight: UIImage.SymbolWeight = .semibold) -> UIImage {
         let configuration = UIImage.SymbolConfiguration(pointSize: side - 1, weight: weight)
-        return UIImage(systemName: name, withConfiguration: configuration)?
-            .withRenderingMode(.alwaysTemplate) ?? UIImage()
+        return UIImage(systemName: name, withConfiguration: configuration) ?? UIImage()
     }
 
     private static func render<V: View>(_ content: V) -> UIImage {
@@ -165,8 +173,59 @@ enum PrvitalTabGlyph {
                 .foregroundStyle(.black)
         )
         renderer.scale = 3
-        guard let image = renderer.uiImage else { return UIImage() }
-        return image.withRenderingMode(.alwaysTemplate)
+        return renderer.uiImage ?? UIImage()
+    }
+
+    /// Scales the image so its INKED region's longest side equals `optical`
+    /// and centres that region in the shared canvas. This is the equaliser:
+    /// per-glyph raster margins stop mattering, only visible shape size counts.
+    private static func normalized(_ image: UIImage, optical: CGFloat) -> UIImage {
+        guard let ink = inkedBounds(image), ink.width > 0, ink.height > 0 else {
+            return image.withRenderingMode(.alwaysTemplate)
+        }
+        let factor = optical / max(ink.width, ink.height)
+        let drawSize = CGSize(width: image.size.width * factor,
+                              height: image.size.height * factor)
+        let origin = CGPoint(
+            x: (side - ink.width * factor) / 2 - ink.minX * factor,
+            y: (side - ink.height * factor) / 2 - ink.minY * factor)
+        let format = UIGraphicsImageRendererFormat()
+        format.scale = 3
+        format.opaque = false
+        let source = image.withRenderingMode(.alwaysOriginal)
+        let out = UIGraphicsImageRenderer(size: CGSize(width: side, height: side),
+                                          format: format).image { _ in
+            source.draw(in: CGRect(origin: origin, size: drawSize))
+        }
+        return out.withRenderingMode(.alwaysTemplate)
+    }
+
+    /// The rectangle of pixels with meaningful alpha, in point coordinates.
+    private static func inkedBounds(_ image: UIImage) -> CGRect? {
+        guard let cg = image.cgImage else { return nil }
+        let width = cg.width, height = cg.height
+        guard width > 0, height > 0 else { return nil }
+        var pixels = [UInt8](repeating: 0, count: width * height * 4)
+        guard let context = CGContext(
+            data: &pixels, width: width, height: height, bitsPerComponent: 8,
+            bytesPerRow: width * 4, space: CGColorSpaceCreateDeviceRGB(),
+            bitmapInfo: CGImageAlphaInfo.premultipliedLast.rawValue) else { return nil }
+        context.draw(cg, in: CGRect(x: 0, y: 0, width: width, height: height))
+
+        var minX = width, maxX = -1, minY = height, maxY = -1
+        for y in 0..<height {
+            for x in 0..<width where pixels[(y * width + x) * 4 + 3] > 16 {
+                if x < minX { minX = x }
+                if x > maxX { maxX = x }
+                if y < minY { minY = y }
+                if y > maxY { maxY = y }
+            }
+        }
+        guard maxX >= minX, maxY >= minY else { return nil }
+        let scale = max(image.scale, 1)
+        return CGRect(x: CGFloat(minX) / scale, y: CGFloat(minY) / scale,
+                      width: CGFloat(maxX - minX + 1) / scale,
+                      height: CGFloat(maxY - minY + 1) / scale)
     }
 }
 #endif
