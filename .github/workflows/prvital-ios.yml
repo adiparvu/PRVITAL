@@ -103,14 +103,35 @@ jobs:
     # the message — otherwise a commit that merely *mentions* [testflight] in its
     # body (e.g. explaining this very job) would trigger a release upload.
     if: ${{ github.ref != 'refs/heads/main' && ((github.event_name == 'workflow_dispatch' && inputs.testflight) || startsWith(github.ref, 'refs/tags/testflight-') || (github.event_name == 'push' && startsWith(github.event.head_commit.message, '[testflight]'))) }}
-    runs-on: macos-latest
+    # Releases are built with Xcode 27 / Swift 6.4 / the iOS 27 SDK on GitHub's
+    # `xcode-27` image (Apple Silicon). Apple requires iOS 27 SDK builds from
+    # April 2027, and the `xcode27-canary` job below proves each push compiles
+    # and passes the unit tests there. To fall back to Xcode 26 (e.g. if signing
+    # misbehaves on the new image), set `runs-on: macos-latest` and swap the
+    # "Select Xcode" step for `maxim-lobanov/setup-xcode@v1` with
+    # `xcode-version: latest-stable` — nothing else depends on the toolchain.
+    runs-on: xcode-27
     env:
       DEVELOPMENT_TEAM: SU92TVZT8W
     steps:
       - uses: actions/checkout@v4
-      - uses: maxim-lobanov/setup-xcode@v1
-        with:
-          xcode-version: latest-stable
+      - name: Select Xcode (a release build — never a beta)
+        # The image also carries Xcode 27.2 beta/RC builds; App Store Connect
+        # rejects beta-built binaries, so the release is picked by explicit path
+        # instead of whatever happens to be the default.
+        run: |
+          set -euo pipefail
+          for candidate in Xcode_27.1.app Xcode_27.app; do
+            if [ -d "/Applications/$candidate" ]; then
+              sudo xcode-select -s "/Applications/$candidate/Contents/Developer"
+              echo "Using /Applications/$candidate"
+              xcodebuild -version
+              exit 0
+            fi
+          done
+          echo "::error::No release Xcode 27 found. Installed:"
+          ls -d /Applications/Xcode* || true
+          exit 1
       - name: Install XcodeGen
         run: brew install xcodegen
       - name: Generate Xcode project
@@ -452,6 +473,10 @@ jobs:
             echo "  $(basename "$app"):  healthkit=$([ "${hk:-0}" -gt 0 ] && echo YES || echo NO)  appgroup=$([ "${ag:-0}" -gt 0 ] && echo YES || echo NO)"
           done
       - name: Export & upload to TestFlight
+        # A `[testflight] [dry-run]` commit rehearses everything — provisioning,
+        # signing, archive, entitlement inspection — and stops here, so a new
+        # toolchain's signing path can be proven without spending an upload.
+        if: ${{ !contains(github.event.head_commit.message, '[dry-run]') }}
         working-directory: prvital-ios
         run: |
           set -euo pipefail
