@@ -520,3 +520,79 @@ jobs:
             sleep "$wait"
             attempt=$((attempt + 1))
           done
+
+  xcode27-canary:
+    # Forward-compatibility canary: builds the app, widgets and watch app with
+    # the Xcode 27 / Swift 6.4 / iOS 27 SDK toolchain (GitHub's `xcode-27`
+    # runner image, macOS 27, Apple Silicon) and runs the unit tests on its
+    # newest simulator. It never gates a merge or a TestFlight upload —
+    # production keeps building on `macos-latest` (Xcode 26) — it exists so the
+    # first Xcode 27 compile error, deprecation or behavior change shows up
+    # here, early and in isolation, instead of on the day the production jobs
+    # move over (Apple requires iOS 27 SDK builds from April 2027). It uses the
+    # image's default Xcode on purpose: the image carries 27.1 beta / RC
+    # builds that `latest-stable` would skip.
+    runs-on: xcode-27
+    continue-on-error: true
+    timeout-minutes: 45
+    steps:
+      - uses: actions/checkout@v4
+      - name: Toolchain in use
+        run: |
+          xcodebuild -version
+          swift --version
+          echo "iphoneos SDK: $(xcrun --sdk iphoneos --show-sdk-version)"
+          echo "watchos SDK: $(xcrun --sdk watchos --show-sdk-version)"
+      - name: Install XcodeGen
+        run: brew install xcodegen
+      - name: Generate Xcode project
+        working-directory: prvital-ios
+        run: xcodegen generate
+      - name: Build iPhone app + widgets (iOS 27 SDK, no signing)
+        working-directory: prvital-ios
+        run: |
+          set -o pipefail
+          xcodebuild build \
+            -project Prvital.xcodeproj \
+            -scheme Prvital \
+            -destination 'generic/platform=iOS' \
+            CODE_SIGNING_ALLOWED=NO CODE_SIGNING_REQUIRED=NO CODE_SIGN_IDENTITY="" PROVISIONING_PROFILE_SPECIFIER=""
+      - name: Run unit tests (newest simulator)
+        working-directory: prvital-ios
+        run: |
+          set -o pipefail
+          cat > /tmp/pick_sim.py <<'PY'
+          import json, subprocess
+          data = json.loads(subprocess.check_output(
+              ["xcrun", "simctl", "list", "devices", "available", "--json"]))
+          best, best_ver = "", (-1, -1)
+          for runtime, devices in data["devices"].items():
+              if "iOS" not in runtime:
+                  continue
+              try:
+                  major, minor = (runtime.split("iOS-")[1].split("-") + ["0"])[:2]
+                  ver = (int(major), int(minor))
+              except Exception:
+                  ver = (0, 0)
+              for dev in devices:
+                  if "iPhone" in dev["name"] and ver > best_ver:
+                      best, best_ver = dev["udid"], ver
+          print(best)
+          PY
+          UDID=$(python3 /tmp/pick_sim.py)
+          if [ -z "$UDID" ]; then echo "No iOS simulator available" >&2; exit 1; fi
+          echo "Testing on simulator $UDID"
+          xcodebuild test \
+            -project Prvital.xcodeproj \
+            -scheme Prvital \
+            -destination "id=$UDID" \
+            CODE_SIGNING_ALLOWED=NO CODE_SIGNING_REQUIRED=NO CODE_SIGN_IDENTITY="" PROVISIONING_PROFILE_SPECIFIER=""
+      - name: Build Apple Watch app (watchOS 27 SDK, no signing)
+        working-directory: prvital-ios
+        run: |
+          set -o pipefail
+          xcodebuild build \
+            -project Prvital.xcodeproj \
+            -scheme PrvitalWatch \
+            -destination 'generic/platform=watchOS' \
+            CODE_SIGNING_ALLOWED=NO CODE_SIGNING_REQUIRED=NO CODE_SIGN_IDENTITY="" PROVISIONING_PROFILE_SPECIFIER=""
