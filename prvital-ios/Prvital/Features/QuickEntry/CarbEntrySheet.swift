@@ -164,8 +164,11 @@ struct CarbEntrySheet: View {
                 Section("Tags") { EntryTagPicker(selected: $selectedTags) }
                 Section("Note") { TextField("Optional", text: $note, axis: .vertical) }
                 Section("Photo") {
+                    // Read here, outside the picker's (Sendable) label closure —
+                    // `photoData` is main-actor state.
+                    let hasPhoto = photoData != nil
                     PhotosPicker(selection: $photoItem, matching: .images, photoLibrary: .shared()) {
-                        Label(photoData == nil ? "Add meal photo" : "Change photo", systemImage: "camera")
+                        Label(hasPhoto ? "Change photo" : "Add meal photo", systemImage: "camera")
                             .foregroundStyle(Theme.accent)
                     }
                     #if canImport(UIKit)

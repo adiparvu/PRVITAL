@@ -595,7 +595,8 @@ struct DashboardView: View {
 
     // MARK: - Trend
 
-    @ViewBuilder
+    // An explicit `return` below makes a result builder pointless (the compiler
+    // warns it is disabled), so the function is a plain one returning a view.
     private func trendSection(derived: DashboardDerived, thresholds: GlucoseThresholds, unit: GlucoseUnit) -> some View {
         let summary = derived.summary
         let windowReadings = derived.windowReadings

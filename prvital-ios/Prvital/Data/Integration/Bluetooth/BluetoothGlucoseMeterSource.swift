@@ -79,7 +79,10 @@ final class BluetoothGlucoseScanner: NSObject, @unchecked Sendable {
 
     func ensureAuthorized() async throws {
         try await withCheckedThrowingContinuation { (continuation: CheckedContinuation<Void, Error>) in
-            queue.async {
+            // `[self]` states the strong capture the body already relies on; the
+            // timeout work item below keeps its own `[weak self]` so a pending
+            // timer never retains the source.
+            queue.async { [self] in
                 self.ensureCentral()
                 switch self.central?.state {
                 case .poweredOn: continuation.resume()
@@ -100,7 +103,7 @@ final class BluetoothGlucoseScanner: NSObject, @unchecked Sendable {
     func downloadRecords(since date: Date) async throws -> [NormalizedGlucoseSample] {
         try await ensureAuthorized()
         return try await withCheckedThrowingContinuation { (continuation: CheckedContinuation<[NormalizedGlucoseSample], Error>) in
-            queue.async {
+            queue.async { [self] in
                 guard self.downloadContinuation == nil else { continuation.resume(returning: []); return }
                 self.downloadContinuation = continuation
                 self.sinceDate = date

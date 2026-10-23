@@ -24,7 +24,9 @@ enum AppInfo {
 
     /// A short, non-health diagnostics line the user can opt to include with
     /// feedback so a report can be triaged. Deliberately excludes any glucose or
-    /// personal data — only app/device/OS facts.
+    /// personal data — only app/device/OS facts. Main-actor isolated because
+    /// `UIDevice.current` is; every caller is a SwiftUI view.
+    @MainActor
     static var diagnostics: String {
         var lines = ["Prvital \(versionBuild)"]
         #if canImport(UIKit)
