@@ -17672,6 +17672,65 @@
         }
       }
     },
+    "Apple Health is sharing your data since %@ only. Earlier readings are hidden from Prvital — not missing. To share more, open Health → Sharing → Apps → Prvital." : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Apple Health teilt deine Daten erst ab dem %@. Ältere Messwerte sind für Prvital ausgeblendet – nicht verschwunden. Um mehr zu teilen, öffne Health → Teilen → Apps → Prvital."
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Apple Health solo comparte tus datos desde el %@. Las lecturas anteriores están ocultas para Prvital, no han desaparecido. Para compartir más, abre Salud → Compartir → Apps → Prvital."
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Apple Santé ne partage vos données que depuis le %@. Les mesures plus anciennes sont masquées pour Prvital — pas manquantes. Pour partager davantage, ouvrez Santé → Partage → Apps → Prvital."
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Apple Salute condivide i tuoi dati solo dal %@. Le letture precedenti sono nascoste a Prvital, non mancanti. Per condividere di più, apri Salute → Condivisione → App → Prvital."
+          }
+        },
+        "nl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Apple Gezondheid deelt je gegevens pas vanaf %@. Oudere metingen zijn verborgen voor Prvital — ze ontbreken niet. Om meer te delen, open Gezondheid → Delen → Apps → Prvital."
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Apple Zdrowie udostępnia Twoje dane dopiero od %@. Starsze odczyty są ukryte przed Prvital — nie zniknęły. Aby udostępnić więcej, otwórz Zdrowie → Udostępnianie → Aplikacje → Prvital."
+          }
+        },
+        "pt" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "O Apple Saúde só partilha os teus dados desde %@. As leituras anteriores estão ocultas para o Prvital — não desapareceram. Para partilhar mais, abre Saúde → Partilha → Apps → Prvital."
+          }
+        },
+        "ro" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Apple Health îți partajează datele doar începând cu %@. Citirile mai vechi sunt ascunse pentru Prvital — nu lipsesc. Pentru a partaja mai mult, deschide Health → Partajare → Aplicații → Prvital."
+          }
+        },
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Apple Здоровье передаёт ваши данные только с %@. Более ранние измерения скрыты от Prvital — они не пропали. Чтобы поделиться большим, откройте Здоровье → Общий доступ → Приложения → Prvital."
+          }
+        }
+      }
+    },
     "Apple Health isn't available on this build yet." : {
       "extractionState" : "manual",
       "localizations" : {

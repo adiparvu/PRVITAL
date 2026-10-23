@@ -11,6 +11,10 @@ struct SourcesSettingsView: View {
     /// are re-read and the rows refresh.
     @State private var refreshTick = 0
 
+    /// When iOS 27's limited-history Health permission is in effect: the first
+    /// day Prvital can see. Nil for full sharing (and on iOS 26).
+    @State private var healthLimitedSince: Date?
+
     private var primaryBinding: Binding<DataSource> {
         Binding(
             get: { env.registry.primarySource },
@@ -80,6 +84,21 @@ struct SourcesSettingsView: View {
                     .foregroundStyle(Theme.textTertiary)
             }
             .glassListRow()
+
+            if let since = healthLimitedSince {
+                Section {
+                    Label {
+                        Text("Apple Health is sharing your data since \(since.formatted(date: .abbreviated, time: .omitted)) only. Earlier readings are hidden from Prvital — not missing. To share more, open Health → Sharing → Apps → Prvital.")
+                            .font(.footnote)
+                            .foregroundStyle(Theme.textSecondary)
+                            .fixedSize(horizontal: false, vertical: true)
+                    } icon: {
+                        Image(systemName: "calendar.badge.clock")
+                            .foregroundStyle(Theme.zoneWarning)
+                    }
+                }
+                .glassListRow()
+            }
 
             Section {
                 NavigationLink {
@@ -163,6 +182,7 @@ struct SourcesSettingsView: View {
         .prvitalScreenBackground()
         .navigationTitle("Sources")
         .navigationBarTitleDisplayMode(.inline)
+        .task { healthLimitedSince = await env.healthKit.limitedHistoryStart() }
     }
 
     private func connect(_ source: GlucoseSource) {

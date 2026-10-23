@@ -121,6 +121,39 @@ final class HealthKitService: @unchecked Sendable {
         isAvailable ? store.authorizationStatus(for: glucoseType) : .notDetermined
     }
 
+    /// iOS 27's Health permissions let a person share only a RECENT window of
+    /// history instead of everything. This returns the start of that window when
+    /// one is in effect — nil when sharing is full, or when the OS (or an older
+    /// SDK/OS) can't say. Data before the returned date is unknown to the app,
+    /// not absent, so the UI says so instead of letting an empty older range
+    /// read as "no data".
+    ///
+    /// Compiled only with the Swift 6.4 toolchain (Xcode 27's SDK carries the
+    /// API) and gated at runtime to iOS 27 — the build on Xcode 26 stays
+    /// untouched and iOS 26 devices simply report nil.
+    func limitedHistoryStart() async -> Date? {
+        #if compiler(>=6.4)
+        guard isAvailable, #available(iOS 27.0, *) else { return nil }
+        let types: Set<HKObjectType> = [glucoseType, insulinType, carbType]
+        let floor = store.earliestPermittedSampleDate()
+        return await withCheckedContinuation { (continuation: CheckedContinuation<Date?, Never>) in
+            store.getEarliestAuthorizedSampleDate(for: types) { dates, _ in
+                // The binding limit is the most recent of the per-type starts.
+                // A start within a month of the framework's own earliest date is
+                // the full-history case, not a limit.
+                guard let latest = dates?.values.max(),
+                      latest > floor.addingTimeInterval(30 * 86_400) else {
+                    continuation.resume(returning: nil)
+                    return
+                }
+                continuation.resume(returning: latest)
+            }
+        }
+        #else
+        return nil
+        #endif
+    }
+
     // MARK: Reads
 
     func fetchGlucoseSamples(since date: Date, limit: Int = HKObjectQueryNoLimit) async throws -> [NormalizedGlucoseSample] {
@@ -602,6 +635,7 @@ final class HealthKitService: @unchecked Sendable {
     // Non-Apple platforms (Linux CI for the shared package): HealthKit is absent.
     var isAvailable: Bool { false }
     func requestAuthorization() async throws { throw SourceError.unavailable }
+    func limitedHistoryStart() async -> Date? { nil }
     func fetchGlucoseSamples(since date: Date, limit: Int = 0) async throws -> [NormalizedGlucoseSample] { [] }
     func fetchLatestGlucose() async throws -> NormalizedGlucoseSample? { nil }
     func fetchInsulinSamples(since date: Date, limit: Int = 0) async throws -> [HealthInsulinSample] { [] }
