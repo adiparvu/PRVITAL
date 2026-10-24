@@ -17,6 +17,7 @@ import WatchKit
 /// `@Observable` model to keep every page live.
 struct WatchRootView: View {
     let model: WatchModel
+    @Environment(\.scenePhase) private var scenePhase
 
     var body: some View {
         TabView {
@@ -48,6 +49,18 @@ struct WatchRootView: View {
         }
         .tabViewStyle(.verticalPage)
         .background(Theme.background.ignoresSafeArea())
+        // The watch can't fetch glucose itself, so whenever it comes to the
+        // front with an old reading it asks the phone for a fresher one (only
+        // when the phone is in reach — otherwise the stale state is the truth).
+        .task { askForFresherReading() }
+        .onChange(of: scenePhase) { _, phase in
+            if phase == .active { askForFresherReading() }
+        }
+    }
+
+    private func askForFresherReading() {
+        guard model.snapshot.isStale(at: Date()) else { return }
+        WatchSessionManager.shared.requestFreshSnapshot()
     }
 }
 
@@ -70,6 +83,15 @@ private struct WatchNowPage: View {
     }
 
     var body: some View {
+        // Staleness is judged at render time, and the view re-renders every 30 s:
+        // the flag the phone published is frozen at publish time, so a reading
+        // that ages while the phone is away must be dimmed by the clock, here.
+        TimelineView(.periodic(from: .now, by: 30)) { context in
+            content(stale: snapshot.isStale(at: context.date), now: context.date)
+        }
+    }
+
+    private func content(stale: Bool, now: Date) -> some View {
         VStack(spacing: 8) {
             ZStack {
                 Circle()
@@ -128,22 +150,34 @@ private struct WatchNowPage: View {
                         .font(.caption2)
                         .foregroundStyle(Theme.textSecondary)
                         .lineLimit(1)
-                    if snapshot.isStale {
+                    if stale {
                         Image(systemName: "clock.badge.exclamationmark")
                             .font(.caption2)
                             .foregroundStyle(Theme.zoneWarning)
                     }
                 }
-                Text(WatchSnapshotFormat.updated(snapshot.updatedAt))
+                Text(WatchSnapshotFormat.updated(snapshot.updatedAt, now: now))
                     .font(.caption2)
                     .foregroundStyle(Theme.textTertiary)
                     .lineLimit(1)
             }
         }
         .frame(maxWidth: .infinity, maxHeight: .infinity)
-        .opacity(snapshot.isStale ? 0.55 : 1)
+        .opacity(stale ? 0.55 : 1)
+        // Entries the phone hasn't confirmed yet — never let "I logged it"
+        // quietly mean "I queued it".
+        .overlay(alignment: .top) {
+            let waiting = WatchOutbox.shared.waitingCount
+            if waiting > 0 {
+                Label("\(waiting) waiting for iPhone", systemImage: "iphone.slash")
+                    .font(.caption2.weight(.semibold))
+                    .foregroundStyle(Theme.textPrimary)
+                    .padding(.horizontal, 8).padding(.vertical, 3)
+                    .background(Theme.zoneWarning.opacity(0.85), in: Capsule())
+            }
+        }
         .accessibilityElement(children: .ignore)
-        .accessibilityLabel(WatchSnapshotFormat.valueSummary(snapshot))
+        .accessibilityLabel(WatchSnapshotFormat.valueSummary(snapshot, stale: stale))
     }
 }
 
@@ -203,13 +237,7 @@ private struct WatchQuickEntryPage: View {
         .frame(maxWidth: .infinity, maxHeight: .infinity)
         .overlay(alignment: .bottom) {
             if let confirmation {
-                Label("Logged \(WatchSnapshotFormat.amount(confirmation.amount)) \(unit)", systemImage: "checkmark.circle.fill")
-                    .font(.caption2.weight(.semibold))
-                    .foregroundStyle(Theme.textPrimary)
-                    .padding(.horizontal, 10)
-                    .padding(.vertical, 6)
-                    .background(Theme.zoneInRange.opacity(0.9), in: Capsule())
-                    .transition(.move(edge: .bottom).combined(with: .opacity))
+                WatchSendStatus(entryID: confirmation.entryID, amountText: confirmation.amountText)
             }
         }
         .animation(.spring(duration: 0.3), value: confirmation)
@@ -223,16 +251,22 @@ private struct WatchQuickEntryPage: View {
             Button("Cancel", role: .cancel) { pending = nil }
         }
         .task(id: confirmation?.id) {
-            guard confirmation != nil else { return }
+            guard let current = confirmation else { return }
             try? await Task.sleep(for: .seconds(2))
+            // Still unconfirmed by the phone → leave that on screen a while longer.
+            if WatchOutbox.shared.state(of: current.entryID) != .logged {
+                try? await Task.sleep(for: .seconds(3))
+            }
             confirmation = nil
         }
     }
 
     private func commit(_ value: Double) {
-        WatchSessionManager.shared.sendQuickEntry(kind: kind, amount: value)
+        let id = WatchSessionManager.shared.sendQuickEntry(kind: kind, amount: value)
+        playSendHaptic(for: id)
         pending = nil
-        confirmation = WatchLogConfirmation(amount: value)
+        confirmation = WatchLogConfirmation(
+            entryID: id, amountText: "\(WatchSnapshotFormat.amount(value)) \(unit)")
     }
 }
 
@@ -240,7 +274,64 @@ private struct WatchQuickEntryPage: View {
 /// amounts still re-trigger the auto-dismiss timer.
 private struct WatchLogConfirmation: Equatable {
     let id = UUID()
-    let amount: Double
+    /// The outbox entry this acknowledgement follows.
+    let entryID: UUID
+    /// "4 U", "45 g", "112 mg/dL" — already formatted.
+    let amountText: String
+}
+
+/// A click for an entry on its way, a distinct "retry" tap for one that had to
+/// be queued because the iPhone is out of reach.
+@MainActor
+private func playSendHaptic(for id: UUID) {
+    let queued = WatchOutbox.shared.state(of: id) == .queued
+    WKInterfaceDevice.current().play(queued ? .retry : .click)
+}
+
+/// The honest state of one sent entry, straight from the outbox: still sending,
+/// queued for an unreachable iPhone, or confirmed logged. The success haptic
+/// plays the moment the phone confirms — not when the button was tapped.
+private struct WatchSendStatus: View {
+    let entryID: UUID
+    let amountText: String
+
+    var body: some View {
+        let state = WatchOutbox.shared.state(of: entryID) ?? .logged
+        label(for: state)
+            .font(.caption2.weight(.semibold))
+            .foregroundStyle(Theme.textPrimary)
+            .padding(.horizontal, 10)
+            .padding(.vertical, 6)
+            .background(tint(for: state).opacity(0.9), in: Capsule())
+            .transition(.move(edge: .bottom).combined(with: .opacity))
+            .onChange(of: state) { _, new in
+                switch new {
+                case .logged: WKInterfaceDevice.current().play(.success)
+                case .queued: WKInterfaceDevice.current().play(.retry)
+                case .sending: break
+                }
+            }
+    }
+
+    @ViewBuilder
+    private func label(for state: WatchOutbox.State) -> some View {
+        switch state {
+        case .logged:
+            Label("Logged \(amountText)", systemImage: "checkmark.circle.fill")
+        case .sending:
+            Label("Sending \(amountText)…", systemImage: "arrow.up.circle.fill")
+        case .queued:
+            Label("Queued — your iPhone isn't reachable", systemImage: "iphone.slash")
+        }
+    }
+
+    private func tint(for state: WatchOutbox.State) -> Color {
+        switch state {
+        case .logged: return Theme.zoneInRange
+        case .sending: return Theme.accent
+        case .queued: return Theme.zoneWarning
+        }
+    }
 }
 
 // MARK: - Glucose entry
@@ -315,27 +406,27 @@ private struct WatchGlucosePage: View {
         .padding(.horizontal, 4)
         .frame(maxWidth: .infinity, maxHeight: .infinity)
         .overlay(alignment: .bottom) {
-            if confirmation != nil {
-                Label("Logged \(valueText) \(snapshot.unitText)", systemImage: "checkmark.circle.fill")
-                    .font(.caption2.weight(.semibold))
-                    .foregroundStyle(Theme.textPrimary)
-                    .padding(.horizontal, 10).padding(.vertical, 6)
-                    .background(Theme.zoneInRange.opacity(0.9), in: Capsule())
-                    .transition(.move(edge: .bottom).combined(with: .opacity))
+            if let confirmation {
+                WatchSendStatus(entryID: confirmation.entryID, amountText: confirmation.amountText)
             }
         }
         .animation(.spring(duration: 0.3), value: confirmation)
         .task(id: confirmation?.id) {
-            guard confirmation != nil else { return }
+            guard let current = confirmation else { return }
             try? await Task.sleep(for: .seconds(2))
+            // Still unconfirmed by the phone → leave that on screen a while longer.
+            if WatchOutbox.shared.state(of: current.entryID) != .logged {
+                try? await Task.sleep(for: .seconds(3))
+            }
             confirmation = nil
         }
     }
 
     private func commit() {
         let mgdL = isMmol ? value * Self.mmolFactor : value
-        WatchSessionManager.shared.sendQuickEntry(kind: "glucose", amount: mgdL)
-        confirmation = WatchLogConfirmation(amount: value)
+        let id = WatchSessionManager.shared.sendQuickEntry(kind: "glucose", amount: mgdL)
+        playSendHaptic(for: id)
+        confirmation = WatchLogConfirmation(entryID: id, amountText: "\(valueText) \(snapshot.unitText)")
     }
 }
 
@@ -353,6 +444,8 @@ private struct WatchTreatLowPage: View {
     @AppStorage("watch.ruleOf15.deadline") private var deadlineEpoch: Double = 0
     @State private var pending = false
     @State private var done = false
+    /// The entry the last "Log 15 g" sent, so its delivery state can be shown.
+    @State private var sentID: UUID?
 
     private var deadline: Date? {
         deadlineEpoch > 0 ? Date(timeIntervalSince1970: deadlineEpoch) : nil
@@ -419,13 +512,8 @@ private struct WatchTreatLowPage: View {
         .padding(.horizontal, 4)
         .frame(maxWidth: .infinity, maxHeight: .infinity)
         .overlay(alignment: .bottom) {
-            if done {
-                Label("Logged 15 g", systemImage: "checkmark.circle.fill")
-                    .font(.caption2.weight(.semibold))
-                    .foregroundStyle(Theme.textPrimary)
-                    .padding(.horizontal, 10).padding(.vertical, 6)
-                    .background(Theme.zoneInRange.opacity(0.9), in: Capsule())
-                    .transition(.move(edge: .bottom).combined(with: .opacity))
+            if done, let sentID {
+                WatchSendStatus(entryID: sentID, amountText: "15 g")
             }
         }
         .animation(.spring(duration: 0.3), value: done)
@@ -445,7 +533,7 @@ private struct WatchTreatLowPage: View {
     }
 
     private func commit() {
-        WatchSessionManager.shared.sendQuickEntry(kind: "carbs", amount: grams)
+        sentID = WatchSessionManager.shared.sendQuickEntry(kind: "carbs", amount: grams)
         pending = false
         done = true
         // Start the wrist-side wait alongside the log; haptic marks the start.
@@ -541,16 +629,16 @@ private enum WatchSnapshotFormat {
     }
 
     /// "Updated 3 min ago", or a friendly fallback when there is no reading yet.
-    static func updated(_ date: Date) -> String {
+    static func updated(_ date: Date, now: Date = Date()) -> String {
         guard date > .distantPast else { return String(localized: "No recent data") }
         let formatter = RelativeDateTimeFormatter()
         formatter.unitsStyle = .abbreviated
-        return String(localized: "Updated \(formatter.localizedString(for: date, relativeTo: Date()))")
+        return String(localized: "Updated \(formatter.localizedString(for: date, relativeTo: now))")
     }
 
-    static func valueSummary(_ snapshot: GlucoseSnapshot) -> String {
+    static func valueSummary(_ snapshot: GlucoseSnapshot, stale: Bool) -> String {
         var summary = "\(snapshot.valueText) \(snapshot.unitText), \(snapshot.trendLabel), \(snapshot.zoneLabel), from \(snapshot.sourceName)"
-        if snapshot.isStale {
+        if stale {
             summary += ", reading may be out of date"
         }
         return summary

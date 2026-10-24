@@ -16,7 +16,17 @@ struct GlucoseAccessoryWidget: Widget {
         }
         .configurationDisplayName("Glucose")
         .description("Glucose value and trend at a glance.")
-        .supportedFamilies([.accessoryCircular, .accessoryRectangular, .accessoryInline])
+        .supportedFamilies(Self.families)
+    }
+
+    /// The Lock Screen families plus, on the watch, the corner slot of the
+    /// modular faces (`accessoryCorner` doesn't exist on iOS).
+    private static var families: [WidgetFamily] {
+        #if os(watchOS)
+        [.accessoryCircular, .accessoryRectangular, .accessoryInline, .accessoryCorner]
+        #else
+        [.accessoryCircular, .accessoryRectangular, .accessoryInline]
+        #endif
     }
 }
 
@@ -32,6 +42,10 @@ private struct GlucoseAccessoryEntryView: View {
             WidgetAccessoryRectangular(snapshot: entry.snapshot)
         case .accessoryInline:
             WidgetAccessoryInline(snapshot: entry.snapshot)
+        #if os(watchOS)
+        case .accessoryCorner:
+            WidgetAccessoryCorner(snapshot: entry.snapshot)
+        #endif
         default:
             WidgetAccessoryRectangular(snapshot: entry.snapshot)
         }
@@ -184,3 +198,27 @@ private struct WidgetAccessoryInline: View {
             : "Glucose \(snapshot.valueText) \(snapshot.unitText), \(snapshot.trendLabel)")
     }
 }
+
+#if os(watchOS)
+// MARK: - Corner (watch faces)
+
+/// The value in the corner of a watch face, with the trend — or "out of date" —
+/// curving along the bezel beside it.
+private struct WidgetAccessoryCorner: View {
+    let snapshot: GlucoseSnapshot
+
+    var body: some View {
+        Text(snapshot.valueText)
+            .font(.system(.title2, design: .rounded).weight(.semibold))
+            .minimumScaleFactor(0.5)
+            .lineLimit(1)
+            .foregroundStyle(snapshot.isStale ? Color.gray : Color(hex: snapshot.zoneColorHex))
+            .widgetCurvesContent()
+            .widgetLabel(snapshot.isStale ? String(localized: "Out of date") : snapshot.trendLabel)
+            .containerBackground(.clear, for: .widget)
+            .accessibilityLabel(snapshot.isStale
+                ? "Glucose \(snapshot.valueText) \(snapshot.unitText), outdated"
+                : "Glucose \(snapshot.valueText) \(snapshot.unitText), \(snapshot.zoneLabel)")
+    }
+}
+#endif

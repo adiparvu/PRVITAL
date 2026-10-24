@@ -6,6 +6,13 @@ import WidgetKit
 struct GlucoseEntry: TimelineEntry {
     let date: Date
     let snapshot: GlucoseSnapshot
+
+    /// What the Smart Stack (watch) and widget stacks use to decide whether to
+    /// bring this widget forward: lows first, then predictions and highs; stale
+    /// or missing readings never. Scored in `GlucoseSnapshot` so it is testable.
+    var relevance: TimelineEntryRelevance? {
+        TimelineEntryRelevance(score: snapshot.relevanceScore(at: date), duration: 20 * 60)
+    }
 }
 
 /// Feeds every glucose widget from the shared App Group snapshot.

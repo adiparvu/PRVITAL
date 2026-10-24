@@ -86,3 +86,30 @@ struct GlucoseSnapshot: Codable, Equatable, Sendable {
         recentEntries: ["124 mg/dL · now", "4 U rapid · 1h ago", "45 g lunch · 1h ago"]
     )
 }
+
+// MARK: - Freshness and relevance (shared by the watch app and the complications)
+
+extension GlucoseSnapshot {
+    /// A reading older than this is out of date — the same 20 minutes the phone's
+    /// dashboard uses, so the wrist and the phone never disagree.
+    static let staleAfter: TimeInterval = 20 * 60
+
+    /// Staleness AT `now`. The published `isStale` flag is frozen at the moment
+    /// the phone built the snapshot, so on its own it can never notice time
+    /// passing while the phone is away, asleep or out of range — a watch showing
+    /// a two-hour-old number at full brightness. This adds the passing of time.
+    func isStale(at now: Date) -> Bool {
+        isStale || updatedAt == .distantPast || now.timeIntervalSince(updatedAt) > Self.staleAfter
+    }
+
+    /// How strongly the Smart Stack should surface the glucose complication at
+    /// `now`: a low pulls it to the top, a high or an imminent prediction next,
+    /// an in-range reading barely at all, and a stale or missing one never.
+    func relevanceScore(at now: Date) -> Float {
+        guard !isStale(at: now), mgdL > 0 else { return 0 }
+        if mgdL < targetLowerMgdL { return 100 }
+        if predictionText != nil { return 80 }
+        if mgdL > targetUpperMgdL { return 60 }
+        return 10
+    }
+}

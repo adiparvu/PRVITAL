@@ -121,15 +121,24 @@ final class AppEnvironment {
         // behind a CGM sample. No-op once repaired.
         entryStore.repairSupersededBloodReadingsOnce()
 
-        // Log quick entries sent from the Apple Watch through the normal path.
-        WatchSessionManager.shared.onQuickEntry = { [weak self] kind, amount in
+        // Log quick entries sent from the Apple Watch through the normal path —
+        // at the moment they were tapped on the wrist, not whenever a queued
+        // transfer happened to arrive (the bridge has already dropped repeats).
+        WatchSessionManager.shared.onQuickEntry = { [weak self] request in
             guard let self else { return }
-            switch kind {
-            case "insulin": self.entryStore.addInsulin(units: amount)
-            case "carbs": self.entryStore.addCarbs(grams: amount)
-            case "glucose": self.entryStore.addGlucose(mgdL: amount)
+            let when = request.loggedAt()
+            switch request.kind {
+            case "insulin": self.entryStore.addInsulin(units: request.amount, timestamp: when)
+            case "carbs": self.entryStore.addCarbs(grams: request.amount, timestamp: when)
+            case "glucose": self.entryStore.addGlucose(mgdL: request.amount, timestamp: when)
             default: break
             }
+        }
+        // The watch opened with an old reading and asked for a fresher one:
+        // sync now; the normal change pipeline republishes the snapshot.
+        WatchSessionManager.shared.onSnapshotRequest = { [weak self] in
+            guard let self else { return }
+            Task { await self.sync.refreshLatest() }
         }
         WatchSessionManager.shared.activate()
 
