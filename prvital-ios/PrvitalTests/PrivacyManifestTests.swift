@@ -49,17 +49,34 @@ final class PrivacyManifestTests: XCTestCase {
         XCTAssertTrue(fileManager.fileExists(atPath: widgets.appendingPathComponent("PrivacyInfo.xcprivacy").path),
                       "the widget extension carries its own PrivacyInfo.xcprivacy")
 
-        // The watch app rides inside the iPhone app only where the build embeds it.
+        // The watch app rides inside the iPhone app. It once did not: the app
+        // never embedded it, so nothing watch-side shipped. Absence is a failure.
         let watchApp = Bundle.main.bundleURL.appendingPathComponent("Watch/PrvitalWatch.app")
-        if fileManager.fileExists(atPath: watchApp.path) {
-            XCTAssertTrue(fileManager.fileExists(atPath: watchApp.appendingPathComponent("PrivacyInfo.xcprivacy").path),
-                          "the watch app carries its own PrivacyInfo.xcprivacy")
-            let complications = watchApp.appendingPathComponent("PlugIns/PrvitalWatchWidgets.appex")
-            if fileManager.fileExists(atPath: complications.path) {
-                XCTAssertTrue(fileManager.fileExists(atPath: complications.appendingPathComponent("PrivacyInfo.xcprivacy").path),
-                              "the watch complications carry their own PrivacyInfo.xcprivacy")
-            }
+        XCTAssertTrue(fileManager.fileExists(atPath: watchApp.path),
+                      "the iPhone app embeds the watch app (Prvital.app/Watch/PrvitalWatch.app)")
+        XCTAssertTrue(fileManager.fileExists(atPath: watchApp.appendingPathComponent("PrivacyInfo.xcprivacy").path),
+                      "the watch app carries its own PrivacyInfo.xcprivacy")
+        let complications = watchApp.appendingPathComponent("PlugIns/PrvitalWatchWidgets.appex")
+        XCTAssertTrue(fileManager.fileExists(atPath: complications.path),
+                      "the watch app embeds its complications")
+        XCTAssertTrue(fileManager.fileExists(atPath: complications.appendingPathComponent("PrivacyInfo.xcprivacy").path),
+                      "the watch complications carry their own PrivacyInfo.xcprivacy")
+    }
+
+    /// The watch app only works paired to this app, and its pairing key is the
+    /// one thing App Store validation cannot guess for us.
+    func testTheWatchAppIsPairedToThisApp() throws {
+        guard Bundle.main.bundleIdentifier == "com.prvital.app" else {
+            throw XCTSkip("Not hosted by the app bundle")
         }
+        let info = Bundle.main.bundleURL.appendingPathComponent("Watch/PrvitalWatch.app/Info.plist")
+        let data = try Data(contentsOf: info)
+        let plist = try XCTUnwrap(try PropertyListSerialization.propertyList(from: data, format: nil) as? [String: Any])
+        XCTAssertEqual(plist["WKCompanionAppBundleIdentifier"] as? String, "com.prvital.app")
+        XCTAssertEqual(plist["CFBundleIdentifier"] as? String, "com.prvital.app.watchkitapp")
+        XCTAssertEqual(plist["CFBundleVersion"] as? String,
+                       Bundle.main.object(forInfoDictionaryKey: "CFBundleVersion") as? String,
+                       "the watch app carries the same build number as the app that contains it")
     }
 
     func testOnlyTheCommunityEntryIsDeclaredAsCollected() throws {

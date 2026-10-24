@@ -420,6 +420,39 @@ jobs:
             echo "::error::Build number mismatch — archive is $ACTUAL but project is $EXPECTED. TestFlight would reject this as a duplicate. Fix CFBundleVersion in project.yml."
             exit 1
           fi
+      - name: Verify the archive carries the Apple Watch app
+        # Guardrail for a bug that went unseen for 170 builds: the iPhone app did
+        # not embed the watch app, so the archive held only the app and its
+        # widgets and nothing watch-side ever reached a wrist. Fail loudly if the
+        # watch app (or its complications) is missing, is not signed with the
+        # right bundle id, or sits in the archive as an app of its own.
+        working-directory: prvital-ios
+        run: |
+          set -euo pipefail
+          APPS="build/Prvital.xcarchive/Products/Applications"
+          WATCH="$APPS/Prvital.app/Watch/PrvitalWatch.app"
+          COMPLICATIONS="$WATCH/PlugIns/PrvitalWatchWidgets.appex"
+          EXPECTED=$(grep -m1 'CURRENT_PROJECT_VERSION:' project.yml | sed -E 's/.*"([0-9]+)".*/\1/')
+          echo "Apps in the archive:"; ls "$APPS"
+          if [ "$(ls "$APPS" | grep -c '\.app$')" -ne 1 ]; then
+            echo "::error::The archive must hold exactly one app (Prvital.app). Set SKIP_INSTALL=YES on the watch targets."
+            exit 1
+          fi
+          if [ ! -d "$WATCH" ]; then
+            echo "::error::Prvital.app/Watch/PrvitalWatch.app is missing — the iPhone app does not embed the watch app (project.yml: Prvital dependencies)."
+            exit 1
+          fi
+          if [ ! -d "$COMPLICATIONS" ]; then
+            echo "::error::The watch complications (PrvitalWatchWidgets.appex) are not embedded in the watch app."
+            exit 1
+          fi
+          plist() { /usr/libexec/PlistBuddy -c "Print :$2" "$1/Info.plist"; }
+          echo "watch app:         $(plist "$WATCH" CFBundleIdentifier)  v$(plist "$WATCH" CFBundleVersion)  companion=$(plist "$WATCH" WKCompanionAppBundleIdentifier)"
+          echo "watch complications: $(plist "$COMPLICATIONS" CFBundleIdentifier)  v$(plist "$COMPLICATIONS" CFBundleVersion)"
+          [ "$(plist "$WATCH" CFBundleIdentifier)" = "com.prvital.app.watchkitapp" ] || { echo "::error::Unexpected watch bundle id."; exit 1; }
+          [ "$(plist "$WATCH" WKCompanionAppBundleIdentifier)" = "com.prvital.app" ] || { echo "::error::The watch app is not paired with com.prvital.app."; exit 1; }
+          [ "$(plist "$WATCH" CFBundleVersion)" = "$EXPECTED" ] || { echo "::error::The watch app's build number is not $EXPECTED."; exit 1; }
+          [ "$(plist "$COMPLICATIONS" CFBundleVersion)" = "$EXPECTED" ] || { echo "::error::The complications' build number is not $EXPECTED."; exit 1; }
       - name: List privacy manifests in the archive (diagnostic, never fails)
         # App Store submission expects a PrivacyInfo.xcprivacy in the app and in
         # each extension. XcodeGen bundles them as resources from each target's
@@ -480,13 +513,23 @@ jobs:
           rm -rf "$WORK"; mkdir -p "$WORK"
           unzip -q "$(pwd)/$IPA" -d "$WORK"
           echo "=== SIGNED entitlements — does HealthKit + App Group survive signing? ==="
-          for app in "$WORK"/Payload/*.app "$WORK"/Payload/*.app/PlugIns/*.appex; do
+          for app in "$WORK"/Payload/*.app "$WORK"/Payload/*.app/PlugIns/*.appex \
+                     "$WORK"/Payload/*.app/Watch/*.app "$WORK"/Payload/*.app/Watch/*.app/PlugIns/*.appex; do
             [ -e "$app" ] || continue
             ent=$(codesign -d --entitlements - "$app" 2>/dev/null || true)
             hk=$(printf '%s' "$ent" | grep -a -c "com.apple.developer.healthkit" || true)
             ag=$(printf '%s' "$ent" | grep -a -c "group.com.prvital" || true)
             echo "  $(basename "$app"):  healthkit=$([ "${hk:-0}" -gt 0 ] && echo YES || echo NO)  appgroup=$([ "${ag:-0}" -gt 0 ] && echo YES || echo NO)"
           done
+          echo "=== Bundles inside the signed IPA ==="
+          (cd "$WORK" && find Payload -maxdepth 5 \( -name '*.app' -o -name '*.appex' \) | sort)
+          # Server-side check against App Store Connect WITHOUT delivering a
+          # build: catches the rejections an upload would only report by e-mail
+          # later (invalid watch app, missing icon, bad bundle ids…). Diagnostic.
+          echo "=== App Store Connect validation (nothing is uploaded) ==="
+          xcrun altool --validate-app -f "$IPA" -t ios \
+            --apiKey "${{ secrets.ASC_KEY_ID }}" \
+            --apiIssuer "${{ secrets.ASC_ISSUER_ID }}" 2>&1 | tail -30 || true
       - name: Export & upload to TestFlight
         # A `[testflight] [dry-run]` commit rehearses everything — provisioning,
         # signing, archive, entitlement inspection — and stops here, so a new
