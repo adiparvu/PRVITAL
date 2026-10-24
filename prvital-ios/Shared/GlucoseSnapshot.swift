@@ -113,3 +113,31 @@ extension GlucoseSnapshot {
         return 10
     }
 }
+
+// MARK: - The watch's glucose-entry dial
+
+extension GlucoseSnapshot {
+    /// The dial's range, in the unit it is shown in.
+    static let entryDialMgdL: ClosedRange<Double> = 40...400
+    static let entryDialMmol: ClosedRange<Double> = 2.2...22.2
+    /// mg/dL per 1 mmol/L, inlined so the watch needs no domain layer.
+    private static let mgdLPerMmol = 18.0182
+
+    /// Whether the snapshot (and so the dial) is in mmol/L.
+    var usesMmol: Bool { unitText.lowercased().contains("mmol") }
+
+    /// Where the glucose-entry dial opens. On the latest reading when it is
+    /// current — a finger-stick is usually near the sensor, so the number on the
+    /// dial starts close to the truth and any change is deliberate — otherwise
+    /// on a neutral mid-range value, never on a reading that has gone stale.
+    /// Always inside the dial's range and rounded to the dial's step.
+    func entryDialSeed(at now: Date) -> Double {
+        let mmol = usesMmol
+        guard mgdL > 0, !isStale(at: now) else { return mmol ? 6.0 : 110 }
+        if mmol {
+            let value = (mgdL / Self.mgdLPerMmol * 10).rounded() / 10
+            return min(max(value, Self.entryDialMmol.lowerBound), Self.entryDialMmol.upperBound)
+        }
+        return min(max(mgdL.rounded(), Self.entryDialMgdL.lowerBound), Self.entryDialMgdL.upperBound)
+    }
+}

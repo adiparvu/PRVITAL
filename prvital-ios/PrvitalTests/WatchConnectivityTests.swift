@@ -230,3 +230,52 @@ final class GlucoseSnapshotFreshnessTests: XCTestCase {
         XCTAssertEqual(snapshot(minutesOld: 1, mgdL: 0).relevanceScore(at: now), 0)
     }
 }
+
+/// Where the watch's glucose-entry dial opens — never on a stale or arbitrary
+/// number, always inside the dial.
+final class WatchGlucoseDialTests: XCTestCase {
+
+    private let now = Date(timeIntervalSince1970: 1_800_000_000)
+
+    private func snapshot(mgdL: Double, minutesOld: Double = 2, unit: String = "mg/dL") -> GlucoseSnapshot {
+        var snapshot = GlucoseSnapshot()
+        snapshot.mgdL = mgdL
+        snapshot.unitText = unit
+        snapshot.updatedAt = now.addingTimeInterval(-minutesOld * 60)
+        snapshot.isStale = false
+        return snapshot
+    }
+
+    func testOpensOnTheCurrentReading() {
+        XCTAssertEqual(snapshot(mgdL: 112.4).entryDialSeed(at: now), 112)
+        XCTAssertEqual(snapshot(mgdL: 112.6).entryDialSeed(at: now), 113)
+    }
+
+    func testMmolOpensOnTheCurrentReadingToTheDialsStep() {
+        // 126 mg/dL = 6.99 mmol/L → 7.0 on a 0.1 dial.
+        XCTAssertEqual(snapshot(mgdL: 126, unit: "mmol/L").entryDialSeed(at: now), 7.0, accuracy: 1e-9)
+    }
+
+    func testAStaleReadingNeverSeedsTheDial() {
+        XCTAssertEqual(snapshot(mgdL: 212, minutesOld: 45).entryDialSeed(at: now), 110)
+        XCTAssertEqual(snapshot(mgdL: 212, minutesOld: 45, unit: "mmol/L").entryDialSeed(at: now), 6.0, accuracy: 1e-9)
+    }
+
+    func testNoReadingFallsBackToANeutralValue() {
+        XCTAssertEqual(snapshot(mgdL: 0).entryDialSeed(at: now), 110)
+        XCTAssertEqual(GlucoseSnapshot().entryDialSeed(at: now), 110)
+    }
+
+    func testTheSeedAlwaysStaysInsideTheDial() {
+        XCTAssertEqual(snapshot(mgdL: 30).entryDialSeed(at: now), 40)
+        XCTAssertEqual(snapshot(mgdL: 450).entryDialSeed(at: now), 400)
+        XCTAssertEqual(snapshot(mgdL: 30, unit: "mmol/L").entryDialSeed(at: now), 2.2, accuracy: 1e-9)
+        XCTAssertEqual(snapshot(mgdL: 450, unit: "mmol/L").entryDialSeed(at: now), 22.2, accuracy: 1e-9)
+    }
+
+    func testUnitDetection() {
+        XCTAssertTrue(snapshot(mgdL: 100, unit: "mmol/L").usesMmol)
+        XCTAssertTrue(snapshot(mgdL: 100, unit: "MMOL/L").usesMmol)
+        XCTAssertFalse(snapshot(mgdL: 100, unit: "mg/dL").usesMmol)
+    }
+}

@@ -345,21 +345,24 @@ private struct WatchGlucosePage: View {
     /// The value the user is dialling, in the *display* unit.
     @State private var value: Double
     @State private var confirmation: WatchLogConfirmation?
+    /// The "Log 112 mg/dL?" question — a glucose value is never written on one tap.
+    @State private var pending = false
 
     /// mg/dL per 1 mmol/L, inlined so the watch needs no domain layer.
     private static let mmolFactor = 18.0182
 
-    private var isMmol: Bool { snapshot.unitText.lowercased().contains("mmol") }
+    private var isMmol: Bool { snapshot.usesMmol }
     private var step: Double { isMmol ? 0.1 : 1 }
-    private var range: ClosedRange<Double> { isMmol ? 2.2...22.2 : 40...400 }
+    private var range: ClosedRange<Double> { isMmol ? GlucoseSnapshot.entryDialMmol : GlucoseSnapshot.entryDialMgdL }
     private var valueText: String {
         isMmol ? String(format: "%.1f", value) : String(Int(value.rounded()))
     }
 
     init(snapshot: GlucoseSnapshot) {
         self.snapshot = snapshot
-        let mmol = snapshot.unitText.lowercased().contains("mmol")
-        _value = State(initialValue: mmol ? 6.0 : 110)
+        // Opens on the current reading (or a neutral value when it is stale), so
+        // the number being logged is never an arbitrary leftover.
+        _value = State(initialValue: snapshot.entryDialSeed(at: Date()))
     }
 
     var body: some View {
@@ -394,7 +397,7 @@ private struct WatchGlucosePage: View {
             Spacer(minLength: 0)
 
             Button {
-                commit()
+                pending = true
             } label: {
                 Text("Log")
                     .font(.headline)
@@ -411,6 +414,14 @@ private struct WatchGlucosePage: View {
             }
         }
         .animation(.spring(duration: 0.3), value: confirmation)
+        .confirmationDialog(
+            "Log \(valueText) \(snapshot.unitText)?",
+            isPresented: $pending,
+            titleVisibility: .visible
+        ) {
+            Button("Log \(valueText) \(snapshot.unitText)") { commit() }
+            Button("Cancel", role: .cancel) { pending = false }
+        }
         .task(id: confirmation?.id) {
             guard let current = confirmation else { return }
             try? await Task.sleep(for: .seconds(2))
@@ -423,6 +434,7 @@ private struct WatchGlucosePage: View {
     }
 
     private func commit() {
+        pending = false
         let mgdL = isMmol ? value * Self.mmolFactor : value
         let id = WatchSessionManager.shared.sendQuickEntry(kind: "glucose", amount: mgdL)
         playSendHaptic(for: id)

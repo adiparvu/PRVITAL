@@ -11,6 +11,16 @@
 #   - PrvitalWidgets  — Home Screen + Lock Screen widgets
 #   - PrvitalWatch    — Apple Watch companion
 name: Prvital
+# Privacy manifests — one PrivacyInfo.xcprivacy per bundle (app, widgets, watch,
+# watch widgets), picked up as resources from each target's source folder.
+# Facts they encode: no tracking and no third-party SDKs. UserDefaults reasons:
+# CA92.1 (the app's own defaults) and 1C8F.1 (the App Group suite shared with the
+# widgets and watch). File timestamps C617.1 — the weekly auto-backup prunes its
+# own files. Collected data is ONLY the opt-in Community leaderboard entry (handle
+# → User ID; points, badges, country → Other User Content), declared linked and
+# for app functionality. Health data stays on the device and in the person's own
+# iCloud. Keep this in step with the App Privacy answers in App Store Connect, and
+# add a reason here whenever code starts using another required-reason API.
 options:
   bundleIdPrefix: com.prvital
   deploymentTarget:

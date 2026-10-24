@@ -420,6 +420,21 @@ jobs:
             echo "::error::Build number mismatch — archive is $ACTUAL but project is $EXPECTED. TestFlight would reject this as a duplicate. Fix CFBundleVersion in project.yml."
             exit 1
           fi
+      - name: List privacy manifests in the archive (diagnostic, never fails)
+        # App Store submission expects a PrivacyInfo.xcprivacy in the app and in
+        # each extension. XcodeGen bundles them as resources from each target's
+        # folder; this proves it on the real archive instead of trusting it.
+        working-directory: prvital-ios
+        continue-on-error: true
+        run: |
+          set -uo pipefail
+          FOUND=$(find build/Prvital.xcarchive/Products/Applications -name PrivacyInfo.xcprivacy | sort)
+          echo "$FOUND"
+          COUNT=$(printf '%s\n' "$FOUND" | grep -c . || true)
+          echo "privacy manifests in the archive: $COUNT (expected 4: app, widgets, watch app, watch widgets)"
+          if [ "$COUNT" -lt 4 ]; then
+            echo "::warning::Fewer than 4 PrivacyInfo.xcprivacy files in the archive — check the target resources in project.yml."
+          fi
       - name: Inspect signed entitlements (diagnostic, never fails)
         # Ground truth for the "Apple Health missing entitlement" + blank-widget
         # bugs: export a signed copy to disk and print whether HealthKit and the
@@ -582,6 +597,10 @@ jobs:
             -scheme Prvital \
             -destination 'generic/platform=iOS' \
             CODE_SIGNING_ALLOWED=NO CODE_SIGNING_REQUIRED=NO CODE_SIGN_IDENTITY="" PROVISIONING_PROFILE_SPECIFIER=""
+      - name: List privacy manifests in the build (diagnostic, never fails)
+        continue-on-error: true
+        run: |
+          find ~/Library/Developer/Xcode/DerivedData -path '*Build/Products/Debug-iphoneos*' -name PrivacyInfo.xcprivacy 2>/dev/null | sort
       - name: Run unit tests (newest simulator)
         working-directory: prvital-ios
         run: |
