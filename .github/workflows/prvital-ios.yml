@@ -281,10 +281,17 @@ jobs:
             # Stale profiles from earlier runs (with or without the old suffix) are
             # deleted above by name prefix, then recreated here.
             pname = base
-            code, resp = api(:get, "/v1/bundleIds?filter[identifier]=#{bid}&limit=1")
+            # filter[identifier] is a CONTAINS match: "com.prvital.app.watchkitapp"
+            # also returns "com.prvital.app.watchkitapp.widgets", and the first hit
+            # is not necessarily the exact one. Taking data[0] bound the watch
+            # profile to the complications' App ID ("Provisioning profile … has
+            # app ID …watchkitapp.widgets, which does not match the bundle ID")
+            # the moment the watch app was first archived. Pick the exact identifier.
+            code, resp = api(:get, "/v1/bundleIds?filter[identifier]=#{bid}&limit=200")
             abort("bundleId lookup failed for #{bid} (HTTP #{code}): #{resp}") unless code == 200
-            abort("::error::App ID #{bid} does not exist. Create it in Identifiers (with its capabilities) first.") if resp["data"].empty?
-            ref = resp["data"][0]["id"]
+            found = (resp["data"] || []).find { |d| d["attributes"]["identifier"] == bid }
+            abort("::error::App ID #{bid} does not exist. Create it in Identifiers (with its capabilities) first.") if found.nil?
+            ref = found["id"]
             # Ensure the HealthKit capability is ON for the main App ID BEFORE the
             # profile is minted, so the profile carries com.apple.developer.healthkit.
             # Without it the signed app has no HealthKit entitlement and Apple Health
