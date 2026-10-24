@@ -83,7 +83,9 @@ final class WatchEntryLedgerTests: XCTestCase {
     private func makeLedger() -> WatchEntryLedger {
         let suite = "watch.ledger.tests.\(UUID().uuidString)"
         let defaults = UserDefaults(suiteName: suite)!
-        addTeardownBlock { defaults.removePersistentDomain(forName: suite) }
+        // The block is @Sendable: carry only the suite NAME into it and reopen
+        // the defaults there, instead of capturing the (non-Sendable) object.
+        addTeardownBlock { UserDefaults(suiteName: suite)?.removePersistentDomain(forName: suite) }
         return WatchEntryLedger(defaults: defaults)
     }
 
