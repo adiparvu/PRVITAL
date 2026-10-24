@@ -600,7 +600,9 @@ jobs:
       - name: List privacy manifests in the build (diagnostic, never fails)
         continue-on-error: true
         run: |
-          find ~/Library/Developer/Xcode/DerivedData -path '*Build/Products/Debug-iphoneos*' -name PrivacyInfo.xcprivacy 2>/dev/null | sort
+          # Unsigned builds keep their bundles under Intermediates/UninstalledProducts,
+          # not Build/Products, so look anywhere in DerivedData.
+          find ~/Library/Developer/Xcode/DerivedData -name PrivacyInfo.xcprivacy 2>/dev/null | sed 's#^.*/DerivedData/[^/]*/##' | sort
       - name: Run unit tests (newest simulator)
         working-directory: prvital-ios
         run: |

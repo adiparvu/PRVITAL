@@ -36,6 +36,32 @@ final class PrivacyManifestTests: XCTestCase {
         XCTAssertEqual(reasons.count, 2, "no other required-reason category is declared without being used")
     }
 
+    /// Each bundle that ships needs its OWN manifest. The app's is proven above;
+    /// this walks the embedded extensions and the watch app inside the real bundle.
+    func testEveryEmbeddedBundleShipsItsOwnManifest() throws {
+        guard Bundle.main.bundleIdentifier == "com.prvital.app" else {
+            throw XCTSkip("Not hosted by the app bundle")
+        }
+        let fileManager = FileManager.default
+        let plugIns = try XCTUnwrap(Bundle.main.builtInPlugInsURL, "the app embeds its extensions")
+        let widgets = plugIns.appendingPathComponent("PrvitalWidgets.appex")
+        XCTAssertTrue(fileManager.fileExists(atPath: widgets.path), "the widget extension is embedded")
+        XCTAssertTrue(fileManager.fileExists(atPath: widgets.appendingPathComponent("PrivacyInfo.xcprivacy").path),
+                      "the widget extension carries its own PrivacyInfo.xcprivacy")
+
+        // The watch app rides inside the iPhone app only where the build embeds it.
+        let watchApp = Bundle.main.bundleURL.appendingPathComponent("Watch/PrvitalWatch.app")
+        if fileManager.fileExists(atPath: watchApp.path) {
+            XCTAssertTrue(fileManager.fileExists(atPath: watchApp.appendingPathComponent("PrivacyInfo.xcprivacy").path),
+                          "the watch app carries its own PrivacyInfo.xcprivacy")
+            let complications = watchApp.appendingPathComponent("PlugIns/PrvitalWatchWidgets.appex")
+            if fileManager.fileExists(atPath: complications.path) {
+                XCTAssertTrue(fileManager.fileExists(atPath: complications.appendingPathComponent("PrivacyInfo.xcprivacy").path),
+                              "the watch complications carry their own PrivacyInfo.xcprivacy")
+            }
+        }
+    }
+
     func testOnlyTheCommunityEntryIsDeclaredAsCollected() throws {
         let manifest = try loadManifest()
         let collected = try XCTUnwrap(manifest["NSPrivacyCollectedDataTypes"] as? [[String: Any]])
